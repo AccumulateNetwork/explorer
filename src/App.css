@@ -1,0 +1,36 @@
+@import '~antd/dist/antd.css';
+
+.react-icons {
+  vertical-align: middle;
+}
+
+.loader {
+  position: absolute !important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto !important;
+  height: 42px;
+}
+
+.logo {
+  height: 120px;
+  margin-bottom: 20px;
+}
+
+.ant-descriptions {
+  margin-bottom: 25px;
+}
+
+.ant-descriptions-view {
+  overflow: auto;
+}
+
+.ant-descriptions-item-label {
+  text-align: left;
+}
+
+.ant-descriptions-item-content {
+  background: #FFF;
+}
