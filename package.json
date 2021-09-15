@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "REACT_APP_API_PATH='http://localhost:26000' react-scripts start",
-    "build": "REACT_APP_API_PATH='' react-scripts build",
+    "build": "REACT_APP_API_PATH='https://testnet.accumulatenetwork.io' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
