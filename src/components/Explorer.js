@@ -50,9 +50,11 @@ const Explorer = props => {
             setType(response.data.result.type);
         }
         catch(error) {
+            console.log(error);
             if (error.response) {
                 if (error.response.data.error) {
-                    message.error(error.response.data.error);
+                    // do nothing if it's API error
+                    // message.error(error.response.data.error);
                 } else {
                     NotifyNetworkError();
                 }
