@@ -46,21 +46,13 @@ const Explorer = props => {
   const search = async (url) => {
         try {
             const response = await axios.get('/' + url);
-            setObject(response.data.result.data);
-            setType(response.data.result.type);
+            if (response.data.result) {
+                setObject(response.data.result.data);
+                setType(response.data.result.type);    
+            }
         }
         catch(error) {
-            console.log(error);
-            if (error.response) {
-                if (error.response.data.error) {
-                    // do nothing if it's API error
-                    // message.error(error.response.data.error);
-                } else {
-                    NotifyNetworkError();
-                }
-            } else {
-                NotifyNetworkError();
-            }
+            NotifyNetworkError();
         }
         setSearchIsLoading(false);
   }
