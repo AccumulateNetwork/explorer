@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Router } from 'react-router-dom';
 
-import { Row, Col, Layout, Input, Typography, message, Form, Divider, Alert, Skeleton, Descriptions } from 'antd';
+import { Row, Col, Layout, Input, Typography, Form, Divider, Alert, Skeleton, Descriptions } from 'antd';
 
 import axios from 'axios';
 
