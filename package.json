@@ -18,7 +18,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='http://localhost:34001' react-scripts start",
+    "start": "REACT_APP_API_PATH='http://localhost:35555' react-scripts start",
     "build": "REACT_APP_API_PATH='https://testnet.accumulatenetwork.io' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

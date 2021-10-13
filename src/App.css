@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
 @import '~antd/dist/antd.css';
 
 .react-icons {
@@ -15,8 +16,25 @@
 }
 
 .logo {
-  height: 120px;
-  margin-bottom: 20px;
+  height: 38px;
+  margin-top: -2px;
+}
+
+.search-box {
+  margin-top: 12px;
+}
+
+.header-column-logo {
+  width: 56px;
+  float: left;
+}
+
+.header-column-search {
+  margin-left: 56px;
+}
+
+.ant-layout-header {
+  padding: 0 20px;
 }
 
 .ant-descriptions {
@@ -33,4 +51,202 @@
 
 .ant-descriptions-item-content {
   background: #FFF;
+}
+
+.stats .react-icons {
+  margin-right: 0;
+  color: #1890ff;
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.stats .react-icons.react-icons-entries {
+  margin-left: -2px;
+}
+
+.stats h3.ant-typography {
+  font-weight: normal !important;
+  margin-bottom: 0 !important;
+  margin-top: 4px;
+}
+
+.stats .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+}
+
+.stats .ant-card-body {
+  padding: 18px 24px 16px;
+  color: rgba(0,0,0,0.45);
+  min-height: 121px;
+}
+
+.stats.stats-minheight145 .ant-card-body {
+  min-height: 145px;
+}
+
+.stats small {
+  color: rgba(0,0,0,0.25);
+}
+
+.stats .ant-skeleton-content .ant-skeleton-title {
+  width: 75%;
+  margin-bottom: 0;
+}
+
+.stats .ant-carousel {
+  margin-bottom: 16px;
+}
+
+.stats .ant-carousel .ant-skeleton-content .ant-skeleton-title {
+  width: 50%;
+}
+
+.stats .ant-carousel .slick-dots {
+  margin: 0;
+  display: inline-block;
+  right: 20px;
+  left: auto;
+  bottom: 20px;
+}
+
+.stats .ant-carousel .slick-dots li button {
+  background: #1890ff;
+}
+
+.stats .ant-carousel .slick-dots li.slick-active button {
+  background: #1890ff;
+}
+
+.skeleton-holder {
+  background: #FFF;
+  padding: 12px;
+  border-color: #f0f0f0;
+  margin-bottom: 25px;
+}
+
+h2.ant-typography, h4.ant-typography:not(.ant-typography-secondary) {
+  color: #000 !important;
+}
+
+h4.ant-typography {
+  margin-bottom: 15px !important;
+  word-break: break-all;
+}
+
+h4.ant-typography-secondary {
+  margin-bottom: 20px !important;
+}
+
+h4.ant-typography .react-icons {
+  margin-right: 6px;
+  color: #1890ff;
+  margin-top: -3px;
+}
+
+h4.ant-typography .react-icons-tooltip {
+  margin-left: 6px;
+  color: rgba(0,0,0,0.4);
+  vertical-align: middle;
+  font-size: 75%;
+}
+
+h4.ant-typography .react-icons.react-icons-eblocks {
+  margin-right: 8px;
+}
+
+h4.ant-typography .count {
+  background: rgba(255,255,255,0.85);
+  color: rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: -3px;
+  margin-left: 12px;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+  font-weight: normal;
+  padding: 5px 8px;
+  font-size: 14px;
+  line-height: 14px;
+  border-radius: 5px;
+}
+
+.ant-list .ant-list-item {
+  background: #FFF;
+  padding: 16px !important;
+}
+
+.ant-list .ant-list-item pre, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane pre, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane .content, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane pre, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane .content {
+  margin: 0;
+  width: 100%;
+  box-shadow: 0 0 0 1px #f0f0f0 !important;
+  background: #fcfcfc !important;
+  padding: 7px;
+}
+
+.ant-list .ant-list-item code, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane code, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane code {
+  margin: 0;
+  width: 100%;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+}
+
+.ant-table {
+  font-family: 'IBM Plex Sans', 'Helvetica', 'Tahoma', 'Arial', sans-serif;
+  border: 1px solid #f0f0f0;
+}
+
+.ant-table th.filter-extid .ant-table-filter-trigger-container {
+  right: auto;
+  left: 110px;
+}
+
+.ant-table th.filter-entryhash .ant-table-filter-trigger-container {
+  right: auto;
+  left: 100px;
+}
+
+.ant-table th.filter-paying-address .ant-table-filter-trigger-container {
+  right: auto;
+  left: 129px;
+}
+
+.ant-table .ant-table-expanded-row-fixed {
+  width: auto !important;
+}
+
+.ant-table .ant-table-thead th {
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.ant-table .ant-table-row .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+}
+
+.ant-table .ant-table-row .react-icons, .ant-descriptions .react-icons, .ant-list .react-icons, .heights .react-icons {
+  margin-right: 5px;
+  opacity: 0.5;
+  margin-top: -2px;
+}
+
+.ant-table .ant-table-footer {
+  background: #FFF;
+  padding: 12px;
+}
+
+.ant-table .ant-table-row .ant-progress-show-info .ant-progress-outer {
+  margin-right: calc(-2em - 28px);
+  padding-right: calc(2em + 28px);
+}
+
+.ant-list .react-icons, .featured .react-icons {
+  margin-top: -2px;
+}
+
+.ant-list ul {
+  margin-bottom: 5px !important;
+}
+
+.ant-list div.ant-typography:last-child {
+  margin-bottom: 0;
 }
