@@ -74,20 +74,6 @@ const Blocks = () => {
 
       <Title level={2}>Blocks</Title>
 
-      <p>Debug</p>
-      
-      <p>
-      <Link to="/accounts/acme-edc76c2f57dc759c98c7c0fd25ba799f2394a26361656306">
-        accounts/acme-edc76c2f57dc759c98c7c0fd25ba799f2394a26361656306
-      </Link>
-      </p>
-
-      <p>
-      <Link to="/blocks">
-        blocks
-      </Link>
-      </p>
-
       <Table
         dataSource={blocks}
         columns={columns}
