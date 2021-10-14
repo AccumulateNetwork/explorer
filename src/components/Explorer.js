@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Router, Route, Link, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
 import { Layout, Input, Form, message } from 'antd';
 
@@ -7,7 +7,6 @@ import axios from 'axios';
 
 import Logo from './common/Logo';
 import ScrollToTop from './common/ScrollToTop';
-import History from './common/History';
 
 import { NotifyNetworkError } from './common/Notifications';
 
@@ -24,12 +23,25 @@ const Explorer = props => {
 
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
-  const [redirect, setRedirect] = useState(null);
 
   const handleSearch = (value) => {
     setSearchIsLoading(true);
-    search(value);
+    var isnum = /^\d+$/.test(value);
+    var ishash = /\b[0-9A-Fa-f]{64}\b/.test(value);
+    if (isnum && Number.parseInt(value) >= 0) {
+        redirect('/blocks/'+value);
+    }
+    else if (ishash) {
+        redirect('/tx/'+value);
+    }
+    else {
+        search(value);
+    }
   };
+
+  const redirect = (url) => {
+    window.location.href = url;
+  }
 
   const search = async (url) => {
         try {
@@ -37,7 +49,7 @@ const Explorer = props => {
             if (response.data.result && response.data.result.type) {
                 switch (response.data.result.type) {
                   case "tokenAccount":
-                    setRedirect('/accounts/'+url);
+                    redirect('/accounts/'+url);
                     break;
                   default:
                     message.info('No results found');
@@ -52,21 +64,9 @@ const Explorer = props => {
         }
         setSearchIsLoading(false);
   }
-
-  useEffect(() => {
-    if (redirect) {
-        History.push(redirect);
-        searchForm.resetFields();
-        setRedirect(null);
-    }
-  }, [redirect]);
-
-  useEffect(() => {
-    console.log(window.location.pathname);
-  }, []);
     
   return (
-    <Router history={History}>
+    <Router>
     <ScrollToTop />
       <Layout>
         <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
