@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
 import { Layout, Input, Form, message } from 'antd';
@@ -11,7 +11,6 @@ import ScrollToTop from './common/ScrollToTop';
 import { NotifyNetworkError } from './common/Notifications';
 
 import Blocks from './explorer/Blocks';
-import Block from './explorer/Block';
 import TokenAccount from './explorer/TokenAccount';
 import Transaction from './explorer/Transaction';
 import Error404 from './explorer/Error404';
@@ -26,12 +25,15 @@ const Explorer = props => {
 
   const handleSearch = (value) => {
     setSearchIsLoading(true);
-    var isnum = /^\d+$/.test(value);
     var ishash = /\b[0-9A-Fa-f]{64}\b/.test(value);
+    
+    // remove search by height until v0.3
+    /*
+    var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
         redirect('/blocks/'+value);
     }
-    else if (ishash) {
+    else */if (ishash) {
         redirect('/tx/'+value);
     }
     else {
@@ -95,8 +97,6 @@ const Explorer = props => {
         <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
             <Switch>
                 <Route exact path="/" component={Blocks} />
-                <Route exact path="/blocks" component={Blocks} />
-                <Route path="/blocks/:id" component={Block} />
                 <Route path="/accounts/:url" component={TokenAccount} />
                 <Route path="/tx/:hash" component={Transaction} />
                 <Route component={Error404} />
