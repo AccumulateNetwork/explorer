@@ -60,7 +60,7 @@ const TokenAccount = ({ match }) => {
                           Token Account Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account URL</nobr></span>}>
                                 {tokenAccount.url}
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
