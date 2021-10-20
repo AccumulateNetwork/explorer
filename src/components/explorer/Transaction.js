@@ -10,9 +10,7 @@ import {
 } from 'react-icons/ri';
 
 
-import axios from 'axios';
-
-import { NotifyNetworkError } from './../common/Notifications';
+import RPC from './../common/RPC';
 
 const { Title } = Typography;
 
@@ -26,20 +24,16 @@ const Transaction = ({ match }) => {
         setTx(null);
         setError(null);
         try {
-            const response = await axios.get('/'+hash);
-            if (response.data.result.type === "tx") {
-                setTx(response.data.result.data);
-            } else {
-                setError("Transaction " + hash + " not found");
+            let params = {hash: hash};
+            const response = await RPC.request("token-tx", params);
+            if (response.type === "syntheticTokenDeposit") {
+                setTx(response.data);
+                console.log(response.data);
             }
         }
         catch(error) {
             setTx(null);
-            if (error.response) {
-                setError(error.response.data.error);
-            } else {
-                NotifyNetworkError();
-            }
+            setError("Transaction " + hash + " not found");
         }
     }
 
@@ -60,8 +54,20 @@ const Transaction = ({ match }) => {
                           Transaction Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Tx hash description"><RiQuestionLine /></Tooltip></IconContext.Provider>Hash</nobr></span>}>
-                                {tx.hash}
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
+                                {tx.txid}
+                            </Descriptions.Item>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>From</nobr></span>}>
+                                {tx.from}
+                            </Descriptions.Item>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="To description"><RiQuestionLine /></Tooltip></IconContext.Provider>To</nobr></span>}>
+                                {tx.to}
+                            </Descriptions.Item>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
+                                {tx.tokenURL}
+                            </Descriptions.Item>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Amount description"><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
+                                {tx.amount}
                             </Descriptions.Item>
                         </Descriptions>
                     </div>

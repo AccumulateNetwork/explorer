@@ -15,9 +15,7 @@ import {
     RiInformationLine, RiQuestionLine
 } from 'react-icons/ri';
 
-import axios from 'axios';
-
-import { NotifyNetworkError } from './../common/Notifications';
+import RPC from './../common/RPC';
 
 const { Title } = Typography;
 
@@ -31,20 +29,15 @@ const TokenAccount = ({ match }) => {
         setTokenAccount(null);
         setError(null);
         try {
-            const response = await axios.get('/'+url);
-            if (response.data.result.type === "tokenAccount") {
-                setTokenAccount(response.data.result.data);
-            } else {
-                setError("Token account " + url + " not found");
+            let params = {url: url};
+            const response = await RPC.request("token-account", params);
+            if (response.data === "tokenAccount") {
+                setTokenAccount(response.data);
             }
         }
         catch(error) {
             setTokenAccount(null);
-            if (error.response) {
-                setError(error.response.data.error);
-            } else {
-                NotifyNetworkError();
-            }
+            setError("Token account " + url + " not found");
         }
     }
 

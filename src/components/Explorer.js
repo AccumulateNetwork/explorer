@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
 import { Layout, Input, Form, message } from 'antd';
 
-import axios from 'axios';
-
 import Logo from './common/Logo';
 import ScrollToTop from './common/ScrollToTop';
 
 import { NotifyNetworkError } from './common/Notifications';
+
+import RPC from './common/RPC';
 
 import Blocks from './explorer/Blocks';
 import TokenAccount from './explorer/TokenAccount';
@@ -33,7 +33,8 @@ const Explorer = props => {
     if (isnum && Number.parseInt(value) >= 0) {
         redirect('/blocks/'+value);
     }
-    else */if (ishash) {
+    else */
+    if (ishash) {
         redirect('/tx/'+value);
     }
     else {
@@ -47,10 +48,11 @@ const Explorer = props => {
 
   const search = async (url) => {
         try {
-            const response = await axios.get('/' + url);
-            if (response.data.result && response.data.result.type) {
-                switch (response.data.result.type) {
-                  case "tokenAccount":
+            let params = {url: url};
+            const response = await RPC.request("get", params);
+            if (response.data && response.type) {
+                switch (response.type) {
+                  case "anonTokenAccount":
                     redirect('/accounts/'+url);
                     break;
                   default:
