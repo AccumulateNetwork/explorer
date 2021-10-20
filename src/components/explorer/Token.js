@@ -19,57 +19,49 @@ import RPC from './../common/RPC';
 
 const { Title } = Typography;
 
-const TokenAccount = ({ match }) => {
+const Token = ({ match }) => {
 
-    const [tokenAccount, setTokenAccount] = useState(null);
+    const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
-    const getTokenAccount = async (url) => {
-        document.title = "Token Account " + url + " | Accumulate Explorer";
-        setTokenAccount(null);
+    const getToken = async (url) => {
+        document.title = "Token " + url + " | Accumulate Explorer";
+        setToken(null);
         setError(null);
         try {
             let params = {url: url};
-            const response = await RPC.request("token-account", params);
-            if (response.data && response.type === "anonTokenAccount") {
-                setTokenAccount(response.data);
+            const response = await RPC.request("token", params);
+            if (response.data && response.type === "token") {
+                setToken(response.data);
             } else {
-                throw new Error("Token account not found"); 
+                throw new Error("Token not found"); 
             }
         }
         catch(error) {
-            setTokenAccount(null);
-            setError("Token account " + url + " not found");
+            setToken(null);
+            setError("Token " + url + " not found");
         }
     }
 
     useEffect(() => {
-        getTokenAccount(match.params.url);
+        getToken(match.params.url);
     }, [match.params.url]);
 
     return (
         <div>
-            <Title level={2}>Token Account</Title>
+            <Title level={2}>Token</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{match.params.url}</Title>
-                {tokenAccount ? (
+                {token ? (
                     <div>
                         <Title level={4}>
                           <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
                           </IconContext.Provider>
-                          Token Account Info
+                          Token Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
-                                {tokenAccount.url}
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
-                                <Link to={'/tokens/' + tokenAccount.tokenURL.replace("acc://", "")}>
-                                    {tokenAccount.tokenURL}
-                                </Link>
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                <span className="code">{tokenAccount.balance}</span>
+                                {token.url}
                             </Descriptions.Item>
                         </Descriptions>
                     </div>
@@ -85,7 +77,7 @@ const TokenAccount = ({ match }) => {
                                   <IconContext.Provider value={{ className: 'react-icons' }}>
                                     <RiInformationLine />
                                   </IconContext.Provider>
-                                  Token Account Info
+                                  Token Info
                                 </Title>
                                 <div className="skeleton-holder">
                                     <Skeleton active />
@@ -98,4 +90,4 @@ const TokenAccount = ({ match }) => {
     );
 }
 
-export default TokenAccount;
+export default Token;

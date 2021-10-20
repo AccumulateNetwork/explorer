@@ -11,6 +11,7 @@ import { NotifyNetworkError } from './common/Notifications';
 import RPC from './common/RPC';
 
 import Blocks from './explorer/Blocks';
+import Token from './explorer/Token';
 import TokenAccount from './explorer/TokenAccount';
 import Transaction from './explorer/Transaction';
 import Error404 from './explorer/Error404';
@@ -38,7 +39,7 @@ const Explorer = props => {
         redirect('/tx/'+value);
     }
     else {
-        search(value);
+        search(value.replace("acc://", ""));
     }
   };
 
@@ -55,6 +56,9 @@ const Explorer = props => {
                   case "anonTokenAccount":
                     redirect('/accounts/'+url);
                     break;
+                  case "token":
+                      redirect('/tokens/'+url);
+                      break;
                   default:
                     message.info('No results found');
                     break;
@@ -99,7 +103,8 @@ const Explorer = props => {
         <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
             <Switch>
                 <Route exact path="/" component={Blocks} />
-                <Route path="/accounts/:url" component={TokenAccount} />
+                <Route path="/accounts/:url+" component={TokenAccount} />
+                <Route path="/tokens/:url+" component={Token} />
                 <Route path="/tx/:hash" component={Transaction} />
                 <Route component={Error404} />
             </Switch>

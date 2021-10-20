@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography, Descriptions, Tooltip, Alert, Skeleton
 } from 'antd';
@@ -9,14 +11,14 @@ import {
     RiInformationLine, RiQuestionLine
 } from 'react-icons/ri';
 
-
 import RPC from './../common/RPC';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Transaction = ({ match }) => {
 
     const [tx, setTx] = useState(null);
+    const [isSynth, setIsSynth] = useState(false);
     const [error, setError] = useState(null);
 
     const getTx = async (hash) => {
@@ -26,9 +28,11 @@ const Transaction = ({ match }) => {
         try {
             let params = {hash: hash};
             const response = await RPC.request("token-tx", params);
-            if (response.type === "syntheticTokenDeposit") {
+            if (response.data && response.type === "syntheticTokenDeposit") {
                 setTx(response.data);
-                console.log(response.data);
+                setIsSynth(true);
+            } else {
+                throw new Error("Transaction not found"); 
             }
         }
         catch(error) {
@@ -58,13 +62,23 @@ const Transaction = ({ match }) => {
                                 {tx.txid}
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>From</nobr></span>}>
-                                {tx.from}
+                                {isSynth ?
+                                    <Text disabled>{tx.from}</Text>
+                                :
+                                    <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
+                                        {tx.from}
+                                    </Link>
+                                }
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="To description"><RiQuestionLine /></Tooltip></IconContext.Provider>To</nobr></span>}>
-                                {tx.to}
+                                <Link to={'/accounts/' + tx.to.replace("acc://", "")}>
+                                    {tx.to}
+                                </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
-                                {tx.tokenURL}
+                                <Link to={'/tokens/' + tx.tokenURL.replace("acc://", "")}>
+                                    {tx.tokenURL}
+                                </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Amount description"><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
                                 {tx.amount}
