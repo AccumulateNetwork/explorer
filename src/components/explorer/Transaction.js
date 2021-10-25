@@ -13,7 +13,7 @@ import {
 
 import RPC from './../common/RPC';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const Transaction = ({ match }) => {
 
