@@ -10,9 +10,8 @@ import {
 
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
-import axios from 'axios';
-
-import { NotifyNetworkError } from '../common/Notifications';
+import { NotifyNetworkError } from './Notifications';
+import RPC from './RPC';
 
 import { IconContext } from "react-icons";
 import {
@@ -22,6 +21,8 @@ import {
 const { Title, Text } = Typography;
 
 const Stats = props => {
+
+  const displayChange = false;
 
   const [tps, setTPS] = useState(-1);
   const [accounts, setAccounts] = useState(-1);
@@ -38,14 +39,14 @@ const Stats = props => {
 
   const getStats = async () => {
     try {
-        const response = await axios.get('/explorer/stats');
+        const response = await RPC.request("metrics");
 
-        setTPS(response.data.result.tps);
-        setAccounts(response.data.result.accounts);
-        setTxs(response.data.result.txs);
+        setTPS(response.data.tps);
+        setAccounts(response.data.tps);
+        setTxs(response.data.tps);
 
-        if (response.data.result.prevtps > 0) {
-            let change = Math.round(((response.data.result.tps/response.data.result.prevtps-1)*100) * 100) / 100;
+        if (response.data.prevtps && response.data.prevtps > 0) {
+            let change = Math.round(((response.data.tps/response.data.prevtps-1)*100) * 100) / 100;
             setTPSChange(change);
             if (change > 0) {
                 setTPSChangeClass("up");
@@ -56,8 +57,8 @@ const Stats = props => {
                 setTPSChangeIcon(<ArrowDownOutlined />);
             }
         }
-        if (response.data.result.prevaccounts > 0) {
-            let change = Math.round(((response.data.result.accounts/response.data.result.prevaccounts-1)*100) * 100) / 100;
+        if (response.data.prevaccounts && response.data.prevaccounts > 0) {
+            let change = Math.round(((response.data.accounts/response.data.prevaccounts-1)*100) * 100) / 100;
             setAccountsChange(change);
             if (change > 0) {
                 setAccountsChangeClass("up");
@@ -68,8 +69,8 @@ const Stats = props => {
                 setAccountsChangeIcon(<ArrowDownOutlined />);
             }
         }
-        if (response.data.result.prevTxs > 0) {
-            let change = Math.round(((response.data.result.txs/response.data.result.prevTxs-1)*100) * 100) / 100;
+        if (response.data.prevTxs && response.data.prevTxs > 0) {
+            let change = Math.round(((response.data.txs/response.data.prevTxs-1)*100) * 100) / 100;
             setTxsChange(change);
             if (change > 0) {
                 setTxsChangeClass("up");
@@ -104,7 +105,11 @@ const Stats = props => {
                 ) : 
                     <div>
                     <Title level={3} className="code">{tps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Title>
-                    <Text className={"change change-"+tpsChangeClass}>{tpsChangeIcon}{tpsChange} %</Text>
+                    {displayChange === true ? (
+                        <Text className={"change change-"+tpsChangeClass}>{tpsChangeIcon}{tpsChange} %</Text>
+                    ) :
+                    null
+                    }
                     </div>
                 }
             </Card>
@@ -121,7 +126,11 @@ const Stats = props => {
                 ) : 
                     <div>
                     <Title level={3} className="code">{accounts.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Title>
+                    {displayChange === true ? (
                     <Text className={"change change-"+accountsChangeClass}>{accountsChangeIcon}{accountsChange} %</Text>
+                    ) :
+                    null
+                    }
                     </div>
                 }
             </Card>
@@ -138,7 +147,11 @@ const Stats = props => {
                 ) : 
                     <div>
                     <Title level={3} className="code">{txs.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Title>
+                    {displayChange === true ? (
                     <Text className={"change change-"+txsChangeClass}>{txsChangeIcon}{txsChange} %</Text>
+                    ) :
+                    null
+                    }
                     </div>
                 }
             </Card>
