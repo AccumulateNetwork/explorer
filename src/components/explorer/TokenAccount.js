@@ -64,8 +64,8 @@ const TokenAccount = ({ match }) => {
                                 {tokenAccount.url}
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
-                                <Link to={'/tokens/' + tokenAccount.tokenURL.replace("acc://", "")}>
-                                    {tokenAccount.tokenURL}
+                                <Link to={'/tokens/' + tokenAccount.tokenUrl.replace("acc://", "")}>
+                                    {tokenAccount.tokenUrl}
                                 </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
