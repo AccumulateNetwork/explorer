@@ -250,3 +250,12 @@ h4.ant-typography .count {
 .ant-list div.ant-typography:last-child {
   margin-bottom: 0;
 }
+
+.inline-tip {
+  color: #389e0d;
+}
+
+.inline-tip .react-icons {
+  opacity: 1 !important;
+  color: #389e0d;
+}

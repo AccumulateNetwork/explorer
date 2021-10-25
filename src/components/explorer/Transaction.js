@@ -13,7 +13,7 @@ import {
 
 import RPC from './../common/RPC';
 
-const { Title } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const Transaction = ({ match }) => {
 
@@ -63,6 +63,11 @@ const Transaction = ({ match }) => {
                                 <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
                                     {tx.from}
                                 </Link>
+                                {tx.from === "acc://7117c50f04f1254d56b704dc05298912deeb25dbc1d26ef6/ACME" ? (
+                                    <Paragraph style={{ marginBottom: 0 }}><Text className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Text></Paragraph>
+                                ) : 
+                                    null
+                                }
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Amount description"><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
                                 {tx.amount}
