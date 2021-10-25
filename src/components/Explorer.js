@@ -86,7 +86,7 @@ const Explorer = props => {
           <div className="header-column-search">
             <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
                   <Search
-                      placeholder="Search by Accumulate URL"
+                      placeholder="Search by Accumulate URL or TXID"
                       size="large"
                       enterButton
                       onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
