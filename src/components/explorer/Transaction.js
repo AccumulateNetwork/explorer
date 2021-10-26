@@ -44,6 +44,22 @@ const Transaction = ({ match }) => {
         getTx(match.params.hash);
     }, [match.params.hash]);
 
+    function TxOutputs(props) {
+        const data = props.data;
+        const items = data.map((item, index) =>
+          <Paragraph key={{index}}>
+            <Link to={'/accounts/' + item.url.replace("acc://", "")}>
+                {item.url}
+            </Link>
+            <br />
+            {item.amount}
+          </Paragraph>
+      );
+      return (
+        <span className="code break-all">{items}</span>
+      );
+    }
+
     return (
         <div>
             <Title level={2}>Transaction</Title>
@@ -60,18 +76,22 @@ const Transaction = ({ match }) => {
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
                                 {tx.txid}
                             </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>From</nobr></span>}>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
                                 <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
                                     {tx.from}
                                 </Link>
                                 {tx.from === FaucetAddress ? (
-                                    <Paragraph style={{ marginBottom: 0 }}><Text className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Text></Paragraph>
+                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
                                 ) : 
                                     null
                                 }
                             </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Amount description"><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
-                                {tx.amount}
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Output(s) description"><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
+                                {tx.to && tx.to[0] ? (
+                                    <TxOutputs data={tx.to} />
+                                ) :
+                                    <Text disabled>N/A</Text>
+                                }
                             </Descriptions.Item>
                         </Descriptions>
                     </div>
