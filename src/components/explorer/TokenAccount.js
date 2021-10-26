@@ -23,11 +23,13 @@ const { Title, Paragraph } = Typography;
 const TokenAccount = ({ match }) => {
 
     const [tokenAccount, setTokenAccount] = useState(null);
+    const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
     const getTokenAccount = async (url) => {
         document.title = "Token Account " + url + " | Accumulate Explorer";
         setTokenAccount(null);
+        setToken(null);
         setError(null);
         try {
             let params = {url: url};
@@ -37,9 +39,18 @@ const TokenAccount = ({ match }) => {
             } else {
                 throw new Error("Token account not found"); 
             }
+
+            let params2 = {url: response.data.tokenUrl};
+            const response2 = await RPC.request("token", params2);
+            if (response2.data && response2.type === "token") {
+                setToken(response2.data);
+            } else {
+                throw new Error("Token not found"); 
+            }
         }
         catch(error) {
             setTokenAccount(null);
+            setToken(null);
             setError("Token account " + url + " not found");
         }
     }
@@ -52,7 +63,7 @@ const TokenAccount = ({ match }) => {
         <div>
             <Title level={2}>Token Account</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{match.params.url}</Title>
-                {tokenAccount ? (
+                {tokenAccount && token ? (
                     <div>
                         <Title level={4}>
                           <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -75,7 +86,7 @@ const TokenAccount = ({ match }) => {
                                 </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                <span className="code">{tokenAccount.balance}</span>
+                                <span className="code">{tokenAccount.balance/(10**token.token.precision)} {token.token.symbol}</span>
                             </Descriptions.Item>
                         </Descriptions>
                     </div>
