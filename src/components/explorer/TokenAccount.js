@@ -16,6 +16,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
+import FaucetAddress from './../common/Faucet';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -62,7 +63,7 @@ const TokenAccount = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account URL</nobr></span>}>
                                 {tokenAccount.url}
-                                {tokenAccount.url === "acc://7117c50f04f1254d56b704dc05298912deeb25dbc1d26ef6/ACME" ? (
+                                {tokenAccount.url === FaucetAddress ? (
                                     <Paragraph style={{ marginBottom: 0 }}><Text className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Text></Paragraph>
                                 ) : 
                                     null

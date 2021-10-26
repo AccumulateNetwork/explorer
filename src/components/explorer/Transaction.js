@@ -12,6 +12,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
+import FaucetAddress from './../common/Faucet';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -27,7 +28,7 @@ const Transaction = ({ match }) => {
         try {
             let params = {hash: hash};
             const response = await RPC.request("token-tx", params);
-            if (response.data && response.type === "tokenTx") {
+            if (response.data && (response.type === "tokenTx" || response.type === "syntheticTokenDeposit")) {
                 setTx(response.data);
             } else {
                 throw new Error("Transaction not found"); 
@@ -63,7 +64,7 @@ const Transaction = ({ match }) => {
                                 <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
                                     {tx.from}
                                 </Link>
-                                {tx.from === "acc://7117c50f04f1254d56b704dc05298912deeb25dbc1d26ef6/ACME" ? (
+                                {tx.from === FaucetAddress ? (
                                     <Paragraph style={{ marginBottom: 0 }}><Text className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Text></Paragraph>
                                 ) : 
                                     null
