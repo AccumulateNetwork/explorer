@@ -223,7 +223,7 @@ h4.ant-typography .count {
   font-size: 13px;
 }
 
-.ant-table .ant-table-row .code {
+.ant-table .ant-table-row .code, .ant-descriptions .code {
   font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
 }
 

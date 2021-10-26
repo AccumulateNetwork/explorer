@@ -72,15 +72,15 @@ const Transaction = ({ match }) => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
+            {item.amount/(10**props.token.token.precision)} {props.token.token.symbol}
+            <Text type="secondary"> → </Text>
             <Link to={'/accounts/' + item.url.replace("acc://", "")}>
                 {item.url}
             </Link>
-            <br />
-            {item.amount/(10**props.token.token.precision)} {props.token.token.symbol}
           </Paragraph>
       );
       return (
-        <span className="code break-all">{items}</span>
+        <span className="break-all">{items}</span>
       );
     }
 
@@ -98,7 +98,7 @@ const Transaction = ({ match }) => {
                         </Title>
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                                {tx.txid}
+                                <span className="code">{tx.txid}</span>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
                                 <Link to={'/accounts/' + tx.from.replace("acc://", "")}>

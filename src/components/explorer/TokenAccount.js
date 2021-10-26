@@ -86,7 +86,7 @@ const TokenAccount = ({ match }) => {
                                 </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                <span className="code">{tokenAccount.balance/(10**token.token.precision)} {token.token.symbol}</span>
+                                {tokenAccount.balance/(10**token.token.precision)} {token.token.symbol}
                             </Descriptions.Item>
                         </Descriptions>
                     </div>
