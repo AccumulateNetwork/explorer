@@ -19,6 +19,7 @@ const { Title, Text, Paragraph } = Typography;
 const Transaction = ({ match }) => {
 
     const [tx, setTx] = useState(null);
+    const [isSynth, setIsSynth] = useState(false);
     const [tokenAccount, setTokenAccount] = useState(null);
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
@@ -26,6 +27,7 @@ const Transaction = ({ match }) => {
     const getTx = async (hash) => {
         document.title = "Transaction " + hash + " | Accumulate Explorer";
         setTx(null);
+        setIsSynth(false);
         setTokenAccount(null);
         setToken(null);
         setError(null);
@@ -34,6 +36,12 @@ const Transaction = ({ match }) => {
             let params = {hash: hash};
             const response = await RPC.request("token-tx", params);
             if (response.data && (response.type === "tokenTx" || response.type === "syntheticTokenDeposit")) {
+                if (response.type === "syntheticTokenDeposit") {
+                    setIsSynth(true);
+                    let to = {url: response.data.to, amount: response.data.amount, txid: response.data.txid};
+                    response.data.to = [];
+                    response.data.to.push(to);
+                }
                 setTx(response.data);
             } else {
                 throw new Error("Transaction not found"); 
@@ -58,6 +66,7 @@ const Transaction = ({ match }) => {
         }
         catch(error) {
             setTx(null);
+            setIsSynth(false);
             setTokenAccount(null);
             setToken(null);
             setError("Transaction " + hash + " not found");
@@ -98,7 +107,15 @@ const Transaction = ({ match }) => {
                         </Title>
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                                <span className="code">{tx.txid}</span>
+                                {isSynth ? (
+                                    <div>
+                                    <span className="code">{match.params.hash}</span>
+                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Synthetic token deposit</Paragraph>
+                                    <Link to={'/tx/' + tx.txid} className="code">{tx.txid}</Link>
+                                    </div>
+                                ) : 
+                                    <span className="code">{tx.txid}</span>
+                                }
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
                                 <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
@@ -111,7 +128,7 @@ const Transaction = ({ match }) => {
                                 }
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Output(s) description"><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
-                                {tx.to && tx.to[0] ? (
+                                {tx.to && Array.isArray(tx.to) && tx.to[0] ? (
                                     <TxOutputs tx={tx.to} token={token} />
                                 ) :
                                     <Text disabled>N/A</Text>
