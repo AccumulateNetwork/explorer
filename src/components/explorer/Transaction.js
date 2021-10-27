@@ -112,6 +112,7 @@ const Transaction = ({ match }) => {
                                     <span className="code">{match.params.hash}</span>
                                     <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Synthetic token deposit</Paragraph>
                                     <Link to={'/tx/' + tx.txid} className="code">{tx.txid}</Link>
+                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Parent txid</Paragraph>
                                     </div>
                                 ) : 
                                     <span className="code">{tx.txid}</span>
