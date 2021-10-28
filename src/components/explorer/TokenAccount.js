@@ -7,8 +7,12 @@ import {
   Descriptions,
   Skeleton,
   Alert,
-  Tooltip
+  Tooltip,
+  Table,
+  Tag
 } from 'antd';
+
+import { NotifyNetworkError } from './../common/Notifications';
 
 import { IconContext } from "react-icons";
 import {
@@ -18,18 +22,22 @@ import {
 import RPC from './../common/RPC';
 import FaucetAddress from './../common/Faucet';
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const TokenAccount = ({ match }) => {
 
     const [tokenAccount, setTokenAccount] = useState(null);
     const [token, setToken] = useState(null);
+    const [txs, setTxs] = useState(null);
     const [error, setError] = useState(null);
-
+    const [tableIsLoading, setTableIsLoading] = useState(true);
+    const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+  
     const getTokenAccount = async (url) => {
         document.title = "Token Account " + url + " | Accumulate Explorer";
         setTokenAccount(null);
         setToken(null);
+        setTxs(null);
         setError(null);
         try {
             let params = {url: url};
@@ -51,13 +59,110 @@ const TokenAccount = ({ match }) => {
         catch(error) {
             setTokenAccount(null);
             setToken(null);
+            setTxs(null);
             setError("Token account " + url + " not found");
         }
     }
 
+    const getTxs = async (params = pagination) => {
+        setTableIsLoading(true);
+    
+        let start = 0;
+        let limit = 10;
+        let showTotalStart = 1;
+        let showTotalFinish = 10;
+    
+        if (params) {
+            start = (params.current-1)*params.pageSize;
+            limit = params.pageSize;
+            showTotalStart = (params.current-1)*params.pageSize+1;
+            showTotalFinish = params.current*params.pageSize;
+        }
+    
+        try {
+          const response = await RPC.request("token-account-history", { url: tokenAccount.url, start: start, limit: limit } );
+          if (response.data && response.type === "tokenAccountHistory") {
+            setTxs(response.data);
+            setPagination({...pagination, current: (response.start/response.limit)+1, pageSize: response.limit, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+        } else {
+            throw new Error("Token account not found"); 
+          }
+        }
+        catch(error) {
+            NotifyNetworkError();
+        }
+        setTableIsLoading(false);
+    }
+
+    const columns = [
+        {
+            title: 'Transaction ID',
+            dataIndex: 'data',
+            className: 'code',
+            render: (data) => (
+                <Link to={'/tx/' + data.txid}>
+                    {data.txid}
+                </Link>
+                
+            )
+        },
+        {
+            title: 'Type',
+            dataIndex: 'type',
+            render: (type) => (
+                <Tag color="green">
+                  {type}
+                </Tag>
+            )
+        },
+        {
+            title: 'From',
+            dataIndex: 'data',
+            render: (data) => {
+                if (data.from === tokenAccount.url) {
+                    return (
+                        <Text type="secondary">{data.from}</Text>
+                    )
+                } else {
+                    return (
+                        <Link to={'/accounts/' + data.from.replace("acc://", "")}>{data.from}</Link>
+                    )
+                }
+            }
+        },
+        {
+            title: 'To',
+            dataIndex: 'data',
+            render: (data) => {
+                if (data.to === tokenAccount.url) {
+                    return (
+                        <Text type="secondary">{data.to}</Text>
+                    )
+                } else {
+                    return (
+                        <Link to={'/accounts/' + data.to.replace("acc://", "")}>{data.to}</Link>
+                    )
+                }
+            }
+        },
+        {
+            title: 'Amount',
+            dataIndex: 'data',
+            render: (data) => (
+                <Text>{data.amount/(10**token.token.precision)} {token.token.symbol}</Text>
+            )
+        }
+      ];
+
     useEffect(() => {
         getTokenAccount(match.params.url);
     }, [match.params.url]);
+
+    useEffect(() => {
+        if (tokenAccount) {
+            getTxs();
+        }
+    }, [tokenAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
@@ -89,6 +194,23 @@ const TokenAccount = ({ match }) => {
                                 {tokenAccount.balance/(10**token.token.precision)} {token.token.symbol}
                             </Descriptions.Item>
                         </Descriptions>
+                        <Title level={4}>
+                          <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiInformationLine />
+                          </IconContext.Provider>
+                          Transactions
+                        </Title>
+
+                        <Table
+                            dataSource={txs}
+                            columns={columns}
+                            pagination={pagination}
+                            rowKey="txId"
+                            loading={tableIsLoading}
+                            onChange={getTxs}
+                            scroll={{ x: 'max-content' }}
+                        />
+
                     </div>
                 ) :
                     <div>
@@ -103,6 +225,15 @@ const TokenAccount = ({ match }) => {
                                     <RiInformationLine />
                                   </IconContext.Provider>
                                   Token Account Info
+                                </Title>
+                                <div className="skeleton-holder">
+                                    <Skeleton active />
+                                </div>
+                                <Title level={4}>
+                                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                                    <RiInformationLine />
+                                  </IconContext.Provider>
+                                  Transactions
                                 </Title>
                                 <div className="skeleton-holder">
                                     <Skeleton active />
