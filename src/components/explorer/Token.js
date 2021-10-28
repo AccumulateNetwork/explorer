@@ -30,8 +30,7 @@ const Token = ({ match }) => {
             let params = {url: url};
             const response = await RPC.request("token", params);
             if (response.data && response.type === "token") {
-                // need to change to response.data once API fixed
-                setToken(response.data.token);
+                setToken(response.data);
             } else {
                 throw new Error("Token not found"); 
             }

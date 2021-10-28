@@ -15,6 +15,7 @@ import Token from './explorer/Token';
 import TokenAccount from './explorer/TokenAccount';
 import Transaction from './explorer/Transaction';
 import Error404 from './explorer/Error404';
+import Faucet from './explorer/Faucet';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
@@ -103,6 +104,7 @@ const Explorer = props => {
         <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
             <Switch>
                 <Route exact path="/" component={Blocks} />
+                <Route exact path="/faucet" component={Faucet} />
                 <Route path="/accounts/:url+" component={TokenAccount} />
                 <Route path="/tokens/:url+" component={Token} />
                 <Route path="/tx/:hash" component={Transaction} />

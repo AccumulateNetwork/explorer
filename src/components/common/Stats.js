@@ -43,13 +43,13 @@ const Stats = props => {
                 <span>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiLineChartFill /></IconContext.Provider>
                     <br />
-                    TPS <small>/ 24h</small>
+                    TPS <small>/ 1h</small>
                 </span>
                 {tps === -1 ? (
                     <Skeleton active paragraph={false} />
                 ) : 
                     <div>
-                    <Title level={3} className="code">{tps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Title>
+                    <Title level={3} className="code">{parseFloat(tps).toFixed(2)}</Title>
                     </div>
                 }
             </Card>
