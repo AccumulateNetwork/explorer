@@ -3,39 +3,23 @@ import {
     Row,
     Col,
     Card,
-    Carousel,
     Skeleton,
     Typography
 } from 'antd';
-
-import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 
 import { NotifyNetworkError } from './Notifications';
 import RPC from './RPC';
 
 import { IconContext } from "react-icons";
 import {
-    RiExchangeLine, RiLineChartFill, RiAccountCircleLine
+    RiLineChartFill
 } from 'react-icons/ri';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const Stats = props => {
 
-  const displayChange = false;
-
   const [tps, setTPS] = useState(-1);
-  const [accounts, setAccounts] = useState(-1);
-  const [txs, setTxs] = useState(-1);
-  const [tpsChange, setTPSChange] = useState(0);
-  const [accountsChange, setAccountsChange] = useState(0);
-  const [txsChange, setTxsChange] = useState(0);
-  const [tpsChangeClass, setTPSChangeClass] = useState("0");
-  const [accountsChangeClass, setAccountsChangeClass] = useState("0");
-  const [txsChangeClass, setTxsChangeClass] = useState("0");
-  const [tpsChangeIcon, setTPSChangeIcon] = useState(null);
-  const [accountsChangeIcon, setAccountsChangeIcon] = useState(null);
-  const [txsChangeIcon, setTxsChangeIcon] = useState(null);
 
   const getStats = async () => {
     try {
@@ -66,11 +50,6 @@ const Stats = props => {
                 ) : 
                     <div>
                     <Title level={3} className="code">{tps.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</Title>
-                    {displayChange === true ? (
-                        <Text className={"change change-"+tpsChangeClass}>{tpsChangeIcon}{tpsChange} %</Text>
-                    ) :
-                    null
-                    }
                     </div>
                 }
             </Card>
