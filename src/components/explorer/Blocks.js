@@ -21,7 +21,7 @@ const Blocks = () => {
       </div>
 
       <Paragraph>
-        <Alert message="This is the explorer of the Testnet for Accumulate Network" type="info" showIcon />
+        <Alert message="This explorer is an analytics tool that allows you to search the Accumulate blockchain for information about addresses, and transactions, and other activity." type="info" showIcon />
       </Paragraph>
 
       <Paragraph>
