@@ -21,11 +21,11 @@ const Blocks = () => {
       </div>
 
       <Paragraph>
-        <Alert message="This is the explorer of Testnet Accumulate Network" type="info" showIcon />
+        <Alert message="This is the explorer of the Testnet for Accumulate Network" type="info" showIcon />
       </Paragraph>
 
       <Paragraph>
-        Use <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/token/ACME'}><strong>ACME</strong></Link> tokens.
+        Use the <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/token/ACME'}><strong>ACME</strong></Link> tokens.
       </Paragraph>
 
     </div>
