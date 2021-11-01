@@ -1,116 +1,128 @@
 import React, { useState } from 'react';
-import { Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
-import { Row, Col, Layout, Input, Typography, message, Form, Divider, Alert, Skeleton, Descriptions } from 'antd';
-
-import axios from 'axios';
+import { Layout, Input, Form, message } from 'antd';
 
 import Logo from './common/Logo';
 import ScrollToTop from './common/ScrollToTop';
-import History from './common/History';
 
 import { NotifyNetworkError } from './common/Notifications';
 
+import RPC from './common/RPC';
+
+import ADI from './explorer/ADI';
+import Blocks from './explorer/Blocks';
+import Token from './explorer/Token';
+import TokenAccount from './explorer/TokenAccount';
+import Transaction from './explorer/Transaction';
+import Error404 from './explorer/Error404';
+import Faucet from './explorer/Faucet';
+
 const { Search } = Input;
-const { Title } = Typography;
+const { Header, Content } = Layout;
 
 const Explorer = props => {
 
   const [searchIsLoading, setSearchIsLoading] = useState(false);
-  const [object, setObject] = useState(null);
-  const [url, setURL] = useState(null);
-  const [type, setType] = useState(null);
   const [searchForm] = Form.useForm();
 
-  function RenderObject(props) {
-    const data = props.data;
-    const rows = Object.keys(data).map(function(key) {
-        return <Descriptions.Item label={key}>{data[key]}</Descriptions.Item>
-    });
-    
-    return (
-        <Descriptions bordered column={1} size="middle" style={{ marginTop: 30 }}>
-            {rows}
-        </Descriptions>
-    );
-  }
-
   const handleSearch = (value) => {
-    setURL(value);
-    setType(null);
-    setObject(null);
     setSearchIsLoading(true);
-    search(value);
+    var ishash = /\b[0-9A-Fa-f]{64}\b/.test(value);
+    
+    // remove search by height until v0.3
+    /*
+    var isnum = /^\d+$/.test(value);
+    if (isnum && Number.parseInt(value) >= 0) {
+        redirect('/blocks/'+value);
+    }
+    else */
+    if (ishash) {
+        redirect('/tx/'+value);
+    }
+    else {
+        search(value.replace("acc://", ""));
+    }
   };
+
+  const redirect = (url) => {
+    window.location.href = url;
+  }
 
   const search = async (url) => {
         try {
-            const response = await axios.get('/' + url);
-            setObject(response.data.result.data);
-            setType(response.data.result.type);
-        }
-        catch(error) {
-            if (error.response) {
-                if (error.response.data.error) {
-                    message.error(error.response.data.error);
-                } else {
-                    NotifyNetworkError();
+            let params = {url: url};
+            const response = await RPC.request("get", params);
+            if (response.data && response.type) {
+                switch (response.type) {
+                  case "anonTokenAccount":
+                    redirect('/account/'+url);
+                    break;
+                  case "tokenAccount":
+                    redirect('/account/'+url);
+                    break;
+                  case "adi":
+                    redirect('/adi/'+url);
+                    break;
+                  case "token":
+                    redirect('/token/'+url);
+                    break;
+                  default:
+                    message.info('No results found');
+                    break;
                 }
             } else {
-                NotifyNetworkError();
+                message.info('No results found');
             }
+        }
+        catch(error) {
+            NotifyNetworkError();
         }
         setSearchIsLoading(false);
   }
     
   return (
-    <Router history={History}>
+    <Router>
     <ScrollToTop />
       <Layout>
-        <Row>
-          <Col xs={1} sm={1} md={3} lg={6} xl={6}></Col>
-          <Col xs={22} sm={22} md={18} lg={12} xl={12} align="center" style={{ marginTop: 60, marginBottom: 40 }}>
-            <Logo />
-            <Title level={2}>Accumulate Explorer</Title>
-            <Form form={searchForm} initialValues={{ search: '' }}>
-            <Search
-                placeholder="Accumulate URL or transaction hash"
-                size="large"
-                enterButton
-                onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
-                loading={searchIsLoading}
-                spellCheck={false}
-                autoComplete="off"
-                disabled={searchIsLoading}
-                allowClear={true}
-                style={{ marginTop: 20 }}
-            />
-            </Form>
-            {url ? (
-                <div style={{ marginTop: 40 }}>
-                    <Divider />
-                    <Title level={2} style={{ marginBottom: 0 }}>{url}</Title>
-                    <Title level={5} style={{ marginTop: 5 }} type="secondary">{type}</Title>
-                    {object ? (
-                        <RenderObject data={object} />
-                    ) : 
-                        <div>
-                            {searchIsLoading ? (
-                                <Skeleton active />
-                            ) :
-                                <Alert showIcon message="Object not found" type="error" style={{ marginTop: 20 }} />
-                            }
-                        </div>
-                    }
-                </div>
-            ) : null
-            }
-          </Col>
-          <Col xs={1} sm={1} md={3} lg={6} xl={6}></Col>
-        </Row>
+        <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
+          <div className="header-column-logo">
+            <Link to="/">
+              <Logo />
+            </Link>
+          </div>
+          <div className="header-column-search">
+            <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
+                  <Search
+                      placeholder="Search by Accumulate URL or TXID"
+                      size="large"
+                      enterButton
+                      onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
+                      loading={searchIsLoading}
+                      spellCheck={false}
+                      autoComplete="off"
+                      disabled={searchIsLoading}
+                      allowClear={true}
+                  />
+            </Form>             
+          </div>
+        </Header>
+
+        <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
+            <Switch>
+                <Route exact path="/" component={Blocks} />
+                <Route exact path="/faucet" component={Faucet} />
+                <Route path="/adi/:url" component={ADI} />
+                <Route path="/account/:url+" component={TokenAccount} />
+                <Route path="/token/:url+" component={Token} />
+                <Route path="/tx/:hash" component={Transaction} />
+                <Route component={Error404} />
+            </Switch>
+        </Content>
+
       </Layout>
       <div align="center" style={{ marginTop: 30, paddingBottom: 20 }}>
-          <p>This is a lite version of Accumulate Explorer.<br />Feedback: <a href="mailto:dev@accumulatenetwork.io">dev@accumulatenetwork.io</a></p>
+          <p>&copy; Accumulate Network Explorer<br /><a href="mailto:dev@accumulatenetwork.io">dev@accumulatenetwork.io</a></p>
       </div>
     </Router>
   );
