@@ -251,7 +251,7 @@ h4.ant-typography .count {
   margin-bottom: 5px !important;
 }
 
-.ant-list div.ant-typography:last-child {
+.ant-list div.ant-typography:last-child, .ant-table-cell div.ant-typography:last-child {
   margin-bottom: 0;
 }
 

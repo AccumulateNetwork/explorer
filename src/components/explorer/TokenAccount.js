@@ -82,6 +82,13 @@ const TokenAccount = ({ match }) => {
         try {
           const response = await RPC.request("token-account-history", { url: tokenAccount.url, start: start, limit: limit } );
           if (response.data && response.type === "tokenAccountHistory") {
+            response.data.forEach((tx) => {
+                if (tx.type === "syntheticTokenDeposit") {
+                    let to = {url: tx.data.to, amount: tx.data.amount, txid: tx.data.txid};
+                    tx.data.to = [];
+                    tx.data.to.push(to);
+                }
+            });
             setTxs(response.data);
             setPagination({...pagination, current: (response.start/response.limit)+1, pageSize: response.limit, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
         } else {
@@ -92,6 +99,36 @@ const TokenAccount = ({ match }) => {
             NotifyNetworkError();
         }
         setTableIsLoading(false);
+    }
+
+    function TxOutputs(props) {
+        const data = props.tx;
+        const items = data.map((item, index) =>
+          <Paragraph key={{index}}>
+            {item.url === tokenAccount.url ? (
+                <Text type="secondary">{item.url}</Text>
+            ) :
+                <Link to={'/accounts/' + item.url.replace("acc://", "")}>
+                    {item.url}
+                </Link>
+            }
+          </Paragraph>
+      );
+      return (
+        <span className="break-all">{items}</span>
+      );
+    }
+
+    function TxAmounts(props) {
+        const data = props.tx;
+        const items = data.map((item, index) =>
+          <Paragraph key={{index}}>
+            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.0+$/,'')} {props.token.symbol}
+          </Paragraph>
+      );
+      return (
+        <span>{items}</span>
+      );
     }
 
     const columns = [
@@ -134,13 +171,9 @@ const TokenAccount = ({ match }) => {
             title: 'To',
             dataIndex: 'data',
             render: (data) => {
-                if (data.to === tokenAccount.url) {
+                if (data.to && Array.isArray(data.to) && data.to[0]) {
                     return (
-                        <Text type="secondary">{data.to}</Text>
-                    )
-                } else {
-                    return (
-                        <Link to={'/accounts/' + data.to.replace("acc://", "")}>{data.to}</Link>
+                        <TxOutputs tx={data.to} token={token} />
                     )
                 }
             }
@@ -148,9 +181,13 @@ const TokenAccount = ({ match }) => {
         {
             title: 'Amount',
             dataIndex: 'data',
-            render: (data) => (
-                <Text>{data.amount/(10**token.precision)} {token.symbol}</Text>
-            )
+            render: (data) => {
+                if (data.to && Array.isArray(data.to) && data.to[0]) {
+                    return (
+                        <TxAmounts tx={data.to} token={token} />
+                    )
+                }
+            }
         }
       ];
 
@@ -185,13 +222,15 @@ const TokenAccount = ({ match }) => {
                                     null
                                 }
                             </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
+                                {token.symbol}
+                                <br />
                                 <Link to={'/tokens/' + tokenAccount.tokenUrl.replace("acc://", "")}>
                                     {tokenAccount.tokenUrl}
                                 </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision)} {token.symbol}
+                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.0+$/,'')} {token.symbol}
                             </Descriptions.Item>
                         </Descriptions>
                         <Title level={4}>
