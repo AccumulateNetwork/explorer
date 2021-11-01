@@ -42,7 +42,7 @@ const TokenAccount = ({ match }) => {
         try {
             let params = {url: url};
             const response = await RPC.request("token-account", params);
-            if (response.data && response.type === "anonTokenAccount") {
+            if (response.data && (response.type === "anonTokenAccount" || response.type === "tokenAccount")) {
                 setTokenAccount(response.data);
             } else {
                 throw new Error("Token account not found"); 

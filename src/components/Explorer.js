@@ -57,9 +57,12 @@ const Explorer = props => {
                   case "anonTokenAccount":
                     redirect('/accounts/'+url);
                     break;
+                  case "tokenAccount":
+                    redirect('/accounts/'+url);
+                    break;
                   case "token":
-                      redirect('/tokens/'+url);
-                      break;
+                    redirect('/tokens/'+url);
+                    break;
                   default:
                     message.info('No results found');
                     break;
