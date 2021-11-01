@@ -108,7 +108,7 @@ const TokenAccount = ({ match }) => {
             {item.url === tokenAccount.url ? (
                 <Text type="secondary">{item.url}</Text>
             ) :
-                <Link to={'/accounts/' + item.url.replace("acc://", "")}>
+                <Link to={'/account/' + item.url.replace("acc://", "")}>
                     {item.url}
                 </Link>
             }
@@ -162,7 +162,7 @@ const TokenAccount = ({ match }) => {
                     )
                 } else {
                     return (
-                        <Link to={'/accounts/' + data.from.replace("acc://", "")}>{data.from}</Link>
+                        <Link to={'/account/' + data.from.replace("acc://", "")}>{data.from}</Link>
                     )
                 }
             }
@@ -225,7 +225,7 @@ const TokenAccount = ({ match }) => {
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
                                 <br />
-                                <Link to={'/tokens/' + tokenAccount.tokenUrl.replace("acc://", "")}>
+                                <Link to={'/token/' + tokenAccount.tokenUrl.replace("acc://", "")}>
                                     {tokenAccount.tokenUrl}
                                 </Link>
                             </Descriptions.Item>

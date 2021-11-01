@@ -25,7 +25,7 @@ const Blocks = () => {
       </Paragraph>
 
       <Paragraph>
-        Use <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/tokens/ACME'}><strong>ACME</strong></Link> tokens.
+        Use <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/token/ACME'}><strong>ACME</strong></Link> tokens.
       </Paragraph>
 
     </div>

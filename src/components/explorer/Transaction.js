@@ -83,7 +83,7 @@ const Transaction = ({ match }) => {
           <Paragraph key={{index}}>
             {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
             <Text type="secondary"> → </Text>
-            <Link to={'/accounts/' + item.url.replace("acc://", "")}>
+            <Link to={'/account/' + item.url.replace("acc://", "")}>
                 {item.url}
             </Link>
           </Paragraph>
@@ -119,7 +119,7 @@ const Transaction = ({ match }) => {
                                 }
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
-                                <Link to={'/accounts/' + tx.from.replace("acc://", "")}>
+                                <Link to={'/account/' + tx.from.replace("acc://", "")}>
                                     {tx.from}
                                 </Link>
                                 {tx.from === FaucetAddress ? (

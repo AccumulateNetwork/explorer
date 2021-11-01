@@ -112,7 +112,7 @@ const Explorer = props => {
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
-                <Route path="/account/:url" component={ADI} />
+                <Route path="/adi/:url" component={ADI} />
                 <Route path="/account/:url+" component={TokenAccount} />
                 <Route path="/token/:url+" component={Token} />
                 <Route path="/tx/:hash" component={Transaction} />
