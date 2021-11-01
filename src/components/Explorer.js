@@ -10,6 +10,7 @@ import { NotifyNetworkError } from './common/Notifications';
 
 import RPC from './common/RPC';
 
+import ADI from './explorer/ADI';
 import Blocks from './explorer/Blocks';
 import Token from './explorer/Token';
 import TokenAccount from './explorer/TokenAccount';
@@ -55,13 +56,16 @@ const Explorer = props => {
             if (response.data && response.type) {
                 switch (response.type) {
                   case "anonTokenAccount":
-                    redirect('/accounts/'+url);
+                    redirect('/account/'+url);
                     break;
                   case "tokenAccount":
-                    redirect('/accounts/'+url);
+                    redirect('/account/'+url);
+                    break;
+                  case "adi":
+                    redirect('/adi/'+url);
                     break;
                   case "token":
-                    redirect('/tokens/'+url);
+                    redirect('/token/'+url);
                     break;
                   default:
                     message.info('No results found');
@@ -108,8 +112,9 @@ const Explorer = props => {
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
-                <Route path="/accounts/:url+" component={TokenAccount} />
-                <Route path="/tokens/:url+" component={Token} />
+                <Route path="/account/:url+" component={TokenAccount} />
+                <Route path="/adi/:url+" component={ADI} />
+                <Route path="/token/:url+" component={Token} />
                 <Route path="/tx/:hash" component={Transaction} />
                 <Route component={Error404} />
             </Switch>
