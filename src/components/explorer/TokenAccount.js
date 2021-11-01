@@ -123,7 +123,7 @@ const TokenAccount = ({ match }) => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
-            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.0+$/,'')} {props.token.symbol}
+            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
           </Paragraph>
       );
       return (
@@ -230,7 +230,7 @@ const TokenAccount = ({ match }) => {
                                 </Link>
                             </Descriptions.Item>
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.0+$/,'')} {token.symbol}
+                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                             </Descriptions.Item>
                         </Descriptions>
                         <Title level={4}>
