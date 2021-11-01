@@ -81,7 +81,7 @@ const Transaction = ({ match }) => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
-            {item.amount/(10**props.token.precision)} {props.token.symbol}
+            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision)} {props.token.symbol}
             <Text type="secondary"> → </Text>
             <Link to={'/accounts/' + item.url.replace("acc://", "")}>
                 {item.url}
