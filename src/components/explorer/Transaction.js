@@ -107,18 +107,22 @@ const Transaction = ({ match }) => {
                         </Title>
                         <Descriptions bordered column={1} size="middle">
 
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                                {isSynth ? (
-                                    <div>
-                                    <span className="code">{match.params.hash}</span>
-                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Synthetic token deposit</Paragraph>
-                                    <Link to={'/tx/' + tx.txid} className="code">{tx.txid}</Link>
-                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Parent txid</Paragraph>
-                                    </div>
-                                ) : 
-                                    <span className="code">{tx.txid}</span>
-                                }
-                            </Descriptions.Item>
+                            {tx.txid ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
+                                    {isSynth ? (
+                                        <div>
+                                        <span className="code">{match.params.hash}</span>
+                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Synthetic token deposit</Paragraph>
+                                        <Link to={'/tx/' + tx.txid} className="code">{tx.txid}</Link>
+                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Parent txid</Paragraph>
+                                        </div>
+                                    ) : 
+                                        <span className="code">{tx.txid}</span>
+                                    }
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
 
                             {tx.from ? (
                                 <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>

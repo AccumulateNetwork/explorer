@@ -58,12 +58,23 @@ const ADI = ({ match }) => {
                           ADI Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="ADI URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>ADI URL</nobr></span>}>
-                                {adi.url}
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key description"><RiQuestionLine /></Tooltip></IconContext.Provider>Public key</nobr></span>}>
-                                {adi.publicKey}
-                            </Descriptions.Item>
+
+                            {adi.url ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="ADI URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>ADI URL</nobr></span>}>
+                                    {adi.url}
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
+                            {adi.publicKey ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key description"><RiQuestionLine /></Tooltip></IconContext.Provider>Public key</nobr></span>}>
+                                    {adi.publicKey}
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
                         </Descriptions>
                     </div>
                 ) :

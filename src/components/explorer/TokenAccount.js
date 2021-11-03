@@ -136,21 +136,38 @@ const TokenAccount = ({ match }) => {
             title: 'Transaction ID',
             dataIndex: 'data',
             className: 'code',
-            render: (data) => (
-                <Link to={'/tx/' + data.txid}>
-                    {data.txid}
-                </Link>
-                
-            )
+            render: (data) => {
+                if (data.txid) {
+                    return (
+                        <Link to={'/tx/' + data.txid}>
+                            {data.txid}
+                        </Link>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
+            }
         },
         {
             title: 'Type',
             dataIndex: 'type',
-            render: (type) => (
-                <Tag color="green">
-                  {type}
-                </Tag>
-            )
+            render: (type) => {
+                if (type) {
+                    return (
+                        <Tag color="green">
+                            {type}
+                        </Tag>
+                    )
+                } else {
+                    return (
+                        <Tag>
+                            N/A
+                        </Tag>
+                    )
+                }
+            }
         },
         {
             title: 'From',
@@ -232,25 +249,43 @@ const TokenAccount = ({ match }) => {
                           Token Account Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account URL</nobr></span>}>
-                                {tokenAccount.url}
-                                {tokenAccount.url === FaucetAddress ? (
-                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
-                                ) : 
-                                    null
-                                }
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
-                                {token.symbol}
-                                <br />
-                                <Link to={'/token/' + tokenAccount.tokenUrl.replace("acc://", "")}>
-                                    {tokenAccount.tokenUrl}
-                                </Link>
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
-                            </Descriptions.Item>
+
+                            {tokenAccount.url ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account URL</nobr></span>}>
+                                    {tokenAccount.url}
+                                    {tokenAccount.url === FaucetAddress ? (
+                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
+                                    ) : 
+                                        null
+                                    }
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
+                            {(tokenAccount.tokenUrl && token.symbol) ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
+                                    {token.symbol}
+                                    <br />
+                                    <Link to={'/token/' + tokenAccount.tokenUrl.replace("acc://", "")}>
+                                        {tokenAccount.tokenUrl}
+                                    </Link>
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
+                            {(tokenAccount.balance && token.precision && token.symbol) ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
+                                    {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
+
                         </Descriptions>
+                        
                         <Title level={4}>
                           <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
