@@ -106,6 +106,7 @@ const Transaction = ({ match }) => {
                           Transaction Info
                         </Title>
                         <Descriptions bordered column={1} size="middle">
+
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
                                 {isSynth ? (
                                     <div>
@@ -118,23 +119,34 @@ const Transaction = ({ match }) => {
                                     <span className="code">{tx.txid}</span>
                                 }
                             </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
-                                <Link to={'/account/' + tx.from.replace("acc://", "")}>
-                                    {tx.from}
-                                </Link>
-                                {tx.from === FaucetAddress ? (
-                                    <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
-                                ) : 
-                                    null
-                                }
-                            </Descriptions.Item>
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Output(s) description"><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
-                                {tx.to && Array.isArray(tx.to) && tx.to[0] ? (
-                                    <TxOutputs tx={tx.to} token={token} />
-                                ) :
-                                    <Text disabled>N/A</Text>
-                                }
-                            </Descriptions.Item>
+
+                            {tx.from ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
+                                    <Link to={'/account/' + tx.from.replace("acc://", "")}>
+                                        {tx.from}
+                                    </Link>
+                                    {tx.from === FaucetAddress ? (
+                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
+                                    ) : 
+                                        null
+                                    }
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
+                            {tx.to ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Output(s) description"><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
+                                    {tx.to && Array.isArray(tx.to) && tx.to[0] ? (
+                                        <TxOutputs tx={tx.to} token={token} />
+                                    ) :
+                                        <Text disabled>N/A</Text>
+                                    }
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
+
                         </Descriptions>
                     </div>
                 ) :

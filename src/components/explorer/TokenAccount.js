@@ -156,13 +156,19 @@ const TokenAccount = ({ match }) => {
             title: 'From',
             dataIndex: 'data',
             render: (data) => {
-                if (data.from === tokenAccount.url) {
-                    return (
-                        <Text type="secondary">{data.from}</Text>
-                    )
+                if (data.from) {
+                    if (data.from === tokenAccount.url) {
+                        return (
+                            <Text type="secondary">{data.from}</Text>
+                        )
+                    } else {
+                        return (
+                            <Link to={'/account/' + data.from.replace("acc://", "")}>{data.from}</Link>
+                        )
+                    }    
                 } else {
                     return (
-                        <Link to={'/account/' + data.from.replace("acc://", "")}>{data.from}</Link>
+                        <Text disabled>N/A</Text>
                     )
                 }
             }
@@ -171,9 +177,15 @@ const TokenAccount = ({ match }) => {
             title: 'To',
             dataIndex: 'data',
             render: (data) => {
-                if (data.to && Array.isArray(data.to) && data.to[0]) {
+                if (data.to) {
+                    if (data.to && Array.isArray(data.to) && data.to[0]) {
+                        return (
+                            <TxOutputs tx={data.to} token={token} />
+                        )
+                    }
+                } else {
                     return (
-                        <TxOutputs tx={data.to} token={token} />
+                        <Text disabled>N/A</Text>
                     )
                 }
             }
@@ -182,9 +194,15 @@ const TokenAccount = ({ match }) => {
             title: 'Amount',
             dataIndex: 'data',
             render: (data) => {
-                if (data.to && Array.isArray(data.to) && data.to[0]) {
+                if (data.to) {
+                    if (data.to && Array.isArray(data.to) && data.to[0]) {
+                        return (
+                            <TxAmounts tx={data.to} token={token} />
+                        )
+                    }
+                } else {
                     return (
-                        <TxAmounts tx={data.to} token={token} />
+                        <Text disabled>N/A</Text>
                     )
                 }
             }
