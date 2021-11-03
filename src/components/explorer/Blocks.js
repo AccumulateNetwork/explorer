@@ -21,11 +21,11 @@ const Blocks = () => {
       </div>
 
       <Paragraph>
-        <Alert message="This is the explorer of Testnet Accumulate Network" type="info" showIcon />
+        <Alert message="This explorer is an analytics tool that allows you to search the Accumulate blockchain for information about addresses, and transactions, and other activity." type="info" showIcon />
       </Paragraph>
 
       <Paragraph>
-        Use <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/token/ACME'}><strong>ACME</strong></Link> tokens.
+        Use the <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/token/ACME'}><strong>ACME</strong></Link> tokens.
       </Paragraph>
 
     </div>
