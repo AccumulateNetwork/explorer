@@ -12,8 +12,6 @@ import {
   Tag
 } from 'antd';
 
-import { NotifyNetworkError } from './../common/Notifications';
-
 import { IconContext } from "react-icons";
 import {
     RiInformationLine, RiQuestionLine
@@ -91,12 +89,12 @@ const TokenAccount = ({ match }) => {
             });
             setTxs(response.data);
             setPagination({...pagination, current: (response.start/response.limit)+1, pageSize: response.limit, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
-        } else {
+          } else {
             throw new Error("Token account not found"); 
           }
         }
         catch(error) {
-            NotifyNetworkError();
+          // error is managed by RPC.js, no need to display anything
         }
         setTableIsLoading(false);
     }

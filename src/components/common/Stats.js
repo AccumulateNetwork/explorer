@@ -7,7 +7,6 @@ import {
     Typography
 } from 'antd';
 
-import { NotifyNetworkError } from './Notifications';
 import RPC from './RPC';
 
 import { IconContext } from "react-icons";
@@ -24,12 +23,10 @@ const Stats = props => {
   const getStats = async () => {
     try {
         const response = await RPC.request("metrics", { metric: "tps", duration: "1h" });
-
         setTPS(response.data.value);
-
     }
     catch(error) {
-        NotifyNetworkError();
+
     }
   }
 

@@ -6,8 +6,6 @@ import { Layout, Input, Form, message } from 'antd';
 import Logo from './common/Logo';
 import ScrollToTop from './common/ScrollToTop';
 
-import { NotifyNetworkError } from './common/Notifications';
-
 import RPC from './common/RPC';
 
 import ADI from './explorer/ADI';
@@ -68,15 +66,15 @@ const Explorer = props => {
                     redirect('/token/'+url);
                     break;
                   default:
-                    message.info('No results found');
+                    message.info('Unknown response from Accumulate API');
                     break;
                 }
             } else {
-                message.info('No results found');
+              message.info('Nothing was found');
             }
         }
         catch(error) {
-            NotifyNetworkError();
+          // error is managed by RPC.js, no need to display anything
         }
         setSearchIsLoading(false);
   }

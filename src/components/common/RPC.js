@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { message } from 'antd';
 
 class RPC {
   constructor(opts) {
@@ -14,7 +15,22 @@ class RPC {
       id: ++this.currId,
       method,
       params: typeof params === 'string' ? [params] : params
-    }).then(({ data: {result} }) => result);
+    })
+    .then(function(response) {
+      if (response.data.error) {
+        if (response.data.error.data && response.data.error.code) {
+          message.error('Error ' + response.data.error.code + ': ' + response.data.error.data);
+        } else {
+          message.error('Unexpected error received from Accumulate API');
+        }
+      }
+      if (response.data.result) {
+        return response.data.result;
+      }
+    })
+    .catch(() => {
+      message.error('Accumulate API is unavailable');
+    });
     return result;
   }
 
