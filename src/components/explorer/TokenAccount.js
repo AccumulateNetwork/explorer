@@ -249,7 +249,7 @@ const TokenAccount = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
 
                             {tokenAccount.url ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account URL</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
                                     {tokenAccount.url}
                                     {tokenAccount.url === FaucetAddress ? (
                                         <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
@@ -281,6 +281,13 @@ const TokenAccount = ({ match }) => {
                                 null
                             }
 
+                            {tokenAccount.creditBalance ? (
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credit balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                    {tokenAccount.creditBalance} credits
+                                </Descriptions.Item>
+                            ) :
+                                null
+                            }
 
                         </Descriptions>
                         
