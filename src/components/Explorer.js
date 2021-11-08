@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import { Layout, Input, Form, message } from 'antd';
 
 import Logo from './common/Logo';
+import Version from './common/Version';
 import ScrollToTop from './common/ScrollToTop';
 
 import RPC from './common/RPC';
@@ -119,8 +120,10 @@ const Explorer = props => {
         </Content>
 
       </Layout>
-      <div align="center" style={{ marginTop: 30, paddingBottom: 20 }}>
-          <p>&copy; Accumulate Network Explorer<br /><a href="mailto:dev@accumulatenetwork.io">dev@accumulatenetwork.io</a></p>
+      <div align="center" style={{ marginTop: 30, paddingBottom: 20 }} className="footer">
+          <p>&copy; Accumulate Network Explorer</p>
+          <p><Version /></p>
+          <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>
       </div>
     </Router>
   );

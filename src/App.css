@@ -263,3 +263,7 @@ h4.ant-typography .count {
   opacity: 1 !important;
   color: #52c41a;
 }
+
+.footer p {
+  margin-bottom: 4px;
+}
