@@ -19,7 +19,12 @@ class RPC {
     .then(function(response) {
       if (response.data.error) {
         if (response.data.error.data && response.data.error.code) {
-          message.error('Error ' + response.data.error.code + ': ' + response.data.error.data);
+          // exception for nothing was found error
+          if (response.data.error.code === -32807) {
+            message.info('Nothing was found');
+          } else {
+            message.error('Error ' + response.data.error.code + ': ' + response.data.error.data);
+          }
         } else {
           message.error('Unexpected error received from Accumulate API');
         }
