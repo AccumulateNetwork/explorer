@@ -43,7 +43,7 @@ const TokenAccount = ({ match }) => {
             if (response.data && (response.type === "anonTokenAccount" || response.type === "tokenAccount")) {
                 setTokenAccount(response.data);
             } else {
-                throw new Error("Token account not found"); 
+                throw new Error("Token account " + url + " not found"); 
             }
 
             let params2 = {url: response.data.tokenUrl};
@@ -51,14 +51,14 @@ const TokenAccount = ({ match }) => {
             if (response2.data && response2.type === "token") {
                 setToken(response2.data);
             } else {
-                throw new Error("Token not found"); 
+                throw new Error("Token " + response.data.tokenUrl + " not found"); 
             }
         }
         catch(error) {
             setTokenAccount(null);
             setToken(null);
             setTxs(null);
-            setError("Token account " + url + " not found");
+            setError(error.message);
         }
     }
 

@@ -44,7 +44,7 @@ const Transaction = ({ match }) => {
                 }
                 setTx(response.data);
             } else {
-                throw new Error("Transaction not found"); 
+                throw new Error("Transaction " + hash + " not found"); 
             }
 
             let params2 = {url: response.data.from};
@@ -52,7 +52,7 @@ const Transaction = ({ match }) => {
             if (response2.data && response2.type === "anonTokenAccount") {
                 setTokenAccount(response2.data);
             } else {
-                throw new Error("Token Account not found"); 
+                throw new Error("Token Account " + response.data.from + " not found"); 
             }
 
             let params3 = {url: response2.data.tokenUrl};
@@ -60,7 +60,7 @@ const Transaction = ({ match }) => {
             if (response3.data && response3.type === "token") {
                 setToken(response3.data);
             } else {
-                throw new Error("Token not found"); 
+                throw new Error("Token " + response2.data.tokenUrl + " not found"); 
             }
 
         }
@@ -69,7 +69,7 @@ const Transaction = ({ match }) => {
             setIsSynth(false);
             setTokenAccount(null);
             setToken(null);
-            setError("Transaction " + hash + " not found");
+            setError(error.message);
         }
     }
 

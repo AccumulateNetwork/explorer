@@ -20,11 +20,13 @@ const { Title } = Typography;
 const ADI = ({ match }) => {
 
     const [adi, setADI] = useState(null);
+    const [directory, setDirectory] = useState(null);
     const [error, setError] = useState(null);
 
     const getADI = async (url) => {
         document.title = "ADI " + url + " | Accumulate Explorer";
         setADI(null);
+        setDirectory(null);
         setError(null);
         try {
             let params = {url: url};
@@ -32,12 +34,20 @@ const ADI = ({ match }) => {
             if (response.data && response.type === "adi") {
                 setADI(response.data);
             } else {
-                throw new Error("ADI not found"); 
+                throw new Error("ADI " + url + " not found"); 
+            }
+
+            const response2 = await RPC.request("get-directory", params);
+            if (response2.data && response2.type === "directory") {
+                setDirectory(response2.data);
+            } else {
+                throw new Error("Directory for ADI " + url + " not found"); 
             }
         }
         catch(error) {
             setADI(null);
-            setError("ADI " + url + " not found");
+            setDirectory(null);
+            setError(error.message);
         }
     }
 

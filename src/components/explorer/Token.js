@@ -32,12 +32,12 @@ const Token = ({ match }) => {
             if (response.data && response.type === "token") {
                 setToken(response.data);
             } else {
-                throw new Error("Token not found"); 
+                throw new Error("Token " + url + " not found"); 
             }
         }
         catch(error) {
             setToken(null);
-            setError("Token " + url + " not found");
+            setError(error.message);
         }
     }
 
