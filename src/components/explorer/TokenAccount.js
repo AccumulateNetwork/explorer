@@ -132,13 +132,13 @@ const TokenAccount = ({ match }) => {
     const columns = [
         {
             title: 'Transaction ID',
-            dataIndex: 'data',
+            dataIndex: 'txid',
             className: 'code',
-            render: (data) => {
-                if (data.txid) {
+            render: (txid) => {
+                if (txid) {
                     return (
-                        <Link to={'/tx/' + data.txid}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{data.txid}
+                        <Link to={'/tx/' + txid}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{txid}
                         </Link>
                     )
                 } else {
@@ -180,7 +180,7 @@ const TokenAccount = ({ match }) => {
                         return (
                             <Link to={'/account/' + data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.from}</Link>
                         )
-                    }    
+                    }
                 } else {
                     return (
                         <Text disabled>N/A</Text>
@@ -192,11 +192,22 @@ const TokenAccount = ({ match }) => {
             title: 'To',
             dataIndex: 'data',
             render: (data) => {
-                if (data.to) {
+                if (data.to || data.recipient) {
                     if (data.to && Array.isArray(data.to) && data.to[0]) {
                         return (
                             <TxOutputs tx={data.to} token={token} />
                         )
+                    }
+                    if (data.recipient) {
+                        if (data.recipient === tokenAccount.url) {
+                            return (
+                                <Text type="secondary">{data.recipient}</Text>
+                            )
+                        } else {
+                            return (
+                                <Link to={'/account/' + data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.recipient}</Link>
+                            )
+                        }
                     }
                 } else {
                     return (
@@ -209,10 +220,15 @@ const TokenAccount = ({ match }) => {
             title: 'Amount',
             dataIndex: 'data',
             render: (data) => {
-                if (data.to) {
+                if (data.to || data.amount) {
                     if (data.to && Array.isArray(data.to) && data.to[0]) {
                         return (
                             <TxAmounts tx={data.to} token={token} />
+                        )
+                    }
+                    if (data.amount) {
+                        return (
+                            <Text>{data.amount} credits</Text>
                         )
                     }
                 } else {

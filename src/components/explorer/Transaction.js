@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
@@ -112,9 +112,9 @@ const Transaction = ({ match }) => {
                                     {isSynth ? (
                                         <div>
                                         <span className="code">{match.params.hash}</span>
-                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Synthetic token deposit</Paragraph>
-                                        <Link to={'/tx/' + tx.txid} className="code">{tx.txid}</Link>
-                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Parent txid</Paragraph>
+                                        <Paragraph className="inline-tip">Synthetic token deposit</Paragraph>
+                                        <Link to={'/tx/' + tx.txid} className="code"><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.txid}</Link>
+                                        <Paragraph className="inline-tip">Parent txid</Paragraph>
                                         </div>
                                     ) : 
                                         <span className="code">{tx.txid}</span>
