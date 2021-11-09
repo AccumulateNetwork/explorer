@@ -19,6 +19,8 @@ import {
 
 import RPC from './../common/RPC';
 import FaucetAddress from './../common/Faucet';
+import tooltipDescs from './../common/TooltipDescriptions';
+
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -265,7 +267,7 @@ const TokenAccount = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
 
                             {tokenAccount.url ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
                                     {tokenAccount.url}
                                     {tokenAccount.url === FaucetAddress ? (
                                         <Paragraph className="inline-tip">Faucet address</Paragraph>
@@ -278,7 +280,7 @@ const TokenAccount = ({ match }) => {
                             }
 
                             {(tokenAccount.tokenUrl && token.symbol) ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                     {token.symbol}
                                     <br />
                                     <Link to={'/token/' + tokenAccount.tokenUrl.replace("acc://", "")}>
@@ -290,7 +292,7 @@ const TokenAccount = ({ match }) => {
                             }
 
                             {(tokenAccount.balance && token.precision && token.symbol) ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                     {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                                 </Descriptions.Item>
                             ) :
@@ -298,7 +300,7 @@ const TokenAccount = ({ match }) => {
                             }
 
                             {tokenAccount.creditBalance ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credit balance description"><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBal}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
                                     {tokenAccount.creditBalance} credits
                                 </Descriptions.Item>
                             ) :

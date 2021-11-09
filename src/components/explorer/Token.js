@@ -14,6 +14,8 @@ import {
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
+import tooltipDescs from './../common/TooltipDescriptions';
+
 
 const { Title } = Typography;
 
@@ -60,7 +62,7 @@ const Token = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
 
                             {token.url ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
                                     {token.url}
                                 </Descriptions.Item>
                             ) :
@@ -68,7 +70,7 @@ const Token = ({ match }) => {
                             }
 
                             {token.symbol ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Symbol description"><RiQuestionLine /></Tooltip></IconContext.Provider>Symbol</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenSymbol}><RiQuestionLine /></Tooltip></IconContext.Provider>Symbol</nobr></span>}>
                                     {token.symbol}
                                 </Descriptions.Item>
                             ) :
@@ -76,7 +78,7 @@ const Token = ({ match }) => {
                             }
 
                             {token.precision ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Precision description"><RiQuestionLine /></Tooltip></IconContext.Provider>Precision</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenPrecision}><RiQuestionLine /></Tooltip></IconContext.Provider>Precision</nobr></span>}>
                                     {token.precision}
                                 </Descriptions.Item>
                             ) :

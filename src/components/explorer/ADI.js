@@ -14,6 +14,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
+import tooltipDescs from './../common/TooltipDescriptions';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -70,7 +71,7 @@ const ADI = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
 
                             {adi.url ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="ADI URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>ADI URL</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>ADI URL</nobr></span>}>
                                     {adi.url}
                                 </Descriptions.Item>
                             ) :
@@ -78,7 +79,7 @@ const ADI = ({ match }) => {
                             }
 
                             {adi.publicKey ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key description"><RiQuestionLine /></Tooltip></IconContext.Provider>Public key</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.pubKey}><RiQuestionLine /></Tooltip></IconContext.Provider>Public key</nobr></span>}>
                                     {adi.publicKey}
                                 </Descriptions.Item>
                             ) :

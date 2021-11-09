@@ -13,6 +13,7 @@ import {
 
 import RPC from './../common/RPC';
 import FaucetAddress from './../common/Faucet';
+import tooltipDescs from './../common/TooltipDescriptions';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -108,7 +109,7 @@ const Transaction = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
 
                             {tx.txid ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Txid description"><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
                                     {isSynth ? (
                                         <div>
                                         <span className="code">{match.params.hash}</span>
@@ -125,7 +126,7 @@ const Transaction = ({ match }) => {
                             }
 
                             {tx.from ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txFrom}><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
                                     <Link to={'/account/' + tx.from.replace("acc://", "")}>
                                         <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.from}
                                     </Link>
@@ -140,7 +141,7 @@ const Transaction = ({ match }) => {
                             }
 
                             {tx.to ? (
-                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Output(s) description"><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
+                                <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txTo}><RiQuestionLine /></Tooltip></IconContext.Provider>Output(s)</nobr></span>}>
                                     {tx.to && Array.isArray(tx.to) && tx.to[0] ? (
                                         <TxOutputs tx={tx.to} token={token} />
                                     ) :
