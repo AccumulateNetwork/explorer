@@ -10,12 +10,12 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const ADI = ({ match }) => {
 
@@ -59,7 +59,7 @@ const ADI = ({ match }) => {
         <div>
             <Title level={2}>ADI</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{match.params.url}</Title>
-                {adi ? (
+                {adi && directory ? (
                     <div>
                         <Title level={4}>
                           <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -86,6 +86,20 @@ const ADI = ({ match }) => {
                             }
 
                         </Descriptions>
+
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                                <RiFolder2Line />
+                            </IconContext.Provider>
+                            ADI Directory
+                        </Title>
+
+                        {directory && directory.entries ? (
+                            <div>{directory.entries.map(entry => <Paragraph>{entry}</Paragraph>)}</div>
+                        ) :
+                            <Paragraph><Text type="secondary">No entries</Text></Paragraph>
+                        }
+                        
                     </div>
                 ) :
                     <div>
@@ -100,6 +114,15 @@ const ADI = ({ match }) => {
                                     <RiInformationLine />
                                   </IconContext.Provider>
                                   ADI Info
+                                </Title>
+                                <div className="skeleton-holder">
+                                    <Skeleton active />
+                                </div>
+                                <Title level={4}>
+                                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                                    <RiFolder2Line />
+                                  </IconContext.Provider>
+                                  ADI Directory
                                 </Title>
                                 <div className="skeleton-holder">
                                     <Skeleton active />
