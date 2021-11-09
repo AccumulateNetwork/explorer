@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine
+    RiInformationLine, RiQuestionLine, RiExchangeLine, RiAccountCircleLine, RiCoinLine
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
@@ -107,7 +107,7 @@ const TokenAccount = ({ match }) => {
                 <Text type="secondary">{item.url}</Text>
             ) :
                 <Link to={'/account/' + item.url.replace("acc://", "")}>
-                    {item.url}
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
                 </Link>
             }
           </Paragraph>
@@ -138,7 +138,7 @@ const TokenAccount = ({ match }) => {
                 if (data.txid) {
                     return (
                         <Link to={'/tx/' + data.txid}>
-                            {data.txid}
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{data.txid}
                         </Link>
                     )
                 } else {
@@ -178,7 +178,7 @@ const TokenAccount = ({ match }) => {
                         )
                     } else {
                         return (
-                            <Link to={'/account/' + data.from.replace("acc://", "")}>{data.from}</Link>
+                            <Link to={'/account/' + data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.from}</Link>
                         )
                     }    
                 } else {
@@ -252,7 +252,7 @@ const TokenAccount = ({ match }) => {
                                 <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Token Account URL description"><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
                                     {tokenAccount.url}
                                     {tokenAccount.url === FaucetAddress ? (
-                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
+                                        <Paragraph className="inline-tip">Faucet address</Paragraph>
                                     ) : 
                                         null
                                     }
@@ -266,7 +266,7 @@ const TokenAccount = ({ match }) => {
                                     {token.symbol}
                                     <br />
                                     <Link to={'/token/' + tokenAccount.tokenUrl.replace("acc://", "")}>
-                                        {tokenAccount.tokenUrl}
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.tokenUrl}
                                     </Link>
                                 </Descriptions.Item>
                             ) :
@@ -293,7 +293,7 @@ const TokenAccount = ({ match }) => {
                         
                         <Title level={4}>
                           <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiInformationLine />
+                            <RiExchangeLine />
                           </IconContext.Provider>
                           Transactions
                         </Title>
@@ -328,7 +328,7 @@ const TokenAccount = ({ match }) => {
                                 </div>
                                 <Title level={4}>
                                   <IconContext.Provider value={{ className: 'react-icons' }}>
-                                    <RiInformationLine />
+                                    <RiExchangeLine />
                                   </IconContext.Provider>
                                   Transactions
                                 </Title>

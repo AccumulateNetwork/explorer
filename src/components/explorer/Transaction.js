@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
@@ -82,9 +82,9 @@ const Transaction = ({ match }) => {
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
             {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
-            <Text type="secondary"> → </Text>
+            <Text type="secondary">  →  </Text>
             <Link to={'/account/' + item.url.replace("acc://", "")}>
-                {item.url}
+                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
             </Link>
           </Paragraph>
       );
@@ -127,10 +127,10 @@ const Transaction = ({ match }) => {
                             {tx.from ? (
                                 <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="From description"><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
                                     <Link to={'/account/' + tx.from.replace("acc://", "")}>
-                                        {tx.from}
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.from}
                                     </Link>
                                     {tx.from === FaucetAddress ? (
-                                        <Paragraph className="inline-tip"><IconContext.Provider value={{ className: 'react-icons' }}><RiInformationLine /></IconContext.Provider>Faucet address</Paragraph>
+                                        <Paragraph className="inline-tip">Faucet address</Paragraph>
                                     ) : 
                                         null
                                     }

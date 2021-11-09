@@ -256,11 +256,6 @@ h4.ant-typography .count {
 }
 
 .inline-tip {
-  color: #888;
-}
-
-.inline-tip .react-icons {
-  opacity: 1 !important;
   color: #52c41a;
 }
 
