@@ -241,11 +241,11 @@ const TokenAccount = ({ match }) => {
                 }
             }
         }
-      ];
+    ];
 
     useEffect(() => {
         getTokenAccount(match.params.url);
-    }, [match.params.url]);
+    }, [match.params.url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (tokenAccount) {
