@@ -35,6 +35,7 @@ const TokenAccount = ({ match }) => {
   
     const getTokenAccount = async (url) => {
         document.title = "Token Account " + url + " | Accumulate Explorer";
+        setPagination({...pagination, current: 1});
         setTokenAccount(null);
         setToken(null);
         setTxs(null);
