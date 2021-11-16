@@ -21,7 +21,6 @@ import RPC from './../common/RPC';
 import FaucetAddress from './../common/Faucet';
 import tooltipDescs from './../common/TooltipDescriptions';
 
-
 const { Title, Paragraph, Text } = Typography;
 
 const TokenAccount = ({ match }) => {
