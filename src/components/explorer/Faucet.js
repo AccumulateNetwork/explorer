@@ -29,8 +29,8 @@ const Faucet = () => {
 
         let params = {url: url};
         const response = await RPC.request("faucet", params);
-        if (response && response.data && response.data.txid) {
-            setTxid("Txid: " + response.data.txid);
+        if (response && response && response.txid) {
+            setTxid("Txid: " + response.txid);
         } else {
             setError("Unable to fund " + url);
         }
