@@ -34,9 +34,9 @@ const Tx = ({ match }) => {
         setError(null);
         try {
 
-            let params = {hash: hash};
-            const response = await RPC.request("token-tx", params);
-            if (response.data && (response.type === "tokenTx" || response.type === "syntheticTokenDeposit")) {
+            let params = {id: hash};
+            const response = await RPC.request("query-tx", params);
+            if (response && response.data && (response.type === "tokenTx" || response.type === "syntheticTokenDeposit")) {
                 if (response.type === "syntheticTokenDeposit") {
                     setIsSynth(true);
                     let to = {url: response.data.to, amount: response.data.amount, txid: response.data.txid};
@@ -46,22 +46,6 @@ const Tx = ({ match }) => {
                 setTx(response.data);
             } else {
                 throw new Error("Transaction " + hash + " not found"); 
-            }
-
-            let params2 = {url: response.data.from};
-            const response2 = await RPC.request("token-account", params2);
-            if (response2.data && response2.type === "anonTokenAccount") {
-                setTokenAccount(response2.data);
-            } else {
-                throw new Error("Token Account " + response.data.from + " not found"); 
-            }
-
-            let params3 = {url: response2.data.tokenUrl};
-            const response3 = await RPC.request("token", params3);
-            if (response3.data && response3.type === "token") {
-                setToken(response3.data);
-            } else {
-                throw new Error("Token " + response2.data.tokenUrl + " not found"); 
             }
 
         }
