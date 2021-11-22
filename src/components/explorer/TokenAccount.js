@@ -21,7 +21,6 @@ import RPC from './../common/RPC';
 import FaucetAddress from './../common/Faucet';
 import tooltipDescs from './../common/TooltipDescriptions';
 
-
 const { Title, Paragraph, Text } = Typography;
 
 const TokenAccount = ({ match }) => {
@@ -42,7 +41,7 @@ const TokenAccount = ({ match }) => {
         setError(null);
         try {
             let params = {url: url};
-            const response = await RPC.request("token-account", params);
+            const response = await RPC.request("query", params);
             if (response.data && (response.type === "anonTokenAccount" || response.type === "tokenAccount")) {
                 setTokenAccount(response.data);
             } else {
