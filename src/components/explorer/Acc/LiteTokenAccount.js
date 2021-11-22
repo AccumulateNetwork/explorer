@@ -97,7 +97,7 @@ const LiteTokenAccount = props => {
             {item.url === tokenAccount.url ? (
                 <Text type="secondary">{item.url}</Text>
             ) :
-                <Link to={'/account/' + item.url.replace("acc://", "")}>
+                <Link to={'/acc/' + item.url.replace("acc://", "")}>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
                 </Link>
             }
@@ -169,7 +169,7 @@ const LiteTokenAccount = props => {
                         )
                     } else {
                         return (
-                            <Link to={'/account/' + data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.from}</Link>
+                            <Link to={'/acc/' + data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.from}</Link>
                         )
                     }
                 } else {
@@ -196,7 +196,7 @@ const LiteTokenAccount = props => {
                             )
                         } else {
                             return (
-                                <Link to={'/account/' + data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.recipient}</Link>
+                                <Link to={'/acc/' + data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.recipient}</Link>
                             )
                         }
                     }
