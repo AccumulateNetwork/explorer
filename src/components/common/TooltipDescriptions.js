@@ -11,7 +11,7 @@ const tooltipDescs = {
     txId: "The unique identifier assigned to this transaction",
     adiUrl: "The URL for this ADI (Accumulate Digital Identifier)",
     pubKey: "The Public Key for this ADI",
-    type: "The Chain type"
+    amount: "The number of tokens transferred",
 };
 
 export default tooltipDescs;

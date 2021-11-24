@@ -65,7 +65,7 @@ const Tx = ({ match }) => {
             switch(props.data.type) {
                 case 'acmeFaucet':
                     return <FaucetTx data={props.data} />;
-                 case 'syntheticTokenDeposit':
+                 case 'syntheticDepositTokens':
                     return <SyntheticTx data={props.data} />;
                 case 'tokenTransaction':
                     return <SyntheticTx data={props.data} />;
