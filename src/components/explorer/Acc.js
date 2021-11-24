@@ -26,7 +26,7 @@ const Acc = ({ match }) => {
             let params = {url: url};
             const response = await RPC.request("query", params);
             if (response && response.data) {
-                setAcc(response.data);
+                setAcc(response);
             } else {
                 throw new Error("acc://" + url + " not found"); 
             }
@@ -68,10 +68,8 @@ const Acc = ({ match }) => {
                                 <Alert message={error} type="error" showIcon />
                             </div>
                         ) :
-                            <div>
-                                <div className="skeleton-holder">
-                                    <Skeleton active />
-                                </div>
+                            <div className="skeleton-holder">
+                                <Skeleton active />
                             </div>
                         }
                     </div>

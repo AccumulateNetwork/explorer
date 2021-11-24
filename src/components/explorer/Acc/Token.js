@@ -23,16 +23,10 @@ const Token = props => {
     return (
         <div>
 
-            <Title level={4}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiInformationLine />
-                </IconContext.Provider>
-                Chain Info
-            </Title>
             <Descriptions bordered column={1} size="middle">
 
                 {token.type ? (
-                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
+                    <Descriptions.Item label="Type">
                         {token.type}
                     </Descriptions.Item>
                 ) :
@@ -41,7 +35,7 @@ const Token = props => {
 
             </Descriptions>
             
-            {token ? (
+            {token.data ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -51,25 +45,25 @@ const Token = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {token.url ? (
+                        {token.data.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
-                                {token.url}
+                                {token.data.url}
                             </Descriptions.Item>
                         ) :
                             null  
                         }
 
-                        {token.symbol ? (
+                        {token.data.symbol ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenSymbol}><RiQuestionLine /></Tooltip></IconContext.Provider>Symbol</nobr></span>}>
-                                {token.symbol}
+                                {token.data.symbol}
                             </Descriptions.Item>
                         ) :
                             null  
                         }
 
-                        {token.precision ? (
+                        {token.data.precision ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenPrecision}><RiQuestionLine /></Tooltip></IconContext.Provider>Precision</nobr></span>}>
-                                {token.precision}
+                                {token.data.precision}
                             </Descriptions.Item>
                         ) :
                             null  
@@ -78,17 +72,7 @@ const Token = props => {
                     </Descriptions>
                 </div>
             ) :
-                <div>
-                    <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiInformationLine />
-                        </IconContext.Provider>
-                        Chain Info
-                    </Title>
-                    <div className="skeleton-holder">
-                        <Skeleton active />
-                    </div>
-                </div>
+                null
             }
         </div>
     );

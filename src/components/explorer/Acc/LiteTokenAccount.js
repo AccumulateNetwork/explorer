@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiContactsBookLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -38,7 +38,7 @@ const LiteTokenAccount = props => {
         setTxs(null);
         setError(null);
         try {
-            let params = {url: tokenAccount.tokenUrl};
+            let params = {url: tokenAccount.data.tokenUrl};
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setToken(response.data);
@@ -69,10 +69,10 @@ const LiteTokenAccount = props => {
         }
     
         try {
-          const response = await RPC.request("query-tx-history", { url: tokenAccount.url, start: start, count: count } );
+          const response = await RPC.request("query-tx-history", { url: tokenAccount.data.url, start: start, count: count } );
           if (response && response.items) {
             response.items.forEach((tx) => {
-                if (tx.type === "syntheticTokenDeposit") {
+                if (tx.type === "syntheticDepositTokens") {
                     let to = {url: tx.data.to, amount: tx.data.amount, txid: tx.data.txid};
                     tx.data.to = [];
                     tx.data.to.push(to);
@@ -94,7 +94,7 @@ const LiteTokenAccount = props => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
-            {item.url === tokenAccount.url ? (
+            {item.url === tokenAccount.data.url ? (
                 <Text type="secondary">{item.url}</Text>
             ) :
                 <Link to={'/acc/' + item.url.replace("acc://", "")}>
@@ -163,7 +163,7 @@ const LiteTokenAccount = props => {
             dataIndex: 'data',
             render: (data) => {
                 if (data.from) {
-                    if (data.from === tokenAccount.url) {
+                    if (data.from === tokenAccount.data.url) {
                         return (
                             <Text type="secondary">{data.from}</Text>
                         )
@@ -190,7 +190,7 @@ const LiteTokenAccount = props => {
                         )
                     }
                     if (data.recipient) {
-                        if (data.recipient === tokenAccount.url) {
+                        if (data.recipient === tokenAccount.data.url) {
                             return (
                                 <Text type="secondary">{data.recipient}</Text>
                             )
@@ -238,16 +238,11 @@ const LiteTokenAccount = props => {
 
     return (
         <div>
-            <Title level={4}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiInformationLine />
-                </IconContext.Provider>
-                Chain Info
-            </Title>
+
             <Descriptions bordered column={1} size="middle">
 
                 {tokenAccount.type ? (
-                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
+                    <Descriptions.Item label="Type">
                         {tokenAccount.type}
                     </Descriptions.Item>
                 ) :
@@ -256,7 +251,7 @@ const LiteTokenAccount = props => {
 
             </Descriptions>
 
-            {tokenAccount && token ? (
+            {tokenAccount.data && token ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -266,10 +261,10 @@ const LiteTokenAccount = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {tokenAccount.url ? (
+                        {tokenAccount.data.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
-                                {tokenAccount.url}
-                                {tokenAccount.url === FaucetAddress ? (
+                                {tokenAccount.data.url}
+                                {tokenAccount.data.url === FaucetAddress ? (
                                     <Paragraph className="inline-tip">Faucet address</Paragraph>
                                 ) : 
                                     null
@@ -279,29 +274,29 @@ const LiteTokenAccount = props => {
                             null
                         }
 
-                        {(tokenAccount.tokenUrl && token.symbol) ? (
+                        {(tokenAccount.data.tokenUrl && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
                                 <br />
-                                <Link to={'/acc/' + tokenAccount.tokenUrl.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.tokenUrl}
+                                <Link to={'/acc/' + tokenAccount.data.tokenUrl.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.tokenUrl}
                                 </Link>
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {(tokenAccount.balance && token.precision && token.symbol) ? (
+                        {(tokenAccount.data.balance && token.precision && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                                {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {tokenAccount.creditBalance ? (
+                        {tokenAccount.data.creditBalance ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBal}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {tokenAccount.creditBalance} credits
+                                {tokenAccount.data.creditBalance} credits
                             </Descriptions.Item>
                         ) :
                             null
@@ -320,7 +315,7 @@ const LiteTokenAccount = props => {
                         dataSource={txs}
                         columns={columns}
                         pagination={pagination}
-                        rowKey="txId"
+                        rowKey="txid"
                         loading={tableIsLoading}
                         onChange={getTxs}
                         scroll={{ x: 'max-content' }}
