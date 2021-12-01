@@ -98,10 +98,6 @@ const Explorer = props => {
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
 
-                <Route path="/adi/:url" component={ADI} />
-                <Route path="/account/:url+" component={TokenAccount} />
-                <Route path="/token/:url+" component={Token} />
-
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />
                 <Route component={Error404} />

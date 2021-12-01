@@ -71,11 +71,20 @@ const LiteTokenAccount = props => {
         try {
           const response = await RPC.request("query-tx-history", { url: tokenAccount.data.url, start: start, count: count } );
           if (response && response.items) {
+
+            // workaround API bug response
+            if (response.start === null) {
+                response.start = 0;
+            }
+
             response.items.forEach((tx) => {
                 if (tx.type === "syntheticDepositTokens") {
                     let to = {url: tx.data.to, amount: tx.data.amount, txid: tx.data.txid};
                     tx.data.to = [];
                     tx.data.to.push(to);
+                }
+                if (tx.type === "syntheticGenesis") {
+                    response.items.shift();
                 }
             });
             setTxs(response.items);

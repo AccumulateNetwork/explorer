@@ -16,6 +16,7 @@ import FaucetAddress from './../common/Faucet';
 import tooltipDescs from './../common/TooltipDescriptions';
 import SyntheticTx from './Tx/SyntheticTx';
 import FaucetTx from './Tx/FaucetTx';
+import TokenTx from './Tx/TokenTx';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -65,10 +66,12 @@ const Tx = ({ match }) => {
             switch(props.data.type) {
                 case 'acmeFaucet':
                     return <FaucetTx data={props.data} />;
-                 case 'syntheticDepositTokens':
+                case 'syntheticDepositTokens':
                     return <SyntheticTx data={props.data} />;
+                case 'withdrawTokens':
+                    return <TokenTx data={props.data} />;
                 case 'tokenTransaction':
-                    return <SyntheticTx data={props.data} />;
+                    return <TokenTx data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
             }
