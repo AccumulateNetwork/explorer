@@ -10,6 +10,8 @@ import RPC from './../common/RPC';
 
 import LiteTokenAccount from './Acc/LiteTokenAccount';
 import Token from './Acc/Token';
+import ADI from './Acc/ADI';
+import KeyBook from './Acc/KeyBook';
 
 const { Title } = Typography;
 
@@ -44,6 +46,10 @@ const Acc = ({ match }) => {
                     return <LiteTokenAccount data={props.data} />;
                 case 'token':
                     return <Token data={props.data} />;
+                case 'adi':
+                    return <ADI data={props.data} />;
+                case 'keybook':
+                    return <KeyBook data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
             }
