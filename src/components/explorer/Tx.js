@@ -1,39 +1,24 @@
 import React, { useState, useEffect } from 'react';
 
-import { Link } from 'react-router-dom';
-
 import {
-  Typography, Descriptions, Tooltip, Alert, Skeleton
+  Typography, Alert, Skeleton
 } from 'antd';
 
-import { IconContext } from "react-icons";
-import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine
-} from 'react-icons/ri';
-
 import RPC from './../common/RPC';
-import FaucetAddress from './../common/Faucet';
-import tooltipDescs from './../common/TooltipDescriptions';
 import SyntheticTx from './Tx/SyntheticTx';
 import FaucetTx from './Tx/FaucetTx';
 import TokenTx from './Tx/TokenTx';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title } = Typography;
 
 const Tx = ({ match }) => {
 
     const [tx, setTx] = useState(null);
-    const [isSynth, setIsSynth] = useState(false);
-    const [tokenAccount, setTokenAccount] = useState(null);
-    const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
     const getTx = async (hash) => {
         document.title = "Transaction " + hash + " | Accumulate Explorer";
         setTx(null);
-        setIsSynth(false);
-        setTokenAccount(null);
-        setToken(null);
         setError(null);
         try {
 
@@ -41,7 +26,6 @@ const Tx = ({ match }) => {
             const response = await RPC.request("query-tx", params);
             if (response && response.data) {
                 if (response.type === "syntheticTokenDeposit") {
-                    setIsSynth(true);
                     let to = {url: response.data.to, amount: response.data.amount, txid: response.data.txid};
                     response.data.to = [];
                     response.data.to.push(to);
@@ -54,9 +38,6 @@ const Tx = ({ match }) => {
         }
         catch(error) {
             setTx(null);
-            setIsSynth(false);
-            setTokenAccount(null);
-            setToken(null);
             setError(error.message);
         }
     }

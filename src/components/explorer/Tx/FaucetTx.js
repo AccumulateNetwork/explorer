@@ -1,22 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Link } from 'react-router-dom';
 
 import {
   Typography,
   Descriptions,
-  Skeleton,
   Tooltip
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title } = Typography;
 
 const SyntheticTx = props => {
 

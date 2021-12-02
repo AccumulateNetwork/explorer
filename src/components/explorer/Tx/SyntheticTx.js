@@ -19,7 +19,7 @@ import RPC from '../../common/RPC';
 import FaucetAddress from '../../common/Faucet';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 const SyntheticTx = props => {
 
@@ -44,22 +44,6 @@ const SyntheticTx = props => {
             setToken(null);
             setError(error.message);
         }
-    }
-
-    function TxOutputs(props) {
-        const data = props.tx;
-        const items = data.map((item, index) =>
-          <Paragraph key={{index}}>
-            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
-            <Text type="secondary">  →  </Text>
-            <Link to={'/acc/' + item.url.replace("acc://", "")}>
-                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
-            </Link>
-          </Paragraph>
-      );
-      return (
-        <span className="break-all">{items}</span>
-      );
     }
 
     useEffect(() => {

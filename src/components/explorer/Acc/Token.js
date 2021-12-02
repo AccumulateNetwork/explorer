@@ -3,7 +3,6 @@ import React from 'react';
 import {
   Typography,
   Descriptions,
-  Skeleton,
   Tooltip
 } from 'antd';
 

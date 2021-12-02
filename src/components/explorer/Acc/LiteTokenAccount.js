@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiContactsBookLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
