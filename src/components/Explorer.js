@@ -13,6 +13,7 @@ import Blocks from './explorer/Blocks';
 
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
+import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 
@@ -97,6 +98,8 @@ const Explorer = props => {
 
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />
+                <Route path="/chain/:chainid" component={Chain} />
+
                 <Route component={Error404} />
             </Switch>
         </Content>
