@@ -53,21 +53,13 @@ const KeyBook = props => {
                             null  
                         }
 
-                        {keybook.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                {keybook.data.keyBook}
-                            </Descriptions.Item>
-                        ) :
-                            null  
-                        }
-
                     </Descriptions>
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiStackLine />
                         </IconContext.Provider>
-                        Key Book Pages
+                        Key Pages
                     </Title>
 
                     {keybook.data.pages ? (
