@@ -67,7 +67,7 @@ const Acc = ({ match }) => {
     return (
         <div>
             <Title level={2} className="break-all">Chain</Title>
-            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>acc://{match.params.url}</Title>
+            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{"acc://" + match.params.url}</Title>
                 {acc ? (
                     <Render data={acc} />
                 ) :
