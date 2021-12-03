@@ -9,25 +9,25 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiStackLine
+    RiInformationLine, RiQuestionLine, RiKey2Line
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Paragraph, Text } = Typography;
 
-const KeyBook = props => {
+const KeyPage = props => {
 
-    const keybook = props.data;
+    const keypage = props.data;
 
     return (
         <div>
 
             <Descriptions bordered column={1} size="middle">
 
-                {keybook.type ? (
+                {keypage.type ? (
                     <Descriptions.Item label="Type">
-                        {keybook.type}
+                        {keypage.type}
                     </Descriptions.Item>
                 ) :
                     null
@@ -35,50 +35,58 @@ const KeyBook = props => {
 
             </Descriptions>
             
-            {keybook.data ? (
+            {keypage.data ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiInformationLine />
                         </IconContext.Provider>
-                        Key Book Info
+                        Key Page Info
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {keybook.data.url ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBookUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book URL</nobr></span>}>
-                                {keybook.data.url}
+                        {keypage.data.url ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyPageUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Page URL</nobr></span>}>
+                                {keypage.data.url}
                             </Descriptions.Item>
                         ) :
                             null  
                         }
 
-                        {keybook.data.keyBook ? (
+                        {keypage.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                {keybook.data.keyBook}
+                                {keypage.data.keyBook}
                             </Descriptions.Item>
                         ) :
-                            null  
+                            null
+                        }
+
+                        {keypage.data.creditBalance || keypage.data.creditBalance === 0 ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                {keypage.data.creditBalance} credits
+                            </Descriptions.Item>
+                        ) :
+                            null
                         }
 
                     </Descriptions>
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiStackLine />
+                        <RiKey2Line />
                         </IconContext.Provider>
-                        Key Book Pages
+                        Public Keys
                     </Title>
 
-                    {keybook.data.pages ? (
+                    {keypage.data.keys ? (
                         <List
                             size="small"
                             bordered
-                            dataSource={keybook.data.pages}
-                            renderItem={item => <List.Item>{item}</List.Item>}
+                            dataSource={keypage.data.keys}
+                            renderItem={item => <List.Item>{item.publicKey}</List.Item>}
                         />
                     ) :
-                        <Paragraph><Text type="secondary">No pages</Text></Paragraph>
+                        <Paragraph><Text type="secondary">No keys</Text></Paragraph>
                     }
 
                 </div>
@@ -89,4 +97,4 @@ const KeyBook = props => {
     );
 }
 
-export default KeyBook;
+export default KeyPage;

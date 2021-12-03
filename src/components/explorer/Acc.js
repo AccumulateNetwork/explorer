@@ -12,6 +12,7 @@ import LiteTokenAccount from './Acc/LiteTokenAccount';
 import Token from './Acc/Token';
 import ADI from './Acc/ADI';
 import KeyBook from './Acc/KeyBook';
+import KeyPage from './Acc/KeyPage';
 
 const { Title } = Typography;
 
@@ -51,7 +52,7 @@ const Acc = ({ match }) => {
                 case 'keyBook':
                     return <KeyBook data={props.data} />;
                 case 'keyPage':
-                    return <KeyBook data={props.data} />;
+                    return <KeyPage data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
             }

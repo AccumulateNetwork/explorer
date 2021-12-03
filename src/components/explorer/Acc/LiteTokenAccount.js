@@ -300,8 +300,8 @@ const LiteTokenAccount = props => {
                             null
                         }
 
-                        {tokenAccount.data.creditBalance ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBal}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                        {tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0 ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
                                 {tokenAccount.data.creditBalance} credits
                             </Descriptions.Item>
                         ) :
