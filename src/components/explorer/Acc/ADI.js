@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography,
   Descriptions,
-  Tooltip
+  Tooltip,
+  Skeleton,
+  Alert,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const ADI = props => {
 
@@ -28,7 +33,7 @@ const ADI = props => {
         try {
             let params = {url: adi.data.url};
             const response = await RPC.request("query-directory", params);
-            if (response.data && response.type === "adi") {
+            if (response.data && response.type === "directory") {
                 setDirectory(response.data);
             } else {
                 throw new Error("Directory of ADI " + url + " not found"); 
@@ -59,7 +64,7 @@ const ADI = props => {
 
             </Descriptions>
             
-            {adi.data ? (
+            {adi.data && directory ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -110,9 +115,55 @@ const ADI = props => {
                         }
 
                     </Descriptions>
+
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                        <RiFolder2Line />
+                        </IconContext.Provider>
+                        ADI Directory
+                    </Title>
+
+                    {directory && directory.entries ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={directory.entries}
+                            renderItem={item => <List.Item><Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{item}</Link></List.Item>}
+                        />
+                    ) :
+                        <Paragraph><Text type="secondary">No entries</Text></Paragraph>
+                    }
+                    
                 </div>
             ) :
-                null
+                <div>
+                    {error ? (
+                        <div className="skeleton-holder">
+                            <Alert message={error} type="error" showIcon />
+                        </div>
+                    ) :
+                        <div>
+                            <Title level={4}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}>
+                                <RiInformationLine />
+                                </IconContext.Provider>
+                                ADI Info
+                            </Title>
+                            <div className="skeleton-holder">
+                                <Skeleton active />
+                            </div>
+                            <Title level={4}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}>
+                                <RiFolder2Line />
+                                </IconContext.Provider>
+                                ADI Directory
+                            </Title>
+                            <div className="skeleton-holder">
+                                <Skeleton active />
+                            </div>
+                        </div>
+                    }
+                </div>
             }
         </div>
     );
