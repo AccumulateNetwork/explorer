@@ -5,7 +5,7 @@ import {
 } from 'antd';
 
 import RPC from './../common/RPC';
-import SyntheticTx from './Tx/SyntheticTx';
+import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
 import FaucetTx from './Tx/FaucetTx';
 import TokenTx from './Tx/TokenTx';
 
@@ -48,7 +48,7 @@ const Tx = ({ match }) => {
                 case 'acmeFaucet':
                     return <FaucetTx data={props.data} />;
                 case 'syntheticDepositTokens':
-                    return <SyntheticTx data={props.data} />;
+                    return <SynthDepositTokensTx data={props.data} />;
                 case 'withdrawTokens':
                     return <TokenTx data={props.data} />;
                 default:

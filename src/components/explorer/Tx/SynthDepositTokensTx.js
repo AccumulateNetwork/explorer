@@ -21,7 +21,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Paragraph } = Typography;
 
-const SyntheticTx = props => {
+const SynthDepositTokensTx = props => {
 
     const tx = props.data;
     console.log(props.data);
@@ -156,4 +156,4 @@ const SyntheticTx = props => {
     );
 }
 
-export default SyntheticTx;
+export default SynthDepositTokensTx;
