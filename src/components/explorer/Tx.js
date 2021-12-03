@@ -5,8 +5,9 @@ import {
 } from 'antd';
 
 import RPC from './../common/RPC';
-import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
 import FaucetTx from './Tx/FaucetTx';
+import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
+import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
 
 const { Title } = Typography;
@@ -49,6 +50,8 @@ const Tx = ({ match }) => {
                     return <FaucetTx data={props.data} />;
                 case 'syntheticDepositTokens':
                     return <SynthDepositTokensTx data={props.data} />;
+                case 'syntheticCreateChain':
+                    return <SynthCreateChainTx data={props.data} />;
                 case 'withdrawTokens':
                     return <TokenTx data={props.data} />;
                 default:

@@ -5,19 +5,20 @@ import { Link } from 'react-router-dom';
 import {
   Typography,
   Descriptions,
-  Tooltip
+  Tooltip,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine, RiLinksLine
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
-const FaucetTx = props => {
+const SynthCreateChainTx = props => {
 
     const tx = props.data;
 
@@ -60,19 +61,35 @@ const FaucetTx = props => {
                         null
                     }
 
-                    {(tx.data && tx.data.url) ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account</nobr></span>}>
-                            <Link to={'/acc/' + tx.data.url.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.url}
-                            </Link>
+                    {(tx.data && tx.data.cause) ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txCause}><RiQuestionLine /></Tooltip></IconContext.Provider>Cause</nobr></span>}>
+                            {tx.data.cause}
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
-
                 </Descriptions>
-                </div>
+
+                <Title level={4}>
+                    <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiLinksLine />
+                    </IconContext.Provider>
+                    Chains
+                </Title>
+
+                {(tx.data && tx.data.chains) ? (
+                    <List
+                        size="small"
+                        bordered
+                        dataSource={tx.data.chains}
+                        renderItem={item => <List.Item>{item.data}</List.Item>}
+                    />
+                ) :
+                    <Paragraph><Text type="secondary">No chains</Text></Paragraph>
+                }
+                
+            </div>
             ) :
                 null
             }
@@ -80,4 +97,4 @@ const FaucetTx = props => {
     );
 }
 
-export default FaucetTx;
+export default SynthCreateChainTx;
