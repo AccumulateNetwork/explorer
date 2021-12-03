@@ -65,7 +65,7 @@ const SyntheticTx = props => {
 
             </Descriptions>
             
-            {tx && token ? (
+            {(tx && token) ? (
                 <div>
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -121,7 +121,7 @@ const SyntheticTx = props => {
                         null
                     }
 
-                    {tx.data.amount && token ? (
+                    {(tx.data.amount && token) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
                             {(tx.data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                         </Descriptions.Item>

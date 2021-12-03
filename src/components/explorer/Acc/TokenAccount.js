@@ -23,7 +23,7 @@ import FaucetAddress from '../../common/Faucet';
 
 const { Text, Title, Paragraph } = Typography;
 
-const LiteTokenAccount = props => {
+const TokenAccount = props => {
 
     const tokenAccount = props.data;
     const [token, setToken] = useState(null);
@@ -280,6 +280,14 @@ const LiteTokenAccount = props => {
                             null
                         }
 
+                        {tokenAccount.data.keyBook ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
+                                {tokenAccount.data.keyBook}
+                            </Descriptions.Item>
+                        ) :
+                            null  
+                        }
+
                         {(tokenAccount.data.tokenUrl && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
@@ -292,7 +300,7 @@ const LiteTokenAccount = props => {
                             null
                         }
 
-                        {(tokenAccount.data.balance && token.precision && token.symbol) ? (
+                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                 {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                             </Descriptions.Item>
@@ -300,7 +308,7 @@ const LiteTokenAccount = props => {
                             null
                         }
 
-                        {tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0 ? (
+                        {(tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
                                 {tokenAccount.data.creditBalance} credits
                             </Descriptions.Item>
@@ -363,4 +371,4 @@ const LiteTokenAccount = props => {
 
 };
 
-export default LiteTokenAccount;
+export default TokenAccount;

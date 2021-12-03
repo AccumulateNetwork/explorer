@@ -8,7 +8,7 @@ import {
 
 import RPC from './../common/RPC';
 
-import LiteTokenAccount from './Acc/LiteTokenAccount';
+import TokenAccount from './Acc/TokenAccount';
 import Token from './Acc/Token';
 import ADI from './Acc/ADI';
 import KeyBook from './Acc/KeyBook';
@@ -44,7 +44,9 @@ const Acc = ({ match }) => {
         if (props.data) {
             switch(props.data.type) {
                 case 'liteTokenAccount':
-                    return <LiteTokenAccount data={props.data} />;
+                    return <TokenAccount data={props.data} />;
+                case 'tokenAccount':
+                    return <TokenAccount data={props.data} />;
                 case 'token':
                     return <Token data={props.data} />;
                 case 'identity':

@@ -123,7 +123,7 @@ const ADI = props => {
                         ADI Directory
                     </Title>
 
-                    {directory && directory.entries ? (
+                    {(directory && directory.entries) ? (
                         <List
                             size="small"
                             bordered

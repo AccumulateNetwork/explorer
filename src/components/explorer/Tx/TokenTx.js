@@ -91,7 +91,7 @@ const TokenTx = props => {
 
             </Descriptions>
             
-            {tx && tokenAccount && token ? (
+            {(tx && tokenAccount && token) ? (
                 <div>
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -132,7 +132,7 @@ const TokenTx = props => {
                         null
                     }
 
-                    {tx.data.to && tokenAccount && token ? (
+                    {(tx.data.to && tokenAccount && token) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txTo}><RiQuestionLine /></Tooltip></IconContext.Provider>Output</nobr></span>}>
                             {tx.data.to && Array.isArray(tx.data.to) && tx.data.to[0] ? (
                                 <TxOutputs tx={tx.data.to} token={token} />

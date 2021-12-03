@@ -60,7 +60,7 @@ const SyntheticTx = props => {
                         null
                     }
 
-                    {tx.data && tx.data.url ? (
+                    {(tx.data && tx.data.url) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account</nobr></span>}>
                             <Link to={'/acc/' + tx.data.url.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.url}
