@@ -48,7 +48,9 @@ const Acc = ({ match }) => {
                     return <Token data={props.data} />;
                 case 'identity':
                     return <ADI data={props.data} />;
-                case 'keybook':
+                case 'keyBook':
+                    return <KeyBook data={props.data} />;
+                case 'keyPage':
                     return <KeyBook data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
