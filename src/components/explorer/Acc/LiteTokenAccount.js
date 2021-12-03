@@ -83,9 +83,6 @@ const LiteTokenAccount = props => {
                     tx.data.to = [];
                     tx.data.to.push(to);
                 }
-                if (tx.type === "syntheticGenesis") {
-                    response.items.shift();
-                }
             });
             setTxs(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
