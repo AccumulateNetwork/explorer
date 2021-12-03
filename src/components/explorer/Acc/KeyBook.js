@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography,
   Descriptions,
@@ -67,7 +69,7 @@ const KeyBook = props => {
                             size="small"
                             bordered
                             dataSource={keybook.data.pages}
-                            renderItem={item => <List.Item>{item}</List.Item>}
+                            renderItem={item => <List.Item><Link to={'/chain/' + item}>{item}</Link></List.Item>}
                         />
                     ) :
                         <Paragraph><Text type="secondary">No pages</Text></Paragraph>

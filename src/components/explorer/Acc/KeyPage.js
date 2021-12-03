@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography,
   Descriptions,
@@ -55,7 +57,7 @@ const KeyPage = props => {
 
                         {keypage.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                {keypage.data.keyBook}
+                                <Link to={'/chain/' + keypage.data.keyBook}>{keypage.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null

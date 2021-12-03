@@ -5,10 +5,6 @@ import {
 } from 'antd';
 
 import RPC from './../common/RPC';
-import FaucetTx from './Tx/FaucetTx';
-import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
-import SynthCreateChainTx from './Tx/SynthCreateChainTx';
-import TokenTx from './Tx/TokenTx';
 
 const { Title } = Typography;
 
@@ -24,7 +20,7 @@ const Chain = ({ match }) => {
             let params = {chainId: chainid};
             const response = await RPC.request("query-chain", params);
             if (response && response.data) {
-                // do something
+                setChain(response.data);
             } else {
                 throw new Error("Chain " + chainid + " not found"); 
             }
