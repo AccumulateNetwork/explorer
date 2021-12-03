@@ -12,6 +12,10 @@ const tooltipDescs = {
     adiUrl: "The URL for this ADI (Accumulate Digital Identifier)",
     pubKey: "The Public Key for this ADI",
     amount: "The number of tokens transferred",
+    keyBook: "",
+    keyData: "",
+    keyType: "",
+    nonce: "",
 };
 
 export default tooltipDescs;

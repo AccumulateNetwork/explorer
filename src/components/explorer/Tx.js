@@ -51,8 +51,6 @@ const Tx = ({ match }) => {
                     return <SyntheticTx data={props.data} />;
                 case 'withdrawTokens':
                     return <TokenTx data={props.data} />;
-                case 'tokenTransaction':
-                    return <TokenTx data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
             }
