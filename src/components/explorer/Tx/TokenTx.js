@@ -91,7 +91,7 @@ const TokenTx = props => {
 
             </Descriptions>
             
-            {tx ? (
+            {tx && !error ? (
                 <div>
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
