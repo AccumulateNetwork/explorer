@@ -13,6 +13,7 @@ import Token from './Acc/Token';
 import ADI from './Acc/ADI';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
+import ParseADI from '../common/ParseADI';
 
 const { Title } = Typography;
 
@@ -46,14 +47,17 @@ const Acc = ({ match }) => {
                 case 'liteTokenAccount':
                     return <TokenAccount data={props.data} />;
                 case 'tokenAccount':
+                    props.data.adi = ParseADI(props.data.data.url);
                     return <TokenAccount data={props.data} />;
                 case 'token':
                     return <Token data={props.data} />;
                 case 'identity':
                     return <ADI data={props.data} />;
                 case 'keyBook':
+                    props.data.adi = ParseADI(props.data.data.url);
                     return <KeyBook data={props.data} />;
                 case 'keyPage':
+                    props.data.adi = ParseADI(props.data.data.url);
                     return <KeyPage data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />

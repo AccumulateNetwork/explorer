@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiStackLine
+    RiInformationLine, RiQuestionLine, RiStackLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
@@ -53,6 +53,16 @@ const KeyBook = props => {
                             </Descriptions.Item>
                         ) :
                             null  
+                        }
+
+                        {keybook.adi ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>ADI</nobr></span>}>
+                                <Link to={'/acc/' + keybook.adi.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{keybook.adi}
+                                </Link>
+                            </Descriptions.Item>
+                        ) :
+                            null
                         }
 
                     </Descriptions>

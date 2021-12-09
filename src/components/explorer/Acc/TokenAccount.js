@@ -25,6 +25,8 @@ const { Text, Title, Paragraph } = Typography;
 
 const TokenAccount = props => {
 
+    console.log(props.data);
+
     const tokenAccount = props.data;
     const [token, setToken] = useState(null);
     const [txs, setTxs] = useState(null);
@@ -275,6 +277,16 @@ const TokenAccount = props => {
                                 ) : 
                                     null
                                 }
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+
+                        {tokenAccount.adi ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>ADI</nobr></span>}>
+                                <Link to={'/acc/' + tokenAccount.adi.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.adi}
+                                </Link>
                             </Descriptions.Item>
                         ) :
                             null
