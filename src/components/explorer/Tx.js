@@ -9,6 +9,7 @@ import FaucetTx from './Tx/FaucetTx';
 import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
 import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
+import CreateIdentityTx from './Tx/CreateIdentityTx';
 
 const { Title } = Typography;
 
@@ -54,6 +55,8 @@ const Tx = ({ match }) => {
                     return <SynthCreateChainTx data={props.data} />;
                 case 'withdrawTokens':
                     return <TokenTx data={props.data} />;
+                case 'createIdentity':
+                    return <CreateIdentityTx data={props.data} />;
                 default:
                     return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
             }
