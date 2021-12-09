@@ -280,14 +280,6 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {tokenAccount.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                {tokenAccount.data.keyBook}
-                            </Descriptions.Item>
-                        ) :
-                            null  
-                        }
-
                         {(tokenAccount.data.tokenUrl && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
