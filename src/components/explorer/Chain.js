@@ -32,23 +32,10 @@ const Chain = ({ match }) => {
     }
 
     function Render(props) {
-        /*
-        if (props.data) {
-            switch(props.data.type) {
-                case 'acmeFaucet':
-                    return <FaucetTx data={props.data} />;
-                case 'syntheticDepositTokens':
-                    return <SynthDepositTokensTx data={props.data} />;
-                case 'syntheticCreateChain':
-                    return <SynthCreateChainTx data={props.data} />;
-                case 'withdrawTokens':
-                    return <TokenTx data={props.data} />;
-                default:
-                    return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
-            }
+        if (props.data && props.data.url) {
+            window.location.href = '/acc/' + props.data.url.replace("acc://", "");
         }
-        */
-        return <Alert message="Redirecting..." type="info" showIcon />
+        return null;
     }
 
     useEffect(() => {
