@@ -60,7 +60,7 @@ const Acc = ({ match }) => {
                     props.data.adi = ParseADI(props.data.data.url);
                     return <KeyPage data={props.data} />;
                 default:
-                    return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
+                    return <Alert message="Chain found, but this  chain type is not supported by the explorer yet" type="warning" showIcon />
             }
         }
         return <Alert message="Chain does not exist" type="error" showIcon />

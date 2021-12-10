@@ -58,7 +58,7 @@ const Tx = ({ match }) => {
                 case 'createIdentity':
                     return <CreateIdentityTx data={props.data} />;
                 default:
-                    return <Alert message="This chain type is not supported by the explorer yet" type="warning" showIcon />
+                    return <Alert message="Transaction found, but this transaction type is not supported by the explorer yet" type="warning" showIcon />
             }
         }
         return <Alert message="Chain does not exist" type="error" showIcon />
