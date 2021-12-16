@@ -53,7 +53,7 @@ const Tx = ({ match }) => {
                     return <SynthDepositTokensTx data={props.data} />;
                 case 'syntheticCreateChain':
                     return <SynthCreateChainTx data={props.data} />;
-                case 'withdrawTokens':
+                case 'sendTokens':
                     return <TokenTx data={props.data} />;
                 case 'createIdentity':
                     return <CreateIdentityTx data={props.data} />;
