@@ -10,6 +10,7 @@ import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
 import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
 import CreateIdentityTx from './Tx/CreateIdentityTx';
+import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
 
 const { Title } = Typography;
 
@@ -57,6 +58,8 @@ const Tx = ({ match }) => {
                     return <TokenTx data={props.data} />;
                 case 'createIdentity':
                     return <CreateIdentityTx data={props.data} />;
+                case 'createTokenAccount':
+                    return <CreateTokenAccountTx data={props.data} />;
                 default:
                     return <Alert message="Transaction found, but this transaction type is not supported by the explorer yet" type="warning" showIcon />
             }
