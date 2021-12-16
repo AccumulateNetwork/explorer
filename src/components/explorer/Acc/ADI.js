@@ -7,8 +7,7 @@ import {
   Descriptions,
   Tooltip,
   Skeleton,
-  Alert,
-  List
+  Table
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -25,24 +24,62 @@ const ADI = props => {
 
     const adi = props.data;
     const [directory, setDirectory] = useState(null);
-    const [error, setError] = useState(null);
+    const [tableIsLoading, setTableIsLoading] = useState(true);
+    const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
 
-    const getDirectory = async (url) => {
-        setDirectory(null);
-        setError(null);
-        try {
-            let params = {url: adi.data.url};
-            const response = await RPC.request("query-directory", params);
-            if (response.data && response.type === "directory") {
-                setDirectory(response.data);
-            } else {
-                throw new Error("Directory of ADI " + url + " not found"); 
+    const columns = [
+        {
+            title: 'Key Books',
+            render: (row) => {
+                if (row) {
+                    return (
+                        <Link to={'/acc/' + row.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{row}
+                        </Link>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
             }
         }
-        catch(error) {
-            setDirectory(null);
-            setError(error.message);
+    ];
+
+    const getDirectory = async (params = pagination) => {
+        setTableIsLoading(true);
+    
+        let start = 0;
+        let count = 10;
+        let showTotalStart = 1;
+        let showTotalFinish = 10;
+    
+        if (params) {
+            start = (params.current-1)*params.pageSize;
+            count = params.pageSize;
+            showTotalStart = (params.current-1)*params.pageSize+1;
+            showTotalFinish = params.current*params.pageSize;
         }
+    
+        try {
+          const response = await RPC.request("query-directory", { url: adi.data.url, start: start, count: count } );
+          if (response && response.data) {
+
+            // workaround API bug response
+            if (response.data.start === null) {
+                response.data.start = 0;
+            }
+
+            setDirectory(response.data.entries);
+            setPagination({...pagination, current: (response.data.start/response.data.count)+1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`});
+          } else {
+            throw new Error("ADI Directory not found"); 
+          }
+        }
+        catch(error) {
+          // error is managed by RPC.js, no need to display anything
+        }
+        setTableIsLoading(false);
     }
 
     useEffect(() => {
@@ -123,12 +160,15 @@ const ADI = props => {
                         ADI Directory
                     </Title>
 
-                    {(directory && directory.entries) ? (
-                        <List
-                            size="small"
-                            bordered
-                            dataSource={directory.entries}
-                            renderItem={item => <List.Item><Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{item}</Link></List.Item>}
+                    {directory ? (
+                        <Table
+                            dataSource={directory}
+                            columns={columns}
+                            pagination={pagination}
+                            rowKey="txid"
+                            loading={tableIsLoading}
+                            onChange={getDirectory}
+                            scroll={{ x: 'max-content' }}
                         />
                     ) :
                         <Paragraph><Text type="secondary">No entries</Text></Paragraph>
@@ -137,32 +177,26 @@ const ADI = props => {
                 </div>
             ) :
                 <div>
-                    {error ? (
+                    <div>
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiInformationLine />
+                            </IconContext.Provider>
+                            ADI Info
+                        </Title>
                         <div className="skeleton-holder">
-                            <Alert message={error} type="error" showIcon />
+                            <Skeleton active />
                         </div>
-                    ) :
-                        <div>
-                            <Title level={4}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiInformationLine />
-                                </IconContext.Provider>
-                                ADI Info
-                            </Title>
-                            <div className="skeleton-holder">
-                                <Skeleton active />
-                            </div>
-                            <Title level={4}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiFolder2Line />
-                                </IconContext.Provider>
-                                ADI Directory
-                            </Title>
-                            <div className="skeleton-holder">
-                                <Skeleton active />
-                            </div>
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiFolder2Line />
+                            </IconContext.Provider>
+                            ADI Directory
+                        </Title>
+                        <div className="skeleton-holder">
+                            <Skeleton active />
                         </div>
-                    }
+                    </div>
                 </div>
             }
         </div>
