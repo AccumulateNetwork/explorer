@@ -11,6 +11,7 @@ import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
 import CreateIdentityTx from './Tx/CreateIdentityTx';
 import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
+import SynthGenesisTx from './Tx/SynthGenesisTx';
 
 const { Title } = Typography;
 
@@ -50,6 +51,8 @@ const Tx = ({ match }) => {
             switch(props.data.type) {
                 case 'acmeFaucet':
                     return <FaucetTx data={props.data} />;
+                case 'syntheticGenesis':
+                        return <SynthGenesisTx data={props.data} />;
                 case 'syntheticDepositTokens':
                     return <SynthDepositTokensTx data={props.data} />;
                 case 'syntheticCreateChain':
