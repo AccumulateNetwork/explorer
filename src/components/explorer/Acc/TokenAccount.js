@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiLinksLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -287,6 +287,14 @@ const TokenAccount = props => {
                                 <Link to={'/acc/' + tokenAccount.adi.replace("acc://", "")}>
                                     <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.adi}
                                 </Link>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+
+                        {tokenAccount.data.keyBook ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
+                                <Link to={'/chain/' + tokenAccount.data.keyBook}><IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null
