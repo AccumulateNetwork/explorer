@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiStackLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine, RiStackLine, RiAccountCircleLine, RiLinksLine
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
@@ -79,7 +79,7 @@ const KeyBook = props => {
                             size="small"
                             bordered
                             dataSource={keybook.data.pages}
-                            renderItem={item => <List.Item><Link to={'/chain/' + item}>{item}</Link></List.Item>}
+                            renderItem={item => <List.Item><Link to={'/chain/' + item}><IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{item}</Link></List.Item>}
                         />
                     ) :
                         <Paragraph><Text type="secondary">No pages</Text></Paragraph>

@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiLinksLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -121,7 +121,9 @@ const ADI = props => {
 
                         {adi.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                {adi.data.keyBook}
+                                <Link to={'/chain/' + adi.data.keyBook.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{adi.data.keyBook}
+                                </Link>
                             </Descriptions.Item>
                         ) :
                             null
