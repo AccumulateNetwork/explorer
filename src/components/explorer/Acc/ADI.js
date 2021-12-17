@@ -101,7 +101,7 @@ const ADI = props => {
 
             </Descriptions>
             
-            {adi.data && directory ? (
+            {adi.data ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -160,19 +160,15 @@ const ADI = props => {
                         ADI Directory
                     </Title>
 
-                    {directory ? (
-                        <Table
-                            dataSource={directory}
-                            columns={columns}
-                            pagination={pagination}
-                            rowKey="txid"
-                            loading={tableIsLoading}
-                            onChange={getDirectory}
-                            scroll={{ x: 'max-content' }}
-                        />
-                    ) :
-                        <Paragraph><Text type="secondary">No entries</Text></Paragraph>
-                    }
+                    <Table
+                        dataSource={directory}
+                        columns={columns}
+                        pagination={pagination}
+                        rowKey="txid"
+                        loading={tableIsLoading}
+                        onChange={getDirectory}
+                        scroll={{ x: 'max-content' }}
+                    />
                     
                 </div>
             ) :
