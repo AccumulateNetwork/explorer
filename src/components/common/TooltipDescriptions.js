@@ -20,6 +20,7 @@ const tooltipDescs = {
     keyData: "",
     keyType: "",
     nonce: "",
+    sponsor: "",
 };
 
 export default tooltipDescs;

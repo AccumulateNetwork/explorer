@@ -60,6 +60,14 @@ const CreateTokenAccountTx = props => {
                         null
                     }
 
+                    {(tx.data && tx.sponsor) ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
+                            <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
                     {(tx.data && tx.data.url) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token Account</nobr></span>}>
                             <Link to={'/acc/' + tx.data.url.replace("acc://", "")}>

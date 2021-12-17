@@ -10,7 +10,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiLinksLine
+    RiInformationLine, RiQuestionLine, RiLinksLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
@@ -55,6 +55,14 @@ const SynthCreateChainTx = props => {
                     {tx.txid ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
                             <span className="code">{tx.txid}</span>
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
+                    {(tx.data && tx.sponsor) ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
+                            <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
                         </Descriptions.Item>
                     ) :
                         null
