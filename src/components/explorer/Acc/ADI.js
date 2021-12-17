@@ -18,7 +18,7 @@ import {
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
 const ADI = props => {
 

@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography,
   Descriptions,
-  Tooltip,
-  List
+  Tooltip
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -14,7 +15,7 @@ import {
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title } = Typography;
 
 const SynthCreateChainTx = props => {
 
@@ -61,31 +62,13 @@ const SynthCreateChainTx = props => {
 
                     {(tx.data && tx.data.cause) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txCause}><RiQuestionLine /></Tooltip></IconContext.Provider>Cause</nobr></span>}>
-                            {tx.data.cause}
+                            <Link to={'/chain/' + tx.data.cause}><IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{tx.data.cause}</Link>
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
                 </Descriptions>
-
-                <Title level={4}>
-                    <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <RiLinksLine />
-                    </IconContext.Provider>
-                    Chains
-                </Title>
-
-                {(tx.data && tx.data.chains) ? (
-                    <List
-                        size="small"
-                        bordered
-                        dataSource={tx.data.chains}
-                        renderItem={item => <List.Item>{item.data}</List.Item>}
-                    />
-                ) :
-                    <Paragraph><Text type="secondary">No chains</Text></Paragraph>
-                }
                 
             </div>
             ) :
