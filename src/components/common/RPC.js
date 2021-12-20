@@ -9,7 +9,7 @@ class RPC {
     axios.defaults.headers.post['Content-Type'] = 'application/json';
   }
   
-  request = (method, params = null) => {
+  request = (method, params = null, showMessage = 0) => {
     const result = axios.post('', {
       jsonrpc: '2.0',
       id: ++this.currId,
@@ -21,7 +21,9 @@ class RPC {
         if (response.data.error.data && response.data.error.code) {
           // exception for nothing was found error
           if (response.data.error.code === -32807) {
-            message.info('Nothing was found');
+            if (showMessage) {
+              message.info('Nothing was found');
+            }
           } else {
             message.error('Error ' + response.data.error.code + ': ' + response.data.error.data);
           }

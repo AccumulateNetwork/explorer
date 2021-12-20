@@ -9,11 +9,11 @@ import ScrollToTop from './common/ScrollToTop';
 
 import RPC from './common/RPC';
 
-import ADI from './explorer/ADI';
 import Blocks from './explorer/Blocks';
-import Token from './explorer/Token';
-import TokenAccount from './explorer/TokenAccount';
-import Transaction from './explorer/Transaction';
+
+import Acc from './explorer/Acc';
+import Tx from './explorer/Tx';
+import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 
@@ -51,25 +51,9 @@ const Explorer = props => {
   const search = async (url) => {
         try {
             let params = {url: url};
-            const response = await RPC.request("get", params);
+            const response = await RPC.request("query", params, 1);
             if (response.data && response.type) {
-                switch (response.type) {
-                  case "anonTokenAccount":
-                    redirect('/account/'+url);
-                    break;
-                  case "tokenAccount":
-                    redirect('/account/'+url);
-                    break;
-                  case "adi":
-                    redirect('/adi/'+url);
-                    break;
-                  case "token":
-                    redirect('/token/'+url);
-                    break;
-                  default:
-                    message.info('Unknown response from Accumulate API');
-                    break;
-                }
+                redirect('/acc/'+url);
             } else {
               message.info('Nothing was found');
             }
@@ -111,10 +95,11 @@ const Explorer = props => {
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
-                <Route path="/adi/:url" component={ADI} />
-                <Route path="/account/:url+" component={TokenAccount} />
-                <Route path="/token/:url+" component={Token} />
-                <Route path="/tx/:hash" component={Transaction} />
+
+                <Route path="/acc/:url+" component={Acc} />
+                <Route path="/tx/:hash" component={Tx} />
+                <Route path="/chain/:chainid" component={Chain} />
+
                 <Route component={Error404} />
             </Switch>
         </Content>

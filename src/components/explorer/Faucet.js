@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { Link } from 'react-router-dom';
+
 import {
   Typography,
   Input,
@@ -8,6 +10,7 @@ import {
 } from 'antd';
 
 import RPC from './../common/RPC';
+import FaucetAddress from './../common/Faucet';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;
@@ -26,8 +29,8 @@ const Faucet = () => {
 
         let params = {url: url};
         const response = await RPC.request("faucet", params);
-        if (response && response.data && response.data.txid) {
-            setTxid("Txid: " + response.data.txid);
+        if (response && response && response.txid) {
+            setTxid("Txid: " + response.txid);
         } else {
             setError("Unable to fund " + url);
         }
@@ -43,6 +46,11 @@ const Faucet = () => {
     return (
         <div>
             <Title level={2}>Faucet</Title>
+            <Paragraph style={{marginTop: -10}}>
+                <Link to={'/acc/' + FaucetAddress.replace("acc://", "")}>
+                    {FaucetAddress}
+                </Link>
+            </Paragraph>
             <Paragraph>
                 <Alert message="This is the testnet faucet" type="info" showIcon />
             </Paragraph>
