@@ -266,3 +266,124 @@ h4.ant-typography .count {
 .footer p {
   margin-bottom: 4px;
 }
+
+.extid {
+  width: auto !important;
+  display: block !important;
+}
+
+.ant-table .extid {
+  float: left !important;
+  margin-right: 15px !important;
+}
+
+.extids {
+  margin-bottom: 30px;
+}
+
+.extids .extid {
+  margin-bottom: 10px;
+}
+
+.extid .ant-typography {
+  line-height: 18px;
+  padding: 7px 11px 6px;
+}
+
+.extids .extid-ASCII .ant-typography, .extids .extid-empty {
+  padding-top: 6px !important;
+  padding-bottom: 7px !important;
+}
+
+.extid .ant-select {
+  width: 89px !important;
+}
+
+.extid .ant-select .ant-select-selector {
+  height: 33px !important;
+}
+
+.extid .extid-text, .extid .extid-type {
+  font-size: 13px !important;
+}
+
+.extids .extid-text {
+  max-width: -moz-calc(100% - 89px);
+  max-width: -webkit-calc(100% - 89px);
+  max-width: calc(100% - 89px);
+}
+
+.extid.extid-Base64 .extid-text:not(.extid-empty), .extid.extid-Hex .extid-text:not(.extid-empty) {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+}
+
+.extid .extid-text {
+  background: #FFF;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #d9d9d9;
+  word-break: break-all;
+  overflow: hidden;
+}
+
+.ant-table .extid .extid-text {
+  border-left-width: 0 !important;
+}
+
+.extid .extid-type.ant-typography, .extid .extid-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-ASCII, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:not(.ant-radio-button-wrapper-disabled)::before {
+  background: #001529 !important;
+  border: 1px solid #001529 !important;
+  color: #FFF !important;
+}
+
+.extid-Base64 .extid-type.ant-typography, .extid-Base64 .extid-type .ant-select-selector, .extid-Hex .extid-type.ant-typography, .extid-Hex .extid-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-Base64, .type-radio .ant-radio-button-wrapper-checked.type-Hex, .type-radio .ant-radio-button-wrapper-checked.type-JSON, .type-radio .ant-radio-button-wrapper-checked.type-Base64:hover, .type-radio .ant-radio-button-wrapper-checked.type-Hex:hover, .type-radio .ant-radio-button-wrapper-checked.type-JSON:hover, .type-radio .ant-radio-button-wrapper-checked.type-Base64:not(.ant-radio-button-wrapper-disabled)::before, .type-radio .ant-radio-button-wrapper-checked.type-Hex:not(.ant-radio-button-wrapper-disabled)::before, .type-radio .ant-radio-button-wrapper-checked.type-JSON:not(.ant-radio-button-wrapper-disabled)::before {
+  background: #1a7eea !important;
+  border-color:  #1a7eea !important;
+}
+
+.extid.extid-compact .extid-type {
+  cursor: pointer;
+}
+
+.type-radio .ant-radio-button-wrapper:hover {
+  color: rgba(0, 0, 0, 0.65) !important;
+}
+
+.type-radio .ant-radio-button-wrapper-checked:hover {
+  color: #FFFFFF !important;
+}
+
+.extid .ant-select-arrow {
+  color: rgba(255,255,255,0.5) !important;
+}
+
+.extid-tag {
+  margin-top: 5px !important;
+  margin-right: 0 !important;
+}
+
+.extid .extid-text .ant-typography-copy {
+  opacity: 0.5;
+}
+
+.entry-content .ant-tabs-bar, .anchor-info .ant-tabs-bar {
+  display: none !important;
+}
+
+.entry-content {
+  padding: 16px !important;
+  background: #FFF !important;
+}
+
+.anchor-info .ant-tabs {
+  padding: 1px !important;
+  background: #FFF !important;
+}
+
+.entry-content .ant-tabs-top-content.ant-tabs-content-animated, .entry-content .ant-tabs-bottom-content.ant-tabs-content-animated, .anchor-info .ant-tabs-top-content.ant-tabs-content-animated, .anchor-info .ant-tabs-bottom-content.ant-tabs-content-animated {
+  transition: none !important;
+}
+
+.entry-content .code, .anchor-info .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+}
