@@ -14,7 +14,6 @@ const Content = props => {
 
   const defaultType = "ASCII";
   const [type, setType] = useState("defaultType");
-  const [current, setCurrent] = useState(textRaw);
   const [jsonDisabled, setJSONDisabled] = useState(true);
 
   function IsJsonString(str) {
@@ -43,7 +42,7 @@ const Content = props => {
     return null;
   };
 
-  useEffect(() => init(), []);
+  useEffect(() => init(), []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
