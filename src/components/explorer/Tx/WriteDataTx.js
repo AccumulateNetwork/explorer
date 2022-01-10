@@ -96,7 +96,7 @@ const WriteDataTx = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
                         </IconContext.Provider>
-                        Content
+                        Data
                         </Title>
 
                         {tx.data.entry.data ? (

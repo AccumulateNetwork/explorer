@@ -73,7 +73,7 @@ const TokenAccount = props => {
           if (response && response.items) {
 
             // workaround API bug response
-            if (response.start === null) {
+            if (response.start === null || response.data.start === undefined) {
                 response.start = 0;
             }
 

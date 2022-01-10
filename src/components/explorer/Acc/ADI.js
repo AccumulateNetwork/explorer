@@ -66,7 +66,7 @@ const ADI = props => {
           if (response && response.data) {
 
             // workaround API bug response
-            if (response.data.start === null) {
+            if (response.data.start === null || response.data.start === undefined) {
                 response.data.start = 0;
             }
 
