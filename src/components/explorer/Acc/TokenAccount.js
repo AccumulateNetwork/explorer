@@ -25,8 +25,6 @@ const { Text, Title, Paragraph } = Typography;
 
 const TokenAccount = props => {
 
-    console.log(props.data);
-
     const tokenAccount = props.data;
     const [token, setToken] = useState(null);
     const [txs, setTxs] = useState(null);

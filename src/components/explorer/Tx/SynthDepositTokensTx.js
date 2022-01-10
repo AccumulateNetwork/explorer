@@ -24,7 +24,6 @@ const { Title, Paragraph } = Typography;
 const SynthDepositTokensTx = props => {
 
     const tx = props.data;
-    console.log(props.data);
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
