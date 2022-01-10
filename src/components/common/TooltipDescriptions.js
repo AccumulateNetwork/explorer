@@ -4,6 +4,7 @@ const tooltipDescs = {
     token: "The name and symbol of the token",
     balance: "The total number of tokens for this account",
     creditBalance: "The total number of credits for this account. Credits are non-transferable tokens used in the Accumulate network to fund ADI-create transactions and pay for data storage",
+    creditsAddes: "Number of credits added",
     tokenSymbol: "Abbreviation used to easily identify the token within Accumulate",
     tokenPrecision: "The minimum divisible unit of this token (i.e. how many digits after the decimal point)",
     txFrom: "The sending party of this transaction",
@@ -21,6 +22,7 @@ const tooltipDescs = {
     keyType: "",
     nonce: "",
     sponsor: "",
+    recipient: "",
 };
 
 export default tooltipDescs;

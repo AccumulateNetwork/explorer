@@ -20,6 +20,7 @@ import {
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
+import Count from '../../common/Count';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -31,6 +32,7 @@ const TokenAccount = props => {
     const [error, setError] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+    const [totalTxs, setTotalTxs] = useState(-1);
     
     const getToken = async () => {
         setPagination({...pagination, current: 1});
@@ -73,7 +75,7 @@ const TokenAccount = props => {
           if (response && response.items) {
 
             // workaround API bug response
-            if (response.start === null || response.data.start === undefined) {
+            if (response.start === null || response.start === undefined) {
                 response.start = 0;
             }
 
@@ -86,6 +88,7 @@ const TokenAccount = props => {
             });
             setTxs(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalTxs(response.total);
           } else {
             throw new Error("Token account not found"); 
           }
@@ -333,6 +336,7 @@ const TokenAccount = props => {
                         <RiExchangeLine />
                         </IconContext.Provider>
                         Transactions
+                        <Count count={totalTxs ? totalTxs : 0} />
                     </Title>
 
                     <Table

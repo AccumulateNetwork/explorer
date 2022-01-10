@@ -162,7 +162,7 @@ const DataAccount = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                         </IconContext.Provider>
-                        Entries
+                        Data Entries
                         <Count count={totalEntries ? totalEntries : 0} />
                     </Title>
 

@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiFileList2Line, RiPriceTag3Line
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
@@ -77,7 +77,7 @@ const WriteDataTx = props => {
                     <div>
                         <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiInformationLine />
+                            <RiPriceTag3Line />
                         </IconContext.Provider>
                         External IDs
                         </Title>
@@ -94,7 +94,7 @@ const WriteDataTx = props => {
 
                         <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiInformationLine />
+                            <RiFileList2Line />
                         </IconContext.Provider>
                         Data
                         </Title>
