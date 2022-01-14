@@ -33,7 +33,7 @@ const Acc = ({ match }) => {
         setError(null);
 
         // if hash params found, parse them
-        if (location.hash != '') {
+        if (location.hash !== '') {
             url += location.hash;
         }
 
@@ -82,7 +82,7 @@ const Acc = ({ match }) => {
 
     useEffect(() => {
         getAcc(match.params.url);
-    }, [match.params.url]);
+    }, [match.params.url]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
