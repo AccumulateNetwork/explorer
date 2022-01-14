@@ -73,7 +73,7 @@ const DataAccount = props => {
             dataIndex: 'entryHash',
             className: 'code',
             render: (entryHash) => (
-                <Link to={'#'+entryHash}>
+                <Link to={'#data/'+entryHash}>
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                     </IconContext.Provider>

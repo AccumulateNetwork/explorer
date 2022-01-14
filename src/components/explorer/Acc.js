@@ -3,8 +3,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Skeleton,
-  Alert,
+  Alert
 } from 'antd';
+
+import { useLocation } from 'react-router-dom';
 
 import RPC from './../common/RPC';
 
@@ -20,6 +22,8 @@ const { Title } = Typography;
 
 const Acc = ({ match }) => {
 
+    const location = useLocation();
+    
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
 
@@ -27,6 +31,14 @@ const Acc = ({ match }) => {
         document.title = url + " | Accumulate Explorer";
         setAcc(null);
         setError(null);
+
+        // if hash params found, parse them
+        if (location.hash != '') {
+            if (location.hash.includes("#data/")) {
+                url += location.hash;
+            }
+        }
+
         try {
             let params = {url: url};
             const response = await RPC.request("query", params);
