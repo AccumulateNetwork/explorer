@@ -34,9 +34,7 @@ const Acc = ({ match }) => {
 
         // if hash params found, parse them
         if (location.hash != '') {
-            if (location.hash.includes("#data/")) {
-                url += location.hash;
-            }
+            url += location.hash;
         }
 
         try {
