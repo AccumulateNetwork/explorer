@@ -81,7 +81,7 @@ const TokenAccount = props => {
 
             response.items.forEach((tx) => {
                 if (tx.type === "syntheticDepositTokens") {
-                    let to = {url: tx.data.to, amount: tx.data.amount, txid: tx.data.txid};
+                    let to = {url: tx.origin, amount: tx.data.amount, txid: tx.data.cause};
                     tx.data.to = [];
                     tx.data.to.push(to);
                 }
