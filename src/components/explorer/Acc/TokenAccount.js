@@ -79,13 +79,6 @@ const TokenAccount = props => {
                 response.start = 0;
             }
 
-            response.items.forEach((tx) => {
-                if (tx.type === "syntheticDepositTokens") {
-                    let to = {url: tx.data.to, amount: tx.data.amount, txid: tx.data.txid};
-                    tx.data.to = [];
-                    tx.data.to.push(to);
-                }
-            });
             setTxs(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
             setTotalTxs(response.total);
@@ -169,46 +162,52 @@ const TokenAccount = props => {
         },
         {
             title: 'From',
-            dataIndex: 'data',
-            render: (data) => {
-                if (data.from) {
-                    if (data.from === tokenAccount.data.url) {
-                        return (
-                            <Text type="secondary">{data.from}</Text>
-                        )
-                    } else {
-                        return (
-                            <Link to={'/acc/' + data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.from}</Link>
-                        )
-                    }
-                } else {
+            render: (tx) => {
+                let from
+
+                if (tx.data.from) from = tx.data.from
+                else if (tx.origin) from = tx.origin
+
+                if (from === undefined) {
                     return (
                         <Text disabled>N/A</Text>
+                    )
+                } else if (from === tokenAccount.data.url) {
+                    return (
+                        <Text type="secondary">{from}</Text>
+                    )
+                } else {
+                    return (
+                        <Link to={'/acc/' + from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{from}</Link>
                     )
                 }
             }
         },
         {
             title: 'To',
-            dataIndex: 'data',
-            render: (data) => {
-                if (data.to || data.recipient) {
-                    if (data.to && Array.isArray(data.to) && data.to[0]) {
+            render: (tx) => {
+                if (tx.data.to || tx.data.recipient) {
+                    if (tx.data.to && Array.isArray(tx.data.to) && tx.data.to[0]) {
                         return (
-                            <TxOutputs tx={data.to} token={token} />
+                            <TxOutputs tx={tx.data.to} token={token} />
                         )
                     }
-                    if (data.recipient) {
-                        if (data.recipient === tokenAccount.data.url) {
+                    if (tx.data.recipient) {
+                        if (tx.data.recipient === tokenAccount.data.url) {
                             return (
-                                <Text type="secondary">{data.recipient}</Text>
+                                <Text type="secondary">{tx.data.recipient}</Text>
                             )
                         } else {
                             return (
-                                <Link to={'/acc/' + data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{data.recipient}</Link>
+                                <Link to={'/acc/' + tx.data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.recipient}</Link>
                             )
                         }
                     }
+                //special case, with no TO or RECIPIENT address
+                } else if ((tx.type === 'syntheticDepositTokens' || tx.type === 'syntheticDepositCredits') && tx.origin) {
+                    return (
+                        <Text type="secondary">{tx.origin}</Text>
+                    )
                 } else {
                     return (
                         <Text disabled>N/A</Text>
