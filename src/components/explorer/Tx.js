@@ -54,7 +54,9 @@ const Tx = ({ match }) => {
                 case 'acmeFaucet':
                     return <FaucetTx data={props.data} />;
                 case 'syntheticGenesis':
-                        return <SynthGenesisTx data={props.data} />;
+                    return <SynthGenesisTx data={props.data} />;
+                case 'genesis':
+                    return <SynthGenesisTx data={props.data} />;
                 case 'syntheticDepositTokens':
                     return <SynthDepositTokensTx data={props.data} />;
                 case 'syntheticCreateChain':
