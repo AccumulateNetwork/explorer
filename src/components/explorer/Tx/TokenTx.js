@@ -41,12 +41,12 @@ const TokenTx = props => {
                 throw new Error("Token Account " + tx.data.from + " not found"); 
             }
 
-            let params2 = {url: response.data.tokenUrl};
+            let params2 = {url: response.data.token};
             const response2 = await RPC.request("query", params2);
             if (response2 && response2.data) {
                 setToken(response2.data);
             } else {
-                throw new Error("Token " + response.data.tokenUrl + " not found"); 
+                throw new Error("Token " + response.data.token + " not found"); 
             }
         }
         catch(error) {
