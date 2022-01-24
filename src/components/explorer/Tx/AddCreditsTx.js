@@ -28,7 +28,7 @@ const AddCreditsTx = props => {
             <Descriptions bordered column={1} size="middle">
 
                 {tx.type ? (
-                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
+                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txType}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
                         {tx.type}
                     </Descriptions.Item>
                 ) :
@@ -72,7 +72,7 @@ const AddCreditsTx = props => {
                     }
 
                     {(tx.data.amount) ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditsAddes}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditsAdded}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
                             {(tx.data.amount)} credits
                         </Descriptions.Item>
                     ) :
