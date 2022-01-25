@@ -40,7 +40,7 @@ const TokenAccount = props => {
         setTxs(null);
         setError(null);
         try {
-            let params = {url: tokenAccount.data.token};
+            let params = {url: tokenAccount.data.tokenUrl};
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setToken(response.data);
@@ -227,7 +227,7 @@ const TokenAccount = props => {
                     }
                     if (data.amount) {
                         return (
-                            <Text>{data.amount} credits</Text>
+                            <Text>{data.amount / 100} credits</Text>
                         )
                     }
                 } else {
@@ -322,7 +322,7 @@ const TokenAccount = props => {
 
                         {(tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {tokenAccount.data.creditBalance} credits
+                                {tokenAccount.data.creditBalance / 100} credits
                             </Descriptions.Item>
                         ) :
                             null
