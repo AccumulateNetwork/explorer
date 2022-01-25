@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiLinksLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiStackLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -294,7 +294,7 @@ const TokenAccount = props => {
 
                         {tokenAccount.data.keyBook && parseInt(tokenAccount.data.keyBook, 10) > 0 ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/chain/' + tokenAccount.data.keyBook}><IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
+                                <Link to={'/acc/' + tokenAccount.data.keyBook}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null

@@ -63,15 +63,15 @@ const ADI = props => {
     
         try {
           const response = await RPC.request("query-directory", { url: adi.data.url, start: start, count: count } );
-          if (response && response.data) {
+          if (response && response.items) {
 
             // workaround API bug response
-            if (response.data.start === null || response.data.start === undefined) {
-                response.data.start = 0;
+            if (response.start === null || response.start === undefined) {
+                response.start = 0;
             }
 
-            setDirectory(response.data.entries);
-            setPagination({...pagination, current: (response.data.start/response.data.count)+1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`});
+            setDirectory(response.items);
+            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
           } else {
             throw new Error("ADI Directory not found"); 
           }
@@ -121,7 +121,7 @@ const ADI = props => {
 
                         {adi.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/chain/' + adi.data.keyBook.replace("acc://", "")}>
+                                <Link to={'/acc/' + adi.data.keyBook.replace("acc://", "")}>
                                     <IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{adi.data.keyBook}
                                 </Link>
                             </Descriptions.Item>
