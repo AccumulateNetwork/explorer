@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -6,7 +6,8 @@ import {
   Typography,
   Descriptions,
   Skeleton,
-  Tooltip
+  Tooltip,
+  Alert
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -18,13 +19,14 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title } = Typography;
 
-const AddCreditsTx = props => {
+const SynthDepositCreditsTx = props => {
 
     const tx = props.data;
-    //const [error, setError] = useState(null);
+    const [error] = useState(null);
 
     return (
         <div>
+
             <Descriptions bordered column={1} size="middle">
 
                 {tx.type ? (
@@ -55,7 +57,7 @@ const AddCreditsTx = props => {
                         null
                     }
 
-                    {(tx.data && tx.sponsor) ? (
+                    {(tx.sponsor) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
                             <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
                         </Descriptions.Item>
@@ -63,17 +65,9 @@ const AddCreditsTx = props => {
                         null
                     }
 
-                    {(tx.data && tx.data.recipient) ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.recipient}><RiQuestionLine /></Tooltip></IconContext.Provider>Recipient</nobr></span>}>
-                            <Link to={'/acc/' + tx.data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.recipient}</Link>
-                        </Descriptions.Item>
-                    ) :
-                        null
-                    }
-
                     {(tx.data.amount) ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditsAdded}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
-                            {(tx.data.amount)} credits
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
+                            {(tx.data.amount)} Credits
                         </Descriptions.Item>
                     ) :
                         null
@@ -83,19 +77,27 @@ const AddCreditsTx = props => {
                 </div>
             ) :
                 <div>
-                    <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiInformationLine />
-                        </IconContext.Provider>
-                        Transaction Info
-                    </Title>
-                    <div className="skeleton-holder">
-                        <Skeleton active />
-                    </div>
+                    {error ? (
+                        <div className="skeleton-holder">
+                            <Alert message={error} type="error" showIcon />
+                        </div>
+                    ) :
+                        <div>
+                            <Title level={4}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}>
+                                <RiInformationLine />
+                                </IconContext.Provider>
+                                Transaction Info
+                            </Title>
+                            <div className="skeleton-holder">
+                                <Skeleton active />
+                            </div>
+                        </div>
+                    }
                 </div>
             }
         </div>
     );
 }
 
-export default AddCreditsTx;
+export default SynthDepositCreditsTx;
