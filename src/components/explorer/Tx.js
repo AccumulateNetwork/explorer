@@ -7,6 +7,7 @@ import {
 import RPC from './../common/RPC';
 import FaucetTx from './Tx/FaucetTx';
 import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
+import SynthDepositCreditsTx from './Tx/SynthDepositCreditsTx';
 import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
 import CreateIdentityTx from './Tx/CreateIdentityTx';
@@ -59,6 +60,8 @@ const Tx = ({ match }) => {
                     return <SynthGenesisTx data={props.data} />;
                 case 'syntheticDepositTokens':
                     return <SynthDepositTokensTx data={props.data} />;
+                case 'syntheticDepositCredits':
+                    return <SynthDepositCreditsTx data={props.data} />;
                 case 'syntheticCreateChain':
                     return <SynthCreateChainTx data={props.data} />;
                 case 'sendTokens':
