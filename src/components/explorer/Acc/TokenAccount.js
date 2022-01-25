@@ -40,12 +40,12 @@ const TokenAccount = props => {
         setTxs(null);
         setError(null);
         try {
-            let params = {url: tokenAccount.data.tokenUrl};
+            let params = {url: tokenAccount.data.token};
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setToken(response.data);
             } else {
-                throw new Error("Token " + response.data.tokenUrl + " not found"); 
+                throw new Error("Token " + response.data.token + " not found"); 
             }
         }
         catch(error) {
@@ -300,12 +300,12 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {(tokenAccount.data.tokenUrl && token.symbol) ? (
+                        {(tokenAccount.data.token && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
                                 <br />
-                                <Link to={'/acc/' + tokenAccount.data.tokenUrl.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.tokenUrl}
+                                <Link to={'/acc/' + tokenAccount.data.token.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.token}
                                 </Link>
                             </Descriptions.Item>
                         ) :

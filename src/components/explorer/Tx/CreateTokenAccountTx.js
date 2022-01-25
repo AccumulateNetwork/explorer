@@ -78,10 +78,10 @@ const CreateTokenAccountTx = props => {
                         null
                     }
 
-                    {(tx.data && tx.data.tokenUrl) ? (
+                    {(tx.data && tx.data.token) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
-                            <Link to={'/acc/' + tx.data.tokenUrl.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.data.tokenUrl}
+                            <Link to={'/acc/' + tx.data.token.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.data.token}
                             </Link>
                         </Descriptions.Item>
                     ) :

@@ -31,12 +31,12 @@ const SynthDepositTokensTx = props => {
         setToken(null);
         setError(null);
         try {
-            let params = {url: tx.data.tokenURL};
+            let params = {url: tx.data.token};
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setToken(response.data);
             } else {
-                throw new Error("Token " + response.data.tokenUrl + " not found"); 
+                throw new Error("Token " + response.data.token + " not found"); 
             }
         }
         catch(error) {
