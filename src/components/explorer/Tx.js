@@ -12,6 +12,7 @@ import SynthCreateChainTx from './Tx/SynthCreateChainTx';
 import TokenTx from './Tx/TokenTx';
 import CreateIdentityTx from './Tx/CreateIdentityTx';
 import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
+import CreateDataAccountTx from './Tx/CreateDataAccountTx';
 import SynthGenesisTx from './Tx/SynthGenesisTx';
 import WriteDataTx from './Tx/WriteDataTx';
 import WriteDataToTx from './Tx/WriteDataToTx';
@@ -71,6 +72,8 @@ const Tx = ({ match }) => {
                     return <CreateIdentityTx data={props.data} />;
                 case 'createTokenAccount':
                     return <CreateTokenAccountTx data={props.data} />;
+                case 'createDataAccount':
+                    return <CreateDataAccountTx data={props.data} />;
                 case 'writeData':
                     return <WriteDataTx data={props.data} />;
                 case 'writeDataTo':
