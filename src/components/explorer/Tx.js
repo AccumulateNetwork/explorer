@@ -17,6 +17,7 @@ import SynthGenesisTx from './Tx/SynthGenesisTx';
 import WriteDataTx from './Tx/WriteDataTx';
 import WriteDataToTx from './Tx/WriteDataToTx';
 import AddCreditsTx from './Tx/AddCreditsTx';
+import SegWitDataEntryTx from './Tx/SegWitDataEntryTx';
 
 const { Title } = Typography;
 
@@ -78,6 +79,8 @@ const Tx = ({ match }) => {
                     return <WriteDataTx data={props.data} />;
                 case 'writeDataTo':
                     return <WriteDataToTx data={props.data} />;
+                case 'segWitDataEntry':
+                    return <SegWitDataEntryTx data={props.data} />;
                 case 'addCredits':
                     return <AddCreditsTx data={props.data} />;
                 default:
