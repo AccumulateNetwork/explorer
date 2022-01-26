@@ -84,7 +84,7 @@ const Acc = ({ match }) => {
 
     useEffect(() => {
         getAcc(match.params.url);
-    }, [match.params.url]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
