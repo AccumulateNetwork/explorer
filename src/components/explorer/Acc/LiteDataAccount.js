@@ -48,15 +48,15 @@ const LiteDataAccount = props => {
     
         try {
           const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expandChains: true } );
-          if (response && response.data) {
+          if (response && response.items) {
 
             // workaround API bug response
-            if (response.data.start === null || response.data.start === undefined) {
-                response.data.start = 0;
+            if (response.start === null || response.start === undefined) {
+                response.start = 0;
             }
-            setEntries(response.data.dataEntries);
-            setPagination({...pagination, current: (response.data.start/response.data.count)+1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`});
-            setTotalEntries(response.data.total);
+            setEntries(response.items);
+            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalEntries(response.total);
           } else {
             throw new Error("Data set not found"); 
           }
@@ -120,34 +120,6 @@ const LiteDataAccount = props => {
             
             {account.data ? (
                 <div>
-                    <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiInformationLine />
-                        </IconContext.Provider>
-                        Data Account Info
-                    </Title>
-                    <Descriptions bordered column={1} size="middle">
-
-                        {account.data.url ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.LiteDataAccountUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Data Account URL</nobr></span>}>
-                                {account.data.url}
-                            </Descriptions.Item>
-                        ) :
-                            null  
-                        }
-
-                        {account.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/chain/' + account.data.keyBook}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiLinksLine /></IconContext.Provider>{account.data.keyBook}
-                                </Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
-                    </Descriptions>
-
                     <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
