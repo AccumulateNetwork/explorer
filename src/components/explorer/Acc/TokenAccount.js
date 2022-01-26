@@ -203,6 +203,11 @@ const TokenAccount = props => {
                             )
                         }
                     }
+                //special case for acmeFaucet tx type
+                } else if (tx.type === 'acmeFaucet' && tx.data.url) {
+                    return (
+                        <Link to={'/acc/' + tx.data.url.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.url}</Link>
+                    )
                 //special case, with no TO or RECIPIENT address
                 } else if ((tx.type === 'syntheticDepositTokens' || tx.type === 'syntheticDepositCredits') && tx.origin) {
                     return (
