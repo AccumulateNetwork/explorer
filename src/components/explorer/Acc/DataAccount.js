@@ -47,7 +47,7 @@ const DataAccount = props => {
         }
     
         try {
-          const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expandChains: true } );
+          const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expand: true } );
           if (response) {
 
             // workaround API bug response

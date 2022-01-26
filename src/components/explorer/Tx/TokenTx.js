@@ -82,7 +82,7 @@ const TokenTx = props => {
             <Descriptions bordered column={1} size="middle">
 
                 {tx.type ? (
-                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
+                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txType}><RiQuestionLine /></Tooltip></IconContext.Provider>Type</nobr></span>}>
                         {tx.type}
                     </Descriptions.Item>
                 ) :
