@@ -67,7 +67,7 @@ const SynthDepositCreditsTx = props => {
 
                     {(tx.data.amount) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
-                            {(tx.data.amount)} Credits
+                            {tx.data.amount / 100} credits
                         </Descriptions.Item>
                     ) :
                         null

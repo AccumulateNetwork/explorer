@@ -40,7 +40,7 @@ const TokenAccount = props => {
         setTxs(null);
         setError(null);
         try {
-            let params = {url: tokenAccount.data.token};
+            let params = {url: tokenAccount.data.tokenUrl};
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setToken(response.data);
@@ -203,6 +203,11 @@ const TokenAccount = props => {
                             )
                         }
                     }
+                //special case for acmeFaucet tx type
+                } else if (tx.type === 'acmeFaucet' && tx.data.url) {
+                    return (
+                        <Link to={'/acc/' + tx.data.url.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.url}</Link>
+                    )
                 //special case, with no TO or RECIPIENT address
                 } else if ((tx.type === 'syntheticDepositTokens' || tx.type === 'syntheticDepositCredits') && tx.origin) {
                     return (
@@ -224,10 +229,15 @@ const TokenAccount = props => {
                         return (
                             <TxAmounts tx={data.to} token={token} />
                         )
-                    }
-                    if (data.amount) {
+                    } else if (data.amount && data.token && token.symbol === data.token) {
+                        return ( 
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount2</nobr></span>}>
+                            {(data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                            </Descriptions.Item>
+                        )
+                    } else if (data.amount) { //if not a TOKEN, then it is a CREDIT
                         return (
-                            <Text>{data.amount} credits</Text>
+                            <Text>{data.amount / 100} credits</Text>
                         )
                     }
                 } else {
@@ -322,7 +332,7 @@ const TokenAccount = props => {
 
                         {(tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {tokenAccount.data.creditBalance} credits
+                                {tokenAccount.data.creditBalance / 100} credits
                             </Descriptions.Item>
                         ) :
                             null

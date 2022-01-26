@@ -14,6 +14,7 @@ import CreateIdentityTx from './Tx/CreateIdentityTx';
 import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
 import SynthGenesisTx from './Tx/SynthGenesisTx';
 import WriteDataTx from './Tx/WriteDataTx';
+import WriteDataToTx from './Tx/WriteDataToTx';
 import AddCreditsTx from './Tx/AddCreditsTx';
 
 const { Title } = Typography;
@@ -72,6 +73,8 @@ const Tx = ({ match }) => {
                     return <CreateTokenAccountTx data={props.data} />;
                 case 'writeData':
                     return <WriteDataTx data={props.data} />;
+                case 'writeDataTo':
+                    return <WriteDataToTx data={props.data} />;
                 case 'addCredits':
                     return <AddCreditsTx data={props.data} />;
                 default:

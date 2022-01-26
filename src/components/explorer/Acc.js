@@ -16,6 +16,7 @@ import ADI from './Acc/ADI';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
+import LiteDataAccount from './Acc/LiteDataAccount';
 import ParseADI from '../common/ParseADI';
 
 const { Title } = Typography;
@@ -56,7 +57,6 @@ const Acc = ({ match }) => {
         if (props.data) {
             switch(props.data.type) {
                 case 'liteTokenAccount':
-                    return <TokenAccount data={props.data} />;
                 case 'tokenAccount':
                     props.data.adi = ParseADI(props.data.data.url);
                     return <TokenAccount data={props.data} />;
@@ -73,6 +73,9 @@ const Acc = ({ match }) => {
                 case 'dataAccount':
                     props.data.adi = ParseADI(props.data.data.url);
                     return <DataAccount data={props.data} />;
+                case 'liteDataAccount':
+                    props.data.adi = ParseADI(props.data.data.url);
+                    return <LiteDataAccount data={props.data} />;
                 default:
                     return <Alert message="Chain found, but this chain type is not supported by the explorer yet" type="warning" showIcon />
             }

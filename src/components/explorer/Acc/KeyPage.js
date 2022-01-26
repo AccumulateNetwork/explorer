@@ -76,7 +76,7 @@ const KeyPage = props => {
 
                         {(keypage.data.creditBalance || keypage.data.creditBalance === 0) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {keypage.data.creditBalance} credits
+                                {keypage.data.creditBalance / 100} credits
                             </Descriptions.Item>
                         ) :
                             null
