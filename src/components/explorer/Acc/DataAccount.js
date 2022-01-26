@@ -48,15 +48,15 @@ const DataAccount = props => {
     
         try {
           const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expandChains: true } );
-          if (response && response.data) {
+          if (response) {
 
             // workaround API bug response
-            if (response.data.start === null || response.data.start === undefined) {
-                response.data.start = 0;
+            if (response.start === null || response.start === undefined) {
+                response.start = 0;
             }
-            setEntries(response.data.dataEntries);
-            setPagination({...pagination, current: (response.data.start/response.data.count)+1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`});
-            setTotalEntries(response.data.total);
+            setEntries(response.items);
+            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalEntries(response.total);
           } else {
             throw new Error("Data set not found"); 
           }
