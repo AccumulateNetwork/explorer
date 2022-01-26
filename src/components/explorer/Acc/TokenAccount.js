@@ -224,8 +224,13 @@ const TokenAccount = props => {
                         return (
                             <TxAmounts tx={data.to} token={token} />
                         )
-                    }
-                    if (data.amount) {
+                    } else if (data.amount && data.token && token.symbol === data.token) {
+                        return ( 
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount2</nobr></span>}>
+                            {(data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                            </Descriptions.Item>
+                        )
+                    } else if (data.amount) { //if not a TOKEN, then it is a CREDIT
                         return (
                             <Text>{data.amount / 100} credits</Text>
                         )

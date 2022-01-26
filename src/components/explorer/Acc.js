@@ -57,7 +57,6 @@ const Acc = ({ match }) => {
         if (props.data) {
             switch(props.data.type) {
                 case 'liteTokenAccount':
-                    return <TokenAccount data={props.data} />;
                 case 'tokenAccount':
                     props.data.adi = ParseADI(props.data.data.url);
                     return <TokenAccount data={props.data} />;
