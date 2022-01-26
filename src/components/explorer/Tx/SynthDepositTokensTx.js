@@ -16,10 +16,9 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
-import FaucetAddress from '../../common/Faucet';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 const SynthDepositTokensTx = props => {
 
@@ -90,40 +89,10 @@ const SynthDepositTokensTx = props => {
                         null
                     }
 
-                    {tx.data.txid ? (
+                    {tx.data.cause ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Parent Txid</nobr></span>}>
-                            <Link to={'/tx/' + tx.data.txid} className="code"><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.data.txid}</Link>
+                            <Link to={'/tx/' + tx.data.cause} className="code"><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.data.cause}</Link>
                        </Descriptions.Item>
-                    ) :
-                        null
-                    }
-
-                    {tx.data.from ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txFrom}><RiQuestionLine /></Tooltip></IconContext.Provider>Input</nobr></span>}>
-                            <Link to={'/acc/' + tx.data.from.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.from}
-                            </Link>
-                            {tx.data.from === FaucetAddress ? (
-                                <Paragraph className="inline-tip">Faucet address</Paragraph>
-                            ) : 
-                                null
-                            }
-                        </Descriptions.Item>
-                    ) :
-                        null
-                    }
-
-                    {tx.data.to ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txTo}><RiQuestionLine /></Tooltip></IconContext.Provider>Output</nobr></span>}>
-                            <Link to={'/acc/' + tx.data.to.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.to}
-                            </Link>
-                            {tx.data.to === FaucetAddress ? (
-                                <Paragraph className="inline-tip">Faucet address</Paragraph>
-                            ) : 
-                                null
-                            }
-                        </Descriptions.Item>
                     ) :
                         null
                     }
