@@ -16,6 +16,7 @@ import ADI from './Acc/ADI';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
+import DataEntry from './Acc/DataEntry';
 import ParseADI from '../common/ParseADI';
 
 const { Title } = Typography;
@@ -75,6 +76,8 @@ const Acc = ({ match }) => {
                     return <DataAccount data={props.data} />;
                 case 'liteDataAccount':
                     return <DataAccount data={props.data} />;
+                case 'dataEntry':
+                    return <DataEntry data={props.data} />;
                 default:
                     return <Alert message="Chain found, but this chain type is not supported by the explorer yet" type="warning" showIcon />
             }
@@ -89,7 +92,7 @@ const Acc = ({ match }) => {
     return (
         <div>
             <Title level={2} className="break-all">Chain</Title>
-            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{"acc://" + match.params.url}</Title>
+            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{"acc://" + match.params.url}{location.hash !== '' ? location.hash : null}</Title>
                 {acc ? (
                     <Render data={acc} />
                 ) :
