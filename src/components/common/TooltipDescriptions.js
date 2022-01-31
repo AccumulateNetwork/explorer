@@ -24,6 +24,7 @@ const tooltipDescs = {
     nonce: "",
     sponsor: "",
     recipient: "",
+    scratchAccountDeletionWarning: "Protocol only preserves the last 2 weeks of entries within this account.",
 };
 
 export default tooltipDescs;

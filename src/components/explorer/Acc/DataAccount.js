@@ -7,6 +7,7 @@ import {
   Descriptions,
   Tooltip,
   Table,
+  Alert,
   Tag
 } from 'antd';
 
@@ -126,6 +127,17 @@ const DataAccount = props => {
                         </IconContext.Provider>
                         Data Account Info
                     </Title>
+
+                    {account.data.scratch ? (
+                        <div style={{ marginBottom: '10px' }}>
+                            <Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.scratchAccountDeletionWarning}>
+                                <Alert message="Scratch data account" type="info" showIcon/>
+                            </Tooltip>
+                        </div>
+                    ) :
+                        null
+                    }
+
                     <Descriptions bordered column={1} size="middle">
 
                         {account.data.url ? (
