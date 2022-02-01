@@ -27,7 +27,7 @@ const Explorer = props => {
 
   const handleSearch = (value) => {
     setSearchIsLoading(true);
-    var ishash = /\b[0-9A-Fa-f]{64}\b/.test(value);
+    var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
     
     // remove search by height until v0.3
     /*

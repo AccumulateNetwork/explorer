@@ -89,10 +89,12 @@ const Acc = ({ match }) => {
         getAcc(match.params.url);
     }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : null)
+
     return (
         <div>
             <Title level={2} className="break-all">Chain</Title>
-            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{"acc://" + match.params.url}{location.hash !== '' ? location.hash : null}</Title>
+            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{accountURL}</Title>
                 {acc ? (
                     <Render data={acc} />
                 ) :
