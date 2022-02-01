@@ -19,8 +19,11 @@ const { Title } = Typography;
 const Stats = props => {
 
   const [tps, setTPS] = useState(-1);
+  const showStats = false;
 
   const getStats = async () => {
+    if (!showStats) return
+
     try {
         const response = await RPC.request("metrics", { metric: "tps", duration: "1h" });
         setTPS(response.data.value);
@@ -36,6 +39,7 @@ const Stats = props => {
       <div style={{ marginTop: 5, marginBottom: 20 }}>
         <Row gutter={[16,16]}>
           <Col xs={0} sm={8} md={8} lg={6} xl={5}>
+            {showStats ? (
             <Card>
                 <span>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiLineChartFill /></IconContext.Provider>
@@ -50,6 +54,8 @@ const Stats = props => {
                     </div>
                 }
             </Card>
+            ) : null
+            }
           </Col>
         </Row>
       </div>
