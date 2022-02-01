@@ -89,7 +89,7 @@ const Acc = ({ match }) => {
         getAcc(match.params.url);
     }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : null)
+    let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "")
 
     return (
         <div>
