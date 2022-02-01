@@ -16,9 +16,11 @@ const Blocks = () => {
   return (
     <div>
 
+      {false ?
       <div className="stats">
         <Stats />
       </div>
+      : null}
 
       <Paragraph>
         <Alert message="This explorer is an analytics tool that allows you to search the Accumulate blockchain for information about addresses, and transactions, and other activity." type="info" showIcon />
