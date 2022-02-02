@@ -29,7 +29,7 @@ const ADI = props => {
 
     const columns = [
         {
-            title: 'Key Books',
+            title: 'Accounts',
             render: (row) => {
                 if (row) {
                     return (

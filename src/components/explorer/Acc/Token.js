@@ -1,4 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import {
+    RiStackLine
+} from 'react-icons/ri';
 
 import {
   Typography,
@@ -50,6 +54,16 @@ const Token = props => {
                             </Descriptions.Item>
                         ) :
                             null  
+                        }
+
+                        {token.data.keyBook ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
+                                <Link to={'/acc/' + token.data.keyBook.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{token.data.keyBook}
+                                </Link>
+                            </Descriptions.Item>
+                        ) :
+                            null
                         }
 
                         {token.data.symbol ? (
