@@ -101,7 +101,10 @@ const Tx = ({ match }) => {
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{match.params.hash}</Title>
                 {tx ? (
                     <div>
-                        <TxStatus data={tx}/>
+                        {tx.status.pending || tx.signatures.length > 1 ? (
+                            <TxStatus data={tx}/>
+                        ) : null
+                        }
                         <Render data={tx} />
                     </div>
                 ) :

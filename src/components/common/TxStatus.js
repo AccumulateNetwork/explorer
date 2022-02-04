@@ -13,11 +13,16 @@ const TxStatus = props => {
     const tx = props.data;
 
     return (
-        <div>
+        <div style={{ marginBottom: "20px" }} >
             {(tx && tx.status) ? (
                 <div>
-                    <Tag color="blue" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiLoader4Line className={'anticon-spin'} /></IconContext.Provider>Pending</Tag>
-                    <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig 1 of 2 </Tag>
+                    {tx.status.pending &&
+                        <Tag color="blue" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiLoader4Line className={'anticon-spin'} /></IconContext.Provider> Pending</Tag>
+                    }
+                    {tx.status.delivered &&
+                        <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Delivered</Tag>
+                    }
+                    <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig {tx.signatures.length} of ? </Tag>
                 </div>
             ) :
                 null
