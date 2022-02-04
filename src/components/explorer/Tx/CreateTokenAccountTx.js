@@ -14,7 +14,6 @@ import {
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxStatus from './TxStatus';
 
 const { Title } = Typography;
 
@@ -57,12 +56,6 @@ const CreateTokenAccountTx = props => {
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
                             <span className="code">{tx.txid}</span>
                         </Descriptions.Item>
-                    ) :
-                        null
-                    }
-
-                    {tx.status ? (
-                        <TxStatus data={tx}/>
                     ) :
                         null
                     }
