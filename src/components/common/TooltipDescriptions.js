@@ -12,6 +12,7 @@ const tooltipDescs = {
     txTo: "The receiving party, or parties, of this transaction",
     txId: "The unique identifier assigned to this transaction",
     txCause: "",
+    txStatus: "",
     adiUrl: "The URL of the ADI (Accumulate Digital Identifier)",
     adiDirectory: "",
     pubKey: "The Public Key of the ADI",
@@ -24,6 +25,7 @@ const tooltipDescs = {
     nonce: "",
     sponsor: "",
     recipient: "",
+    threshold: "",
     scratchAccountDeletionWarning: "Protocol only preserves the last 2 weeks of entries within this account.",
 };
 
