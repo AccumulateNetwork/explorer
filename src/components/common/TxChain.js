@@ -4,25 +4,25 @@ import { Link } from 'react-router-dom';
 
 import {
   Typography,
-  Tooltip,
   Skeleton,
   Table
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiTimerLine
+    RiExchangeLine, RiTimerLine
 } from 'react-icons/ri';
 
+import Count from './Count';
 import RPC from './RPC';
-import tooltipDescs from './TooltipDescriptions';
 
 const { Title, Text } = Typography;
 
-const PendingTxs = props => {
-
-    const adi = props.adi;
-    const [pendingTxs, setPendingTxs] = useState(null);
+const TxChain = props => {
+    let type = props.type ? props.type : 'main'
+    let header = (type === 'pending') ? 'Pending Transactions' : 'Transaction History'
+    
+    const [pendingTxs, setTxChain] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
 
@@ -33,7 +33,7 @@ const PendingTxs = props => {
                 if (row) {
                     return (
                         <Link to={'/tx/' + row.data}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiTimerLine /></IconContext.Provider>{row.data}
+                            <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.data}
                         </Link>
                     )
                 } else {
@@ -45,7 +45,14 @@ const PendingTxs = props => {
         }
     ];
 
-    const getPending = async (params = pagination) => {
+    function Icon() {
+        if (type === 'pending')
+            return (<RiTimerLine />)
+        else
+            return(<RiExchangeLine />)    
+    }
+
+    const getTxChain = async (params = pagination) => {
         setTableIsLoading(true);
     
         let start = 0;
@@ -61,7 +68,7 @@ const PendingTxs = props => {
         }
     
         try {
-          const response = await RPC.request("query", { url: adi+"#chain/pending", start: start, count: count } );
+          const response = await RPC.request("query", { url: props.adi + "#chain/" + type, start: start, count: count } );
           if (response && response.items) {
 
             // workaround API bug response
@@ -69,7 +76,7 @@ const PendingTxs = props => {
                 response.start = 0;
             }
 
-            setPendingTxs(response.items);
+            setTxChain(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
           } else {
             throw new Error("Pending transactions not found"); 
@@ -82,18 +89,19 @@ const PendingTxs = props => {
     }
 
     useEffect(() => {
-        getPending();
+        getTxChain();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
-            {adi && pendingTxs ? (
+            {props.adi && pendingTxs && type ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiTimerLine />
+                        <Icon/>
                         </IconContext.Provider>
-                        Pending Transactions
+                        {header}
+                        <Count count={pendingTxs.length ? pendingTxs.length : 0} />
                     </Title>
 
                     <Table
@@ -102,7 +110,7 @@ const PendingTxs = props => {
                         pagination={pagination}
                         rowKey="txid"
                         loading={tableIsLoading}
-                        onChange={getPending}
+                        onChange={getTxChain}
                         scroll={{ x: 'max-content' }}
                     />
                 </div>
@@ -111,9 +119,9 @@ const PendingTxs = props => {
                     <div>
                         <Title level={4}>
                             <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiTimerLine />
+                            <Icon/>
                             </IconContext.Provider>
-                            Pending Transactions
+                            {header}
                         </Title>
                         <div className="skeleton-holder">
                             <Skeleton active />
@@ -125,4 +133,4 @@ const PendingTxs = props => {
     );
 }
 
-export default PendingTxs;
+export default TxChain;

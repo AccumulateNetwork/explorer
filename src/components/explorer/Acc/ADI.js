@@ -17,8 +17,7 @@ import {
 
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
-//import TxHistory from '../../common/TxHistory';
-import PendingTxs from '../../common/PendingTxs';
+import TxChain from '../../common/TxChain';
 
 const { Title, Text } = Typography;
 
@@ -173,8 +172,8 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
-                    {/*<TxHistory/>*/}
-                    <PendingTxs adi={adi.data.url}/>
+                    <TxChain adi={adi.data.url} type='main' />
+                    <TxChain adi={adi.data.url} type='pending' />
                 </div>
             ) :
                 <div>
