@@ -12,11 +12,13 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiFileHistoryLine, RiTimerLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
+//import TxHistory from '../../common/TxHistory';
+import PendingTxs from '../../common/PendingTxs';
 
 const { Title, Text } = Typography;
 
@@ -88,7 +90,6 @@ const ADI = props => {
 
     return (
         <div>
-
             <Descriptions bordered column={1} size="middle">
 
                 {adi.type ? (
@@ -172,6 +173,8 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
+                    {/*<TxHistory/>*/}
+                    <PendingTxs adi={adi.data.url}/>
                 </div>
             ) :
                 <div>
@@ -190,6 +193,18 @@ const ADI = props => {
                             <RiFolder2Line />
                             </IconContext.Provider>
                             ADI Directory
+                        </Title>
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiFileHistoryLine />
+                            </IconContext.Provider>
+                            Transaction History
+                        </Title>
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiTimerLine />
+                            </IconContext.Provider>
+                            Pending Transactions
                         </Title>
                         <div className="skeleton-holder">
                             <Skeleton active />
