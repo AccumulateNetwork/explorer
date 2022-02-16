@@ -172,8 +172,8 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
-                    <TxChain adi={adi.data.url} type='main' />
-                    <TxChain adi={adi.data.url} type='pending' />
+                    {/* <TxChain url={adi.data.url} type='main' /> */}
+                    <TxChain url={adi.data.url} type='pending' />
                 </div>
             ) :
                 <div>
@@ -193,17 +193,17 @@ const ADI = props => {
                             </IconContext.Provider>
                             ADI Directory
                         </Title>
-                        <Title level={4}>
+                        {/* <Title level={4}>
                             <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiFileHistoryLine />
                             </IconContext.Provider>
                             Transaction History
-                        </Title>
+                        </Title> */}
                         <Title level={4}>
                             <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiTimerLine />
                             </IconContext.Provider>
-                            Pending Transactions
+                            Signature Chain
                         </Title>
                         <div className="skeleton-holder">
                             <Skeleton active />

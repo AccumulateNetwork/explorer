@@ -5,7 +5,8 @@ import { Link } from 'react-router-dom';
 import {
   Typography,
   Skeleton,
-  Table
+  Table,
+  Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -20,11 +21,12 @@ const { Title, Text } = Typography;
 
 const TxChain = props => {
     let type = props.type ? props.type : 'main'
-    let header = (type === 'pending') ? 'Pending Transactions' : 'Transaction History'
+    let header = (type === 'pending') ? 'Signature Chain' : 'Transaction History'
     
     const [pendingTxs, setTxChain] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+    const [totalEntries, setTotalEntries] = useState(-1);
 
     const columns = [
         {
@@ -32,9 +34,12 @@ const TxChain = props => {
             render: (row) => {
                 if (row) {
                     return (
-                        <Link to={'/tx/' + row.data}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.data}
-                        </Link>
+                        <div>
+                            <Link to={'/tx/' + row.txid}>
+                                {row.txid}
+                            </Link>
+                            <Tag style={{marginLeft: "10px"}}>{row.type}</Tag>                        
+                        </div>
                     )
                 } else {
                     return (
@@ -68,18 +73,18 @@ const TxChain = props => {
         }
     
         try {
-          const response = await RPC.request("query", { url: props.adi + "#chain/" + type, start: start, count: count } );
+          const response = await RPC.request("query", { url: props.url + `#${type}/${(params.current - 1) * params.pageSize}:${params.current * params.pageSize}` } );
           if (response && response.items) {
 
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
                 response.start = 0;
             }
-
             setTxChain(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalEntries(response.total);
           } else {
-            throw new Error("Pending transactions not found"); 
+            throw new Error("Transaction chain not found"); 
           }
         }
         catch(error) {
@@ -94,14 +99,14 @@ const TxChain = props => {
 
     return (
         <div>
-            {props.adi && pendingTxs && type ? (
+            {props.url && pendingTxs && type ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <Icon/>
                         </IconContext.Provider>
                         {header}
-                        <Count count={pendingTxs.length ? pendingTxs.length : 0} />
+                        <Count count={totalEntries ? totalEntries : 0} />
                     </Title>
 
                     <Table
