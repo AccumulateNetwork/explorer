@@ -23,7 +23,7 @@ const TxChain = props => {
     let type = props.type ? props.type : 'main'
     let header = (type === 'pending') ? 'Signature Chain' : 'Transaction History'
     
-    const [pendingTxs, setTxChain] = useState(null);
+    const [txChain, setTxChain] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalEntries, setTotalEntries] = useState(-1);
@@ -112,7 +112,7 @@ const TxChain = props => {
 
     return (
         <div>
-            {props.url && pendingTxs && type ? (
+            {props.url && type ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -123,7 +123,7 @@ const TxChain = props => {
                     </Title>
 
                     <Table
-                        dataSource={pendingTxs}
+                        dataSource={txChain}
                         columns={columns}
                         pagination={pagination}
                         rowKey="txid"
