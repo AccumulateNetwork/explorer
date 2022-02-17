@@ -87,7 +87,7 @@ const TxChain = props => {
     
         try {
           const response = await RPC.request("query", { url: props.url + `#${type}/${(params.current - 1) * params.pageSize}:${params.current * params.pageSize}` } );
-          if (response && response.items) {
+          if (response) {
 
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
@@ -114,7 +114,7 @@ const TxChain = props => {
         <div>
             {props.url && type ? (
                 <div>
-                    <Title level={4}>
+                    <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <Icon/>
                         </IconContext.Provider>
