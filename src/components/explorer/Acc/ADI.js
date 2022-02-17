@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiFileHistoryLine, RiTimerLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiTimerLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';

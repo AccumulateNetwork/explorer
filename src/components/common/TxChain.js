@@ -38,7 +38,7 @@ const TxChain = props => {
                             <Link to={'/tx/' + row.txid}>
                                 {row.txid}
                             </Link>
-                            <Tag style={{marginLeft: "10px"}}>{row.type}</Tag>                        
+                            <Tag color="blue" style={{marginLeft: "10px"}}>{row.type}</Tag>                        
                         </div>
                     )
                 } else {
@@ -60,14 +60,14 @@ const TxChain = props => {
     const getTxChain = async (params = pagination) => {
         setTableIsLoading(true);
     
-        let start = 0;
-        let count = 10;
+        //let start = 0;
+        //let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
     
         if (params) {
-            start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
+            //start = (params.current-1)*params.pageSize;
+            //count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
