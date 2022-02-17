@@ -11,6 +11,10 @@ import {
 
 const TxStatus = props => {
     const tx = props.data;
+    
+    //genesis txs workaround
+    if (tx.signatures === undefined)
+        tx.signatures = []
 
     return (
         <div style={{ marginBottom: "20px" }} >
