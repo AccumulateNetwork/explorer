@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiExchangeLine, RiTimerLine
+    RiExchangeLine, RiShieldCheckLine
 } from 'react-icons/ri';
 
 import Count from './Count';
@@ -36,7 +36,7 @@ const TxChain = props => {
                     return (
                         <div>
                             <Link to={'/tx/' + row.txid}>
-                                {row.txid}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>
                     )
@@ -65,7 +65,7 @@ const TxChain = props => {
 
     function Icon() {
         if (type === 'pending')
-            return (<RiTimerLine />)
+            return (<RiShieldCheckLine />)
         else
             return(<RiExchangeLine />)    
     }
