@@ -38,8 +38,21 @@ const TxChain = props => {
                             <Link to={'/tx/' + row.txid}>
                                 {row.txid}
                             </Link>
-                            <Tag color="blue" style={{marginLeft: "10px"}}>{row.type}</Tag>                        
                         </div>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
+            }
+        },
+        {
+            title: 'TYPE',
+            render: (row) => {
+                if (row) {
+                    return (
+                        <Tag color="green">{row.type}</Tag>                        
                     )
                 } else {
                     return (
