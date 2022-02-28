@@ -12,7 +12,7 @@ const tooltipDescs = {
     txTo: "The receiving party, or parties, of this transaction",
     txId: "The unique identifier assigned to this transaction",
     txCause: "",
-    txStatus: "",
+    txStatus: "The status of the Accumulate transaction",
     adiUrl: "The URL of the ADI (Accumulate Digital Identifier)",
     adiDirectory: "",
     pubKey: "The Public Key of the ADI",
