@@ -59,7 +59,7 @@ const Faucet = () => {
                 <Search
                     placeholder="Enter token account"
                     allowClear
-                    enterButton="Get 10 ACME"
+                    enterButton="Get ACME"
                     size="large"
                     onSearch={(value) => { if (value!=='') { handleFaucet(value); } }}
                     loading={faucetIsLoading}
