@@ -27,7 +27,7 @@ const TxStatus = props => {
                         <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Delivered</Tag>
                     }
                     {tx.signatureThreshold > 1 || tx.signatures.length > 1 ? (
-                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-Sig</Tag>
+                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>{tx.signatures.length} signatures</Tag>
                     ) : null
                     }
                     {tx.signatureThreshold && tx.signatures.length > 0 ? (
