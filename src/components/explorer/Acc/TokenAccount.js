@@ -21,6 +21,7 @@ import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
 import Count from '../../common/Count';
+import TxChain from '../../common/TxChain';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -314,7 +315,7 @@ const TokenAccount = props => {
 
                         {tokenAccount.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + tokenAccount.data.keyBook}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
+                                <Link to={'/acc/' + tokenAccount.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null
@@ -368,6 +369,7 @@ const TokenAccount = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
+                    <TxChain url={tokenAccount.data.url} type='pending' />
                 </div>
             ) :
                 <div>
