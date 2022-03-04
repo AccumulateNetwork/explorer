@@ -11,6 +11,10 @@ import {
 
 const TxStatus = props => {
     const tx = props.data;
+    
+    //genesis txs workaround
+    if (tx.signatures === undefined)
+        tx.signatures = []
 
     return (
         <div style={{ marginBottom: "20px" }} >
@@ -22,12 +26,12 @@ const TxStatus = props => {
                     {tx.status.delivered &&
                         <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Delivered</Tag>
                     }
-                    {tx.threshold > 1 || tx.signatures.length > 1 ? (
-                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-Sig</Tag>
+                    {tx.signatureThreshold > 1 || tx.signatures.length > 1 ? (
+                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>{tx.signatures.length} signatures</Tag>
                     ) : null
                     }
-                    {tx.threshold && tx.signatures.length > 0 ? (
-                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>{tx.signatures.length} of {tx.threshold} signatures</Tag>
+                    {tx.signatureThreshold && tx.signatures.length > 0 ? (
+                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>{tx.signatures.length} of {tx.signatureThreshold} signatures</Tag>
                     ) : null
                     }
                 </div>
