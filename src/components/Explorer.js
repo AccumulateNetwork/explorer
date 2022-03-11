@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
-import { Layout, Input, Form, message } from 'antd';
+import { Layout, Input, Form, message, Menu, Typography, Dropdown, Button } from 'antd';
+
+import {
+  DownOutlined
+} from '@ant-design/icons';
 
 import Logo from './common/Logo';
 import Version from './common/Version';
@@ -19,6 +23,7 @@ import Faucet from './explorer/Faucet';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
+const { Text } = Typography;
 
 const Explorer = props => {
 
@@ -63,6 +68,29 @@ const Explorer = props => {
         }
         setSearchIsLoading(false);
   }
+
+  const ExplorerSelectFooter = (
+    <Menu>
+      <Menu.Item>
+        {process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://v3.testnet.accumulatenetwork.io/v2" ? (
+            <Text>explorer.accumulatenetwork.io</Text>
+        ) :
+            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+                explorer.accumulatenetwork.io
+            </a>
+        }
+      </Menu.Item>
+      <Menu.Item>
+        {process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://testnet.accumulatenetwork.io/v2" ? (
+            <Text>beta.explorer.accumulatenetwork.io</Text>
+        ) :
+            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
+                beta.explorer.accumulatenetwork.io
+            </a>
+        }
+      </Menu.Item>
+    </Menu>
+  );
     
   return (
     <Router>
@@ -107,6 +135,22 @@ const Explorer = props => {
       </Layout>
       <div align="center" style={{ marginTop: 30, paddingBottom: 20 }} className="footer">
           <p>&copy; Accumulate Network Explorer</p>
+            {process.env.REACT_APP_API_PATH ? (
+                <p>
+                <Dropdown overlay={ExplorerSelectFooter} trigger={['click']}>
+                    <Button type="link" className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+                        {process.env.REACT_APP_API_PATH === "https://testnet.accumulatenetwork.io/v2" ? (
+                            <span>beta.explorer.accumulatenetwork.io</span>
+                        ) :
+                            <span>explorer.accumulatenetwork.io</span>
+                        }
+                        <DownOutlined style={{ marginLeft: 5 }} />
+                    </Button>
+                </Dropdown>
+                </p>
+            ) :
+                null
+            }
           <p><Version /></p>
           <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>
       </div>
