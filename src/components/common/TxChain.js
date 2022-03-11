@@ -30,7 +30,7 @@ const TxChain = props => {
 
     const columns = [
         {
-            title: 'TRANSACTION ID',
+            title: 'Transaction ID',
             render: (row) => {
                 if (row) {
                     return (
@@ -48,7 +48,7 @@ const TxChain = props => {
             }
         },
         {
-            title: 'TYPE',
+            title: 'Type',
             render: (row) => {
                 if (row) {
                     return (
@@ -58,7 +58,7 @@ const TxChain = props => {
                     return (
                         <Text disabled>N/A</Text>
                     )
-                }                
+                }
             }
         }
     ];
@@ -67,20 +67,20 @@ const TxChain = props => {
         if (type === 'pending')
             return (<RiShieldCheckLine />)
         else
-            return(<RiExchangeLine />)    
+            return (<RiExchangeLine />)    
     }
 
     const getTxChain = async (params = pagination) => {
         setTableIsLoading(true);
     
-        //let start = 0;
-        //let count = 10;
+//        let start = 0;
+//        let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
     
         if (params) {
-            //start = (params.current-1)*params.pageSize;
-            //count = params.pageSize;
+//            start = (params.current-1)*params.pageSize;
+//            count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
