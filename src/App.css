@@ -413,6 +413,12 @@ h4.ant-typography .count {
   margin-top: -2px;
 }
 
+.ant-menu .ant-menu-item .react-icons-end {
+  margin-right: 0;
+  margin-left: 4px;
+  margin-top: -4px;
+}
+
 .ant-menu .ant-menu-item-icon {
   margin-top: -5px;
 }

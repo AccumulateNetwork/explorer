@@ -9,7 +9,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletFill, RiBook2Fill, RiCheckboxMultipleLine
+  RiDashboardLine, RiWalletLine, RiBook2Line, RiCheckboxMultipleLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -181,13 +181,13 @@ const Explorer = props => {
                 </Menu.Item>
                 <Menu.Item>
                     <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletFill /></IconContext.Provider>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
                         <span className="nav-text">Wallet</span>
                     </a>
                 </Menu.Item>
                 <Menu.Item>
                     <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Fill /></IconContext.Provider>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Line /></IconContext.Provider>
                         <span className="nav-text">Docs</span>
                     </a>
                 </Menu.Item>
