@@ -9,7 +9,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiMoreLine, RiWalletFill, RiGitlabFill, RiBook2Fill
+  RiDashboardLine, RiMoreLine, RiWalletFill, RiGitlabFill, RiBook2Fill, RiCheckboxMultipleLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -25,6 +25,7 @@ import Tx from './explorer/Tx';
 import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
+import Validators from './explorer/Validators';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
@@ -149,6 +150,10 @@ const Explorer = props => {
       setCurrentMenu("/blocks");
     }
 
+    if (window.location.pathname.includes("validators")) {
+      setCurrentMenu("/validators");
+    }
+
   }, []);
     
   return (
@@ -167,6 +172,12 @@ const Explorer = props => {
                     <Link to="/">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
                         <span className="nav-text">Dashboard</span>
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="/validators">
+                    <Link to="/validators">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiCheckboxMultipleLine /></IconContext.Provider>
+                        <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
                 <SubMenu key="more" icon={<RiMoreLine />} title="More">
@@ -188,7 +199,6 @@ const Explorer = props => {
                             GitLab
                         </a>
                     </Menu.Item>
-                    
                 </SubMenu>
             </Menu>
             {currentNetwork ? (
@@ -224,6 +234,8 @@ const Explorer = props => {
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />
                 <Route path="/chain/:chainid" component={Chain} />
+
+                <Route path="/validators" component={Validators} />
 
                 <Route component={Error404} />
             </Switch>

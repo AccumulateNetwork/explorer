@@ -470,3 +470,14 @@ h4.ant-typography .count {
   animation: antStatusProcessing 1.2s infinite ease-in-out;
   content: '';
 }
+
+.featured {
+  background: #e6f7ff;
+  padding: 10px 20px;
+  border: 1px solid #91d5ff;
+  border-left: 5px solid #91d5ff;
+}
+
+.featured .react-icons {
+  margin-left: 2px;
+}
