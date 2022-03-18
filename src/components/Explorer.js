@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
-import { Layout, Input, Form, message, Menu, Typography, Dropdown, Button } from 'antd';
+import { Layout, Input, Form, message, Menu, Dropdown, Button, Badge } from 'antd';
 
 import {
   DownOutlined
 } from '@ant-design/icons';
+
+import { IconContext } from "react-icons";
+import {
+  RiDashboardLine, RiMoreLine, RiWalletFill, RiGitlabFill, RiBook2Fill
+} from 'react-icons/ri';
 
 import Logo from './common/Logo';
 import Version from './common/Version';
@@ -23,12 +28,22 @@ import Faucet from './explorer/Faucet';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
-const { Text } = Typography;
+const { SubMenu } = Menu;
 
 const Explorer = props => {
 
+  const [currentNetwork, setCurrentNetwork] = useState(null);
+  const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
+
+  const handleMenuClick = e => {
+    if (e.key === "logo") {
+        setCurrentMenu("/blocks");
+    } else {
+        setCurrentMenu([e.key]);
+    }
+  };
 
   const handleSearch = (value) => {
     setSearchIsLoading(true);
@@ -69,40 +84,126 @@ const Explorer = props => {
         setSearchIsLoading(false);
   }
 
-  const ExplorerSelectFooter = (
+  const ExplorerSelect = (
     <Menu>
-      <Menu.Item>
-        {process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://v3.testnet.accumulatenetwork.io/v2" ? (
-            <Text>explorer.accumulatenetwork.io</Text>
-        ) :
-            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                explorer.accumulatenetwork.io
-            </a>
-        }
+      <Menu.Item key="Mainnet" disabled>
+          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+              <Badge status="default" text="Mainnet (soon)" />
+          </a>
       </Menu.Item>
-      <Menu.Item>
-        {process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://testnet.accumulatenetwork.io/v2" ? (
-            <Text>beta.explorer.accumulatenetwork.io</Text>
-        ) :
-            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                beta.explorer.accumulatenetwork.io
-            </a>
-        }
+      <Menu.Item key="Testnet (stable)">
+          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+              <Badge status="success" text="Testnet (stable)" />
+          </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (beta)">
+          <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
+              <Badge status="success" text="Testnet (beta)" />
+          </a>
       </Menu.Item>
     </Menu>
   );
+
+  const ExplorerSelectFooter = (
+    <Menu>
+      <Menu.Item key="Mainnet" disabled>
+            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+                Mainnet (soon)
+            </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (stable)">
+            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+                Testnet (stable)
+            </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (beta)">
+            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
+                Testnet (beta)
+            </a>
+      </Menu.Item>
+    </Menu>
+  );
+
+  useEffect(() => {
+
+    if (process.env.REACT_APP_API_PATH) {
+      switch (process.env.REACT_APP_API_PATH) {
+        case 'https://mainnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Mainnet");
+            break;
+        case 'https://testnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Testnet (beta)");
+            break;
+        case 'https://v3.testnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Testnet (stable)");
+            break;
+        default:
+            setCurrentNetwork("Unknown");
+            break;
+      }
+    } else {
+      setCurrentNetwork("Unknown");
+    }
+
+    if (window.location.pathname === "/" || window.location.pathname.includes("blocks")) {
+      setCurrentMenu("/blocks");
+    }
+
+  }, []);
     
   return (
     <Router>
     <ScrollToTop />
       <Layout>
-        <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
-          <div className="header-column-logo">
-            <Link to="/">
-              <Logo />
-            </Link>
-          </div>
-          <div className="header-column-search">
+        
+        <Header style={{ padding: 0, margin: 0 }}>
+            <Menu theme="dark" mode="horizontal" onClick={handleMenuClick} selectedKeys={currentMenu}>
+                <Menu.Item key="logo">
+                    <Link to="/">
+                        <Logo />
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="/blocks">
+                    <Link to="/">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
+                        <span className="nav-text">Dashboard</span>
+                    </Link>
+                </Menu.Item>
+                <SubMenu key="more" icon={<RiMoreLine />} title="More">
+                    <Menu.Item key="more:wallet">
+                        <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletFill /></IconContext.Provider>
+                            Wallet
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item key="more:docs">
+                        <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Fill /></IconContext.Provider>
+                            Docs
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item key="more:gitlab">
+                        <a href="https://gitlab.com/accumulatenetwork" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiGitlabFill /></IconContext.Provider>
+                            GitLab
+                        </a>
+                    </Menu.Item>
+                    
+                </SubMenu>
+            </Menu>
+            {currentNetwork ? (
+                <Dropdown overlay={ExplorerSelect} trigger={['click']} className="network-badge">
+                    <Button ghost>
+                        <Badge status="success" text={currentNetwork} />
+                        <DownOutlined />
+                    </Button>
+                </Dropdown>
+            ) :
+                null
+            }
+        </Header>
+
+        <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
             <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
                   <Search
                       placeholder="Search by Accumulate URL or TXID"
@@ -115,11 +216,7 @@ const Explorer = props => {
                       disabled={searchIsLoading}
                       allowClear={true}
                   />
-            </Form>             
-          </div>
-        </Header>
-
-        <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
+            </Form>
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
@@ -135,15 +232,11 @@ const Explorer = props => {
       </Layout>
       <div align="center" style={{ marginTop: 30, paddingBottom: 20 }} className="footer">
           <p>&copy; Accumulate Network Explorer</p>
-            {process.env.REACT_APP_API_PATH ? (
+            {currentNetwork ? (
                 <p>
                 <Dropdown overlay={ExplorerSelectFooter} trigger={['click']}>
                     <Button type="link" className="ant-dropdown-link" onClick={e => e.preventDefault()}>
-                        {process.env.REACT_APP_API_PATH === "https://testnet.accumulatenetwork.io/v2" ? (
-                            <span>beta.explorer.accumulatenetwork.io</span>
-                        ) :
-                            <span>explorer.accumulatenetwork.io</span>
-                        }
+                        {currentNetwork}
                         <DownOutlined style={{ marginLeft: 5 }} />
                     </Button>
                 </Dropdown>

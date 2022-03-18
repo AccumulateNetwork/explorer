@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Alert, Typography } from 'antd';
+import { Typography, Row, Col, Card, Tag } from 'antd';
+import { IconContext } from "react-icons";
+import {
+  RiHandCoinLine, RiLineChartFill, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill
+} from 'react-icons/ri';
 
 import Stats from './../common/Stats';
 
-const { Paragraph } = Typography;
+const { Title } = Typography;
 
 const Blocks = () => {
 
@@ -22,13 +26,69 @@ const Blocks = () => {
       </div>
       : null}
 
-      <Paragraph>
-        <Alert message="This explorer is an analytics tool that allows you to search the Accumulate blockchain for information about addresses, and transactions, and other activity." type="info" showIcon />
-      </Paragraph>
-
-      <Paragraph>
-        Use the <Link to={'/faucet'}><strong>faucet</strong></Link> to get some testnet <Link to={'/acc/ACME'}><strong>ACME</strong></Link> tokens.
-      </Paragraph>
+      <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
+        <Row gutter={[16,16]}>
+          <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+            <Link to="/acc/acme">
+            <Card>
+                <span>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiLineChartFill /></IconContext.Provider>
+                    <br />
+                    Accumulate token
+                </span>
+                <Title level={4}>ACME</Title>
+            </Card>
+            </Link>
+          </Col>
+          <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+            <Link to="/faucet">
+            <Card>
+                <span>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiHandCoinLine /></IconContext.Provider>
+                    <br />
+                    Get test ACME
+                </span>
+                <Title level={4}>Faucet</Title>
+            </Card>
+            </Link>
+          </Col>
+          <Col xs={24} sm={16} md={12} lg={10} xl={8}>
+            <Card>
+                <span>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiUserSmileLine /></IconContext.Provider>
+                    <br />
+                    Join community
+                </span>
+                <div className="social">
+                    <a href="https://twitter.com/accumulatehq" target="_blank" rel="noopener noreferrer">
+                      <Tag color="#55acee">
+                        <IconContext.Provider value={{ className: 'react-icons-social' }}><RiTwitterFill /></IconContext.Provider>
+                        Twitter
+                      </Tag>
+                    </a>
+                    <a href="https://t.me/accumulatenetwork" target="_blank" rel="noopener noreferrer">
+                      <Tag color="#229ED9">
+                        <IconContext.Provider value={{ className: 'react-icons-social' }}><RiTelegramFill /></IconContext.Provider>
+                        Telegram
+                      </Tag>
+                    </a>
+                    <a href="https://discord.gg/CYnaF8w2C2" target="_blank" rel="noopener noreferrer">
+                      <Tag color="#7289da">
+                        <IconContext.Provider value={{ className: 'react-icons-social' }}><RiDiscordFill /></IconContext.Provider>
+                        Discord
+                      </Tag>
+                    </a>
+                    <a href="https://reddit.com/r/Accumulate" target="_blank" rel="noopener noreferrer">
+                      <Tag color="#FF4500">
+                        <IconContext.Provider value={{ className: 'react-icons-social' }}><RiRedditFill /></IconContext.Provider>
+                        Reddit
+                      </Tag>
+                    </a>
+                </div>           
+            </Card>
+          </Col>
+        </Row>
+      </div>
 
     </div>
   );
