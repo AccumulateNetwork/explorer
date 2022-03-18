@@ -7,16 +7,18 @@ import {
   Descriptions,
   Tooltip,
   Skeleton,
-  Table
+  Table,
+  Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiTimerLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiShieldCheckLine, RiExchangeLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
 
 const { Title, Text } = Typography;
@@ -25,8 +27,13 @@ const ADI = props => {
 
     const adi = props.data;
     const [directory, setDirectory] = useState(null);
+    const [totalDirectory, setTotalDirectory] = useState(-1);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+    const [txs, setTxs] = useState(null);
+    const [tableIsLoading2, setTableIsLoading2] = useState(true);
+    const [pagination2, setPagination2] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+    const [totalTxs, setTotalTxs] = useState(-1);
 
     const columns = [
         {
@@ -43,6 +50,41 @@ const ADI = props => {
                         <Text disabled>N/A</Text>
                     )
                 }                
+            }
+        }
+    ];
+
+    const columns2 = [
+        {
+            title: 'Transaction ID',
+            render: (row) => {
+                if (row) {
+                    return (
+                        <div>
+                            <Link to={'/tx/' + row.txid}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
+                            </Link>
+                        </div>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
+            }
+        },
+        {
+            title: 'Type',
+            render: (row) => {
+                if (row) {
+                    return (
+                        <Tag color="green">{row.type}</Tag>                        
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }
             }
         }
     ];
@@ -73,6 +115,7 @@ const ADI = props => {
 
             setDirectory(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalDirectory(response.total);
           } else {
             throw new Error("ADI Directory not found"); 
           }
@@ -83,8 +126,46 @@ const ADI = props => {
         setTableIsLoading(false);
     }
 
+    const getTxs = async (params = pagination2) => {
+        setTableIsLoading2(true);
+    
+        let start = 0;
+        let count = 10;
+        let showTotalStart = 1;
+        let showTotalFinish = 10;
+    
+        if (params) {
+            start = (params.current-1)*params.pageSize;
+            count = params.pageSize;
+            showTotalStart = (params.current-1)*params.pageSize+1;
+            showTotalFinish = params.current*params.pageSize;
+        }
+    
+        try {
+          const response = await RPC.request("query-tx-history", { url: adi.data.url, start: start, count: count } );
+          if (response && response.items) {
+
+            // workaround API bug response
+            if (response.start === null || response.start === undefined) {
+                response.start = 0;
+            }
+
+            setTxs(response.items);
+            setPagination2({...pagination2, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setTotalTxs(response.total);
+          } else {
+            throw new Error("ADI transactions not found");
+          }
+        }
+        catch(error) {
+          // error is managed by RPC.js, no need to display anything
+        }
+        setTableIsLoading2(false);
+    }
+
     useEffect(() => {
         getDirectory();
+        getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
@@ -160,6 +241,7 @@ const ADI = props => {
                         <RiFolder2Line />
                         </IconContext.Provider>
                         ADI Directory
+                        <Count count={totalDirectory ? totalDirectory : 0} />
                     </Title>
 
                     <Table
@@ -171,8 +253,25 @@ const ADI = props => {
                         onChange={getDirectory}
                         scroll={{ x: 'max-content' }}
                     />
+
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                        <RiExchangeLine />
+                        </IconContext.Provider>
+                        Transactions
+                        <Count count={totalTxs ? totalTxs : 0} />
+                    </Title>
+
+                    <Table
+                        dataSource={txs}
+                        columns={columns2}
+                        pagination={pagination2}
+                        rowKey="txid"
+                        loading={tableIsLoading2}
+                        onChange={getTxs}
+                        scroll={{ x: 'max-content' }}
+                    />
                     
-                    {/* <TxChain url={adi.data.url} type='main' /> */}
                     <TxChain url={adi.data.url} type='pending' />
                 </div>
             ) :
@@ -193,15 +292,15 @@ const ADI = props => {
                             </IconContext.Provider>
                             ADI Directory
                         </Title>
-                        {/* <Title level={4}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiFileHistoryLine />
-                            </IconContext.Provider>
-                            Transaction History
-                        </Title> */}
                         <Title level={4}>
                             <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiTimerLine />
+                            <RiExchangeLine />
+                            </IconContext.Provider>
+                            Transactions
+                        </Title>
+                        <Title level={4}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiShieldCheckLine />
                             </IconContext.Provider>
                             Signature Chain
                         </Title>

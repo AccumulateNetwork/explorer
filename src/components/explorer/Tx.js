@@ -19,6 +19,7 @@ import WriteDataTx from './Tx/WriteDataTx';
 import WriteDataToTx from './Tx/WriteDataToTx';
 import AddCreditsTx from './Tx/AddCreditsTx';
 import SegWitDataEntryTx from './Tx/SegWitDataEntryTx';
+import IssueTokensTx from './Tx/IssueTokensTx';
 
 const { Title } = Typography;
 
@@ -84,6 +85,8 @@ const Tx = ({ match }) => {
                     return <SegWitDataEntryTx data={props.data} />;
                 case 'addCredits':
                     return <AddCreditsTx data={props.data} />;
+                case 'issueTokens':
+                    return <IssueTokensTx data={props.data} />;
                 default:
                     return <Alert message="Transaction found, but this transaction type is not supported by the explorer yet" type="warning" showIcon />
             }

@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
-import { Layout, Input, Form, message } from 'antd';
+import { Layout, Input, Form, message, Menu, Dropdown, Button, Badge } from 'antd';
+
+import {
+  DownOutlined
+} from '@ant-design/icons';
+
+import { IconContext } from "react-icons";
+import {
+  RiDashboardLine, RiWalletLine, RiBook2Line, RiCheckboxMultipleLine
+} from 'react-icons/ri';
 
 import Logo from './common/Logo';
 import Version from './common/Version';
@@ -16,14 +25,25 @@ import Tx from './explorer/Tx';
 import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
+import Validators from './explorer/Validators';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
 
 const Explorer = props => {
 
+  const [currentNetwork, setCurrentNetwork] = useState(null);
+  const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
+
+  const handleMenuClick = e => {
+    if (e.key === "logo") {
+        setCurrentMenu("/blocks");
+    } else {
+        setCurrentMenu([e.key]);
+    }
+  };
 
   const handleSearch = (value) => {
     setSearchIsLoading(true);
@@ -63,18 +83,128 @@ const Explorer = props => {
         }
         setSearchIsLoading(false);
   }
+
+  const ExplorerSelect = (
+    <Menu>
+      <Menu.Item key="Mainnet" disabled>
+          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+              <Badge status="default" text="Mainnet (soon)" />
+          </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (stable)">
+          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+              <Badge status="success" text="Testnet (stable)" />
+          </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (beta)">
+          <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
+              <Badge status="success" text="Testnet (beta)" />
+          </a>
+      </Menu.Item>
+    </Menu>
+  );
+
+  const ExplorerSelectFooter = (
+    <Menu>
+      <Menu.Item key="Mainnet" disabled>
+            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+                Mainnet (soon)
+            </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (stable)">
+            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+                Testnet (stable)
+            </a>
+      </Menu.Item>
+      <Menu.Item key="Testnet (beta)">
+            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
+                Testnet (beta)
+            </a>
+      </Menu.Item>
+    </Menu>
+  );
+
+  useEffect(() => {
+
+    if (process.env.REACT_APP_API_PATH) {
+      switch (process.env.REACT_APP_API_PATH) {
+        case 'https://mainnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Mainnet");
+            break;
+        case 'https://testnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Testnet (beta)");
+            break;
+        case 'https://v3.testnet.accumulatenetwork.io/v2':
+            setCurrentNetwork("Testnet (stable)");
+            break;
+        default:
+            setCurrentNetwork("Unknown");
+            break;
+      }
+    } else {
+      setCurrentNetwork("Unknown");
+    }
+
+    if (window.location.pathname === "/" || window.location.pathname.includes("blocks")) {
+      setCurrentMenu("/blocks");
+    }
+
+    if (window.location.pathname.includes("validators")) {
+      setCurrentMenu("/validators");
+    }
+
+  }, []);
     
   return (
     <Router>
     <ScrollToTop />
       <Layout>
-        <Header style={{ position: 'fixed', zIndex: 1, width: '100%' }}>
-          <div className="header-column-logo">
-            <Link to="/">
-              <Logo />
-            </Link>
-          </div>
-          <div className="header-column-search">
+        
+        <Header style={{ padding: 0, margin: 0 }}>
+            <Menu theme="dark" mode="horizontal" onClick={handleMenuClick} selectedKeys={currentMenu}>
+                <Menu.Item key="logo">
+                    <Link to="/">
+                        <Logo />
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="/blocks">
+                    <Link to="/">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
+                        <span className="nav-text">Main</span>
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="/validators">
+                    <Link to="/validators">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiCheckboxMultipleLine /></IconContext.Provider>
+                        <span className="nav-text">Validators</span>
+                    </Link>
+                </Menu.Item>
+                <Menu.Item>
+                    <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
+                        <span className="nav-text">Wallet</span>
+                    </a>
+                </Menu.Item>
+                <Menu.Item>
+                    <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Line /></IconContext.Provider>
+                        <span className="nav-text">Docs</span>
+                    </a>
+                </Menu.Item>
+            </Menu>
+            {currentNetwork ? (
+                <Dropdown overlay={ExplorerSelect} trigger={['click']} className="network-badge">
+                    <Button ghost>
+                        <Badge status="success" text={currentNetwork} />
+                        <DownOutlined />
+                    </Button>
+                </Dropdown>
+            ) :
+                null
+            }
+        </Header>
+
+        <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
             <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
                   <Search
                       placeholder="Search by Accumulate URL or TXID"
@@ -87,11 +217,7 @@ const Explorer = props => {
                       disabled={searchIsLoading}
                       allowClear={true}
                   />
-            </Form>             
-          </div>
-        </Header>
-
-        <Content style={{ padding: '85px 20px 30px 20px', margin: 0 }}>
+            </Form>
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
@@ -100,6 +226,8 @@ const Explorer = props => {
                 <Route path="/tx/:hash" component={Tx} />
                 <Route path="/chain/:chainid" component={Chain} />
 
+                <Route path="/validators" component={Validators} />
+
                 <Route component={Error404} />
             </Switch>
         </Content>
@@ -107,6 +235,18 @@ const Explorer = props => {
       </Layout>
       <div align="center" style={{ marginTop: 30, paddingBottom: 20 }} className="footer">
           <p>&copy; Accumulate Network Explorer</p>
+            {currentNetwork ? (
+                <p>
+                <Dropdown overlay={ExplorerSelectFooter} trigger={['click']}>
+                    <Button type="link" className="ant-dropdown-link" onClick={e => e.preventDefault()}>
+                        {currentNetwork}
+                        <DownOutlined style={{ marginLeft: 5 }} />
+                    </Button>
+                </Dropdown>
+                </p>
+            ) :
+                null
+            }
           <p><Version /></p>
           <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>
       </div>

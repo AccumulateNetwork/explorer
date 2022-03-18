@@ -21,7 +21,7 @@
 }
 
 .search-box {
-  margin-top: 12px;
+  margin-bottom: 20px;
 }
 
 .header-column-logo {
@@ -66,6 +66,11 @@
 
 .stats h3.ant-typography {
   font-weight: normal !important;
+  margin-bottom: 0 !important;
+  margin-top: 4px;
+}
+
+.stats h4.ant-typography {
   margin-bottom: 0 !important;
   margin-top: 4px;
 }
@@ -115,6 +120,21 @@
 
 .stats .ant-carousel .slick-dots li.slick-active button {
   background: #1890ff;
+}
+
+.stats .social {
+  margin-top: 8px;
+}
+
+.stats .ant-tag {
+  margin-bottom: 6px;
+}
+
+.stats .react-icons-social {
+  margin-left: -1px;
+  margin-right: 3px;
+  margin-top: -2px;
+  vertical-align: middle;
 }
 
 .skeleton-holder {
@@ -386,4 +406,84 @@ h4.ant-typography .count {
 
 .entry-content .code, .anchor-info .code {
   font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+}
+
+.ant-menu .ant-menu-item .react-icons {
+  margin-right: 8px;
+  margin-top: -2px;
+}
+
+.ant-menu .ant-menu-item .react-icons-end {
+  margin-right: 0;
+  margin-left: 4px;
+  margin-top: -4px;
+}
+
+.ant-menu .ant-menu-item-icon {
+  margin-top: -5px;
+}
+
+.ant-menu .ant-menu-item .react-icons.react-icons-chains {
+  margin-right: 7px;
+}
+
+.ant-menu .ant-menu-item .nav-text, .ant-menu .ant-menu-submenu-title {
+  text-transform: uppercase;
+}
+
+.network-badge {
+  display: none !important;
+  position: absolute !important;
+  top: 16px;
+  right: 22px;
+}
+
+@media only screen and (min-width: 768px) {
+  .network-badge {
+    display: block !important;
+  }
+}
+
+.network-badge {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.2) !important;
+  padding-left: 12px !important;
+  padding-right: 10px !important;
+}
+
+.network-badge .anticon-down {
+  color: rgba(255,255,255,0.5) !important;
+}
+
+.network-badge .ant-badge-status-text {
+  color: #FFF;
+}
+
+.network-badge .ant-badge-status-dot {
+  width: 8px;
+  height: 8px;
+}
+
+.network-badge .ant-badge-status-success::after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid #52c41a;
+  border-radius: 50%;
+  -webkit-animation: antStatusProcessing 1.2s infinite ease-in-out;
+  animation: antStatusProcessing 1.2s infinite ease-in-out;
+  content: '';
+}
+
+.featured {
+  background: #e6f7ff;
+  padding: 10px 20px;
+  border: 1px solid #91d5ff;
+  border-left: 5px solid #91d5ff;
+}
+
+.featured .react-icons {
+  margin-left: 2px;
 }
