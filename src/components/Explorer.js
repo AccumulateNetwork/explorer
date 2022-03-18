@@ -183,7 +183,7 @@ const Explorer = props => {
                 <Menu.Item key="/blocks">
                     <Link to="/">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
-                        <span className="nav-text">Main</span>
+                        <span className="nav-text">Home</span>
                     </Link>
                 </Menu.Item>
                 <Menu.Item key="/validators">
