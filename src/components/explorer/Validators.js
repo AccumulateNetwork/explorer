@@ -22,9 +22,8 @@ const Validators = () => {
         <div>
             <Title level={2}>Validators</Title>
             <div class="featured">
-                Learn more about Accumulate validators and staking:<br />
-                <a href="https://accumulatenetwork.io/learn/#validators" target="_blank" rel="noopener noreferrer">
-                    <strong>https://accumulatenetwork.io/learn/#validators<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
+                Learn more about Accumulate validators and staking: <a href="https://accumulatenetwork.io/learn/#validators" target="_blank" rel="noopener noreferrer">
+                    <strong>accumulatenetwork.io<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
                 </a>
             </div>
         </div>

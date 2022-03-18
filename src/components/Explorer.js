@@ -9,7 +9,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiMoreLine, RiWalletFill, RiGitlabFill, RiBook2Fill, RiCheckboxMultipleLine
+  RiDashboardLine, RiWalletFill, RiBook2Fill, RiCheckboxMultipleLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -29,7 +29,6 @@ import Validators from './explorer/Validators';
 
 const { Search } = Input;
 const { Header, Content } = Layout;
-const { SubMenu } = Menu;
 
 const Explorer = props => {
 
@@ -171,7 +170,7 @@ const Explorer = props => {
                 <Menu.Item key="/blocks">
                     <Link to="/">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
-                        <span className="nav-text">Dashboard</span>
+                        <span className="nav-text">Main</span>
                     </Link>
                 </Menu.Item>
                 <Menu.Item key="/validators">
@@ -180,26 +179,18 @@ const Explorer = props => {
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                <SubMenu key="more" icon={<RiMoreLine />} title="More">
-                    <Menu.Item key="more:wallet">
-                        <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletFill /></IconContext.Provider>
-                            Wallet
-                        </a>
-                    </Menu.Item>
-                    <Menu.Item key="more:docs">
-                        <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Fill /></IconContext.Provider>
-                            Docs
-                        </a>
-                    </Menu.Item>
-                    <Menu.Item key="more:gitlab">
-                        <a href="https://gitlab.com/accumulatenetwork" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiGitlabFill /></IconContext.Provider>
-                            GitLab
-                        </a>
-                    </Menu.Item>
-                </SubMenu>
+                <Menu.Item>
+                    <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletFill /></IconContext.Provider>
+                        <span className="nav-text">Wallet</span>
+                    </a>
+                </Menu.Item>
+                <Menu.Item>
+                    <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Fill /></IconContext.Provider>
+                        <span className="nav-text">Docs</span>
+                    </a>
+                </Menu.Item>
             </Menu>
             {currentNetwork ? (
                 <Dropdown overlay={ExplorerSelect} trigger={['click']} className="network-badge">
