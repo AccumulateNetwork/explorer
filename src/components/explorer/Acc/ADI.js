@@ -25,6 +25,7 @@ const { Title, Text } = Typography;
 
 const ADI = props => {
 
+    let type = props.type ? props.type : 'ADI';
     const adi = props.data;
     const [directory, setDirectory] = useState(null);
     const [totalDirectory, setTotalDirectory] = useState(-1);
@@ -188,7 +189,7 @@ const ADI = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiInformationLine />
                         </IconContext.Provider>
-                        ADI Info
+                        {type} Info
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
@@ -240,7 +241,7 @@ const ADI = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFolder2Line />
                         </IconContext.Provider>
-                        ADI Directory
+                        {type} Directory
                         <Count count={totalDirectory ? totalDirectory : 0} />
                     </Title>
 
@@ -281,7 +282,7 @@ const ADI = props => {
                             <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
                             </IconContext.Provider>
-                            ADI Info
+                            {type} Info
                         </Title>
                         <div className="skeleton-holder">
                             <Skeleton active />
@@ -290,7 +291,7 @@ const ADI = props => {
                             <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiFolder2Line />
                             </IconContext.Provider>
-                            ADI Directory
+                            {type} Directory
                         </Title>
                         <Title level={4}>
                             <IconContext.Provider value={{ className: 'react-icons' }}>

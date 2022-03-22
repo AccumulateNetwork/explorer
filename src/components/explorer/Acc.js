@@ -65,6 +65,8 @@ const Acc = ({ match }) => {
                     return <Token data={props.data} />;
                 case 'identity':
                     return <ADI data={props.data} />;
+                case 'liteIdentity':
+                    return <ADI data={props.data} type="Lite Identity" />;
                 case 'keyBook':
                     props.data.adi = ParseADI(props.data.data.url);
                     return <KeyBook data={props.data} />;
