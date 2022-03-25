@@ -4,11 +4,14 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@apollo/client": "^3.5.10",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
+    "graphql": "^16.3.0",
+    "graphql-tag": "^2.12.6",
     "history": "^5.0.1",
     "js-base64": "^3.7.2",
     "react": "^17.0.2",
@@ -18,10 +21,11 @@
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
     "react-syntax-highlighter": "^15.4.5",
+    "realm-web": "^1.7.0",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='https://testnet.accumulatenetwork.io/v2' react-scripts start",
+    "start": "REACT_APP_API_PATH='https://devnet.accumulatenetwork.io/v2' REACT_APP_ID='explorer-wespx' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
