@@ -14,6 +14,7 @@ const tooltipDescs = {
     txCause: "The cause of the Accumulate transaction",
     txStatus: "The status of the Accumulate transaction",
     adiUrl: "The URL of the ADI (Accumulate Digital Identifier)",
+    identityUrl: "The URL of the Light Identity",
     adiDirectory: "",
     pubKey: "The Public Key of the ADI",
     amount: "The number of tokens transferred",
