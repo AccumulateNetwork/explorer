@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
+import { useLazyQuery } from '@apollo/client';
+import gql from "graphql-tag";
 
 import { Form, message, Input } from 'antd';
 
@@ -8,7 +11,6 @@ const { Search } = Input;
 
 function SearchForm() {
   
-
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
@@ -37,32 +39,44 @@ function SearchForm() {
   const search = async (url) => {
     try {
         let params = {url: url};
-        const response = await RPC.request("query", params, 1);
-        if (response.data && response.type) {
+        const response = await RPC.request("query", params);
+        if (response && response.data && response.type) {
           redirect('/acc/'+url);
         } else {
-          message.info('Nothing was found');
+          searchToken({ variables: { name: url } });
         }
     }
     catch(error) {
-      // error is managed by RPC.js, no need to display anything
+      message.info('Nothing was found');
     }
     setSearchIsLoading(false);
-}
+  }
 
-/*
-const SEARCH_TOKEN = gql`
-    query {
-        token (
-            query: {
-                name: $name
-            }
-        ) {
-            url
-        }
+  const SEARCH_TOKEN = gql`
+      query SearchToken($name: String!) {
+          token (
+              query: {
+                  symbol: $name
+              }
+          ) {
+              url
+          }
+      }
+  `;
+
+  const [searchToken, { data }] = useLazyQuery(
+    SEARCH_TOKEN
+  );
+
+  useEffect(() => {
+    if (data) {
+      if (data.token && data.token.url) {
+        redirect('/acc/'+data.token.url);
+      } else {
+        message.info('Nothing was found');
+      }
     }
-`;
-*/
+  }, [data]);
 
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
