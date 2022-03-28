@@ -64,6 +64,8 @@ const Acc = ({ match }) => {
                     return <TokenAccount data={props.data} />;
                 case 'token':
                     return <Token data={props.data} />;
+                case 'tokenIssuer':
+                    return <Token data={props.data} />;
                 case 'identity':
                     return <ADI data={props.data} />;
                 case 'liteIdentity':
