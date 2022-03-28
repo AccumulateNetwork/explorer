@@ -18,7 +18,7 @@ const { Title, Paragraph, Text } = Typography;
 
 const Tokens = () => {
 
-    const tokens = gql`
+    const GET_TOKENS = gql`
         query {
             tokens (limit: 100) {
                 _id
@@ -30,7 +30,7 @@ const Tokens = () => {
         }
     `;
 
-    const { loading, error, data } = useQuery(tokens);
+    const { loading, error, data } = useQuery(GET_TOKENS);
 
     const columns = [
         {

@@ -9,7 +9,7 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 
-import { Layout, Input, Form, message, Menu, Dropdown, Button, Badge } from 'antd';
+import { Layout, Menu, Dropdown, Button, Badge } from 'antd';
 
 import {
   DownOutlined
@@ -23,8 +23,7 @@ import {
 import Logo from './common/Logo';
 import Version from './common/Version';
 import ScrollToTop from './common/ScrollToTop';
-
-import RPC from './common/RPC';
+import SearchForm from './common/SearchForm';
 
 import Blocks from './explorer/Blocks';
 
@@ -36,7 +35,6 @@ import Faucet from './explorer/Faucet';
 import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
 
-const { Search } = Input;
 const { Header, Content } = Layout;
 
 const Explorer = props => {
@@ -76,8 +74,6 @@ const Explorer = props => {
 
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
-  const [searchIsLoading, setSearchIsLoading] = useState(false);
-  const [searchForm] = Form.useForm();
 
   const handleMenuClick = e => {
     if (e.key === "logo") {
@@ -86,45 +82,6 @@ const Explorer = props => {
         setCurrentMenu([e.key]);
     }
   };
-
-  const handleSearch = (value) => {
-    setSearchIsLoading(true);
-    var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
-    
-    // remove search by height until v0.3
-    /*
-    var isnum = /^\d+$/.test(value);
-    if (isnum && Number.parseInt(value) >= 0) {
-        redirect('/blocks/'+value);
-    }
-    else */
-    if (ishash) {
-        redirect('/tx/'+value);
-    }
-    else {
-        search(value.replace("acc://", ""));
-    }
-  };
-
-  const redirect = (url) => {
-    window.location.href = url;
-  }
-
-  const search = async (url) => {
-        try {
-            let params = {url: url};
-            const response = await RPC.request("query", params, 1);
-            if (response.data && response.type) {
-                redirect('/acc/'+url);
-            } else {
-              message.info('Nothing was found');
-            }
-        }
-        catch(error) {
-          // error is managed by RPC.js, no need to display anything
-        }
-        setSearchIsLoading(false);
-  }
 
   const ExplorerSelect = (
     <Menu>
@@ -271,19 +228,7 @@ const Explorer = props => {
         </Header>
 
         <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
-            <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
-                  <Search
-                      placeholder="Search by Accumulate URL or TXID"
-                      size="large"
-                      enterButton
-                      onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
-                      loading={searchIsLoading}
-                      spellCheck={false}
-                      autoComplete="off"
-                      disabled={searchIsLoading}
-                      allowClear={true}
-                  />
-            </Form>
+            <SearchForm />
             <Switch>
                 <Route exact path="/" component={Blocks} />
                 <Route exact path="/faucet" component={Faucet} />
