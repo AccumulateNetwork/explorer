@@ -85,7 +85,7 @@ const Tokens = () => {
                 <div>
                     {error ? (
                         <div className="skeleton-holder">
-                            <Alert message={error} type="error" showIcon />
+                            <Alert message="Can not connect the database" type="error" showIcon />
                         </div>
                     ) :
                         <div className="skeleton-holder">

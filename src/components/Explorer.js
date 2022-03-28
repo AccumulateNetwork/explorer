@@ -245,13 +245,13 @@ const Explorer = props => {
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                <Menu.Item>
+                <Menu.Item key="wallet">
                     <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
                         <span className="nav-text">Wallet</span>
                     </a>
                 </Menu.Item>
-                <Menu.Item>
+                <Menu.Item key="docs">
                     <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Line /></IconContext.Provider>
                         <span className="nav-text">Docs</span>
