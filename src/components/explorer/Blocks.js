@@ -26,6 +26,8 @@ const Blocks = () => {
       </div>
       : null}
 
+      <Title level={2}>Accumulate Explorer</Title>
+
       <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
         <Row gutter={[16,16]}>
           <Col xs={24} sm={8} md={6} lg={5} xl={4}>

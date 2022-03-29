@@ -70,8 +70,8 @@ function SearchForm() {
 
   useEffect(() => {
     if (data) {
+      setSearchIsLoading(false);
       if (data.token && data.token.url) {
-        setSearchIsLoading(false);
         redirect('/acc/'+data.token.url);
       } else {
         message.info('Nothing was found');
