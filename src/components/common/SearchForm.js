@@ -41,6 +41,7 @@ function SearchForm() {
         let params = {url: url};
         const response = await RPC.request("query", params);
         if (response && response.data && response.type) {
+          setSearchIsLoading(false);
           redirect('/acc/'+url);
         } else {
           searchToken({ variables: { name: url } });
@@ -49,7 +50,6 @@ function SearchForm() {
     catch(error) {
       message.info('Nothing was found');
     }
-    setSearchIsLoading(false);
   }
 
   const SEARCH_TOKEN = gql`
@@ -71,6 +71,7 @@ function SearchForm() {
   useEffect(() => {
     if (data) {
       if (data.token && data.token.url) {
+        setSearchIsLoading(false);
         redirect('/acc/'+data.token.url);
       } else {
         message.info('Nothing was found');
