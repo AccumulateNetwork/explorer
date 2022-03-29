@@ -17,7 +17,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiBook2Line, RiCheckboxMultipleLine, RiCoinLine
+  RiDashboardLine, RiWalletLine, RiBook2Line, RiCoinLine, RiShieldCheckLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -198,7 +198,7 @@ const Explorer = props => {
                 </Menu.Item>
                 <Menu.Item key="/validators">
                     <Link to="/validators">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiCheckboxMultipleLine /></IconContext.Provider>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
