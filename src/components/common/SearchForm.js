@@ -64,13 +64,13 @@ function SearchForm() {
       }
   `;
 
-  const [searchToken, { data }] = useLazyQuery(
+  const [searchToken, { data, error }] = useLazyQuery(
     SEARCH_TOKEN
   );
 
   useEffect(() => {
+    setSearchIsLoading(false);
     if (data) {
-      setSearchIsLoading(false);
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
       } else {
@@ -78,6 +78,10 @@ function SearchForm() {
       }
     }
   }, [data]);
+
+  useEffect(() => {
+      setSearchIsLoading(false);
+  }, [error]);
 
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
