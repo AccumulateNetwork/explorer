@@ -44,7 +44,7 @@ function SearchForm() {
           setSearchIsLoading(false);
           redirect('/acc/'+url);
         } else {
-          searchToken({ variables: { name: url } });
+          searchToken({ variables: { name: url.toUpperCase() } });
         }
     }
     catch(error) {
