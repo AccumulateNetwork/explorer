@@ -24,7 +24,7 @@ const Version = props => {
   useEffect(() => getVersion(), []);
 
   return (
-    <Text type="secondary">API: {version}</Text>
+    <Text type="secondary">API version: {version}</Text>
   );
 
 };

@@ -9,7 +9,7 @@ import {
   InMemoryCache,
 } from "@apollo/client";
 
-import { Layout, Menu, Dropdown, Button, Badge } from 'antd';
+import { Layout, Menu, Dropdown, Button, Badge, Typography } from 'antd';
 
 import {
   DownOutlined
@@ -36,6 +36,7 @@ import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
 
 const { Header, Content } = Layout;
+const { Text } = Typography;
 
 const Explorer = props => {
 
@@ -260,6 +261,10 @@ const Explorer = props => {
                 null
             }
           <p><Version /></p>
+          {process.env.REACT_APP_API_PATH ? (
+              <p><Text type="secondary">API URL: {process.env.REACT_APP_API_PATH}</Text></p>
+          ) : null
+          }
           <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>
       </div>
     </Router>
