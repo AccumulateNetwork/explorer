@@ -15,6 +15,7 @@ function SearchForm() {
   const [searchForm] = Form.useForm();
 
   const handleSearch = (value) => {
+    value = value.replaceAll(/\s/g, "");
     setSearchIsLoading(true);
     var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
     // remove search by height until v0.3
@@ -28,7 +29,7 @@ function SearchForm() {
         redirect('/tx/'+value);
     }
     else {
-        search(value.replace("acc://", "").replaceAll(/\s/g,''));
+        search(value.replace("acc://", ""));
     }
   };
 
