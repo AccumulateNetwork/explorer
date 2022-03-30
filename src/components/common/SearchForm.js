@@ -28,7 +28,7 @@ function SearchForm() {
         redirect('/tx/'+value);
     }
     else {
-        search(value.replace("acc://", ""));
+        search(value.replace("acc://", "").replaceAll(/\s/g,''));
     }
   };
 
