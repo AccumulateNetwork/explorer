@@ -65,7 +65,9 @@ function SearchForm() {
   `;
 
   const [searchToken, { data, error }] = useLazyQuery(
-    SEARCH_TOKEN
+    SEARCH_TOKEN, {
+      fetchPolicy: "network-only",
+    }
   );
 
   useEffect(() => {
