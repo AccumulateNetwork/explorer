@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiCoinLine
+    RiCoinLine, RiExternalLinkLine
 } from 'react-icons/ri';
 
 const { Title, Paragraph, Text } = Typography;
@@ -72,6 +72,12 @@ const Tokens = () => {
         <div>
             <Title level={2}>Tokens</Title>
             
+            <div class="featured" style={{ marginBottom: 20 }}>
+                Learn how to launch your own token on Accumulate in 5 minutes: <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                    <strong>docs.accumulatenetwork.io<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
+                </a>
+            </div>
+
             {data && data.tokens ? (
                 <Table
                     dataSource={data.tokens}
