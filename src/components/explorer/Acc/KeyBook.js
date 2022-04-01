@@ -165,7 +165,7 @@ const KeyBook = props => {
                         Key Pages
                     </Title>
 
-                    {keybook.data.pages ? (
+                    {keybook.data.pages && keybook.data.pages[0] ? (
                         <List
                             size="small"
                             bordered

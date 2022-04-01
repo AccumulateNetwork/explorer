@@ -182,7 +182,7 @@ const KeyPage = props => {
                         Public Keys
                     </Title>
 
-                    {keypage.data.keys ? (
+                    {keypage.data.keys && keypage.data.keys[0].publicKey ? (
                         <List
                             size="small"
                             bordered
