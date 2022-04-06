@@ -141,10 +141,10 @@ const Explorer = props => {
         case 'https://mainnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Mainnet");
             break;
-        case 'https://testnet.accumulatenetwork.io/v2':
+        case 'https://testnet2.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet (beta)");
             break;
-        case 'https://v3.testnet.accumulatenetwork.io/v2':
+        case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet (stable)");
             break;
         case 'https://devnet.accumulatenetwork.io/v2':
