@@ -20,6 +20,7 @@ import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
+import DN from './DN';
 
 const { Title, Text } = Typography;
 
@@ -274,6 +275,12 @@ const ADI = props => {
                     />
                     
                     <TxChain url={adi.data.url} type='pending' />
+
+                    {adi.data.url === 'acc://dn' ? (
+                            <DN data={props.data} />
+                        ) :
+                            null
+                    }
                 </div>
             ) :
                 <div>
