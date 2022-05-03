@@ -12,15 +12,15 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiFileList3Line
+    RiCheckboxMultipleBlankLine
 } from 'react-icons/ri';
 
-import Count from '../../common/Count';
-import RPC from '../../common/RPC';
+import Count from './Count';
+import RPC from './RPC';
 
 const { Title, Text } = Typography;
 
-const DN = props => {
+const MinorBlocks = props => {
     //let type = props.type ? props.type : 'main'
     let header = 'Minor Blocks'
     
@@ -82,7 +82,7 @@ const DN = props => {
     ];
 
     function Icon() {
-        return (<RiFileList3Line />)
+        return (<RiCheckboxMultipleBlankLine />)
     }
 
     const getMinorBlocks = async (params = pagination) => {
@@ -166,4 +166,4 @@ const DN = props => {
     );
 }
 
-export default DN;
+export default MinorBlocks;

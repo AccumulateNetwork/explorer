@@ -20,7 +20,7 @@ import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
-import DN from './DN';
+import MinorBlocks from '../../common/MinorBlocks';
 
 const { Title, Text } = Typography;
 
@@ -274,13 +274,14 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
+                    {adi.data.url === 'acc://dn' ? (
+                        <MinorBlocks data={props.data} />
+                    ) :
+                        null
+                    }
+
                     <TxChain url={adi.data.url} type='pending' />
 
-                    {adi.data.url === 'acc://dn' ? (
-                            <DN data={props.data} />
-                        ) :
-                            null
-                    }
                 </div>
             ) :
                 <div>
