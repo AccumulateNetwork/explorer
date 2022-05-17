@@ -88,13 +88,13 @@ const MinorBlocks = props => {
     const getMinorBlocks = async (params = pagination) => {
         setTableIsLoading(true);
     
-        let start = 0;
+        let start = 1; // in `query-minor-blocks` API the first item has index 1, not 0
         let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
     
         if (params) {
-            start = (params.current-1)*params.pageSize;
+            start = (params.current-1)*params.pageSize+1; // in `query-minor-blocks` API the first item has index 1, not 0
             count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
@@ -106,7 +106,7 @@ const MinorBlocks = props => {
 
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
-                response.start = 0;
+                response.start = 1;  // in `query-minor-blocks` API the first item has index 1, not 0
             }
             setMinorBlocks(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
