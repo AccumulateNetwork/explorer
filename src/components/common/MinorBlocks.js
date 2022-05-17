@@ -35,6 +35,8 @@ const MinorBlocks = props => {
     const columns = [
         {
             title: 'Height',
+            className: 'code',
+            width: 30,
             render: (row) => {
                 if (row) {
                     return (
@@ -53,11 +55,18 @@ const MinorBlocks = props => {
         },
         {
             title: 'TimeStamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
+            width: 180,
             render: (row) => {
                 if (row) {
-                    return (
-                        <Text>{moment(row.blockTime).format('YYYY-MM-DD hh:mm')}</Text>                        
-                    )
+                    if (row.blockTime) {
+                        return (
+                            <Text>{moment(row.blockTime).format('YYYY-MM-DD hh:mm')}</Text>                        
+                        )    
+                    } else {
+                        return (
+                            <Text disabled>Empty Block</Text>
+                        )
+                    }
                 } else {
                     return (
                         <Text disabled>N/A</Text>
@@ -69,9 +78,15 @@ const MinorBlocks = props => {
             title: 'Entries',
             render: (row) => {
                 if (row) {
-                    return (
-                        <Text>{row.txCount}</Text>                        
-                    )
+                    if (row.txCount) {
+                        return (
+                            <Text>{row.txCount}</Text>                        
+                        )    
+                    } else {
+                        return (
+                            <Text disabled>N/A</Text>
+                        )
+                    }
                 } else {
                     return (
                         <Text disabled>N/A</Text>
@@ -109,7 +124,7 @@ const MinorBlocks = props => {
                 response.start = 1;  // in `query-minor-blocks` API the first item has index 1, not 0
             }
             setMinorBlocks(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setPagination({...pagination, current: ((response.start-1)/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`}); // in `query-minor-blocks` API the first item has index 1, not 0
             setTotalEntries(response.total);
           } else {
             throw new Error("Transaction chain not found"); 
