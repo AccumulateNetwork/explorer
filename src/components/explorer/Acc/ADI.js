@@ -274,11 +274,7 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
-                    {adi.data.url === 'acc://dn' ? (
-                        <MinorBlocks data={props.data} />
-                    ) :
-                        null
-                    }
+                    <MinorBlocks data={props.data} />
 
                     <TxChain url={adi.data.url} type='pending' />
 
