@@ -15,6 +15,7 @@ const { Title } = Typography;
 const Validators = () => {
 
     const dataSource = [
+        /*
         {
           position: '1',
           name: 'Inveniam',
@@ -39,6 +40,7 @@ const Validators = () => {
           fee: 1000,
           delegators: 101,
         }
+        */
     ];
 
     const columns = [
@@ -99,7 +101,7 @@ const Validators = () => {
                             <br />
                             Validators
                         </span>
-                        <Title level={4}>3</Title>
+                        <Title level={4}>0</Title>
                     </Card>
                 </Col>
                 <Col xs={24} sm={8} md={6} lg={5} xl={4}>
@@ -109,7 +111,7 @@ const Validators = () => {
                             <br />
                             Staking APY
                         </span>
-                        <Title level={4}>25 %</Title>
+                        <Title level={4}>0 %</Title>
                     </Card>
                 </Col>
                 </Row>
