@@ -103,6 +103,13 @@ const KeyBook = props => {
     }
 
     useEffect(() => {
+        if (!keybook.data.pages && keybook.data.pageCount) {
+            var pages = [];
+            for (var i = 1; i <= keybook.data.pageCount; i++) {
+                pages.push(keybook.data.url+'/'+i);
+            }
+            keybook.data.pages = pages;
+        }
         getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -158,7 +165,7 @@ const KeyBook = props => {
                         Key Pages
                     </Title>
 
-                    {keybook.data.pages ? (
+                    {keybook.data.pages && keybook.data.pages[0] ? (
                         <List
                             size="small"
                             bordered

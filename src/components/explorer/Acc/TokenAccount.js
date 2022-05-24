@@ -313,6 +313,16 @@ const TokenAccount = props => {
                             null
                         }
 
+                        {tokenAccount.lightIdentity ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.lightIdentityUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Identity</nobr></span>}>
+                                <Link to={'/acc/' + tokenAccount.lightIdentity.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.lightIdentity}
+                                </Link>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+
                         {tokenAccount.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
                                 <Link to={'/acc/' + tokenAccount.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>

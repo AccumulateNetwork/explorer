@@ -438,7 +438,7 @@ h4.ant-typography .count {
   right: 22px;
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 800px) {
   .network-badge {
     display: block !important;
   }

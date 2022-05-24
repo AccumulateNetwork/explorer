@@ -20,6 +20,7 @@ import WriteDataToTx from './Tx/WriteDataToTx';
 import AddCreditsTx from './Tx/AddCreditsTx';
 import SegWitDataEntryTx from './Tx/SegWitDataEntryTx';
 import IssueTokensTx from './Tx/IssueTokensTx';
+import GenericTx from './Tx/GenericTx';
 
 const { Title } = Typography;
 
@@ -88,7 +89,7 @@ const Tx = ({ match }) => {
                 case 'issueTokens':
                     return <IssueTokensTx data={props.data} />;
                 default:
-                    return <Alert message="Transaction found, but this transaction type is not supported by the explorer yet" type="warning" showIcon />
+                    return <GenericTx data={props.data} />;
             }
         }
         return <Alert message="Chain does not exist" type="error" showIcon />
