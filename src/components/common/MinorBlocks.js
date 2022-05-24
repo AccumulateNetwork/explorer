@@ -118,7 +118,7 @@ const MinorBlocks = props => {
         }
     
         try {
-          const response = await RPC.request("query-minor-blocks", { url: "acc://bn", start: start, count: count } );
+          const response = await RPC.request("query-minor-blocks", { url: props.url, start: start, count: count } );
           if (response && response.type === 'minorBlock') {
 
             // workaround API bug response
@@ -144,7 +144,7 @@ const MinorBlocks = props => {
 
     return (
         <div>
-            {props.data.data.url === 'acc://dn' ? (
+            {props.url ? (
                 <div>
                     <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
