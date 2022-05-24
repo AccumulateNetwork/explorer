@@ -274,7 +274,7 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
-                    <MinorBlocks data={props.data} />
+                    <MinorBlocks data={adi.data.url} />
 
                     <TxChain url={adi.data.url} type='pending' />
 

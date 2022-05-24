@@ -55,6 +55,7 @@ const MinorBlocks = props => {
         },
         {
             title: 'TimeStamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
+            className: 'code',
             width: 180,
             render: (row) => {
                 if (row) {
@@ -76,6 +77,7 @@ const MinorBlocks = props => {
         },
         {
             title: 'Entries',
+            className: 'code',
             render: (row) => {
                 if (row) {
                     if (row.txCount) {
