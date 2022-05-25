@@ -71,9 +71,9 @@ const AddCreditsTx = props => {
                         null
                     }
 
-                    {(tx.data.amount) ? (
+                    {(tx.data.amount && tx.data.oracle) ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditsAdded}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
-                            {tx.data.amount / 100} credits
+                            {tx.data.amount * tx.data.oracle / 1e10} credits
                         </Descriptions.Item>
                     ) :
                         null
