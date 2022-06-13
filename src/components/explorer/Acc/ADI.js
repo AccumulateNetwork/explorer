@@ -228,6 +228,12 @@ const ADI = props => {
                             null
                         }
 
+                        {adi.data.creditBalance || adi.data.creditBalance === 0 ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                {adi.data.creditBalance ? adi.data.creditBalance / 100 : 0} credits
+                            </Descriptions.Item>
+                        ) : null}
+
                         {adi.data.nonce ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.nonce}><RiQuestionLine /></Tooltip></IconContext.Provider>Nonce</nobr></span>}>
                                 {adi.data.nonce}
