@@ -35,7 +35,7 @@ const TxChain = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.txid}>
+                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>

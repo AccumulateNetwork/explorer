@@ -131,7 +131,7 @@ const TokenAccount = props => {
             render: (txid) => {
                 if (txid) {
                     return (
-                        <Link to={'/tx/' + txid}>
+                        <Link to={'/acc/' + txid.replace("acc://", "")}>
                             <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{txid}
                         </Link>
                     )

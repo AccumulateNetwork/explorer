@@ -37,7 +37,7 @@ const KeyPage = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.txid}>
+                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>
