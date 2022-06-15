@@ -18,22 +18,7 @@ import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
 import DataEntry from './Acc/DataEntry';
 
-import FaucetTx from './Tx/FaucetTx';
-import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
-import SynthDepositCreditsTx from './Tx/SynthDepositCreditsTx';
-import SynthCreateChainTx from './Tx/SynthCreateChainTx';
-import TokenTx from './Tx/TokenTx';
-import CreateIdentityTx from './Tx/CreateIdentityTx';
-import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
-import CreateDataAccountTx from './Tx/CreateDataAccountTx';
-import SynthGenesisTx from './Tx/SynthGenesisTx';
-import WriteDataTx from './Tx/WriteDataTx';
-import WriteDataToTx from './Tx/WriteDataToTx';
-import AddCreditsTx from './Tx/AddCreditsTx';
-import SegWitDataEntryTx from './Tx/SegWitDataEntryTx';
-import IssueTokensTx from './Tx/IssueTokensTx';
 import GenericTx from './Tx/GenericTx';
-
 
 import ParseADI from '../common/ParseADI';
 
@@ -45,15 +30,21 @@ const Acc = ({ match }) => {
     
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
+    const [isTx, setIsTx] = useState(false);
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
         setAcc(null);
         setError(null);
+        setIsTx(false);
 
         // if hash params found, parse them
         if (location.hash !== '') {
             url += location.hash;
+        }
+
+        if (url.includes("@")) {
+            setIsTx(true);
         }
 
         try {
@@ -73,6 +64,9 @@ const Acc = ({ match }) => {
 
     function Render(props) {
         if (props.data) {
+            if (isTx) {
+                return <GenericTx data={props.data} />;
+            }
             switch(props.data.type) {
                 case 'liteTokenAccount':
                     props.data.lightIdentity = ParseADI(props.data.data.url);
@@ -101,44 +95,8 @@ const Acc = ({ match }) => {
                     return <DataAccount data={props.data} />;
                 case 'dataEntry':
                     return <DataEntry data={props.data} />;
-
-                // txs
-                case 'acmeFaucet':
-                    return <FaucetTx data={props.data} />;
-                case 'syntheticGenesis':
-                    return <SynthGenesisTx data={props.data} />;
-                case 'genesis':
-                    return <SynthGenesisTx data={props.data} />;
-                case 'syntheticDepositTokens':
-                    return <SynthDepositTokensTx data={props.data} />;
-                case 'syntheticDepositCredits':
-                    return <SynthDepositCreditsTx data={props.data} />;
-                case 'syntheticCreateChain':
-                    return <SynthCreateChainTx data={props.data} />;
-                case 'sendTokens':
-                    return <TokenTx data={props.data} />;
-                case 'createIdentity':
-                    return <CreateIdentityTx data={props.data} />;
-                case 'createTokenAccount':
-                    return <CreateTokenAccountTx data={props.data} />;
-                case 'createDataAccount':
-                    return <CreateDataAccountTx data={props.data} />;
-                case 'writeData':
-                    return <WriteDataTx data={props.data} />;
-                case 'writeDataTo':
-                    return <WriteDataToTx data={props.data} />;
-                case 'segWitDataEntry':
-                    return <SegWitDataEntryTx data={props.data} />;
-                case 'addCredits':
-                    return <AddCreditsTx data={props.data} />;
-                case 'issueTokens':
-                    return <IssueTokensTx data={props.data} />;
                 default:
-                    return <GenericTx data={props.data} />;
-                /*
-                default:
-                return <Alert message="Chain found, but this chain type is not supported by the explorer yet" type="warning" showIcon />
-                */
+                    return <Alert message="Chain found, but this chain type is not supported by the explorer yet" type="warning" showIcon />
             }
         }
         return <Alert message="Chain does not exist" type="error" showIcon />
@@ -152,7 +110,7 @@ const Acc = ({ match }) => {
 
     return (
         <div>
-            <Title level={2} className="break-all">Account</Title>
+            <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{accountURL}</Title>
                 {acc ? (
                     <Render data={acc} />
