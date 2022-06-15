@@ -127,7 +127,6 @@ const TokenAccount = props => {
         {
             title: 'Transaction ID',
             dataIndex: 'txid',
-            className: 'code',
             render: (txid) => {
                 if (txid) {
                     return (
