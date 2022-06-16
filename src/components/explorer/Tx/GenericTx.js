@@ -80,9 +80,9 @@ const GenericTx = props => {
                   Raw Data
                 </Title>
 
-                {tx.data ? (
+                {tx.transaction ? (
                     <div className="entry-content" style={{marginTop: 0}}>
-                        <SyntaxHighlighter language="json">{JSON.stringify(tx.data, null, 4)}</SyntaxHighlighter>
+                        <SyntaxHighlighter language="json">{JSON.stringify(tx.transaction, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
                     <Alert message="No tx data" type="warning" showIcon />
