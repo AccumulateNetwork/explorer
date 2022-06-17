@@ -75,7 +75,7 @@ const Token = props => {
                             null  
                         }
 
-                        {token.data.precision ? (
+                        {token.data.precision || token.data.precision === 0 ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenPrecision}><RiQuestionLine /></Tooltip></IconContext.Provider>Precision</nobr></span>}>
                                 {token.data.precision}
                             </Descriptions.Item>
