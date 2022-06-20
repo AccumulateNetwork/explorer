@@ -175,7 +175,8 @@ const KeyPage = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiKey2Line />
                         </IconContext.Provider>
-                        Public Keys
+                        Public Keys Hashes
+                        <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
                     </Title>
 
                     {keypage.data.keys && keypage.data.keys[0].publicKey ? (
@@ -183,7 +184,7 @@ const KeyPage = props => {
                             size="small"
                             bordered
                             dataSource={keypage.data.keys}
-                            renderItem={item => <List.Item>{item.publicKey}</List.Item>}
+                            renderItem={item => <List.Item><span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span></List.Item>}
                             style={{ marginBottom: "30px" }}
                         />
                     ) :

@@ -163,6 +163,7 @@ const KeyBook = props => {
                         <RiStackLine />
                         </IconContext.Provider>
                         Key Pages
+                        <Count count={keybook.data.pages && keybook.data.pages[0] ? keybook.data.pages.length : 0} />
                     </Title>
 
                     {keybook.data.pages && keybook.data.pages[0] ? (
