@@ -81,8 +81,8 @@ const DataEntry = props => {
                     Data
                     </Title>
 
-                    {entry.data.entry.data ? (
-                        <Content>{entry.data.entry.data}</Content>
+                    {entry.data.entry.data && entry.data.entry.data[0] ? (
+                        <Content>{entry.data.entry.data[0]}</Content>
                     ) :
                         <div class="skeleton-holder">
                             <Alert message="No content" type="info" showIcon />
