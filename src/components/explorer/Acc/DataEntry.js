@@ -9,12 +9,12 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiPriceTag3Line, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiFileList2Line
 } from 'react-icons/ri';
 
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+
 import tooltipDescs from '../../common/TooltipDescriptions';
-import ExtId from '../../common/ExtId';
-import Content from '../../common/Content';
 
 const { Title } = Typography;
 
@@ -58,31 +58,16 @@ const DataEntry = props => {
                     </Descriptions>
 
                     <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiPriceTag3Line />
-                        </IconContext.Provider>
-                        External IDs
-                    </Title>
-
-                    {entry.data.entry.extIds ? (
-                        <div className="extids">
-                            {entry.data.entry.extIds.map((item) => <ExtId>{item}</ExtId>)}
-                        </div>
-                    ) :
-                        <div class="skeleton-holder">
-                            <Alert message="No ExtIds" type="info" showIcon />
-                        </div>
-                    }
-
-                    <Title level={4}>
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                     </IconContext.Provider>
                     Data
                     </Title>
 
-                    {entry.data.entry.data && entry.data.entry.data[0] ? (
-                        <Content>{entry.data.entry.data[0]}</Content>
+                    {entry.data.entry.data ? (
+                        <div className="entry-content" style={{marginTop: 0}}>
+                            <SyntaxHighlighter language="json">{JSON.stringify(entry.data.entry.data, null, 4)}</SyntaxHighlighter>
+                        </div>
                     ) :
                         <div class="skeleton-holder">
                             <Alert message="No content" type="info" showIcon />
