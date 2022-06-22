@@ -4,7 +4,8 @@ import {
   Typography,
   Descriptions,
   Tooltip,
-  Alert
+  Alert,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -12,8 +13,7 @@ import {
     RiInformationLine, RiQuestionLine, RiFileList2Line
 } from 'react-icons/ri';
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-
+import Data from '../../common/Data';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title } = Typography;
@@ -65,9 +65,13 @@ const DataEntry = props => {
                     </Title>
 
                     {entry.data.entry.data ? (
-                        <div className="entry-content" style={{marginTop: 0}}>
-                            <SyntaxHighlighter language="json">{JSON.stringify(entry.data.entry.data, null, 4)}</SyntaxHighlighter>
-                        </div>
+                        <List
+                        size="small"
+                        bordered
+                        dataSource={entry.data.entry.data}
+                        renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                        style={{ marginBottom: "30px" }}
+                        />
                     ) :
                         <div class="skeleton-holder">
                             <Alert message="No content" type="info" showIcon />

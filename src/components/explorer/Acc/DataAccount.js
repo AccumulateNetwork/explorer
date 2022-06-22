@@ -7,7 +7,8 @@ import {
   Descriptions,
   Tooltip,
   Table,
-  Alert
+  Alert,
+  Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -17,6 +18,7 @@ import {
 
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import ExtId from '../../common/ExtId';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
 
@@ -47,7 +49,7 @@ const DataAccount = props => {
         }
     
         try {
-          const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count } );
+          const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expand: true } );
           if (response) {
 
             // workaround API bug response
@@ -80,7 +82,23 @@ const DataAccount = props => {
                     {entryHash}
                 </Link>
             )
-        }
+        },
+        {
+            title: 'Entry Data',
+            dataIndex: 'entry',
+            render: (entry) => {
+              if (entry.data !== null && entry.data !== undefined) {
+                var items = entry.data.slice(0,3).map((item) => <ExtId compact>{item}</ExtId>);
+                let extra = entry.data.length-3;
+                if (extra > 0) {
+                  items.push(<Tag className="extid-tag">+{extra} more</Tag>);
+                }
+                return <nobr>{items}</nobr>;
+              } else {
+                return null;
+              }
+          }
+      },
     ];
 
     useEffect(() => {
