@@ -61,7 +61,7 @@ const DataEntry = props => {
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                     </IconContext.Provider>
-                    Data
+                    Entry Data
                     </Title>
 
                     {entry.data.entry.data ? (
