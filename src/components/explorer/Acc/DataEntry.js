@@ -22,6 +22,11 @@ const DataEntry = props => {
 
     const entry = props.data;
 
+    var content = new Array();
+    if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
+        content = Array.from(props.data.data.entry.data, item => item || "")        
+    }
+
     return (
         <div>
 
@@ -64,11 +69,11 @@ const DataEntry = props => {
                     Entry Data
                     </Title>
 
-                    {entry.data.entry.data ? (
+                    {content ? (
                         <List
                         size="small"
                         bordered
-                        dataSource={entry.data.entry.data}
+                        dataSource={content}
                         renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
                         style={{ marginBottom: "30px" }}
                         />

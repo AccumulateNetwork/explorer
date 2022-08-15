@@ -39,9 +39,13 @@ const Data = props => {
         <Option value="Base64">Base64</Option>
         <Option value="Hex">Hex</Option>
       </Select>
-      <Text copyable>
-        {current}
-      </Text>
+      {current ?
+        <Text copyable>
+          {current}
+        </Text>
+      : 
+        <Text className="extid-empty" disabled>Empty</Text>
+      }
     </Input.Group>
   );
 
