@@ -88,7 +88,7 @@ const DataAccount = props => {
             dataIndex: 'entry',
             render: (entry) => {
               if (entry.data !== null && entry.data !== undefined) {
-                var items = entry.data.slice(0,3).map((item) => <ExtId compact>{item}</ExtId>);
+                var items = entry.data.slice(0,3).map((item) => <ExtId compact>{item ? item : ""}</ExtId>);
                 let extra = entry.data.length-3;
                 if (extra > 0) {
                   items.push(<Tag className="extid-tag">+{extra} more</Tag>);
