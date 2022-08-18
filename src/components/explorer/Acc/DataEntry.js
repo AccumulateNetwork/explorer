@@ -22,7 +22,7 @@ const DataEntry = props => {
 
     const entry = props.data;
 
-    var content = new Array();
+    var content = [];
     if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
         content = Array.from(props.data.data.entry.data, item => item || "")        
     }
