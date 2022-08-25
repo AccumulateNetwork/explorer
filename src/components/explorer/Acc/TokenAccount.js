@@ -166,7 +166,7 @@ const TokenAccount = props => {
                 let from
 
                 if (tx.data.from) from = tx.data.from
-                else if (tx.origin) from = tx.origin
+                else if (tx.transaction.body.source) from = tx.transaction.body.source
 
                 if (from === undefined) {
                     return (
