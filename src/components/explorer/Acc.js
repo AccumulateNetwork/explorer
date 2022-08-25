@@ -17,6 +17,9 @@ import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
 import DataEntry from './Acc/DataEntry';
+
+import GenericTx from './Tx/GenericTx';
+
 import ParseADI from '../common/ParseADI';
 
 const { Title } = Typography;
@@ -27,15 +30,21 @@ const Acc = ({ match }) => {
     
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
+    const [isTx, setIsTx] = useState(false);
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
         setAcc(null);
         setError(null);
+        setIsTx(false);
 
         // if hash params found, parse them
         if (location.hash !== '') {
             url += location.hash;
+        }
+
+        if (url.includes("@")) {
+            setIsTx(true);
         }
 
         try {
@@ -55,6 +64,9 @@ const Acc = ({ match }) => {
 
     function Render(props) {
         if (props.data) {
+            if (isTx) {
+                return <GenericTx data={props.data} />;
+            }
             switch(props.data.type) {
                 case 'liteTokenAccount':
                     props.data.lightIdentity = ParseADI(props.data.data.url);
@@ -98,7 +110,7 @@ const Acc = ({ match }) => {
 
     return (
         <div>
-            <Title level={2} className="break-all">Account</Title>
+            <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{accountURL}</Title>
                 {acc ? (
                     <Render data={acc} />

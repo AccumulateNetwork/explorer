@@ -63,7 +63,7 @@ const ADI = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.txid}>
+                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>
@@ -228,6 +228,12 @@ const ADI = props => {
                             null
                         }
 
+                        {adi.data.creditBalance || adi.data.creditBalance === 0 ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                {adi.data.creditBalance ? adi.data.creditBalance / 100 : 0} credits
+                            </Descriptions.Item>
+                        ) : null}
+
                         {adi.data.nonce ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.nonce}><RiQuestionLine /></Tooltip></IconContext.Provider>Nonce</nobr></span>}>
                                 {adi.data.nonce}
@@ -274,7 +280,10 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
                     
-                    <MinorBlocks url={adi.data.url} />
+                    {adi.data.url === "acc://dn.acme" ? (
+                        <MinorBlocks url={adi.data.url} />
+                    ) :
+                    null}
 
                     <TxChain url={adi.data.url} type='pending' />
 

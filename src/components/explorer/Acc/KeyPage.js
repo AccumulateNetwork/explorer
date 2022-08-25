@@ -37,7 +37,7 @@ const KeyPage = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.txid}>
+                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>
@@ -165,13 +165,9 @@ const KeyPage = props => {
                             null
                         }
 
-                        {(keypage.data.creditBalance || keypage.data.creditBalance === 0) ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {keypage.data.creditBalance / 100} credits
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                            {keypage.data.creditBalance ? keypage.data.creditBalance / 100 : 0} credits
+                        </Descriptions.Item>
 
                     </Descriptions>
 
@@ -179,7 +175,8 @@ const KeyPage = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiKey2Line />
                         </IconContext.Provider>
-                        Public Keys
+                        Public Keys Hashes
+                        <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
                     </Title>
 
                     {keypage.data.keys && keypage.data.keys[0].publicKey ? (
@@ -187,7 +184,7 @@ const KeyPage = props => {
                             size="small"
                             bordered
                             dataSource={keypage.data.keys}
-                            renderItem={item => <List.Item>{item.publicKey}</List.Item>}
+                            renderItem={item => <List.Item><span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span></List.Item>}
                             style={{ marginBottom: "30px" }}
                         />
                     ) :

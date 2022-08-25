@@ -37,7 +37,7 @@ const KeyBook = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.txid}>
+                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
                             </Link>
                         </div>
@@ -163,6 +163,7 @@ const KeyBook = props => {
                         <RiStackLine />
                         </IconContext.Provider>
                         Key Pages
+                        <Count count={keybook.data.pages && keybook.data.pages[0] ? keybook.data.pages.length : 0} />
                     </Title>
 
                     {keybook.data.pages && keybook.data.pages[0] ? (

@@ -127,11 +127,10 @@ const TokenAccount = props => {
         {
             title: 'Transaction ID',
             dataIndex: 'txid',
-            className: 'code',
             render: (txid) => {
                 if (txid) {
                     return (
-                        <Link to={'/tx/' + txid}>
+                        <Link to={'/acc/' + txid.replace("acc://", "")}>
                             <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{txid}
                         </Link>
                     )
@@ -167,7 +166,7 @@ const TokenAccount = props => {
                 let from
 
                 if (tx.data.from) from = tx.data.from
-                else if (tx.origin) from = tx.origin
+                else if (tx.transaction.body.source) from = tx.transaction.body.source
 
                 if (from === undefined) {
                     return (

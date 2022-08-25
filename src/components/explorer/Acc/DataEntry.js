@@ -4,23 +4,28 @@ import {
   Typography,
   Descriptions,
   Tooltip,
-  Alert
+  Alert,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiPriceTag3Line, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiFileList2Line
 } from 'react-icons/ri';
 
+import Data from '../../common/Data';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import ExtId from '../../common/ExtId';
-import Content from '../../common/Content';
 
 const { Title } = Typography;
 
 const DataEntry = props => {
 
     const entry = props.data;
+
+    var content = [];
+    if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
+        content = Array.from(props.data.data.entry.data, item => item || "")        
+    }
 
     return (
         <div>
@@ -58,31 +63,20 @@ const DataEntry = props => {
                     </Descriptions>
 
                     <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiPriceTag3Line />
-                        </IconContext.Provider>
-                        External IDs
-                    </Title>
-
-                    {entry.data.entry.extIds ? (
-                        <div className="extids">
-                            {entry.data.entry.extIds.map((item) => <ExtId>{item}</ExtId>)}
-                        </div>
-                    ) :
-                        <div class="skeleton-holder">
-                            <Alert message="No ExtIds" type="info" showIcon />
-                        </div>
-                    }
-
-                    <Title level={4}>
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                     </IconContext.Provider>
-                    Data
+                    Entry Data
                     </Title>
 
-                    {entry.data.entry.data ? (
-                        <Content>{entry.data.entry.data}</Content>
+                    {content ? (
+                        <List
+                        size="small"
+                        bordered
+                        dataSource={content}
+                        renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                        style={{ marginBottom: "30px" }}
+                        />
                     ) :
                         <div class="skeleton-holder">
                             <Alert message="No content" type="info" showIcon />

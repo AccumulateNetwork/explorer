@@ -209,6 +209,10 @@ h4.ant-typography .count {
   font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
 }
 
+.ant-list .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+}
+
 .ant-descriptions .ant-descriptions-item-content .ant-typography:last-child {
   margin-bottom: 0;
 }

@@ -84,12 +84,12 @@ const DataAccount = props => {
             )
         },
         {
-            title: 'External IDs',
+            title: 'Entry Data',
             dataIndex: 'entry',
             render: (entry) => {
-              if (entry.extIds !== null && entry.extIds !== undefined) {
-                var items = entry.extIds.slice(0,3).map((item) => <ExtId compact>{item}</ExtId>);
-                let extra = entry.extIds.length-3;
+              if (entry.data !== null && entry.data !== undefined) {
+                var items = entry.data.slice(0,3).map((item) => <ExtId compact>{item ? item : ""}</ExtId>);
+                let extra = entry.data.length-3;
                 if (extra > 0) {
                   items.push(<Tag className="extid-tag">+{extra} more</Tag>);
                 }
@@ -97,8 +97,8 @@ const DataAccount = props => {
               } else {
                 return null;
               }
-            }
-        },
+          }
+      },
     ];
 
     useEffect(() => {
