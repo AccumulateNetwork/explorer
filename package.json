@@ -27,7 +27,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='https://devnet.accumulatenetwork.io/v2' REACT_APP_ID='explorer-wespx' react-scripts start",
+    "start": "REACT_APP_API_PATH='https://beta.testnet.accumulatenetwork.io/v2' REACT_APP_ID='explorer-wespx' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

@@ -91,19 +91,14 @@ const Explorer = props => {
               <Badge status="default" text="Mainnet (soon)" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (stable)">
+      <Menu.Item key="Testnet (Beta RC2)">
           <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (stable)" />
+              <Badge status="success" text="Testnet (Beta RC2)" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
+      <Menu.Item key="Testnet (Beta RC1)">
           <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (beta)" />
-          </a>
-      </Menu.Item>
-      <Menu.Item key="Devnet">
-          <a target="_blank" rel="noopener noreferrer" href="https://dev.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Devnet" />
+              <Badge status="success" text="Testnet (Beta RC1)" />
           </a>
       </Menu.Item>
     </Menu>
@@ -116,19 +111,14 @@ const Explorer = props => {
                 Mainnet (soon)
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (stable)">
+      <Menu.Item key="Testnet (Beta RC2)">
             <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                Testnet (stable)
+                Testnet (Beta RC2)
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
+      <Menu.Item key="Testnet (Beta RC1)">
             <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Testnet (beta)
-            </a>
-      </Menu.Item>
-      <Menu.Item key="Devnet">
-            <a target="_blank" rel="noopener noreferrer" href="https://dev.explorer.accumulatenetwork.io">
-                Devnet
+                Testnet (Beta RC1)
             </a>
       </Menu.Item>
     </Menu>
@@ -142,13 +132,10 @@ const Explorer = props => {
             setCurrentNetwork("Mainnet");
             break;
         case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (beta)");
+            setCurrentNetwork("Testnet (Beta RC1)");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (stable)");
-            break;
-        case 'https://devnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Devnet");
+            setCurrentNetwork("Testnet (Beta RC2)");
             break;
         default:
             setCurrentNetwork("Unknown");
