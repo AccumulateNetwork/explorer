@@ -91,14 +91,14 @@ const Explorer = props => {
               <Badge status="default" text="Mainnet (soon)" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (Beta RC2)">
+      <Menu.Item key="Testnet">
           <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (Beta RC2)" />
+              <Badge status="success" text="Testnet" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (Beta RC1)">
+      <Menu.Item key="Testnet (beta)">
           <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (Beta RC1)" />
+              <Badge status="success" text="Testnet (beta)" />
           </a>
       </Menu.Item>
     </Menu>
@@ -111,14 +111,14 @@ const Explorer = props => {
                 Mainnet (soon)
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (Beta RC2)">
+      <Menu.Item key="Testnet">
             <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                Testnet (Beta RC2)
+                Testnet
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (Beta RC1)">
+      <Menu.Item key="Testnet (beta)">
             <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Testnet (Beta RC1)
+                Testnet (beta)
             </a>
       </Menu.Item>
     </Menu>
@@ -132,10 +132,10 @@ const Explorer = props => {
             setCurrentNetwork("Mainnet");
             break;
         case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (Beta RC1)");
+            setCurrentNetwork("Testnet (beta)");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (Beta RC2)");
+            setCurrentNetwork("Testnet");
             break;
         default:
             setCurrentNetwork("Unknown");
