@@ -26,7 +26,7 @@ function SearchForm() {
     }
     else */
     if (ishash) {
-        redirect('/tx/'+value);
+        searchTxhash(value);
     }
     else {
         search(value.replace("acc://", ""));
@@ -37,11 +37,29 @@ function SearchForm() {
     window.location.href = url;
   }
 
+  const searchTxhash = async (txhash) => {
+    try {
+        let params = {txid: txhash};
+        const response = await RPC.request("query-tx", params);
+        if (response && response.data && response.txid) {
+          setSearchIsLoading(false);
+          redirect('/acc/'+response.txid.replace("acc://", ""));
+        } else {
+          setSearchIsLoading(false);
+          message.info('Nothing was found');
+        }
+    }
+    catch(error) {
+      setSearchIsLoading(false);
+      message.info('Nothing was found');
+    }
+  }
+
   const search = async (url) => {
     try {
         let params = {url: url};
         const response = await RPC.request("query", params);
-        if (response && response.data && response.type) {
+        if (response && response.data) {
           setSearchIsLoading(false);
           redirect('/acc/'+url);
         } else {
@@ -49,6 +67,7 @@ function SearchForm() {
         }
     }
     catch(error) {
+      setSearchIsLoading(false);
       message.info('Nothing was found');
     }
   }
