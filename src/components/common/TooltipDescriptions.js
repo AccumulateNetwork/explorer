@@ -27,7 +27,6 @@ const tooltipDescs = {
     sponsor: "The URL of the sponsor",
     recipient: "the account that is receiving a transaction",
     threshold: "the required m of n to execute a transaction",
-    scratchAccountDeletionWarning: "Protocol only preserves the last 2 weeks of entries within this account.",
 };
 
 export default tooltipDescs;

@@ -277,16 +277,6 @@ const TokenAccount = props => {
                         Token Account Info
                     </Title>
 
-                    {tokenAccount.data.scratch ? (
-                        <div style={{ marginBottom: '10px' }}>
-                            <Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.scratchAccountDeletionWarning}>
-                                <Alert message="Scratch token account" type="info" showIcon/>
-                            </Tooltip>
-                        </div>
-                    ) :
-                        null
-                    }
-
                     <Descriptions bordered column={1} size="middle">
 
                         {tokenAccount.data.url ? (
