@@ -368,7 +368,9 @@ const TokenAccount = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
-                    <TxChain url={tokenAccount.data.url} type='pending' />
+                    {tokenAccount.type !== "liteTokenAccount" ? (
+                        <TxChain url={tokenAccount.data.url} type='pending' />
+                    ) : null }
                     <TxChain url={tokenAccount.data.url} type='signature' />
 
                 </div>

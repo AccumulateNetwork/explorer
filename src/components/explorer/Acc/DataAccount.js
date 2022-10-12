@@ -179,7 +179,9 @@ const DataAccount = props => {
                     />
 
                     <TxChain url={account.data.url} type='transaction' />
-                    <TxChain url={account.data.url} type='pending' />
+                    {account.type !== "liteDataAccount" ? (
+                        <TxChain url={account.data.url} type='pending' />
+                    ) : null }
                     <TxChain url={account.data.url} type='signature' />
 
                 </div>
