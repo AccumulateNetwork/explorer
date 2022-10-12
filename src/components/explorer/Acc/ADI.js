@@ -185,7 +185,6 @@ const ADI = props => {
                     />
 
                     <TxChain url={adi.data.url} type='transaction' />
-                    <TxChain url={adi.data.url} type='pending' />
                     <TxChain url={adi.data.url} type='signature' />
                     
                     {adi.data.url === "acc://dn.acme" ? (
