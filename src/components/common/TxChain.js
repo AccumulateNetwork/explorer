@@ -102,7 +102,7 @@ const TxChain = props => {
         try {
           let response;
           if (type === 'pending')
-            response = await RPC.request("query", { url: props.url + `#${type}/${(params.current - 1) * params.pageSize}:${params.current * params.pageSize}` } );
+            response = await RPC.request("query", { url: props.url + `#${type}` } );
           else
             response = await RPC.request("query", { url : props.url + `?start=${start}&count=${count}#${type}` } );
 
