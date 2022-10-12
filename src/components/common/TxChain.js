@@ -11,7 +11,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiExchangeLine, RiShieldCheckLine
+    RiExchangeLine, RiShieldCheckLine, RiTimerLine
 } from 'react-icons/ri';
 
 import Count from './Count';
@@ -20,7 +20,7 @@ import RPC from './RPC';
 const { Title, Text } = Typography;
 
 const TxChain = props => {
-    let type = props.type ? props.type : "signature"
+    let type = props.type ? props.type : "transaction"
     let header
     switch (type) {
         case "pending":
@@ -75,31 +75,38 @@ const TxChain = props => {
     ];
 
     function Icon() {
-        if (type === 'pending')
-            return (<RiShieldCheckLine />)
-        else
-            return (<RiExchangeLine />)    
+        switch (type) {
+            case "pending":
+                return (<RiTimerLine />)
+            case "signature":
+                return (<RiShieldCheckLine />)
+            default:
+                return (<RiExchangeLine />)
+        }
     }
 
     const getTxChain = async (params = pagination) => {
-        setTableIsLoading(true);
-    
-//        let start = 0;
-//        let count = 10;
+        setTableIsLoading(true);    
+        let start = 0;
+        let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
     
         if (params) {
-//            start = (params.current-1)*params.pageSize;
-//            count = params.pageSize;
+            start = (params.current-1)*params.pageSize;
+            count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
     
         try {
-          const response = await RPC.request("query", { url: props.url + `#${type}/${(params.current - 1) * params.pageSize}:${params.current * params.pageSize}` } );
-          if (response) {
+          let response;
+          if (type === 'pending')
+            response = await RPC.request("query", { url: props.url + `#${type}/${(params.current - 1) * params.pageSize}:${params.current * params.pageSize}` } );
+          else
+            response = await RPC.request("query", { url : props.url + `?start=${start}&count=${count}#${type}` } );
 
+            if (response) {
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
                 response.start = 0;
@@ -108,7 +115,7 @@ const TxChain = props => {
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
             setTotalEntries(response.total);
           } else {
-            throw new Error("Transaction chain not found"); 
+            throw new Error("Chain not found"); 
           }
         }
         catch(error) {

@@ -16,6 +16,7 @@ import {
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
+import TxChain from '../../common/TxChain';
 
 const { Title } = Typography;
 
@@ -83,6 +84,10 @@ const Token = props => {
                         }
 
                     </Descriptions>
+
+                    <TxChain url={token.data.url} type='transaction' />
+                    <TxChain url={token.data.url} type='pending' />
+                    <TxChain url={token.data.url} type='signature' />
 
                 </div>
             ) :
