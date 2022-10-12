@@ -20,7 +20,6 @@ import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import ExtId from '../../common/ExtId';
 import Count from '../../common/Count';
-import TxChain from '../../common/TxChain';
 
 const { Title } = Typography;
 
@@ -189,7 +188,6 @@ const DataAccount = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
-                    <TxChain url={account.data.url} type='pending' />
                 </div>
             ) :
                 null

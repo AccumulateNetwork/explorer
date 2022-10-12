@@ -19,7 +19,6 @@ import {
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import Count from '../../common/Count';
-import TxChain from '../../common/TxChain';
 import MinorBlocks from '../../common/MinorBlocks';
 
 const { Title, Text } = Typography;
@@ -284,8 +283,6 @@ const ADI = props => {
                         <MinorBlocks url={adi.data.url} />
                     ) :
                     null}
-
-                    <TxChain url={adi.data.url} type='pending' />
 
                 </div>
             ) :

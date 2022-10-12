@@ -20,8 +20,19 @@ import RPC from './RPC';
 const { Title, Text } = Typography;
 
 const TxChain = props => {
-    let type = props.type ? props.type : 'main'
-    let header = (type === 'pending') ? 'Signature Chain' : 'Transaction History'
+    let type = props.type ? props.type : "signature"
+    let header
+    switch (type) {
+        case "pending":
+            header = "Pending Transactions"
+            break
+        case "signature":
+            header = "Signature Chain"
+            break
+        default:
+            header = "Transaction History"
+            break
+    }
     
     const [txChain, setTxChain] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);

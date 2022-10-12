@@ -379,6 +379,7 @@ const TokenAccount = props => {
                     />
 
                     <TxChain url={tokenAccount.data.url} type='pending' />
+                    
                 </div>
             ) :
                 <div>

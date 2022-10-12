@@ -16,7 +16,6 @@ import {
 } from 'react-icons/ri';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title } = Typography;
 
@@ -85,7 +84,6 @@ const Token = props => {
 
                     </Descriptions>
 
-                    <TxChain url={token.data.url} type='pending' />
                 </div>
             ) :
                 null
