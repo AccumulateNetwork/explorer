@@ -98,12 +98,17 @@ const KeyPage = props => {
                         <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
                     </Title>
 
-                    {keypage.data.keys && keypage.data.keys[0].publicKey ? (
+                    {keypage.data.keys && keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate ? (
                         <List
                             size="small"
                             bordered
                             dataSource={keypage.data.keys}
-                            renderItem={item => <List.Item><span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span></List.Item>}
+                            renderItem={item =>
+                                <List.Item>
+                                    {item.publicKey ? <span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span> : null }
+                                    {item.delegate ? <span><Tag color="green">Delegate</Tag><Link to={'/acc/' + item.delegate.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{item.delegate}</Link></span> : null }
+                                </List.Item>
+                            }
                             style={{ marginBottom: "30px" }}
                         />
                     ) :
