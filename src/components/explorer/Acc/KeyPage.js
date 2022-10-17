@@ -98,7 +98,7 @@ const KeyPage = props => {
                         <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
                     </Title>
 
-                    {keypage.data.keys && keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate ? (
+                    {keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? (
                         <List
                             size="small"
                             bordered
