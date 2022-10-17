@@ -94,8 +94,8 @@ const KeyPage = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiKey2Line />
                         </IconContext.Provider>
-                        Public Keys Hashes
-                        <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
+                        Keys
+                        <Count count={keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? keypage.data.keys.length : 0} />
                     </Title>
 
                     {keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? (
