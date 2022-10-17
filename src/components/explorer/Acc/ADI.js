@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiFolder2Line, RiStackLine, RiShieldCheckLine, RiExchangeLine
+    RiInformationLine, RiQuestionLine, RiFolder2Line, RiShieldCheckLine, RiExchangeLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -20,6 +20,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import Count from '../../common/Count';
 import MinorBlocks from '../../common/MinorBlocks';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
 const { Title, Text } = Typography;
 
@@ -39,7 +40,7 @@ const ADI = props => {
                 if (row) {
                     return (
                         <Link to={'/acc/' + row.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{row}
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiFolder2Line /></IconContext.Provider>{row}
                         </Link>
                     )
                 } else {
@@ -124,47 +125,9 @@ const ADI = props => {
                             null
                         }
 
-                        {adi.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + adi.data.keyBook.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{adi.data.keyBook}
-                                </Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
-                        {adi.data.keyData ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyData}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Data</nobr></span>}>
-                                {adi.data.keyData}
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
-                        {adi.data.keyType ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyType}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Type</nobr></span>}>
-                                {adi.data.keyType}
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
-                        {adi.data.creditBalance || adi.data.creditBalance === 0 ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {adi.data.creditBalance ? adi.data.creditBalance / 100 : 0} credits
-                            </Descriptions.Item>
-                        ) : null}
-
-                        {adi.data.nonce ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.nonce}><RiQuestionLine /></Tooltip></IconContext.Provider>Nonce</nobr></span>}>
-                                {adi.data.nonce}
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                     </Descriptions>
+
+                    <Authorities items={adi.data.authorities} />
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

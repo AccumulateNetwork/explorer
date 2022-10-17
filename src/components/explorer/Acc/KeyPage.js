@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiStackLine
+    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiAccountBoxLine
 } from 'react-icons/ri';
 
 import Count from '../../common/Count';
@@ -70,7 +70,7 @@ const KeyPage = props => {
 
                         {keypage.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + keypage.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{keypage.data.keyBook}</Link>
+                                <Link to={'/acc/' + keypage.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{keypage.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null

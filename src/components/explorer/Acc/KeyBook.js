@@ -17,6 +17,7 @@ import {
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -75,6 +76,8 @@ const KeyBook = props => {
                         }
 
                     </Descriptions>
+
+                    <Authorities items={keybook.data.authorities} />
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

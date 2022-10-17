@@ -1,8 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import {
-    RiStackLine
-} from 'react-icons/ri';
 
 import {
   Typography,
@@ -17,6 +13,7 @@ import {
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
 const { Title } = Typography;
 
@@ -57,16 +54,6 @@ const Token = props => {
                             null  
                         }
 
-                        {token.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + token.data.keyBook.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{token.data.keyBook}
-                                </Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                         {token.data.symbol ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenSymbol}><RiQuestionLine /></Tooltip></IconContext.Provider>Symbol</nobr></span>}>
                                 {token.data.symbol}
@@ -84,6 +71,8 @@ const Token = props => {
                         }
 
                     </Descriptions>
+
+                    <Authorities items={token.data.authorities} />
 
                     <TxChain url={token.data.url} type='transaction' />
                     <TxChain url={token.data.url} type='pending' />

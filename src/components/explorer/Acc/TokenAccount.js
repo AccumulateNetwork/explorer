@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiStackLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -22,6 +22,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -312,14 +313,6 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {tokenAccount.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + tokenAccount.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{tokenAccount.data.keyBook}</Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                         {(tokenAccount.data.token && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
@@ -340,15 +333,9 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {(tokenAccount.data.creditBalance || tokenAccount.data.creditBalance === 0) ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {tokenAccount.data.creditBalance / 100} credits
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                     </Descriptions>
+
+                    <Authorities items={tokenAccount.data.authorities} />
                     
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

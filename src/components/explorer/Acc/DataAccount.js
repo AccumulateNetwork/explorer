@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiStackLine, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiFileList2Line
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -20,6 +20,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import ExtId from '../../common/ExtId';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
 const { Title } = Typography;
 
@@ -148,17 +149,9 @@ const DataAccount = props => {
                             null
                         }
 
-                        {account.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + account.data.keyBook.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{account.data.keyBook}
-                                </Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                     </Descriptions>
+
+                    <Authorities items={account.data.authorities} />
 
                     <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
