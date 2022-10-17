@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { createHash } from "crypto";
+import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
 
 import { useLazyQuery } from '@apollo/client';
 import gql from "graphql-tag";
@@ -14,6 +16,17 @@ function SearchForm() {
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
+  function sha256(data) {
+    return createHash("sha256").update(data).digest();
+  }
+
+  function generateLiteTokenAccount(publicKeyHash) {
+    const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
+    const checkSum = sha256(pkHash.toString("hex")).slice(28);
+    const authority = Buffer.concat([pkHash, checkSum]).toString("hex");
+    return authority + "/ACME";
+  }
+
   const handleSearch = (value) => {
     value = value.replaceAll(/\s/g, "");
     setSearchIsLoading(true);
@@ -27,6 +40,11 @@ function SearchForm() {
     else */
     if (ishash) {
         searchTxhash(value);
+    }
+    else if (isValidPublicFctAddress(value)) {
+        const liteTAUrl = generateLiteTokenAccount(addressToRcdHash(value));
+        setSearchIsLoading(false);
+        redirect("/acc/"+liteTAUrl);
     }
     else {
         search(value.replace("acc://", ""));
