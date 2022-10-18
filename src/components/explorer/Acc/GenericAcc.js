@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { Link } from 'react-router-dom';
-
 import {
   Typography,
   Descriptions,
@@ -11,7 +9,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine
 } from 'react-icons/ri';
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -20,9 +18,9 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title } = Typography;
 
-const GenericTx = props => {
+const GenericAcc = props => {
 
-    const tx = props.data;
+    const account = props.data;
 
     return (
         <div>
@@ -31,13 +29,13 @@ const GenericTx = props => {
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiInformationLine />
                 </IconContext.Provider>
-                Transaction Type
+                Account Type
             </Title>
             <Descriptions bordered column={1} size="middle">
 
-            {tx.type ? (
+            {account.type ? (
                 <Descriptions.Item label="Type">
-                    {tx.type}
+                    {account.type}
                 </Descriptions.Item>
             ) :
                 null
@@ -45,27 +43,19 @@ const GenericTx = props => {
 
             </Descriptions>
             
-            {tx ? (
+            {account.data ? (
                 <div>
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiInformationLine />
                   </IconContext.Provider>
-                  Transaction Data
+                  Account Data
                 </Title>
                 <Descriptions bordered column={1} size="middle">
 
-                    {tx.txid ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                            <span>{tx.txid}</span>
-                        </Descriptions.Item>
-                    ) :
-                        null
-                    }
-
-                    {tx.sponsor ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
-                            <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
+                    {account.data.url ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.acctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Account URL</nobr></span>}>
+                            <span>{account.data.url}</span>
                         </Descriptions.Item>
                     ) :
                         null
@@ -80,12 +70,12 @@ const GenericTx = props => {
                   Raw Data
                 </Title>
 
-                {tx ? (
+                {account ? (
                     <div className="entry-content" style={{marginTop: 0}}>
-                        <SyntaxHighlighter language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
+                        <SyntaxHighlighter language="json">{JSON.stringify(account, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
-                    <Alert message="No tx data" type="warning" showIcon />
+                    <Alert message="No account data" type="warning" showIcon />
                 }
 
                 </div>
@@ -96,4 +86,4 @@ const GenericTx = props => {
     );
 }
 
-export default GenericTx;
+export default GenericAcc;
