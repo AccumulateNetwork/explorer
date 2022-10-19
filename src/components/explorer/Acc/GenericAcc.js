@@ -13,6 +13,7 @@ import {
 } from 'react-icons/ri';
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
@@ -72,7 +73,7 @@ const GenericAcc = props => {
 
                 {account ? (
                     <div className="entry-content" style={{marginTop: 0}}>
-                        <SyntaxHighlighter language="json">{JSON.stringify(account, null, 4)}</SyntaxHighlighter>
+                        <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(account, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
                     <Alert message="No account data" type="warning" showIcon />

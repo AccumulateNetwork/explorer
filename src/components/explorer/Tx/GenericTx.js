@@ -15,6 +15,7 @@ import {
 } from 'react-icons/ri';
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 
@@ -51,7 +52,7 @@ const GenericTx = props => {
                   <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiInformationLine />
                   </IconContext.Provider>
-                  Transaction Data
+                  Transaction Info
                 </Title>
                 <Descriptions bordered column={1} size="middle">
 
@@ -82,7 +83,7 @@ const GenericTx = props => {
 
                 {tx ? (
                     <div className="entry-content" style={{marginTop: 0}}>
-                        <SyntaxHighlighter language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
+                        <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
                     <Alert message="No tx data" type="warning" showIcon />
