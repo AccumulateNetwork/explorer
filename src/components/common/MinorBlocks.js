@@ -6,8 +6,14 @@ import { Link } from 'react-router-dom';
 import {
   Typography,
   Skeleton,
-  Table
+  Table,
+  Tooltip
 } from 'antd';
+
+import { IconContext } from "react-icons";
+import {
+    RiExchangeLine
+} from 'react-icons/ri';
 
 import Count from './Count';
 import RPC from './RPC';
@@ -49,18 +55,16 @@ const MinorBlocks = props => {
         },
         {
             title: 'Timestamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
-            className: 'code',
-            width: 180,
+            width: 225,
             render: (row) => {
-                var blockTime = moment(row.blockTime);
                 if (row) {
                     if (row.blockTime) {
                         return (
-                            <Text>{blockTime.format("YYYY-MM-DD HH:mm")}</Text>                        
+                            <Text className="code">{moment(row.blockTime).format("YYYY-MM-DD HH:mm:ss")}</Text>                        
                         )    
                     } else {
                         return (
-                            <Text disabled>N/A</Text>
+                            <Text disabled>Timestamp not recorded</Text>
                         )
                     }
                 } else {
@@ -72,7 +76,29 @@ const MinorBlocks = props => {
         },
         {
             title: 'Transactions',
+            render: (row) => {
+                if (row) {
+                    if (row.transactions) {
+                        return (
+                            <BlockTxs data={row.transactions} />                 
+                        )    
+                    } else {
+                        return (
+                            <Text disabled>Empty block</Text>
+                        )
+                    }
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }
+            }
+        },
+        {
+            title: 'Number of txs',
             className: 'code',
+            width: 88,
+            align: 'center',
             render: (row) => {
                 if (row) {
                     if (row.txCount) {
@@ -81,17 +107,37 @@ const MinorBlocks = props => {
                         )    
                     } else {
                         return (
-                            <Text>0</Text>
+                            <Text disabled>0</Text>
                         )
                     }
                 } else {
                     return (
-                        <Text>0</Text>
+                        <Text disabled>0</Text>
                     )
                 }
             }
-        }
+        },
     ];
+
+    function BlockTxs(props) {
+        const data = props.data;
+        const items = data.map((item) =>
+          <span>
+          <Tooltip overlayClassName="explorer-tooltip" title={item.type ? item.type : "Unknown type"}>
+          <Link to={'/acc/' + item.txid.replace("acc://", "")}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiExchangeLine />
+            </IconContext.Provider>
+            {item.txid}
+          </Link>
+          </Tooltip>
+          <br />
+          </span>
+        );
+        return (
+          <span className="break-all">{items}</span>
+        );
+    }
 
     const getMinorBlocks = async (params = pagination) => {
         setTableIsLoading(true);
