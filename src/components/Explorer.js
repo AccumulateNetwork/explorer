@@ -29,11 +29,11 @@ import Blocks from './explorer/Blocks';
 
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
-import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
+import Block from './explorer/Block';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -225,7 +225,7 @@ const Explorer = props => {
 
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />
-                <Route path="/chain/:chainid" component={Chain} />
+                <Route path="/block/:index" component={Block} />
 
                 <Route path="/validators" component={Validators} />
                 <Route path="/tokens" component={Tokens} />

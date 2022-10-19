@@ -399,6 +399,10 @@ h3.ant-typography .count, h4.ant-typography .count {
   background: #FFF !important;
 }
 
+.entry-content pre {
+  margin-bottom: 0;
+}
+
 .anchor-info .ant-tabs {
   padding: 1px !important;
   background: #FFF !important;

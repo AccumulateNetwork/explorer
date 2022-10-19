@@ -31,14 +31,11 @@ function SearchForm() {
     value = value.replaceAll(/\s/g, "");
     setSearchIsLoading(true);
     var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
-    // remove search by height until v0.3
-    /*
     var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
-        redirect('/blocks/'+value);
+        redirect('/block/'+value);
     }
-    else */
-    if (ishash) {
+    else if (ishash) {
         searchTxhash(value);
     }
     else if (isValidPublicFctAddress(value)) {
@@ -126,7 +123,7 @@ function SearchForm() {
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
     <Search
-        placeholder="Search by Accumulate URL or TXID"
+        placeholder="Search by Accumulate URL, TXID or block number"
         size="large"
         enterButton
         onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
