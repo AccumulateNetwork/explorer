@@ -174,7 +174,7 @@ h4.ant-typography .react-icons.react-icons-eblocks {
   margin-right: 8px;
 }
 
-h4.ant-typography .count {
+h3.ant-typography .count, h4.ant-typography .count {
   background: rgba(255,255,255,0.85);
   color: rgba(0, 0, 0, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;

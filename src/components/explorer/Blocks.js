@@ -8,6 +8,7 @@ import {
 } from 'react-icons/ri';
 
 import Stats from './../common/Stats';
+import MinorBlocks from './../common/MinorBlocks';
 
 const { Title } = Typography;
 
@@ -91,6 +92,8 @@ const Blocks = () => {
           </Col>
         </Row>
       </div>
+
+      <MinorBlocks url="acc://dn.acme" />
 
     </div>
   );

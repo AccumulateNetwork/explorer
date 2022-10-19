@@ -18,7 +18,6 @@ import {
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import Count from '../../common/Count';
-import MinorBlocks from '../../common/MinorBlocks';
 import TxChain from '../../common/TxChain';
 import Authorities from '../../common/Authorities';
 
@@ -149,11 +148,6 @@ const ADI = props => {
 
                     <TxChain url={adi.data.url} type='transaction' />
                     <TxChain url={adi.data.url} type='signature' />
-                    
-                    {adi.data.url === "acc://dn.acme" ? (
-                        <MinorBlocks url={adi.data.url} />
-                    ) :
-                    null}
 
                 </div>
             ) :

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-//import moment from 'moment';
 import moment from 'moment-timezone';
 
 import { Link } from 'react-router-dom';
@@ -9,11 +8,6 @@ import {
   Skeleton,
   Table
 } from 'antd';
-
-import { IconContext } from "react-icons";
-import {
-    RiCheckboxMultipleBlankLine
-} from 'react-icons/ri';
 
 import Count from './Count';
 import RPC from './RPC';
@@ -34,7 +28,7 @@ const MinorBlocks = props => {
 
     const columns = [
         {
-            title: 'Height',
+            title: 'Block',
             className: 'code',
             width: 30,
             render: (row) => {
@@ -54,35 +48,15 @@ const MinorBlocks = props => {
             }
         },
         {
-            title: 'TimeStamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
+            title: 'Timestamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
             className: 'code',
             width: 180,
             render: (row) => {
+                var blockTime = moment(row.blockTime);
                 if (row) {
                     if (row.blockTime) {
                         return (
-                            <Text>{moment(row.blockTime).format('YYYY-MM-DD hh:mm')}</Text>                        
-                        )    
-                    } else {
-                        return (
-                            <Text disabled>Empty Block</Text>
-                        )
-                    }
-                } else {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }
-            }
-        },
-        {
-            title: 'Entries',
-            className: 'code',
-            render: (row) => {
-                if (row) {
-                    if (row.txCount) {
-                        return (
-                            <Text>{row.txCount}</Text>                        
+                            <Text>{blockTime.format("YYYY-MM-DD HH:mm")}</Text>                        
                         )    
                     } else {
                         return (
@@ -95,12 +69,29 @@ const MinorBlocks = props => {
                     )
                 }
             }
+        },
+        {
+            title: 'Transactions',
+            className: 'code',
+            render: (row) => {
+                if (row) {
+                    if (row.txCount) {
+                        return (
+                            <Text>{row.txCount}</Text>                        
+                        )    
+                    } else {
+                        return (
+                            <Text>0</Text>
+                        )
+                    }
+                } else {
+                    return (
+                        <Text>0</Text>
+                    )
+                }
+            }
         }
     ];
-
-    function Icon() {
-        return (<RiCheckboxMultipleBlankLine />)
-    }
 
     const getMinorBlocks = async (params = pagination) => {
         setTableIsLoading(true);
@@ -120,12 +111,8 @@ const MinorBlocks = props => {
         try {
           const response = await RPC.request("query-minor-blocks", { url: props.url, start: start, count: count } );
           if (response && response.type === 'minorBlock') {
-
-            // workaround API bug response
-            if (response.start === null || response.start === undefined) {
-                response.start = 1;  // in `query-minor-blocks` API the first item has index 1, not 0
-            }
-            setMinorBlocks(response.items);
+            console.log(response.items.slice(0, response.count));
+            setMinorBlocks(response.items.slice(0, response.count));
             setPagination({...pagination, current: ((response.start-1)/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`}); // in `query-minor-blocks` API the first item has index 1, not 0
             setTotalEntries(response.total);
           } else {
@@ -146,10 +133,7 @@ const MinorBlocks = props => {
         <div>
             {props.url ? (
                 <div>
-                    <Title level={4} style={{ marginTop: 30 }}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <Icon/>
-                        </IconContext.Provider>
+                    <Title level={3} style={{ marginTop: 30 }}>
                         {header}
                         <Count count={totalEntries ? totalEntries : 0} />
                     </Title>
@@ -158,7 +142,6 @@ const MinorBlocks = props => {
                         dataSource={minorBlocks}
                         columns={columns}
                         pagination={pagination}
-                        rowKey="txid"
                         loading={tableIsLoading}
                         onChange={getMinorBlocks}
                         scroll={{ x: 'max-content' }}
@@ -167,10 +150,7 @@ const MinorBlocks = props => {
             ) :
                 <div>
                     <div>
-                        <Title level={4}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <Icon/>
-                            </IconContext.Provider>
+                        <Title level={3}>
                             {header}
                         </Title>
                         <div className="skeleton-holder">
