@@ -107,12 +107,12 @@ const MinorBlocks = props => {
                         )    
                     } else {
                         return (
-                            <Text disabled>0</Text>
+                            <Text disabled>—</Text>
                         )
                     }
                 } else {
                     return (
-                        <Text disabled>0</Text>
+                        <Text disabled>N/A</Text>
                     )
                 }
             }
