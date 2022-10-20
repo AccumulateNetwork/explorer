@@ -12,7 +12,7 @@ import {
     RiInformationLine, RiQuestionLine
 } from 'react-icons/ri';
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';

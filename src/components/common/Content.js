@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Tabs, Radio } from 'antd';
 import { Base64 } from 'js-base64';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
