@@ -95,7 +95,7 @@ const Block = ({ match }) => {
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={`Timestamp (UTC${utcOffsetString})`}>
                                 {block.blockTime ? (
-                                    moment(block.blockTime).format("YYYY-MM-DD HH:mm:ss")
+                                    <Text className="code">{moment(block.blockTime).format("YYYY-MM-DD HH:mm:ss")}</Text>
                                 ) :
                                     <Text disabled>Timestamp not recorded</Text>
                                 }
