@@ -75,7 +75,7 @@ const Blocks = () => {
                         Telegram
                       </Tag>
                     </a>
-                    <a href="https://discord.gg/CYnaF8w2C2" target="_blank" rel="noopener noreferrer">
+                    <a href="https://discord.gg/AySYNywCqZ" target="_blank" rel="noopener noreferrer">
                       <Tag color="#7289da">
                         <IconContext.Provider value={{ className: 'react-icons-social' }}><RiDiscordFill /></IconContext.Provider>
                         Discord

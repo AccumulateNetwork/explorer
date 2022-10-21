@@ -93,7 +93,7 @@ const Block = ({ match }) => {
                 {block ? (
                     <div>
                         <Descriptions bordered column={1} size="middle">
-                            <Descriptions.Item label={`Block Timestamp (UTC${utcOffsetString})`}>
+                            <Descriptions.Item label={`Timestamp (UTC${utcOffsetString})`}>
                                 {block.blockTime ? (
                                     moment(block.blockTime).format("YYYY-MM-DD HH:mm:ss")
                                 ) :
