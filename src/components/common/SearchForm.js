@@ -117,12 +117,14 @@ function SearchForm() {
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
       } else {
-        if (data.token === null) {
-          message.info('Nothing was found');
-          searchForm.resetFields();
-        }
-        if (searchText !== "" && !searchText.includes(".acme")) {
-          message.info('Searching for an account? Try ' + searchText + '.acme');
+        if (!searchText.includes(".acme")) {
+          if (data.token === null) {
+            message.info('Nothing was found');
+            searchForm.resetFields();
+          }
+          if (searchText !== "") {
+            message.info('Searching for an account? Try ' + searchText + '.acme');
+          }  
         }
       }
     }
