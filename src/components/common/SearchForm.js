@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { createHash } from "crypto";
 import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
 
+import moment from 'moment-timezone';
+
 import { useLazyQuery } from '@apollo/client';
 import gql from "graphql-tag";
 
@@ -13,6 +15,7 @@ const { Search } = Input;
 
 function SearchForm() {
   
+  const [searchTs, setSearchTs] = useState(null);
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
@@ -114,7 +117,7 @@ function SearchForm() {
         message.info('Nothing was found');
       }
     }
-  }, [data]);
+  }, [searchTs, data]);
 
   useEffect(() => {
       setSearchIsLoading(false);
@@ -126,7 +129,7 @@ function SearchForm() {
         placeholder="Search by Accumulate URL, TXID or block number"
         size="large"
         enterButton
-        onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
+        onSearch={(value) => { if (value!=='') { setSearchTs(moment()); handleSearch(value); } }}
         loading={searchIsLoading}
         spellCheck={false}
         autoComplete="off"
