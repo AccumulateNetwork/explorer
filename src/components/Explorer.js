@@ -150,7 +150,7 @@ const Explorer = props => {
     }
 
     if (window.location.pathname.includes("tokens")) {
-        setCurrentMenu("/tokens");
+      setCurrentMenu("/tokens");
     }
   
     if (window.location.pathname.includes("validators")) {

@@ -157,7 +157,6 @@ const MinorBlocks = props => {
         try {
           const response = await RPC.request("query-minor-blocks", { url: props.url, start: start, count: count } );
           if (response && response.type === 'minorBlock') {
-            console.log(response.items.slice(0, response.count));
             setMinorBlocks(response.items.slice(0, response.count));
             setPagination({...pagination, current: ((response.start-1)/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`}); // in `query-minor-blocks` API the first item has index 1, not 0
             setTotalEntries(response.total);

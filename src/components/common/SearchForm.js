@@ -16,6 +16,7 @@ const { Search } = Input;
 function SearchForm() {
   
   const [searchTs, setSearchTs] = useState(null);
+  const [searchText, setSearchText] = useState("");
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
@@ -32,6 +33,8 @@ function SearchForm() {
 
   const handleSearch = (value) => {
     value = value.replaceAll(/\s/g, "");
+    setSearchTs(moment());
+    setSearchText(value);
     setSearchIsLoading(true);
     var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
     var isnum = /^\d+$/.test(value);
@@ -110,14 +113,20 @@ function SearchForm() {
 
   useEffect(() => {
     setSearchIsLoading(false);
-    if (data) {
+    if (data && searchForm.getFieldValue('search') !== "") {
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
       } else {
-        message.info('Nothing was found');
+        if (data.token === null) {
+          message.info('Nothing was found');
+          searchForm.resetFields();
+        }
+        if (searchText !== "" && !searchText.includes(".acme")) {
+          message.info('Searching for an account? Try ' + searchText + '.acme');
+        }
       }
     }
-  }, [searchTs, data]);
+  }, [searchTs, data, searchText, searchForm]);
 
   useEffect(() => {
       setSearchIsLoading(false);
@@ -125,17 +134,19 @@ function SearchForm() {
 
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
+    <Form.Item name="search">
     <Search
         placeholder="Search by Accumulate URL, TXID or block number"
         size="large"
         enterButton
-        onSearch={(value) => { if (value!=='') { setSearchTs(moment()); handleSearch(value); } }}
+        onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
         loading={searchIsLoading}
         spellCheck={false}
         autoComplete="off"
         disabled={searchIsLoading}
         allowClear={true}
     />
+    </Form.Item>
     </Form>
   );
 }
