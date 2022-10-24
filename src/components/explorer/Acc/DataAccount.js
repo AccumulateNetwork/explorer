@@ -8,7 +8,6 @@ import {
   Tooltip,
   Table,
   Tag,
-  Alert,
   List
 } from 'antd';
 
@@ -25,7 +24,7 @@ import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
 import Authorities from '../../common/Authorities';
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const DataAccount = props => {
 
@@ -172,7 +171,7 @@ const DataAccount = props => {
                             style={{ marginBottom: "30px" }}
                             />
                         ) :
-                        <Alert message="Account state is empty" type="info" showIcon />
+                        <Paragraph><Text type="secondary">Empty state</Text></Paragraph>
                     }
 
                     <Title level={4} style={{ marginTop: 30 }}>

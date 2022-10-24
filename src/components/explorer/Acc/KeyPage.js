@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiAccountBoxLine
+    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiAccountBoxLine, RiCloseCircleLine
 } from 'react-icons/ri';
 
 import Count from '../../common/Count';
@@ -113,6 +113,30 @@ const KeyPage = props => {
                         />
                     ) :
                         <Paragraph><Text type="secondary">No keys</Text></Paragraph>
+                    }
+
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                        <RiCloseCircleLine />
+                        </IconContext.Provider>
+                        Transaction Blacklist
+                        <Count count={keypage.data.transactionBlacklist ? keypage.data.transactionBlacklist.length : 0} />
+                    </Title>
+
+                    {keypage.data.transactionBlacklist && keypage.data.transactionBlacklist[0] ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={keypage.data.transactionBlacklist}
+                            renderItem={item =>
+                                <List.Item>
+                                    <Tag color="volcano">{item}</Tag>
+                                </List.Item>
+                            }
+                            style={{ marginBottom: "30px" }}
+                        />
+                    ) :
+                        <Paragraph><Text type="secondary">No transaction blacklist</Text></Paragraph>
                     }
 
                     <TxChain url={keypage.data.url} type='transaction' />
