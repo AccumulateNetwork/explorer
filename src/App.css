@@ -271,8 +271,8 @@ h3.ant-typography .count, h4.ant-typography .count {
   margin-top: -2px;
 }
 
-.ant-list ul {
-  margin-bottom: 5px !important;
+.ant-list.ant-list-bordered {
+  border: 1px solid #f0f0f0;
 }
 
 .ant-list div.ant-typography:last-child, .ant-table-cell div.ant-typography:last-child {
