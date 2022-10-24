@@ -7,15 +7,18 @@ import {
   Descriptions,
   Tooltip,
   Table,
-  Tag
+  Tag,
+  Alert,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiFileList2Line, RiKeynoteLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
+import Data from '../../common/Data';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import ExtId from '../../common/ExtId';
 import Count from '../../common/Count';
@@ -152,6 +155,25 @@ const DataAccount = props => {
                     </Descriptions>
 
                     <Authorities items={account.data.authorities} />
+
+                    <Title level={4} style={{ marginTop: 30 }}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                        <RiKeynoteLine />
+                        </IconContext.Provider>
+                        Data Account State
+                    </Title>
+
+                    {account.data.entry && account.data.entry.data ? (
+                            <List
+                            size="small"
+                            bordered
+                            dataSource={account.data.entry.data}
+                            renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                            style={{ marginBottom: "30px" }}
+                            />
+                        ) :
+                        <Alert message="Account state is empty" type="info" showIcon />
+                    }
 
                     <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
