@@ -43,7 +43,7 @@ const TxChain = props => {
         {
             title: 'Transaction ID',
             render: (row) => {
-                if (row) {
+                if (row && row.txid) {
                     return (
                         <div>
                             <Link to={'/acc/' + row.txid.replace("acc://", "")}>
@@ -61,7 +61,7 @@ const TxChain = props => {
         {
             title: 'Type',
             render: (row) => {
-                if (row) {
+                if (row && row.type) {
                     return (
                         <Tag color="green">{row.type}</Tag>                        
                     )
