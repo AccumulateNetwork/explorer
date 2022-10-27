@@ -122,7 +122,7 @@ function SearchForm() {
             message.info('Nothing was found');
             searchForm.resetFields();
           }
-          if (searchText !== "") {
+          if (searchText !== "" && !searchText.includes("ACME")) {
             message.info('Searching for an account? Try ' + searchText + '.acme');
           }  
         }
