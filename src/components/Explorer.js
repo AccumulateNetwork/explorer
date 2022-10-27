@@ -86,19 +86,19 @@ const Explorer = props => {
 
   const ExplorerSelect = (
     <Menu>
-      <Menu.Item key="Mainnet" disabled>
+      <Menu.Item key="Mainnet">
           <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-              <Badge status="default" text="Mainnet (soon)" />
+              <Badge status="success" text="Mainnet" />
           </a>
       </Menu.Item>
       <Menu.Item key="Testnet">
-          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+          <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
               <Badge status="success" text="Testnet" />
           </a>
       </Menu.Item>
       <Menu.Item key="Testnet (beta)">
           <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (beta)" />
+              <Badge status="success" text="Beta Testnet" />
           </a>
       </Menu.Item>
     </Menu>
@@ -106,19 +106,19 @@ const Explorer = props => {
 
   const ExplorerSelectFooter = (
     <Menu>
-      <Menu.Item key="Mainnet" disabled>
+      <Menu.Item key="Mainnet">
             <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                Mainnet (soon)
+                Mainnet
             </a>
       </Menu.Item>
       <Menu.Item key="Testnet">
-            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+            <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
                 Testnet
             </a>
       </Menu.Item>
       <Menu.Item key="Testnet (beta)">
             <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Testnet (beta)
+                Beta Testnet
             </a>
       </Menu.Item>
     </Menu>
@@ -132,7 +132,7 @@ const Explorer = props => {
             setCurrentNetwork("Mainnet");
             break;
         case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (beta)");
+            setCurrentNetwork("Beta Testnet");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet");
