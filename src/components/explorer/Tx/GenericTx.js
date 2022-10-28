@@ -18,8 +18,9 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
+import TxStatus from '../../common/TxStatus';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const GenericTx = props => {
 
@@ -27,6 +28,8 @@ const GenericTx = props => {
 
     return (
         <div>
+
+            <TxStatus data={tx} />
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -58,7 +61,15 @@ const GenericTx = props => {
 
                     {tx.txid ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                            <span>{tx.txid}</span>
+                            <Text copyable>{tx.txid}</Text>
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
+                    {tx.transactionHash ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txHash}><RiQuestionLine /></Tooltip></IconContext.Provider>TxHash</nobr></span>}>
+                            <Text copyable>{tx.transactionHash}</Text>
                         </Descriptions.Item>
                     ) :
                         null

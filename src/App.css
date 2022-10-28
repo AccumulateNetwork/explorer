@@ -495,3 +495,8 @@ h3.ant-typography .count, h4.ant-typography .count {
 .featured .react-icons {
   margin-left: 2px;
 }
+
+.ant-tag .react-icons {
+  margin-top: -2px;
+  margin-right: 3px;
+}
