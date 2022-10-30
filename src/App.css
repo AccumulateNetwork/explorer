@@ -174,7 +174,7 @@ h4.ant-typography .react-icons.react-icons-eblocks {
   margin-right: 8px;
 }
 
-h4.ant-typography .count {
+h3.ant-typography .count, h4.ant-typography .count {
   background: rgba(255,255,255,0.85);
   color: rgba(0, 0, 0, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
@@ -271,8 +271,8 @@ h4.ant-typography .count {
   margin-top: -2px;
 }
 
-.ant-list ul {
-  margin-bottom: 5px !important;
+.ant-list.ant-list-bordered {
+  border: 1px solid #f0f0f0;
 }
 
 .ant-list div.ant-typography:last-child, .ant-table-cell div.ant-typography:last-child {
@@ -399,6 +399,10 @@ h4.ant-typography .count {
   background: #FFF !important;
 }
 
+.entry-content pre {
+  margin-bottom: 0;
+}
+
 .anchor-info .ant-tabs {
   padding: 1px !important;
   background: #FFF !important;
@@ -490,4 +494,9 @@ h4.ant-typography .count {
 
 .featured .react-icons {
   margin-left: 2px;
+}
+
+.ant-tag .react-icons {
+  margin-top: -2px;
+  margin-right: 3px;
 }

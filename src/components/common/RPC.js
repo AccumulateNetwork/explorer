@@ -20,7 +20,7 @@ class RPC {
       if (response.data.error) {
         if (response.data.error.data && response.data.error.code) {
           // exception for nothing was found error
-          if (response.data.error.code === -32807) {
+          if ((response.data.error.code === -32807) || (response.data.error.code === -32804)) {
             if (showMessage) {
               message.info('Nothing was found');
             }

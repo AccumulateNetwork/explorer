@@ -14,11 +14,13 @@ import {
     RiInformationLine, RiQuestionLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
+import TxStatus from '../../common/TxStatus';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const GenericTx = props => {
 
@@ -26,6 +28,8 @@ const GenericTx = props => {
 
     return (
         <div>
+
+            <TxStatus data={tx} />
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -57,7 +61,15 @@ const GenericTx = props => {
 
                     {tx.txid ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                            <span>{tx.txid}</span>
+                            <Text copyable>{tx.txid}</Text>
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
+                    {tx.transactionHash ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txHash}><RiQuestionLine /></Tooltip></IconContext.Provider>TxHash</nobr></span>}>
+                            <Text copyable>{tx.transactionHash}</Text>
                         </Descriptions.Item>
                     ) :
                         null
@@ -80,9 +92,9 @@ const GenericTx = props => {
                   Raw Data
                 </Title>
 
-                {tx.transaction ? (
+                {tx ? (
                     <div className="entry-content" style={{marginTop: 0}}>
-                        <SyntaxHighlighter language="json">{JSON.stringify(tx.transaction, null, 4)}</SyntaxHighlighter>
+                        <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
                     <Alert message="No tx data" type="warning" showIcon />

@@ -5,21 +5,6 @@ import {
 } from 'antd';
 
 import RPC from './../common/RPC';
-import TxStatus from './../common/TxStatus';
-import FaucetTx from './Tx/FaucetTx';
-import SynthDepositTokensTx from './Tx/SynthDepositTokensTx';
-import SynthDepositCreditsTx from './Tx/SynthDepositCreditsTx';
-import SynthCreateChainTx from './Tx/SynthCreateChainTx';
-import TokenTx from './Tx/TokenTx';
-import CreateIdentityTx from './Tx/CreateIdentityTx';
-import CreateTokenAccountTx from './Tx/CreateTokenAccountTx';
-import CreateDataAccountTx from './Tx/CreateDataAccountTx';
-import SynthGenesisTx from './Tx/SynthGenesisTx';
-import WriteDataTx from './Tx/WriteDataTx';
-import WriteDataToTx from './Tx/WriteDataToTx';
-import AddCreditsTx from './Tx/AddCreditsTx';
-import SegWitDataEntryTx from './Tx/SegWitDataEntryTx';
-import IssueTokensTx from './Tx/IssueTokensTx';
 import GenericTx from './Tx/GenericTx';
 
 const { Title } = Typography;
@@ -57,42 +42,9 @@ const Tx = ({ match }) => {
 
     function Render(props) {
         if (props.data) {
-            switch(props.data.type) {
-                case 'acmeFaucet':
-                    return <FaucetTx data={props.data} />;
-                case 'syntheticGenesis':
-                    return <SynthGenesisTx data={props.data} />;
-                case 'genesis':
-                    return <SynthGenesisTx data={props.data} />;
-                case 'syntheticDepositTokens':
-                    return <SynthDepositTokensTx data={props.data} />;
-                case 'syntheticDepositCredits':
-                    return <SynthDepositCreditsTx data={props.data} />;
-                case 'syntheticCreateChain':
-                    return <SynthCreateChainTx data={props.data} />;
-                case 'sendTokens':
-                    return <TokenTx data={props.data} />;
-                case 'createIdentity':
-                    return <CreateIdentityTx data={props.data} />;
-                case 'createTokenAccount':
-                    return <CreateTokenAccountTx data={props.data} />;
-                case 'createDataAccount':
-                    return <CreateDataAccountTx data={props.data} />;
-                case 'writeData':
-                    return <WriteDataTx data={props.data} />;
-                case 'writeDataTo':
-                    return <WriteDataToTx data={props.data} />;
-                case 'segWitDataEntry':
-                    return <SegWitDataEntryTx data={props.data} />;
-                case 'addCredits':
-                    return <AddCreditsTx data={props.data} />;
-                case 'issueTokens':
-                    return <IssueTokensTx data={props.data} />;
-                default:
-                    return <GenericTx data={props.data} />;
-            }
+            return <GenericTx data={props.data} />;
         }
-        return <Alert message="Chain does not exist" type="error" showIcon />
+        return <Alert message="Tx does not exist" type="error" showIcon />
     }
 
     useEffect(() => {
@@ -105,7 +57,6 @@ const Tx = ({ match }) => {
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{match.params.hash}</Title>
                 {tx ? (
                     <div>
-                        <TxStatus data={tx}/>
                         <Render data={tx} />
                     </div>
                 ) :

@@ -17,7 +17,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiBook2Line, RiCoinLine, RiShieldCheckLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -29,11 +29,11 @@ import Blocks from './explorer/Blocks';
 
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
-import Chain from './explorer/Chain';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
+import Block from './explorer/Block';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -86,19 +86,19 @@ const Explorer = props => {
 
   const ExplorerSelect = (
     <Menu>
-      <Menu.Item key="Mainnet" disabled>
+      <Menu.Item key="Mainnet">
           <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-              <Badge status="default" text="Mainnet (soon)" />
+              <Badge status="success" text="Mainnet" />
           </a>
       </Menu.Item>
       <Menu.Item key="Testnet">
-          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+          <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
               <Badge status="success" text="Testnet" />
           </a>
       </Menu.Item>
       <Menu.Item key="Testnet (beta)">
           <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet (beta)" />
+              <Badge status="success" text="Beta Testnet" />
           </a>
       </Menu.Item>
     </Menu>
@@ -106,19 +106,19 @@ const Explorer = props => {
 
   const ExplorerSelectFooter = (
     <Menu>
-      <Menu.Item key="Mainnet" disabled>
+      <Menu.Item key="Mainnet">
             <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                Mainnet (soon)
+                Mainnet
             </a>
       </Menu.Item>
       <Menu.Item key="Testnet">
-            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
+            <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
                 Testnet
             </a>
       </Menu.Item>
       <Menu.Item key="Testnet (beta)">
             <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Testnet (beta)
+                Beta Testnet
             </a>
       </Menu.Item>
     </Menu>
@@ -132,7 +132,7 @@ const Explorer = props => {
             setCurrentNetwork("Mainnet");
             break;
         case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Testnet (beta)");
+            setCurrentNetwork("Beta Testnet");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet");
@@ -150,7 +150,7 @@ const Explorer = props => {
     }
 
     if (window.location.pathname.includes("tokens")) {
-        setCurrentMenu("/tokens");
+      setCurrentMenu("/tokens");
     }
   
     if (window.location.pathname.includes("validators")) {
@@ -184,22 +184,24 @@ const Explorer = props => {
                         <span className="nav-text">Tokens</span>
                     </Link>
                 </Menu.Item>
+                {false ?  (
                 <Menu.Item key="/validators">
                     <Link to="/validators">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
+                ) : null}
                 <Menu.Item key="wallet">
                     <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
                         <span className="nav-text">Wallet</span>
                     </a>
                 </Menu.Item>
-                <Menu.Item key="docs">
-                    <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiBook2Line /></IconContext.Provider>
-                        <span className="nav-text">Docs</span>
+                <Menu.Item key="bridge">
+                    <a href="https://bridge.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
+                        <span className="nav-text">Bridge</span>
                     </a>
                 </Menu.Item>
             </Menu>
@@ -223,7 +225,7 @@ const Explorer = props => {
 
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />
-                <Route path="/chain/:chainid" component={Chain} />
+                <Route path="/block/:index" component={Block} />
 
                 <Route path="/validators" component={Validators} />
                 <Route path="/tokens" component={Tokens} />

@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { createHash } from "crypto";
+import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
+
+import moment from 'moment-timezone';
 
 import { useLazyQuery } from '@apollo/client';
 import gql from "graphql-tag";
@@ -11,22 +15,39 @@ const { Search } = Input;
 
 function SearchForm() {
   
+  const [searchTs, setSearchTs] = useState(null);
+  const [searchText, setSearchText] = useState("");
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
+  function sha256(data) {
+    return createHash("sha256").update(data).digest();
+  }
+
+  function generateLiteTokenAccount(publicKeyHash) {
+    const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
+    const checkSum = sha256(pkHash.toString("hex")).slice(28);
+    const authority = Buffer.concat([pkHash, checkSum]).toString("hex");
+    return authority + "/ACME";
+  }
+
   const handleSearch = (value) => {
     value = value.replaceAll(/\s/g, "");
+    setSearchTs(moment());
+    setSearchText(value);
     setSearchIsLoading(true);
     var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
-    // remove search by height until v0.3
-    /*
     var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
-        redirect('/blocks/'+value);
+        redirect('/block/'+value);
     }
-    else */
-    if (ishash) {
-        redirect('/tx/'+value);
+    else if (ishash) {
+        searchTxhash(value);
+    }
+    else if (isValidPublicFctAddress(value)) {
+        const liteTAUrl = generateLiteTokenAccount(addressToRcdHash(value));
+        setSearchIsLoading(false);
+        redirect("/acc/"+liteTAUrl);
     }
     else {
         search(value.replace("acc://", ""));
@@ -37,11 +58,29 @@ function SearchForm() {
     window.location.href = url;
   }
 
+  const searchTxhash = async (txhash) => {
+    try {
+        let params = {txid: txhash};
+        const response = await RPC.request("query-tx", params);
+        if (response && response.data && response.txid) {
+          setSearchIsLoading(false);
+          redirect('/acc/'+response.txid.replace("acc://", ""));
+        } else {
+          setSearchIsLoading(false);
+          message.info('Nothing was found');
+        }
+    }
+    catch(error) {
+      setSearchIsLoading(false);
+      message.info('Nothing was found');
+    }
+  }
+
   const search = async (url) => {
     try {
         let params = {url: url};
         const response = await RPC.request("query", params);
-        if (response && response.data && response.type) {
+        if (response && response.data) {
           setSearchIsLoading(false);
           redirect('/acc/'+url);
         } else {
@@ -49,6 +88,7 @@ function SearchForm() {
         }
     }
     catch(error) {
+      setSearchIsLoading(false);
       message.info('Nothing was found');
     }
   }
@@ -73,14 +113,22 @@ function SearchForm() {
 
   useEffect(() => {
     setSearchIsLoading(false);
-    if (data) {
+    if (data && searchForm.getFieldValue('search') !== "") {
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
       } else {
-        message.info('Nothing was found');
+        if (!searchText.includes(".acme")) {
+          if (data.token === null) {
+            message.info('Nothing was found');
+            searchForm.resetFields();
+          }
+          if (searchText !== "" && !searchText.includes("ACME")) {
+            message.info('Searching for an account? Try ' + searchText + '.acme');
+          }  
+        }
       }
     }
-  }, [data]);
+  }, [searchTs, data, searchText, searchForm]);
 
   useEffect(() => {
       setSearchIsLoading(false);
@@ -88,8 +136,9 @@ function SearchForm() {
 
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
+    <Form.Item name="search">
     <Search
-        placeholder="Search by Accumulate URL or TXID"
+        placeholder="Search by Accumulate URL, TXID or block number"
         size="large"
         enterButton
         onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
@@ -99,6 +148,7 @@ function SearchForm() {
         disabled={searchIsLoading}
         allowClear={true}
     />
+    </Form.Item>
     </Form>
   );
 }

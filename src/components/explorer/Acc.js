@@ -18,6 +18,7 @@ import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
 import DataEntry from './Acc/DataEntry';
 
+import GenericAcc from './Acc/GenericAcc';
 import GenericTx from './Tx/GenericTx';
 
 import ParseADI from '../common/ParseADI';
@@ -96,7 +97,7 @@ const Acc = ({ match }) => {
                 case 'dataEntry':
                     return <DataEntry data={props.data} />;
                 default:
-                    return <Alert message="Chain found, but this chain type is not supported by the explorer yet" type="warning" showIcon />
+                    return <GenericAcc data={props.data} />;
             }
         }
         return <Alert message="Chain does not exist" type="error" showIcon />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -7,104 +7,23 @@ import {
   Descriptions,
   Tooltip,
   List,
-  Tag,
-  Table
+  Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiStackLine, RiExchangeLine
+    RiInformationLine, RiQuestionLine, RiKey2Line, RiAccountCircleLine, RiAccountBoxLine, RiCloseCircleLine
 } from 'react-icons/ri';
 
-import RPC from '../../common/RPC';
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import TxChain from '../../common/TxChain';
 
 const { Title, Paragraph, Text } = Typography;
 
 const KeyPage = props => {
 
     const keypage = props.data;
-    const [txs, setTxs] = useState(null);
-    const [tableIsLoading, setTableIsLoading] = useState(true);
-    const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
-    const [totalTxs, setTotalTxs] = useState(-1);
-
-    const columns = [
-        {
-            title: 'Transaction ID',
-            render: (row) => {
-                if (row) {
-                    return (
-                        <div>
-                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
-                            </Link>
-                        </div>
-                    )
-                } else {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }                
-            }
-        },
-        {
-            title: 'Type',
-            render: (row) => {
-                if (row) {
-                    return (
-                        <Tag color="green">{row.type}</Tag>                        
-                    )
-                } else {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }
-            }
-        }
-    ];
-
-    const getTxs = async (params = pagination) => {
-        setTableIsLoading(true);
-    
-        let start = 0;
-        let count = 10;
-        let showTotalStart = 1;
-        let showTotalFinish = 10;
-    
-        if (params) {
-            start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
-            showTotalStart = (params.current-1)*params.pageSize+1;
-            showTotalFinish = params.current*params.pageSize;
-        }
-    
-        try {
-          const response = await RPC.request("query-tx-history", { url: keypage.data.url, start: start, count: count } );
-          if (response && response.items) {
-
-            // workaround API bug response
-            if (response.start === null || response.start === undefined) {
-                response.start = 0;
-            }
-
-            setTxs(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
-            setTotalTxs(response.total);
-          } else {
-            throw new Error("Key Book transactions not found");
-          }
-        }
-        catch(error) {
-          // error is managed by RPC.js, no need to display anything
-        }
-        setTableIsLoading(false);
-    }
-
-    useEffect(() => {
-        getTxs();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
@@ -151,7 +70,7 @@ const KeyPage = props => {
 
                         {keypage.data.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + keypage.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{keypage.data.keyBook}</Link>
+                                <Link to={'/acc/' + keypage.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{keypage.data.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null
@@ -175,16 +94,21 @@ const KeyPage = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiKey2Line />
                         </IconContext.Provider>
-                        Public Keys Hashes
-                        <Count count={keypage.data.keys && keypage.data.keys[0].publicKey ? keypage.data.keys.length : 0} />
+                        Keys
+                        <Count count={keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? keypage.data.keys.length : 0} />
                     </Title>
 
-                    {keypage.data.keys && keypage.data.keys[0].publicKey ? (
+                    {keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? (
                         <List
                             size="small"
                             bordered
                             dataSource={keypage.data.keys}
-                            renderItem={item => <List.Item><span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span></List.Item>}
+                            renderItem={item =>
+                                <List.Item>
+                                    {item.publicKey ? <span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span> : null }
+                                    {item.delegate ? <span><Tag color="green">Delegate</Tag><Link to={'/acc/' + item.delegate.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{item.delegate}</Link></span> : null }
+                                </List.Item>
+                            }
                             style={{ marginBottom: "30px" }}
                         />
                     ) :
@@ -193,21 +117,31 @@ const KeyPage = props => {
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiExchangeLine />
+                        <RiCloseCircleLine />
                         </IconContext.Provider>
-                        Transactions
-                        <Count count={totalTxs ? totalTxs : 0} />
+                        Transaction Blacklist
+                        <Count count={keypage.data.transactionBlacklist ? keypage.data.transactionBlacklist.length : 0} />
                     </Title>
 
-                    <Table
-                        dataSource={txs}
-                        columns={columns}
-                        pagination={pagination}
-                        rowKey="txid"
-                        loading={tableIsLoading}
-                        onChange={getTxs}
-                        scroll={{ x: 'max-content' }}
-                    />
+                    {keypage.data.transactionBlacklist && keypage.data.transactionBlacklist[0] ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={keypage.data.transactionBlacklist}
+                            renderItem={item =>
+                                <List.Item>
+                                    <Tag color="volcano">{item}</Tag>
+                                </List.Item>
+                            }
+                            style={{ marginBottom: "30px" }}
+                        />
+                    ) :
+                        <Paragraph><Text type="secondary">No transaction blacklist</Text></Paragraph>
+                    }
+
+                    <TxChain url={keypage.data.url} type='transaction' />
+                    <TxChain url={keypage.data.url} type='pending' />
+                    <TxChain url={keypage.data.url} type='signature' />
 
                 </div>
             ) :

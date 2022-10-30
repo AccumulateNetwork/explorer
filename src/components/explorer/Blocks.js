@@ -8,6 +8,7 @@ import {
 } from 'react-icons/ri';
 
 import Stats from './../common/Stats';
+import MinorBlocks from './../common/MinorBlocks';
 
 const { Title } = Typography;
 
@@ -74,7 +75,7 @@ const Blocks = () => {
                         Telegram
                       </Tag>
                     </a>
-                    <a href="https://discord.gg/CYnaF8w2C2" target="_blank" rel="noopener noreferrer">
+                    <a href="https://discord.gg/AySYNywCqZ" target="_blank" rel="noopener noreferrer">
                       <Tag color="#7289da">
                         <IconContext.Provider value={{ className: 'react-icons-social' }}><RiDiscordFill /></IconContext.Provider>
                         Discord
@@ -91,6 +92,8 @@ const Blocks = () => {
           </Col>
         </Row>
       </div>
+
+      <MinorBlocks url="acc://dn.acme" />
 
     </div>
   );

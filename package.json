@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
+    "factom": "^1.4.3",
     "graphql": "^16.3.0",
     "graphql-tag": "^2.12.6",
     "history": "^5.0.1",
@@ -22,7 +23,7 @@
     "react-moment": "^1.1.1",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
-    "react-syntax-highlighter": "^15.4.5",
+    "react-syntax-highlighter": "^15.5.0",
     "realm-web": "^1.7.0",
     "web-vitals": "^1.0.1"
   },

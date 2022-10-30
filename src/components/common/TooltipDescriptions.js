@@ -1,6 +1,7 @@
 const tooltipDescs = {
     tokenAcctUrl: "The URL of the token account, where an account's balances and transactions are organized for a particular token",
     tokenUrl: "The URL of the token",
+    acctUrl: "The URL of the account",
     token: "The name and symbol of the token",
     balance: "The total number of tokens for this account",
     creditBalance: "The total number of credits for this account. Credits are non-transferable tokens used in the Accumulate network to fund ADI-create transactions and pay for data storage",
@@ -27,7 +28,6 @@ const tooltipDescs = {
     sponsor: "The URL of the sponsor",
     recipient: "the account that is receiving a transaction",
     threshold: "the required m of n to execute a transaction",
-    scratchAccountDeletionWarning: "Protocol only preserves the last 2 weeks of entries within this account.",
 };
 
 export default tooltipDescs;

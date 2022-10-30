@@ -7,22 +7,24 @@ import {
   Descriptions,
   Tooltip,
   Table,
-  Alert,
-  Tag
+  Tag,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiStackLine, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiFileList2Line, RiKeynoteLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
+import Data from '../../common/Data';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import ExtId from '../../common/ExtId';
 import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
+import Authorities from '../../common/Authorities';
 
-const { Title } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const DataAccount = props => {
 
@@ -129,16 +131,6 @@ const DataAccount = props => {
                         Data Account Info
                     </Title>
 
-                    {account.data.scratch ? (
-                        <div style={{ marginBottom: '10px' }}>
-                            <Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.scratchAccountDeletionWarning}>
-                                <Alert message="Scratch data account" type="info" showIcon/>
-                            </Tooltip>
-                        </div>
-                    ) :
-                        null
-                    }
-
                     <Descriptions bordered column={1} size="middle">
 
                         {account.data.url ? (
@@ -159,17 +151,28 @@ const DataAccount = props => {
                             null
                         }
 
-                        {account.data.keyBook ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + account.data.keyBook.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{account.data.keyBook}
-                                </Link>
-                            </Descriptions.Item>
-                        ) :
-                            null
-                        }
-
                     </Descriptions>
+
+                    <Authorities items={account.data.authorities} />
+
+                    <Title level={4} style={{ marginTop: 30 }}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                        <RiKeynoteLine />
+                        </IconContext.Provider>
+                        Data Account State
+                    </Title>
+
+                    {account.data.entry && account.data.entry.data ? (
+                            <List
+                            size="small"
+                            bordered
+                            dataSource={account.data.entry.data}
+                            renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                            style={{ marginBottom: "30px" }}
+                            />
+                        ) :
+                        <Paragraph><Text type="secondary">Empty state</Text></Paragraph>
+                    }
 
                     <Title level={4} style={{ marginTop: 30 }}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -189,7 +192,12 @@ const DataAccount = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
-                    <TxChain url={account.data.url} type='pending' />
+                    <TxChain url={account.data.url} type='transaction' />
+                    {account.type !== "liteDataAccount" ? (
+                        <TxChain url={account.data.url} type='pending' />
+                    ) : null }
+                    <TxChain url={account.data.url} type='signature' />
+
                 </div>
             ) :
                 null
