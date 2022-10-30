@@ -221,7 +221,10 @@ const Explorer = props => {
             <SearchForm />
             <Switch>
                 <Route exact path="/" component={Blocks} />
-                <Route exact path="/faucet" component={Faucet} />
+    
+                {currentNetwork !== "Mainnet" &&
+                    <Route exact path="/faucet" component={Faucet} />
+                }
 
                 <Route path="/acc/:url+" component={Acc} />
                 <Route path="/tx/:hash" component={Tx} />

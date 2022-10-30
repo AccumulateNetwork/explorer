@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import { Typography, Row, Col, Card, Tag } from 'antd';
@@ -14,8 +14,13 @@ const { Title } = Typography;
 
 const Blocks = () => {
 
+  const [isMainnet, setIsMainnet] = useState(false);
+
   useEffect(() => {
     document.title = "Blocks | Accumulate Explorer";
+    if (process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://mainnet.accumulatenetwork.io/v2") {
+      setIsMainnet(true);
+    }
   }, []);
 
   return (
@@ -43,6 +48,7 @@ const Blocks = () => {
             </Card>
             </Link>
           </Col>
+          {!isMainnet &&
           <Col xs={24} sm={8} md={6} lg={5} xl={4}>
             <Link to="/faucet">
             <Card>
@@ -55,6 +61,7 @@ const Blocks = () => {
             </Card>
             </Link>
           </Col>
+          }
           <Col xs={24} sm={16} md={12} lg={10} xl={8}>
             <Card>
                 <span>
