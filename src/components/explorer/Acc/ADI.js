@@ -124,6 +124,13 @@ const ADI = props => {
                             null
                         }
 
+                        {adi.type === "liteIdentity" &&
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
+                                {adi.data.creditBalance ? adi.data.creditBalance / 100 : 0} credits
+                            </Descriptions.Item>                
+                        }
+
+
                     </Descriptions>
 
                     <Authorities items={adi.data.authorities} />

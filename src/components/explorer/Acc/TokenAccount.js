@@ -235,9 +235,9 @@ const TokenAccount = props => {
                             {(data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                         </Descriptions.Item>
                     )
-                } else if (data.amount) { //if not a TOKEN, then it is a CREDIT
+                } else if (data.amount && data.oracle) { //if not a TOKEN, then it is a CREDIT
                     return (
-                        <Text>{data.amount / 100} credits</Text>
+                        <Text>{data.amount * data.oracle * 1e-10} credits</Text>
                     )
                 }
                 else {
