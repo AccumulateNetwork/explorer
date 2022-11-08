@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   Typography,
   Descriptions,
   Tooltip,
-  Alert
+  Alert,
+  Switch
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -22,6 +23,11 @@ const { Title } = Typography;
 const GenericAcc = props => {
 
     const account = props.data;
+    const [rawDataDisplay, setRawDataDisplay] = useState('none');
+
+    const toggleRawData = (checked) => {
+        checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
+    };
 
     return (
         <div>
@@ -69,10 +75,11 @@ const GenericAcc = props => {
                     <RiInformationLine />
                   </IconContext.Provider>
                   Raw Data
+                  <Switch checkedChildren="ON" unCheckedChildren="OFF" style={{ marginTop: -5, marginLeft: 10 }} disabled={account ? false : true} onChange={toggleRawData} />
                 </Title>
 
                 {account ? (
-                    <div className="entry-content" style={{marginTop: 0}}>
+                    <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
                         <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(account, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 

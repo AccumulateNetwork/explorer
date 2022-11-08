@@ -4,7 +4,7 @@ import moment from 'moment-timezone';
 import { Link } from 'react-router-dom';
 
 import {
-  Typography, Alert, Skeleton, Descriptions, Table, Tag
+  Typography, Alert, Skeleton, Descriptions, Table, Tag, Switch
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -25,9 +25,14 @@ const Block = ({ match }) => {
     const pagination = {showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1};
     const [block, setBlock] = useState(null);
     const [error, setError] = useState(null);
+    const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
     let utcOffset = moment().utcOffset() / 60;
     let utcOffsetString = utcOffset < 0 ? '-' : '+' + utcOffset;
+
+    const toggleRawData = (checked) => {
+        checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
+    };
 
     const columns = [
         {
@@ -123,12 +128,14 @@ const Block = ({ match }) => {
                         }
                             
                         <Title level={4}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}>
-                            <RiInformationLine />
-                        </IconContext.Provider>
-                        Raw Data
+                            <IconContext.Provider value={{ className: 'react-icons' }}>
+                                <RiInformationLine />
+                            </IconContext.Provider>
+                            Raw Data
+                            <Switch checkedChildren="ON" unCheckedChildren="OFF" style={{ marginTop: -5, marginLeft: 10 }} disabled={block ? false : true} onChange={toggleRawData} />
                         </Title>
-                        <div className="entry-content" style={{marginTop: 0}}>
+
+                        <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
                             <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(block, null, 4)}</SyntaxHighlighter>
                         </div>
                     </div>

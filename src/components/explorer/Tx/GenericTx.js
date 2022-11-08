@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
@@ -6,7 +6,8 @@ import {
   Typography,
   Descriptions,
   Tooltip,
-  Alert
+  Alert,
+  Switch
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -19,12 +20,18 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
+import TxSendTokens from '../../common/TxSendTokens';
 
 const { Title, Text } = Typography;
 
 const GenericTx = props => {
 
     const tx = props.data;
+    const [rawDataDisplay, setRawDataDisplay] = useState('none');
+
+    const toggleRawData = (checked) => {
+        checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
+    };
 
     return (
         <div>
@@ -90,10 +97,11 @@ const GenericTx = props => {
                     <RiInformationLine />
                   </IconContext.Provider>
                   Raw Data
+                  <Switch checkedChildren="ON" unCheckedChildren="OFF" style={{ marginTop: -5, marginLeft: 10 }} disabled={tx ? false : true} onChange={toggleRawData} />
                 </Title>
 
                 {tx ? (
-                    <div className="entry-content" style={{marginTop: 0}}>
+                    <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
                         <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
                     </div>
                 ) : 
