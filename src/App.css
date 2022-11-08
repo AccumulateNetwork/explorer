@@ -500,3 +500,7 @@ h3.ant-typography .count, h4.ant-typography .count {
   margin-top: -2px;
   margin-right: 3px;
 }
+
+.ant-table .align-top {
+  vertical-align: top;
+}

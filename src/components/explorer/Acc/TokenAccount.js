@@ -101,9 +101,11 @@ const TokenAccount = props => {
             {item.url === tokenAccount.data.url ? (
                 <Text type="secondary">{item.url}</Text>
             ) :
+                <nobr>
                 <Link to={'/acc/' + item.url.replace("acc://", "")}>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
                 </Link>
+                </nobr>
             }
           </Paragraph>
         );
@@ -128,6 +130,7 @@ const TokenAccount = props => {
         {
             title: 'Transaction ID',
             dataIndex: 'txid',
+            className: 'align-top',
             render: (txid) => {
                 if (txid) {
                     return (
@@ -145,6 +148,7 @@ const TokenAccount = props => {
         {
             title: 'Type',
             dataIndex: 'type',
+            className: 'align-top',
             render: (type) => {
                 if (type) {
                     return (
@@ -163,6 +167,7 @@ const TokenAccount = props => {
         },
         {
             title: 'From',
+            className: 'align-top',
             render: (tx) => {
                 let from
 
