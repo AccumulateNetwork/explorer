@@ -21,6 +21,7 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
+import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 
 const { Title, Text } = Typography;
 
@@ -92,12 +93,12 @@ const GenericTx = props => {
 
                 </Descriptions>
 
-                {tx.type && tx.type === "sendTokens" ? (
-
+                {(tx.type && tx.type === "sendTokens") &&
                     <TxSendTokens data={tx} />
+                }
 
-                ) :
-                    null
+                {(tx.type && tx.type === "syntheticDepositTokens") &&
+                    <TxSyntheticDepositTokens data={tx} />
                 }
 
                 <Title level={4}>
