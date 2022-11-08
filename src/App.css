@@ -504,3 +504,7 @@ h3.ant-typography .count, h4.ant-typography .count {
 .ant-table .align-top {
   vertical-align: top;
 }
+
+.ant-table .no-break {
+  word-break: keep-all;
+}

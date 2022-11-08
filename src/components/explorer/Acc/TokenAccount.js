@@ -130,7 +130,7 @@ const TokenAccount = props => {
         {
             title: 'Transaction ID',
             dataIndex: 'txid',
-            className: 'align-top',
+            className: 'align-top no-break',
             render: (txid) => {
                 if (txid) {
                     return (
@@ -148,7 +148,7 @@ const TokenAccount = props => {
         {
             title: 'Type',
             dataIndex: 'type',
-            className: 'align-top',
+            className: 'align-top no-break',
             render: (type) => {
                 if (type) {
                     return (
@@ -167,7 +167,7 @@ const TokenAccount = props => {
         },
         {
             title: 'From',
-            className: 'align-top',
+            className: 'align-top no-break',
             render: (tx) => {
                 let from
 
@@ -191,6 +191,7 @@ const TokenAccount = props => {
         },
         {
             title: 'To',
+            className: 'align-top no-break',
             render: (tx) => {
                 if (tx.data.to || tx.data.recipient) {
                     if (tx.data.to && Array.isArray(tx.data.to) && tx.data.to[0]) {
@@ -228,6 +229,7 @@ const TokenAccount = props => {
         },
         {
             title: 'Amount',
+            className: 'align-top no-break',
             dataIndex: 'data',
             render: (data) => {
                 if (data.to && Array.isArray(data.to) && data.to[0]) {

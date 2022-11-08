@@ -42,6 +42,7 @@ const TxChain = props => {
     const columns = [
         {
             title: 'Transaction ID',
+            className: 'align-top no-break',
             render: (row) => {
                 if (row && row.txid) {
                     return (
@@ -60,6 +61,7 @@ const TxChain = props => {
         },
         {
             title: 'Type',
+            className: 'align-top no-break',
             render: (row) => {
                 if (row && row.type) {
                     return (
