@@ -92,6 +92,14 @@ const GenericTx = props => {
 
                 </Descriptions>
 
+                {tx.type && tx.type === "sendTokens" ? (
+
+                    <TxSendTokens data={tx} />
+
+                ) :
+                    null
+                }
+
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiInformationLine />

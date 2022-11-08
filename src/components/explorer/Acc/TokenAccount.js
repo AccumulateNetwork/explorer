@@ -47,7 +47,7 @@ const TokenAccount = props => {
             if (response && response.data) {
                 setToken(response.data);
             } else {
-                throw new Error("Token " + response.data.token + " not found"); 
+                throw new Error("Token " + tokenAccount.data.tokenUrl + " not found"); 
             }
         }
         catch(error) {

@@ -501,7 +501,7 @@ h3.ant-typography .count, h4.ant-typography .count {
   margin-right: 3px;
 }
 
-.ant-table .align-top {
+.ant-table .align-top, .ant-descriptions .align-top {
   vertical-align: top;
 }
 
