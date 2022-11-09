@@ -22,6 +22,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
+import TxAddCredits from '../../common/TxAddCredits';
 
 const { Title, Text } = Typography;
 
@@ -77,7 +78,7 @@ const GenericTx = props => {
 
                     {tx.transactionHash ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txHash}><RiQuestionLine /></Tooltip></IconContext.Provider>TxHash</nobr></span>}>
-                            <Text copyable>{tx.transactionHash}</Text>
+                            <Text copyable className={"code"}>{tx.transactionHash}</Text>
                         </Descriptions.Item>
                     ) :
                         null
@@ -99,6 +100,10 @@ const GenericTx = props => {
 
                 {(tx.type && tx.type === "syntheticDepositTokens") &&
                     <TxSyntheticDepositTokens data={tx} />
+                }
+
+                {(tx.type && tx.type === "addCredits") &&
+                    <TxAddCredits data={tx} />
                 }
 
                 <Title level={4}>
