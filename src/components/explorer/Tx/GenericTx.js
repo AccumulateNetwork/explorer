@@ -24,7 +24,7 @@ import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const GenericTx = props => {
 
@@ -93,6 +93,29 @@ const GenericTx = props => {
                     }
 
                 </Descriptions>
+
+                <Title level={4}>
+                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiInformationLine />
+                  </IconContext.Provider>
+                  Transaction Metadata
+                </Title>
+
+                {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
+
+                    <Descriptions bordered column={1} size="middle">
+                        {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
+                                <Text copyable>{tx.transaction.header.memo}</Text>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+                    </Descriptions>
+                
+                ) :
+                    <Paragraph><Text type="secondary">No metadata</Text></Paragraph>
+                }
 
                 {(tx.type && tx.type === "sendTokens") &&
                     <TxSendTokens data={tx} />
