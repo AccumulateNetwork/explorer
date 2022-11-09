@@ -6,7 +6,8 @@ import {
   Typography,
   Skeleton,
   Table,
-  Tag
+  Tag,
+  List
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -115,7 +116,10 @@ const TxChain = props => {
             }
             setTxChain(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
-            setTotalEntries(response.total);
+            if (type === 'pending')
+              setTotalEntries(response.items.length);
+            else
+              setTotalEntries(response.total);
           } else {
             throw new Error("Chain not found"); 
           }
@@ -142,15 +146,31 @@ const TxChain = props => {
                         <Count count={totalEntries ? totalEntries : 0} />
                     </Title>
 
-                    <Table
-                        dataSource={txChain}
-                        columns={columns}
-                        pagination={pagination}
-                        rowKey="txid"
-                        loading={tableIsLoading}
-                        onChange={getTxChain}
-                        scroll={{ x: 'max-content' }}
-                    />
+                    {(txChain && type === "pending") ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={txChain}
+                            renderItem={item =>
+                                <List.Item>
+                                    <Link to={'/tx/' + item}>
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{item}
+                                    </Link>
+                                </List.Item>
+                            }
+                            style={{ marginBottom: "30px" }}
+                        />
+                    ) :
+                        <Table
+                            dataSource={txChain}
+                            columns={columns}
+                            pagination={pagination}
+                            rowKey="txid"
+                            loading={tableIsLoading}
+                            onChange={getTxChain}
+                            scroll={{ x: 'max-content' }}
+                        />
+                    }
                 </div>
             ) :
                 <div>
