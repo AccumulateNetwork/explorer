@@ -22,6 +22,7 @@ import GenericAcc from './Acc/GenericAcc';
 import GenericTx from './Tx/GenericTx';
 
 import ParseADI from '../common/ParseADI';
+import ParseDataAccount from '../common/ParseDataAccount';
 
 const { Title } = Typography;
 
@@ -95,6 +96,7 @@ const Acc = ({ match }) => {
                 case 'liteDataAccount':
                     return <DataAccount data={props.data} />;
                 case 'dataEntry':
+                    props.data.account = ParseDataAccount(props.data.data.txId);
                     return <DataEntry data={props.data} />;
                 default:
                     return <GenericAcc data={props.data} />;

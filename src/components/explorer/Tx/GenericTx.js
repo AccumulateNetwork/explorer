@@ -7,12 +7,13 @@ import {
   Descriptions,
   Tooltip,
   Alert,
-  Switch
+  Switch,
+  Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill
 } from 'react-icons/ri';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -51,6 +52,9 @@ const GenericTx = props => {
             {tx.type ? (
                 <Descriptions.Item label="Type">
                     {tx.type}
+                    {tx.data && tx.data.isRefund &&
+                        <Tag color="orange" style={{marginLeft: 10, textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag>
+                    }
                 </Descriptions.Item>
             ) :
                 null
@@ -101,12 +105,19 @@ const GenericTx = props => {
                   Transaction Metadata
                 </Title>
 
-                {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
+                {tx.transaction && tx.transaction.header && (tx.transaction.header.memo || tx.transaction.header.metadata) ? (
 
                     <Descriptions bordered column={1} size="middle">
                         {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
                                 <Text copyable>{tx.transaction.header.memo}</Text>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+                        {tx.transaction && tx.transaction.header && tx.transaction.header.metadata ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.metadata}><RiQuestionLine /></Tooltip></IconContext.Provider>Metadata</nobr></span>}>
+                                <Text copyable>{tx.transaction.header.metadata}</Text>
                             </Descriptions.Item>
                         ) :
                             null
