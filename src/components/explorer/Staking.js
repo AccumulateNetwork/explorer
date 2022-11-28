@@ -25,6 +25,7 @@ const Staking = () => {
 
     const pagination = {showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1};
     const [stakers, setStakers] = useState(null);
+    const [summary, setSummary] = useState(null);
     const [error, setError] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
@@ -115,11 +116,11 @@ const Staking = () => {
                 switch (row.acceptingDelegates) {
                 case 'yes':
                     return (
-                        <Tag color="green">Accepted</Tag>
+                        <Tag color="green">accepted</Tag>
                     )
                 case 'no':
                     return (
-                        <Text>Not accepted</Text>
+                        <Text>not accepted</Text>
                     )
                 default:
                     return null
@@ -180,10 +181,10 @@ const Staking = () => {
                     const account = JSON.parse(Buffer.from(entry.data[0], 'hex'));
 
                     // Ignore older records for the same account
-                    if (seen.has(account.identity)) {
+                    if (seen.has(account.identity.toLowerCase())) {
                         continue;
                     }
-                    seen.set(account.identity, true);
+                    seen.set(account.identity.toLowerCase(), true);
 
                     account.entryHash = entryHash
                     accounts.push(account);
@@ -205,6 +206,22 @@ const Staking = () => {
 
             setStakers(accounts);
 
+            const summary = {
+                balance: 0,
+                coreValidator: 0,
+                coreFollower: 0,
+                stakingValidator: 0,
+                delegated: 0,
+                pure: 0,
+            };
+            for (const account of accounts) {
+                summary[account.type]++;
+                if (account.balance) {
+                    summary.balance += Number(account.balance);
+                }
+            }
+
+            setSummary(summary);
         }
         catch(error) {
             setError(error.message);
@@ -217,6 +234,29 @@ const Staking = () => {
 
     return (
         <div>
+            <Title level={2}>Summary</Title>
+
+            {summary ? (
+                <Descriptions bordered column={1} size="middle">
+                    <Descriptions.Item label="Staked">
+                        {(summary.balance/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Operators">
+                        {summary.coreValidator + summary.coreFollower + summary.stakingValidator}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Pure Stakers">
+                        {summary.pure}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Delegates">
+                        {summary.delegated}
+                    </Descriptions.Item>
+                </Descriptions>
+            ) :
+                <div className="skeleton-holder">
+                    <Skeleton active />
+                </div>
+            }
+
             <Title level={2}>Stakers</Title>
                 {stakers ? (
                     <div>
@@ -249,7 +289,7 @@ const Staking = () => {
                         </Title>
 
                         <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
-                            <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(stakers, null, 4)}</SyntaxHighlighter>
+                            <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(summary, null, 4)}</SyntaxHighlighter>
                         </div>
                     </div>
                 ) :
