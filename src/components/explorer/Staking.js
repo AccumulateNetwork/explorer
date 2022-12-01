@@ -221,6 +221,14 @@ const Staking = () => {
                 }
             }
 
+            {
+                const { data: acme } = await RPC.request("query", {url: 'ACME'});
+                const unissued = (Number(acme.supplyLimit) - Number(acme.issued))/(10**8);
+                const rewards = unissued * 0.16 / 365 * 7;
+                const rate = rewards / (summary.balance/(10**8));
+                summary.apr = (1+rate) ** 52 - 1;
+            }
+
             setSummary(summary);
         }
         catch(error) {
@@ -240,6 +248,9 @@ const Staking = () => {
                 <Descriptions bordered column={1} size="middle">
                     <Descriptions.Item label="Staked">
                         {(summary.balance/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Estimated APR">
+                        {(summary.apr*(10**2)).toFixed(2)}%
                     </Descriptions.Item>
                     <Descriptions.Item label="Operators">
                         {summary.coreValidator + summary.coreFollower + summary.stakingValidator}
