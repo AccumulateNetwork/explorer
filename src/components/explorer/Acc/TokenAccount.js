@@ -14,7 +14,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiRefund2Fill
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -147,14 +147,16 @@ const TokenAccount = props => {
         },
         {
             title: 'Type',
-            dataIndex: 'type',
             className: 'align-top no-break',
-            render: (type) => {
-                if (type) {
+            render: (tx) => {
+                if (tx && tx.type) {
                     return (
+                        <div>
                         <Tag color="green">
-                            {type}
+                            {tx.type}
                         </Tag>
+                        {tx.data && tx.data.isRefund ? <Tag color="orange" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag> : null}
+                        </div>
                     )
                 } else {
                     return (
@@ -253,7 +255,7 @@ const TokenAccount = props => {
                     )
                 }
             }
-        }
+        },
     ];
 
     useEffect(() => {

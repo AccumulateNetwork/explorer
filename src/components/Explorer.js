@@ -17,7 +17,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -26,6 +26,7 @@ import ScrollToTop from './common/ScrollToTop';
 import SearchForm from './common/SearchForm';
 
 import Blocks from './explorer/Blocks';
+import Staking from './explorer/Staking';
 
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
@@ -96,11 +97,6 @@ const Explorer = props => {
               <Badge status="success" text="Testnet" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
-          <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Beta Testnet" />
-          </a>
-      </Menu.Item>
     </Menu>
   );
 
@@ -116,11 +112,6 @@ const Explorer = props => {
                 Testnet
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
-            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Beta Testnet
-            </a>
-      </Menu.Item>
     </Menu>
   );
 
@@ -130,9 +121,6 @@ const Explorer = props => {
       switch (process.env.REACT_APP_API_PATH) {
         case 'https://mainnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Mainnet");
-            break;
-        case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Beta Testnet");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet");
@@ -152,19 +140,23 @@ const Explorer = props => {
     if (window.location.pathname.includes("tokens")) {
       setCurrentMenu("/tokens");
     }
-  
-    if (window.location.pathname.includes("validators")) {
-      setCurrentMenu("/validators");
+
+    if (window.location.pathname.includes("staking")) {
+      setCurrentMenu("/staking");
     }
 
+    if (window.location.pathname.includes("validators")) {
+        setCurrentMenu("/validators");
+    }
+  
   }, []);
-    
+
   return (
     <ApolloProvider client={client}>
     <Router>
     <ScrollToTop />
       <Layout>
-        
+
         <Header style={{ padding: 0, margin: 0 }}>
             <Menu theme="dark" mode="horizontal" onClick={handleMenuClick} selectedKeys={currentMenu}>
                 <Menu.Item key="logo">
@@ -182,6 +174,12 @@ const Explorer = props => {
                     <Link to="/tokens">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>
                         <span className="nav-text">Tokens</span>
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="/staking">
+                    <Link to="/staking">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiPercentLine /></IconContext.Provider>
+                        <span className="nav-text">Staking</span>
                     </Link>
                 </Menu.Item>
                 {false ?  (
@@ -221,7 +219,7 @@ const Explorer = props => {
             <SearchForm />
             <Switch>
                 <Route exact path="/" component={Blocks} />
-    
+
                 {currentNetwork !== "Mainnet" &&
                     <Route exact path="/faucet" component={Faucet} />
                 }
@@ -232,6 +230,7 @@ const Explorer = props => {
 
                 <Route path="/validators" component={Validators} />
                 <Route path="/tokens" component={Tokens} />
+                <Route path="/staking" component={Staking} />
 
                 <Route component={Error404} />
             </Switch>
