@@ -22,7 +22,7 @@ const { Title, Text } = Typography;
 
 const Staking = () => {
 
-    const pagination = {showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1};
+    const pagination = {showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100']};
     const [stakers, setStakers] = useState(null);
     const [summary, setSummary] = useState(null);
     const [error, setError] = useState(null);
@@ -70,7 +70,7 @@ const Staking = () => {
             render: (row) => {
                 if (row) {
                     return (
-                        <Tag color={row.status === 'registered' ? 'green' : 'yellow'}>{row.status}</Tag>
+                        <Tag color={row.status === 'registered' ? 'green' : 'orange'}>{row.status}</Tag>
                     )
                 } else {
                     return (
@@ -119,7 +119,7 @@ const Staking = () => {
                     )
                 case 'no':
                     return (
-                        <Text>not accepted</Text>
+                        <Tag color="volcano">not accepted</Tag>
                     )
                 default:
                     return null
@@ -197,8 +197,7 @@ const Staking = () => {
                     account.balance = response.data.balance;
                 }
                 catch (error) {
-                    // Entry is invalid
-                    console.log(error);
+                    // do nothing
                 }
             }));
 
