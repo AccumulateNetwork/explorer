@@ -97,11 +97,6 @@ const Explorer = props => {
               <Badge status="success" text="Testnet" />
           </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
-          <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Beta Testnet" />
-          </a>
-      </Menu.Item>
     </Menu>
   );
 
@@ -117,11 +112,6 @@ const Explorer = props => {
                 Testnet
             </a>
       </Menu.Item>
-      <Menu.Item key="Testnet (beta)">
-            <a target="_blank" rel="noopener noreferrer" href="https://beta.explorer.accumulatenetwork.io">
-                Beta Testnet
-            </a>
-      </Menu.Item>
     </Menu>
   );
 
@@ -131,9 +121,6 @@ const Explorer = props => {
       switch (process.env.REACT_APP_API_PATH) {
         case 'https://mainnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Mainnet");
-            break;
-        case 'https://beta.testnet.accumulatenetwork.io/v2':
-            setCurrentNetwork("Beta Testnet");
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet");
