@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import moment from 'moment-timezone';
 
 import { Link } from 'react-router-dom';
 
 import {
-  Typography, Alert, Skeleton, Descriptions, Table, Tag, Switch, Tooltip
+  Typography, Alert, Skeleton, Descriptions, Table, Tag, Switch, Tooltip, Row, Col, Card, Progress
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiExchangeLine, RiQuestionLine
+    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -148,7 +147,6 @@ const Staking = () => {
     ];
 
     const getStakers = async () => {
-        document.title = "Stakers | Accumulate Explorer";
         setError(null);
         try {
             const params = {url: "acc://staking.acme/registered", expand: true};
@@ -214,6 +212,7 @@ const Staking = () => {
                 delegated: 0,
                 pure: 0,
             };
+            
             for (const account of accounts) {
                 summary[account.type]++;
                 if (account.balance) {
@@ -223,6 +222,8 @@ const Staking = () => {
 
             {
                 const { data: acme } = await RPC.request("query", {url: 'ACME'});
+                summary.supplyLimit = acme.supplyLimit;
+                summary.issued = acme.issued;
                 const unissued = (Number(acme.supplyLimit) - Number(acme.issued))/(10**8);
                 const rewards = unissued * 0.16 / 365 * 7;
                 const rate = rewards / (summary.balance/(10**8));
@@ -237,29 +238,88 @@ const Staking = () => {
     }
 
     useEffect(() => {
+        document.title = "Staking | Accumulate Explorer";
         getStakers();
     }, []);
 
     return (
         <div>
-            <Title level={2}>Summary</Title>
+            <Title level={2}>Staking</Title>
 
+            <div class="featured" style={{ marginBottom: 20 }}>
+                If you have ACME tokens, you can <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
+                    <strong>stake ACME<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
+                </a>
+                <br />
+                If you have WACME tokens (ERC20), you can convert WACME to ACME via <a href="https://bridge.accumulatenetwork.io/release" target="_blank" rel="noopener noreferrer">
+                    <strong>Accumulate Bridge<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
+                </a>
+            </div>
+
+            <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
+                <Row gutter={[16,16]}>
+                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+                    <Card>
+                        <span>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiPercentLine /></IconContext.Provider>
+                            <br />
+                            Staking APR
+                        </span>
+                        <Title level={4}>{summary ? <Text>{(summary.apr*(10**2)).toFixed(2)}%</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
+                    </Card>
+                </Col>
+                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+                    <Card>
+                        <span>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>
+                            <br />
+                            Operators
+                        </span>
+                        <Title level={4}>{summary ? <Text>{summary.coreValidator + summary.coreFollower + summary.stakingValidator}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
+                    </Card>
+                </Col>
+                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+                    <Card>
+                        <span>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiHandCoinLine /></IconContext.Provider>
+                            <br />
+                            Delegates
+                        </span>
+                        <Title level={4}>{summary ? <Text>{summary.delegated}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
+                    </Card>
+                </Col>
+                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+                    <Card>
+                        <span>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>
+                            <br />
+                            Pure Stakers
+                        </span>
+                        <Title level={4}>{summary ? <Text>{summary.pure}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
+                    </Card>
+                </Col>
+                </Row>
+            </div>
+
+            <Title level={4}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiInformationLine />
+                </IconContext.Provider>
+                ACME Stats
+            </Title>
+            
             {summary ? (
                 <Descriptions bordered column={1} size="middle">
-                    <Descriptions.Item label="Staked">
+                    <Descriptions.Item label="Supply limit">
+                        {(summary.supplyLimit/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Issued tokens">
+                        {(summary.issued/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                        <Progress percent={Math.floor(summary.issued/summary.supplyLimit*100)} />
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Staked tokens">
                         {(summary.balance/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Estimated APR">
-                        {(summary.apr*(10**2)).toFixed(2)}%
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Operators">
-                        {summary.coreValidator + summary.coreFollower + summary.stakingValidator}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Pure Stakers">
-                        {summary.pure}
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Delegates">
-                        {summary.delegated}
+                        <Progress percent={Math.floor(summary.balance/summary.issued*100)} />
                     </Descriptions.Item>
                 </Descriptions>
             ) :
@@ -267,55 +327,52 @@ const Staking = () => {
                     <Skeleton active />
                 </div>
             }
+        
+            <Title level={4}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiAccountCircleLine />
+                </IconContext.Provider>
+                Stakers
+                {stakers ? <Count count={stakers.length} /> : null }
+            </Title>
 
-            <Title level={2}>Stakers</Title>
-                {stakers ? (
-                    <div>
-                        <Title level={4} style={{ marginTop: 30 }}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiExchangeLine />
-                            </IconContext.Provider>
-                            Stakers
-                            <Count count={stakers ? stakers.length : 0} />
-                        </Title>
+            {stakers ? (
+                <div>
 
-                        {stakers ? (
-                        <Table
-                            dataSource={stakers}
-                            columns={columns}
-                            pagination={pagination}
-                            rowKey="entryHash"
-                            scroll={{ x: 'max-content' }}
-                        />
-                        ) :
-                            <Alert message="No stakers" type="info" showIcon style={{marginBottom: 30}} />
-                        }
+                    <Table
+                        dataSource={stakers}
+                        columns={columns}
+                        pagination={pagination}
+                        rowKey="entryHash"
+                        scroll={{ x: 'max-content' }}
+                    />
 
-                        <Title level={4}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiInformationLine />
-                            </IconContext.Provider>
-                            Raw Data
-                            <Switch checkedChildren="ON" unCheckedChildren="OFF" style={{ marginTop: -5, marginLeft: 10 }} disabled={stakers ? false : true} onChange={toggleRawData} />
-                        </Title>
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiInformationLine />
+                        </IconContext.Provider>
+                        Raw Data
+                        <Switch checkedChildren="ON" unCheckedChildren="OFF" style={{ marginTop: -5, marginLeft: 10 }} disabled={stakers ? false : true} onChange={toggleRawData} />
+                    </Title>
 
-                        <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
-                            <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(summary, null, 4)}</SyntaxHighlighter>
+                    <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
+                        <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(summary, null, 4)}</SyntaxHighlighter>
+                    </div>
+                </div>
+            ) :
+                <div>
+                    {error ? (
+                        <div className="skeleton-holder">
+                            <Alert message={error} type="error" showIcon />
                         </div>
-                    </div>
-                ) :
-                    <div>
-                        {error ? (
-                            <div className="skeleton-holder">
-                                <Alert message={error} type="error" showIcon />
-                            </div>
-                        ) :
-                            <div className="skeleton-holder">
-                                <Skeleton active />
-                            </div>
-                        }
-                    </div>
-                }
+                    ) :
+                        <div className="skeleton-holder">
+                            <Skeleton active />
+                        </div>
+                    }
+                </div>
+            }
+
         </div>
     );
 }

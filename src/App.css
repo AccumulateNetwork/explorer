@@ -137,6 +137,10 @@
   vertical-align: middle;
 }
 
+.stats .ant-skeleton-title {
+  margin-top: 8px;
+}
+
 .skeleton-holder {
   background: #FFF;
   padding: 12px;

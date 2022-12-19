@@ -17,7 +17,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -154,10 +154,14 @@ const Explorer = props => {
       setCurrentMenu("/tokens");
     }
 
-    if (window.location.pathname.includes("validators")) {
-      setCurrentMenu("/validators");
+    if (window.location.pathname.includes("staking")) {
+      setCurrentMenu("/staking");
     }
 
+    if (window.location.pathname.includes("validators")) {
+        setCurrentMenu("/validators");
+    }
+  
   }, []);
 
   return (
@@ -187,7 +191,7 @@ const Explorer = props => {
                 </Menu.Item>
                 <Menu.Item key="/staking">
                     <Link to="/staking">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiPercentLine /></IconContext.Provider>
                         <span className="nav-text">Staking</span>
                     </Link>
                 </Menu.Item>
