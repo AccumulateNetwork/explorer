@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Typography, Row, Col, Card, Tag } from 'antd';
 import { IconContext } from "react-icons";
 import {
-  RiHandCoinLine, RiLineChartFill, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill
+  RiHandCoinLine, RiCoinLine, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill
 } from 'react-icons/ri';
 
 import Stats from './../common/Stats';
@@ -40,7 +40,7 @@ const Blocks = () => {
             <Link to="/acc/acme">
             <Card>
                 <span>
-                    <IconContext.Provider value={{ className: 'react-icons' }}><RiLineChartFill /></IconContext.Provider>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>
                     <br />
                     Accumulate token
                 </span>
