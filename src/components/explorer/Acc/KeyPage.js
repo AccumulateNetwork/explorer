@@ -18,6 +18,7 @@ import {
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
+import Key from '../../common/Key';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -105,7 +106,7 @@ const KeyPage = props => {
                             dataSource={keypage.data.keys}
                             renderItem={item =>
                                 <List.Item>
-                                    {item.publicKey ? <span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span> : null }
+                                    {item.publicKey ? <Key keyHash={item.publicKey} /> : null}
                                     {item.delegate ? <span><Tag color="green">Delegate</Tag><Link to={'/acc/' + item.delegate.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{item.delegate}</Link></span> : null }
                                 </List.Item>
                             }
