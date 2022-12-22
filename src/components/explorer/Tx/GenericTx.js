@@ -24,6 +24,7 @@ import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
+import Signatures from '../Sig/Signatures';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -138,6 +139,10 @@ const GenericTx = props => {
 
                 {(tx.type && tx.type === "addCredits") &&
                     <TxAddCredits data={tx} />
+                }
+
+                {(tx.type.indexOf('synthetic') < 0) &&
+                    <Signatures tx={tx} />
                 }
 
                 <Title level={4}>
