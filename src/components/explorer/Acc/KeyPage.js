@@ -105,8 +105,11 @@ const KeyPage = props => {
                             dataSource={keypage.data.keys}
                             renderItem={item =>
                                 <List.Item>
-                                    {item.publicKey ? <span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span> : null }
+                                    <span>
                                     {item.delegate ? <span><Tag color="green">Delegate</Tag><Link to={'/acc/' + item.delegate.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{item.delegate}</Link></span> : null }
+                                    {item.delegate && item.publicKey ? <p></p> : null}
+                                    {item.publicKey ? <span><Tag color="blue">SHA256</Tag><Text className="code" copyable>{item.publicKey}</Text></span> : null }
+                                    </span>
                                 </List.Item>
                             }
                             style={{ marginBottom: "30px" }}
