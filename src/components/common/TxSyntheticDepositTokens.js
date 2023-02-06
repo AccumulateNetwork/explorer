@@ -69,7 +69,10 @@ const TxSyntheticDepositTokens = props => {
 
                 <Descriptions.Item label={"Amount"}>
                     {token && tx.data.amount &&
-                        <Text>{(tx.data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                        <span>
+                            <Text>{(tx.data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                            <br /><Text className="formatted-balance">{parseFloat(tx.data.amount/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
+                        </span>
                     }
                     {error &&
                         <Alert message={error} type="error" showIcon />  

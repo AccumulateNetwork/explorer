@@ -74,7 +74,10 @@ const TxSendTokens = props => {
                 }
                 <br />
                 {(item.amount && token) ? (
-                    <Text>{(item.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                    <span>
+                        <Text>{(item.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                        <br /><Text className="formatted-balance">{parseFloat(item.amount/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
+                    </span>
                 ) :
                     null
                 }

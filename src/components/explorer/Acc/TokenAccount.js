@@ -337,6 +337,7 @@ const TokenAccount = props => {
                         {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                 {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                                <br /><Text className="formatted-balance">{parseFloat(tokenAccount.data.balance/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
                             </Descriptions.Item>
                         ) :
                             null
