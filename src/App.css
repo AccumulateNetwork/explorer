@@ -373,6 +373,46 @@ h3.ant-typography .count, h4.ant-typography .count {
   cursor: pointer;
 }
 
+.key .ant-typography {
+  line-height: 14px;
+  padding: 5px 11px 6px;
+}
+
+.key .key-type {
+  font-size: 12px !important;
+}
+
+.key .key-text {
+  font-size: 13px !important;
+}
+
+.key .key-type.ant-typography, .key .key-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-ASCII, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:not(.ant-radio-button-wrapper-disabled)::before {
+  background: #e6f7ff !important;
+  border: 1px solid #91d5ff !important;
+  color: #096dd9 !important;
+}
+
+.key .key-type .ant-select-arrow {
+  color: #096dd9 !important;
+  font-size: 8px !important;
+  margin-top: -5px;
+}
+
+.key .key-type .ant-select-selection-item {
+  padding-right: 18px !important;
+}
+
+.key .key-text {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+  background: #FFF;
+  word-break: break-all;
+  overflow: hidden;
+}
+
+.ant-table .key .key-text {
+  border-left-width: 0 !important;
+}
+
 .type-radio .ant-radio-button-wrapper:hover {
   color: rgba(0, 0, 0, 0.65) !important;
 }
