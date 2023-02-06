@@ -1,25 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Typography, Row, Col, Card, Tag } from 'antd';
+import { Typography, Row, Col, Card, Tag, Skeleton, message } from 'antd';
 import { IconContext } from "react-icons";
 import {
-  RiHandCoinLine, RiCoinLine, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill
+  RiHandCoinLine, RiCoinLine, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill, RiMoneyDollarCircleLine
 } from 'react-icons/ri';
 
 import Stats from './../common/Stats';
 import MinorBlocks from './../common/MinorBlocks';
+import axios from 'axios';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Blocks = () => {
 
+  const [price, setPrice] = useState(null);
   const [isMainnet, setIsMainnet] = useState(false);
+
+  const getPrice = async () => {
+
+    setPrice(null);
+
+    try {
+        const response = await axios.get("https://api.coingecko.com/api/v3/coins/wrapped-accumulate");
+        if (response && response.data.market_data && response.data.market_data.current_price && response.data.market_data.current_price.usd) {
+            setPrice(response.data.market_data.current_price.usd);
+        } else {
+            throw new Error("Coingecko API is not available"); 
+        }
+    }
+    catch(error) {
+        setPrice(null);
+        message.error(error.message);
+    }
+
+}
 
   useEffect(() => {
     document.title = "Blocks | Accumulate Explorer";
     if (process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://mainnet.accumulatenetwork.io/v2") {
       setIsMainnet(true);
+      getPrice();
     }
   }, []);
 
@@ -48,6 +70,20 @@ const Blocks = () => {
             </Card>
             </Link>
           </Col>
+          {isMainnet &&
+          <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+            <a href="https://www.coingecko.com/en/coins/wrapped-accumulate" rel="noreferrer" target="_blank">
+            <Card>
+                <span>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiMoneyDollarCircleLine /></IconContext.Provider>
+                    <br />
+                    ACME price
+                </span>
+                <Title level={4}>{price ? <Text>${price.toFixed(4)}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
+            </Card>
+            </a>
+          </Col>
+          }
           {!isMainnet &&
           <Col xs={24} sm={8} md={6} lg={5} xl={4}>
             <Link to="/faucet">
