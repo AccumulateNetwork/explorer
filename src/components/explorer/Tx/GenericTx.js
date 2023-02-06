@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import moment from 'moment-timezone';
 
 import { Link } from 'react-router-dom';
 
@@ -8,7 +9,9 @@ import {
   Tooltip,
   Alert,
   Switch,
-  Tag
+  Tag,
+  Skeleton,
+  message
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -25,16 +28,53 @@ import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 
+import axios from 'axios';
+
 const { Title, Text, Paragraph } = Typography;
 
 const GenericTx = props => {
 
     const tx = props.data;
+    const [ts, setTs] = useState(null);
+    const [block, setBlock] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
+
+    let utcOffset = moment().utcOffset() / 60;
+
+    const getTs = async () => {
+
+        setTs(null);
+        setBlock(null);
+
+        try {
+            const response = await axios.get(process.env.REACT_APP_TS_API_PATH + "?hash=" + props.data.transactionHash);
+            if (response && response.data && response.data.result) {
+                if (response.data.result[0] && response.data.result[0].localBlockTime && response.data.result[0].localBlock) {
+                    setTs(response.data.result[0].localBlockTime);
+                    setBlock(response.data.result[0].localBlock);
+                } else {
+                    setTs(0);
+                    setBlock(0);
+                }
+            } else {
+                throw new Error("Can not get data from timestamp server"); 
+            }
+        }
+        catch(error) {
+            setTs(null);
+            setBlock(null);
+            message.error(error.message);
+        }
+
+    }
 
     const toggleRawData = (checked) => {
         checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
     };
+
+    useEffect(() => {
+        getTs();
+    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
@@ -71,6 +111,14 @@ const GenericTx = props => {
                   Transaction Info
                 </Title>
                 <Descriptions bordered column={1} size="middle">
+
+                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.timestamp}><RiQuestionLine /></Tooltip></IconContext.Provider>Timestamp (UTC{utcOffset < 0 ? '-' : '+'}{utcOffset})</nobr></span>}>
+                        {ts || ts===0 ? <Text>{ts ? <Text className="code">{moment(ts).format("YYYY-MM-DD HH:mm:ss")}</Text> : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
+                    </Descriptions.Item>
+
+                    <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.block}><RiQuestionLine /></Tooltip></IconContext.Provider>Block</nobr></span>}>
+                        {block || block===0 ? <Text>{block ? ( <Link className="code" to={'/block/' + block}>{block}</Link> ) : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
+                    </Descriptions.Item>
 
                     {tx.txid ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
