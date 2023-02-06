@@ -132,15 +132,15 @@ const Key = props => {
             : props.type ?
                 <span><Tag color="blue" style={{textTransform: "uppercase"}}>{props.type}</Tag><Text className="code" copyable>{address}</Text></span>
             :
-                <Input.Group compact>
-                    <Select defaultValue="unknown" onChange={handleChange}>
-                        <Select.Option value="unknown">Unknown</Select.Option>
+                <Input.Group compact className={"key"}>
+                    <Select defaultValue="raw" size="small" className="key-type" onChange={handleChange}>
+                        <Select.Option value="raw">Raw</Select.Option>
                         <Select.Option value="ed25519">ED25519</Select.Option>
                         <Select.Option value="rcd1">RCD1</Select.Option>
                         <Select.Option value="btc">BTC</Select.Option>
                         <Select.Option value="eth">ETH</Select.Option>
                     </Select>
-                    <Text className="code" copyable>{address}</Text>
+                    <Text className="key-text" copyable>{address}</Text>
                 </Input.Group>
             }
         </div>
