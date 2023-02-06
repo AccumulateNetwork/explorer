@@ -116,19 +116,15 @@ const Key = props => {
     }
 
     useEffect(() => {
-        getAddress()
-    }, []);
+        getAddress();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
             {error ?
-                <div className="skeleton-holder">
-                    <Alert message={error} type="error" showIcon />
-                </div>
+                <Alert message={error} type="error" showIcon />
             : !address ?
-                <div className="skeleton-holder">
-                    <Skeleton active />
-                </div>
+                <Skeleton active title={true} paragraph={false} />
             : props.type ?
                 <span><Tag color="blue" style={{textTransform: "uppercase"}}>{props.type}</Tag><Text className="code" copyable>{address}</Text></span>
             :
