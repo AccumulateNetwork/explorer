@@ -59,14 +59,15 @@ const Key = props => {
 
             switch (props.type) {
                 case 'ed25519':
-                case 'legacyED25519':
                     setAddress(await formatAC1(hashRaw));
+                    break;
+                case 'legacyED25519':
+                    setAddress(props.keyHash);
                     break;
                 case 'rcd1':
                     setAddress(await formatFA(hashRaw));
                     break;
                 case 'btc':
-                case 'btclegacy':
                     setAddress(await formatBTC(hashRaw));
                     break;
                 case 'eth':
@@ -96,6 +97,9 @@ const Key = props => {
             switch (event) {
                 case 'ed25519':
                     setAddress(await formatAC1(hashRaw));
+                    break;
+                case 'legacyED25519':
+                    setAddress(props.keyHash);
                     break;
                 case 'rcd1':
                     setAddress(await formatFA(hashRaw));
@@ -130,8 +134,9 @@ const Key = props => {
             :
                 <Input.Group compact className={"key"}>
                     <Select defaultValue="raw" size="small" className="key-type" onChange={handleChange}>
-                        <Select.Option value="raw">Raw</Select.Option>
+                        <Select.Option value="raw">Raw Key</Select.Option>
                         <Select.Option value="ed25519">ED25519</Select.Option>
+                        <Select.Option value="legacyED25519">Hex</Select.Option>
                         <Select.Option value="rcd1">RCD1</Select.Option>
                         <Select.Option value="btc">BTC</Select.Option>
                         <Select.Option value="eth">ETH</Select.Option>
