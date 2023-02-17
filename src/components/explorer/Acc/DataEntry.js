@@ -26,7 +26,11 @@ const DataEntry = props => {
 
     var content = [];
     if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
-        content = Array.from(props.data.data.entry.data, item => item || "")        
+        if (Array.isArray(props.data.data.entry.data)) {
+            content = Array.from(props.data.data.entry.data, item => item || "")        
+        } else {
+            content.push(props.data.data.entry.data);
+        }
     }
 
     return (
