@@ -24,11 +24,11 @@ function SearchForm() {
     return createHash("sha256").update(data).digest();
   }
 
-  function generateLiteTokenAccount(publicKeyHash) {
+  function generateLiteIdentity(publicKeyHash) {
     const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
     const checkSum = sha256(pkHash.toString("hex")).slice(28);
     const authority = Buffer.concat([pkHash, checkSum]).toString("hex");
-    return authority + "/ACME";
+    return authority;
   }
 
   const handleSearch = (value) => {
@@ -45,9 +45,9 @@ function SearchForm() {
         searchTxhash(value);
     }
     else if (isValidPublicFctAddress(value)) {
-        const liteTAUrl = generateLiteTokenAccount(addressToRcdHash(value));
+        const liteIdentityUrl = generateLiteIdentity(addressToRcdHash(value));
         setSearchIsLoading(false);
-        redirect("/acc/"+liteTAUrl);
+        redirect("/acc/"+liteIdentityUrl);
     }
     else {
         search(value.replace("acc://", ""));
