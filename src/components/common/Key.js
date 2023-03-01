@@ -1,6 +1,7 @@
 import { Alert, Input, Select, Skeleton, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { encode, encoding } from "multibase";
+import { base58btc } from "multiformats/src/bases/base58";
+import { identity } from "multiformats/src/hashes/identity";
 
 const { Text } = Typography;
 
@@ -10,14 +11,15 @@ async function doChecksum(...parts) {
 }
 
 async function formatMH(hash) {
-    const checksum = (await doChecksum(Buffer.from('MH', 'utf-8'), hash)).slice(0, 4);
-    const encoded = encode('base58btc', Buffer.concat([hash, checksum]));
+    const digested = Buffer.from(identity.digest(hash).bytes);
+    const checksum = (await doChecksum(Buffer.from('MH', 'utf-8'), digested)).slice(0, 4);
+    const encoded = base58btc.encode(Buffer.concat([digested, checksum]));
     return 'MH' + Buffer.from(encoded).toString('utf-8');
 }
 
 async function formatAC1(hash) {
     const checksum = (await doChecksum(Buffer.from('AC1', 'utf-8'), hash)).slice(0, 4);
-    const encoded = encoding('base58btc').encode(Buffer.concat([hash, checksum]));
+    const encoded = base58btc.baseEncode(Buffer.concat([hash, checksum]));
     return 'AC1' + Buffer.from(encoded).toString('utf-8');
 }
 
@@ -38,7 +40,7 @@ async function formatETH(hash) {
 
 async function formatWithPrefix(prefix, hash) {
     const checksum = (await doChecksum(prefix, hash)).slice(0, 4);
-    const encoded = encoding('base58btc').encode(Buffer.concat([prefix, hash, checksum]))
+    const encoded = base58btc.baseEncode(Buffer.concat([prefix, hash, checksum]))
     return Buffer.from(encoded).toString('utf-8');
 }
 
