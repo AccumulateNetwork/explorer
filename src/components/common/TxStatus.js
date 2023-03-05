@@ -18,17 +18,13 @@ const TxStatus = props => {
             {(tx && tx.status) ? (
                 <div>
                     {tx.status.pending &&
+                        <span>
                         <Tag color="gold" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiLoader4Line className={'anticon-spin'} /></IconContext.Provider>Pending</Tag>
+                        <Tag color="cyan" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig</Tag>
+                        </span>
                     }
                     {tx.status.delivered &&
                         <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiCheckLine/></IconContext.Provider>Delivered</Tag>
-                    }
-                    {tx.status.signers && tx.status.signers[0] && tx.status.signers[0].acceptThreshold && tx.status.signers[0].acceptThreshold > 1 ? (
-                        <span>
-                            <Tag color="cyan" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig</Tag>
-                            <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Sig Threshold: <strong>{tx.status.signers[0].acceptThreshold}</strong></Tag>
-                        </span>
-                    ) : null
                     }
                     {tx.signatures && tx.signatures.length > 0 ? (
                         <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Signatures: <strong>{tx.signatures.filter(signature => signature.signer || signature.delegator).length}</strong></Tag>
