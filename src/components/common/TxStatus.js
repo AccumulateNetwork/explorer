@@ -31,7 +31,7 @@ const TxStatus = props => {
                     ) : null
                     }
                     {tx.signatures && tx.signatures.length > 0 ? (
-                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Signatures: <strong>{tx.signatures.length}</strong></Tag>
+                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Signatures: <strong>{tx.signatures.filter(signature => signature.signer || signature.delegator).length}</strong></Tag>
                     ) : null
                     }
                 </div>
