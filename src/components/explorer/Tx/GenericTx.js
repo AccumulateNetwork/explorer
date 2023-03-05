@@ -10,13 +10,14 @@ import {
   Alert,
   Switch,
   Tag,
+  List,
   Skeleton,
   message
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill, RiFileList2Line
 } from 'react-icons/ri';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -37,6 +38,15 @@ const { Title, Text, Paragraph } = Typography;
 const GenericTx = props => {
 
     const tx = props.data;
+    var content = [];
+    if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
+        if (Array.isArray(props.data.data.entry.data)) {
+            content = Array.from(props.data.data.entry.data, item => item || "")        
+        } else {
+            content.push(props.data.data.entry.data);
+        }
+    }
+
     const [ts, setTs] = useState(null);
     const [block, setBlock] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
@@ -147,6 +157,27 @@ const GenericTx = props => {
                     }
 
                 </Descriptions>
+
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiFileList2Line />
+                        </IconContext.Provider>
+                        Entry Data
+                    </Title>
+
+                    {content ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={content}
+                            renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                            style={{ marginBottom: "30px" }}
+                        />
+                    ) :
+                        <div class="skeleton-holder">
+                            <Alert message="No content" type="info" showIcon />
+                        </div>
+                    }
 
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
