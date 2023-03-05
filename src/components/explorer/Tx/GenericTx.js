@@ -23,6 +23,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
+import Data from '../../common/Data';
 import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
@@ -156,17 +157,17 @@ const GenericTx = props => {
 
                 {tx.transaction && tx.transaction.header && (tx.transaction.header.memo || tx.transaction.header.metadata) ? (
 
-                    <Descriptions bordered column={1} size="middle">
+                    <Descriptions bordered column={1} size="middle" layout="vertical">
                         {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
-                                <Text copyable>{tx.transaction.header.memo}</Text>
+                                <Data>{tx.transaction.header.memo}</Data>
                             </Descriptions.Item>
                         ) :
                             null
                         }
                         {tx.transaction && tx.transaction.header && tx.transaction.header.metadata ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.metadata}><RiQuestionLine /></Tooltip></IconContext.Provider>Metadata</nobr></span>}>
-                                <Text copyable>{tx.transaction.header.metadata}</Text>
+                                <Data>{tx.transaction.header.metadata}</Data>
                             </Descriptions.Item>
                         ) :
                             null
