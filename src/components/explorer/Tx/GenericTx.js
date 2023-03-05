@@ -27,6 +27,7 @@ import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
+import Signatures from '../../common/Signatures';
 
 import axios from 'axios';
 
@@ -187,6 +188,8 @@ const GenericTx = props => {
                 {(tx.type && tx.type === "addCredits") &&
                     <TxAddCredits data={tx} />
                 }
+
+                <Signatures data={tx.signatures} />
 
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
