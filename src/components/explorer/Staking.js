@@ -85,7 +85,7 @@ const Staking = () => {
                 if (balance || balance===0) {
                     return (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                            {(balance/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                            {(balance / (10**8)).toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         </Descriptions.Item>
                     )
                 } else {
