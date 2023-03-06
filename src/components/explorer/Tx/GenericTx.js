@@ -11,8 +11,7 @@ import {
   Switch,
   Tag,
   List,
-  Skeleton,
-  message
+  Skeleton
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -30,8 +29,7 @@ import TxSendTokens from '../../common/TxSendTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 import Signatures from '../../common/Signatures';
-
-import axios from 'axios';
+import getTs from '../../common/GetTS';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -53,44 +51,16 @@ const GenericTx = props => {
 
     let utcOffset = moment().utcOffset() / 60;
 
-    const getTs = async () => {
-
-        setTs(null);
-        setBlock(null);
-
-        try {
-            const response = await axios.get(process.env.REACT_APP_TS_API_PATH + "?hash=" + props.data.transactionHash);
-            if (response && response.data && response.data.result) {
-                if (response.data.result[0] && response.data.result[0].localBlockTime && response.data.result[0].localBlock) {
-                    setTs(response.data.result[0].localBlockTime);
-                    setBlock(response.data.result[0].localBlock);
-                } else {
-                    setTs(0);
-                    setBlock(0);
-                }
-            } else {
-                throw new Error("Can not get data from timestamp server"); 
-            }
-        }
-        catch(error) {
-            setTs(null);
-            setBlock(null);
-            message.error(error.message);
-        }
-
-    }
-
     const toggleRawData = (checked) => {
         checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
     };
 
     useEffect(() => {
-        getTs();
+        getTs(props.data.transactionHash, setTs, setBlock);
     }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
-
             <TxStatus data={tx} />
 
             <Title level={4}>
@@ -165,7 +135,7 @@ const GenericTx = props => {
                         Entry Data
                     </Title>
 
-                    {content ? (
+                    {content && content.length > 0 ? (
                         <List
                             size="small"
                             bordered
@@ -174,9 +144,7 @@ const GenericTx = props => {
                             style={{ marginBottom: "30px" }}
                         />
                     ) :
-                        <div class="skeleton-holder">
-                            <Alert message="No content" type="info" showIcon />
-                        </div>
+                        <Paragraph><Text type="secondary">No entry data</Text></Paragraph>
                     }
 
                 <Title level={4}>
