@@ -57,8 +57,8 @@ const GenericTx = props => {
     };
 
     useEffect(() => {
-        getTs(tx.transactionHash, setTs, setBlock);
-    }, [tx]); // eslint-disable-line react-hooks/exhaustive-deps
+        getTs(props.data.transactionHash, setTs, setBlock);
+    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
