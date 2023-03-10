@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-  Typography, Skeleton, Descriptions, Table, Tag, Tooltip, Row, Col, Card, Progress, message
+  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Row, Col, Card, Progress, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine
+    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -85,7 +85,7 @@ const Staking = () => {
                 if (balance || balance===0) {
                     return (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                            {(balance/(10**8)).toFixed(8).replace(/\.?0+$/, "")} ACME
+                            {(balance / (10**8)).toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         </Descriptions.Item>
                     )
                 } else {
@@ -239,16 +239,6 @@ const Staking = () => {
         <div>
             <Title level={2}>Staking</Title>
 
-            <div class="featured" style={{ marginBottom: 20 }}>
-                If you have ACME tokens, you can <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
-                    <strong>stake ACME<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
-                </a>
-                <br />
-                If you have WACME tokens (ERC20), you can convert WACME to ACME via <a href="https://bridge.accumulatenetwork.io/release" target="_blank" rel="noopener noreferrer">
-                    <strong>Accumulate Bridge<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
-                </a>
-            </div>
-
             <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
                 <Row gutter={[16,16]}>
                 <Col xs={24} sm={8} md={6} lg={5} xl={4}>
@@ -293,6 +283,20 @@ const Staking = () => {
                 </Col>
                 </Row>
             </div>
+
+            <Card className="staking-card" style={{ marginBottom: 20 }}>
+                <Tabs defaultActiveKey="TabStaking">
+                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiFlashlightLine /></IconContext.Provider>ACME Staking</span>} key="TabStaking">
+                        You can stake ACME following <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
+                            <strong>this guide<IconContext.Provider value={{ className: 'react-icons' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiWaterFlashLine /></IconContext.Provider>WACME Liquid Staking</span>} key="TabLiquidStaking">
+                        You can stake WACME in the liquid staking on <a href="https://accumulated.finance/" target="_blank" rel="noopener noreferrer">
+                            <strong>Accumulated Finance<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
+                    </Tabs.TabPane>
+                </Tabs>
+            </Card>
+
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>

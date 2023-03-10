@@ -35,7 +35,7 @@ const TokenAccount = props => {
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalTxs, setTotalTxs] = useState(-1);
-    
+
     const getToken = async () => {
         setPagination({...pagination, current: 1});
         setToken(null);
@@ -47,7 +47,7 @@ const TokenAccount = props => {
             if (response && response.data) {
                 setToken(response.data);
             } else {
-                throw new Error("Token " + tokenAccount.data.tokenUrl + " not found"); 
+                throw new Error("Token " + tokenAccount.data.tokenUrl + " not found");
             }
         }
         catch(error) {
@@ -59,37 +59,37 @@ const TokenAccount = props => {
 
     const getTxs = async (params = pagination) => {
         setTableIsLoading(true);
-    
+
         let start = 0;
         let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
-    
+
         if (params) {
             start = (params.current-1)*params.pageSize;
             count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
-    
+
         try {
           const response = await RPC.request("query-tx-history", { url: tokenAccount.data.url, start: start, count: count } );
-          if (response && response.items) {
+            if (response && response.items) {
 
-            // workaround API bug response
-            if (response.start === null || response.start === undefined) {
-                response.start = 0;
-            }
+                // workaround API bug response
+                if (response.start === null || response.start === undefined) {
+                    response.start = 0;
+                }
 
-            setTxs(response.items);
+                setTxs(response.items);
             setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
-            setTotalTxs(response.total);
-          } else {
-            throw new Error("Token account not found"); 
-          }
+                setTotalTxs(response.total);
+            } else {
+                throw new Error("Token account not found");
+            }
         }
         catch(error) {
-          // error is managed by RPC.js, no need to display anything
+            // error is managed by RPC.js, no need to display anything
         }
         setTableIsLoading(false);
     }
@@ -98,16 +98,16 @@ const TokenAccount = props => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
-            {item.url === tokenAccount.data.url ? (
-                <Text type="secondary">{item.url}</Text>
-            ) :
-                <nobr>
-                <Link to={'/acc/' + item.url.replace("acc://", "")}>
-                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
-                </Link>
-                </nobr>
-            }
-          </Paragraph>
+                {item.url === tokenAccount.data.url ? (
+                    <Text type="secondary">{item.url}</Text>
+                ) :
+                    <nobr>
+                        <Link to={'/acc/' + item.url.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
+                        </Link>
+                    </nobr>
+                }
+            </Paragraph>
         );
         return (
             <span className="break-all">{items}</span>
@@ -117,13 +117,15 @@ const TokenAccount = props => {
     function TxAmounts(props) {
         const data = props.tx;
         const items = data.map((item, index) =>
-          <Paragraph key={{index}}>
-            {(item.amount/(10**props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
-          </Paragraph>
-      );
-      return (
-        <span>{items}</span>
-      );
+            <Paragraph key={{index}}>
+                <Tooltip title={(item.amount / (10 ** props.token.precision)).toLocaleString('en-US') + " " + props.token.symbol}>
+                    {(item.amount / (10 ** props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
+                </Tooltip>
+            </Paragraph>
+        );
+        return (
+            <span>{items}</span>
+        );
     }
 
     const columns = [
@@ -142,7 +144,7 @@ const TokenAccount = props => {
                     return (
                         <Text disabled>N/A</Text>
                     )
-                }                
+                }
             }
         },
         {
@@ -152,9 +154,9 @@ const TokenAccount = props => {
                 if (tx && tx.type) {
                     return (
                         <div>
-                        <Tag color="green">
-                            {tx.type}
-                        </Tag>
+                            <Tag color="green">
+                                {tx.type}
+                            </Tag>
                         {tx.data && tx.data.isRefund ? <Tag color="orange" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag> : null}
                         </div>
                     )
@@ -239,9 +241,11 @@ const TokenAccount = props => {
                         <TxAmounts tx={data.to} token={token} />
                     )
                 } else if (data.amount && data.token) {
-                    return ( 
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.amount}><RiQuestionLine /></Tooltip></IconContext.Provider>Amount</nobr></span>}>
-                            {(data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                    return (
+                        <Descriptions.Item>
+                            <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US') + " " + token.symbol}>
+                                {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                            </Tooltip>
                         </Descriptions.Item>
                     )
                 } else if (data.amount && data.oracle) { //if not a TOKEN, then it is a CREDIT
@@ -282,7 +286,7 @@ const TokenAccount = props => {
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiInformationLine />
+                            <RiInformationLine />
                         </IconContext.Provider>
                         Token Account Info
                     </Title>
@@ -294,7 +298,7 @@ const TokenAccount = props => {
                                 {tokenAccount.data.url}
                                 {tokenAccount.data.url === FaucetAddress ? (
                                     <Paragraph className="inline-tip">Faucet address</Paragraph>
-                                ) : 
+                                ) :
                                     null
                                 }
                             </Descriptions.Item>
@@ -327,7 +331,7 @@ const TokenAccount = props => {
                                 {token.symbol}
                                 <br />
                                 <Link to={'/acc/' + tokenAccount.data.token.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.token}
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.token}
                                 </Link>
                             </Descriptions.Item>
                         ) :
@@ -346,10 +350,10 @@ const TokenAccount = props => {
                     </Descriptions>
 
                     <Authorities items={tokenAccount.data.authorities} />
-                    
+
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
-                        <RiExchangeLine />
+                            <RiExchangeLine />
                         </IconContext.Provider>
                         Transactions
                         <Count count={totalTxs ? totalTxs : 0} />
@@ -381,7 +385,7 @@ const TokenAccount = props => {
                         <div>
                             <Title level={4}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiInformationLine />
+                                    <RiInformationLine />
                                 </IconContext.Provider>
                                 Token Account Info
                             </Title>
@@ -390,7 +394,7 @@ const TokenAccount = props => {
                             </div>
                             <Title level={4}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}>
-                                <RiExchangeLine />
+                                    <RiExchangeLine />
                                 </IconContext.Provider>
                                 Transactions
                             </Title>

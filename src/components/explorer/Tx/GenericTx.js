@@ -10,76 +10,58 @@ import {
   Alert,
   Switch,
   Tag,
-  Skeleton,
-  message
+  List,
+  Skeleton
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill, RiFileList2Line
 } from 'react-icons/ri';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import tooltipDescs from '../../common/TooltipDescriptions';
+import Data from '../../common/Data';
 import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
+import TxIssueTokens from '../../common/TxIssueTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 import Signatures from '../../common/Signatures';
-
-import axios from 'axios';
+import getTs from '../../common/GetTS';
 
 const { Title, Text, Paragraph } = Typography;
 
 const GenericTx = props => {
 
     const tx = props.data;
+    var content = [];
+    if (tx && tx.data && tx.data.entry && tx.data.entry.data) {
+        if (Array.isArray(tx.data.entry.data)) {
+            content = Array.from(tx.data.entry.data, item => item || "")        
+        } else {
+            content.push(tx.data.entry.data);
+        }
+    }
+
     const [ts, setTs] = useState(null);
     const [block, setBlock] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
     let utcOffset = moment().utcOffset() / 60;
 
-    const getTs = async () => {
-
-        setTs(null);
-        setBlock(null);
-
-        try {
-            const response = await axios.get(process.env.REACT_APP_TS_API_PATH + "?hash=" + props.data.transactionHash);
-            if (response && response.data && response.data.result) {
-                if (response.data.result[0] && response.data.result[0].localBlockTime && response.data.result[0].localBlock) {
-                    setTs(response.data.result[0].localBlockTime);
-                    setBlock(response.data.result[0].localBlock);
-                } else {
-                    setTs(0);
-                    setBlock(0);
-                }
-            } else {
-                throw new Error("Can not get data from timestamp server"); 
-            }
-        }
-        catch(error) {
-            setTs(null);
-            setBlock(null);
-            message.error(error.message);
-        }
-
-    }
-
     const toggleRawData = (checked) => {
         checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
     };
 
     useEffect(() => {
-        getTs();
+        getTs(props.data.transactionHash, setTs, setBlock);
     }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
-
             <TxStatus data={tx} />
 
             <Title level={4}>
@@ -138,7 +120,7 @@ const GenericTx = props => {
                     }
 
                     {tx.sponsor ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Principal</nobr></span>}>
                             <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
                         </Descriptions.Item>
                     ) :
@@ -146,6 +128,25 @@ const GenericTx = props => {
                     }
 
                 </Descriptions>
+
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiFileList2Line />
+                        </IconContext.Provider>
+                        Entry Data
+                    </Title>
+
+                    {content && content.length > 0 ? (
+                        <List
+                            size="small"
+                            bordered
+                            dataSource={content}
+                            renderItem={item => <List.Item><Data>{item}</Data></List.Item>}
+                            style={{ marginBottom: "30px" }}
+                        />
+                    ) :
+                        <Paragraph><Text type="secondary">No entry data</Text></Paragraph>
+                    }
 
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -156,7 +157,7 @@ const GenericTx = props => {
 
                 {tx.transaction && tx.transaction.header && (tx.transaction.header.memo || tx.transaction.header.metadata) ? (
 
-                    <Descriptions bordered column={1} size="middle">
+                    <Descriptions bordered column={1} size="middle" layout="vertical">
                         {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
                                 <Text copyable>{tx.transaction.header.memo}</Text>
@@ -166,7 +167,7 @@ const GenericTx = props => {
                         }
                         {tx.transaction && tx.transaction.header && tx.transaction.header.metadata ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.metadata}><RiQuestionLine /></Tooltip></IconContext.Provider>Metadata</nobr></span>}>
-                                <Text copyable>{tx.transaction.header.metadata}</Text>
+                                <Data>{tx.transaction.header.metadata}</Data>
                             </Descriptions.Item>
                         ) :
                             null
@@ -179,6 +180,10 @@ const GenericTx = props => {
 
                 {(tx.type && tx.type === "sendTokens") &&
                     <TxSendTokens data={tx} />
+                }
+
+                {(tx.type && tx.type === "issueTokens") &&
+                    <TxIssueTokens data={tx} />
                 }
 
                 {(tx.type && tx.type === "syntheticDepositTokens") &&

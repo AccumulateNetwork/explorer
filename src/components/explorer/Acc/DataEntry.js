@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import moment from 'moment-timezone';
 
 import { Link } from 'react-router-dom';
 
@@ -7,6 +8,7 @@ import {
   Descriptions,
   Tooltip,
   Alert,
+  Skeleton,
   List
 } from 'antd';
 
@@ -17,12 +19,14 @@ import {
 
 import Data from '../../common/Data';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import getTs from '../../common/GetTS';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const DataEntry = props => {
 
     const entry = props.data;
+    const utcOffset = moment().utcOffset() / 60;
 
     var content = [];
     if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
@@ -33,9 +37,16 @@ const DataEntry = props => {
         }
     }
 
+    const [ts, setTs] = useState(null);
+    const [block, setBlock] = useState(null);
+
+    useEffect(() => {
+        let txId = props.data.data.txId.replace(/^acc:\/\/|@.*$/g, '');
+        getTs(txId, setTs, setBlock);
+    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
     return (
         <div>
-
             <Descriptions bordered column={1} size="middle">
 
                 {entry.type ? (
@@ -57,6 +68,14 @@ const DataEntry = props => {
                         Entry Info
                     </Title>
                     <Descriptions bordered column={1} size="middle">
+
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.timestamp}><RiQuestionLine /></Tooltip></IconContext.Provider>Timestamp (UTC{utcOffset < 0 ? '-' : '+'}{utcOffset})</nobr></span>}>
+                            {ts || ts===0 ? <Text>{ts ? <Text className="code">{moment(ts).format("YYYY-MM-DD HH:mm:ss")}</Text> : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
+                        </Descriptions.Item>
+
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.block}><RiQuestionLine /></Tooltip></IconContext.Provider>Block</nobr></span>}>
+                            {block || block===0 ? <Text>{block ? ( <Link className="code" to={'/block/' + block}>{block}</Link> ) : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
+                        </Descriptions.Item>
 
                         {entry.data.entryHash ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.entryHash}><RiQuestionLine /></Tooltip></IconContext.Provider>Entry Hash</nobr></span>}>
