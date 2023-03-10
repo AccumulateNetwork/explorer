@@ -25,7 +25,7 @@ const tooltipDescs = {
     keyData: "defines the set of Keys required to validate a transaction",
     keyType: "The type of Key defined as the hash of the public key for a signature",
     nonce: "number added to a hashed or encrypted—block in a blockchain",
-    sponsor: "The URL of the sponsor",
+    sponsor: "The URL of the principal",
     recipient: "the account that is receiving a transaction",
     threshold: "the required m of n to execute a transaction",
 };
