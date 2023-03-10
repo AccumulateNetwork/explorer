@@ -26,6 +26,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import Data from '../../common/Data';
 import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
+import TxIssueTokens from '../../common/TxIssueTokens';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 import Signatures from '../../common/Signatures';
@@ -37,11 +38,11 @@ const GenericTx = props => {
 
     const tx = props.data;
     var content = [];
-    if (props.data && props.data.data && props.data.data.entry && props.data.data.entry.data) {
-        if (Array.isArray(props.data.data.entry.data)) {
-            content = Array.from(props.data.data.entry.data, item => item || "")        
+    if (tx && tx.data && tx.data.entry && tx.data.entry.data) {
+        if (Array.isArray(tx.data.entry.data)) {
+            content = Array.from(tx.data.entry.data, item => item || "")        
         } else {
-            content.push(props.data.data.entry.data);
+            content.push(tx.data.entry.data);
         }
     }
 
@@ -56,8 +57,8 @@ const GenericTx = props => {
     };
 
     useEffect(() => {
-        getTs(props.data.transactionHash, setTs, setBlock);
-    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
+        getTs(tx.transactionHash, setTs, setBlock);
+    }, [tx]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
@@ -119,7 +120,7 @@ const GenericTx = props => {
                     }
 
                     {tx.sponsor ? (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Sponsor</nobr></span>}>
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Principal</nobr></span>}>
                             <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
                         </Descriptions.Item>
                     ) :
@@ -159,7 +160,7 @@ const GenericTx = props => {
                     <Descriptions bordered column={1} size="middle" layout="vertical">
                         {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
-                                <Data>{tx.transaction.header.memo}</Data>
+                                <Text copyable>{tx.transaction.header.memo}</Text>
                             </Descriptions.Item>
                         ) :
                             null
@@ -179,6 +180,10 @@ const GenericTx = props => {
 
                 {(tx.type && tx.type === "sendTokens") &&
                     <TxSendTokens data={tx} />
+                }
+
+                {(tx.type && tx.type === "issueTokens") &&
+                    <TxIssueTokens data={tx} />
                 }
 
                 {(tx.type && tx.type === "syntheticDepositTokens") &&

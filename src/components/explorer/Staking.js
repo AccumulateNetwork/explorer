@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-  Typography, Skeleton, Descriptions, Table, Tag, Tooltip, Row, Col, Card, Progress, message
+  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Row, Col, Card, Progress, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -16,6 +16,7 @@ import tooltipDescs from '../common/TooltipDescriptions';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
+const { TabPane } = Tabs;
 
 const Staking = () => {
 
@@ -239,15 +240,18 @@ const Staking = () => {
         <div>
             <Title level={2}>Staking</Title>
 
-            <div class="featured" style={{ marginBottom: 20 }}>
-                If you have ACME tokens, you can <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
-                    <strong>stake ACME<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
-                </a>
-                <br />
-                If you have WACME tokens (ERC20), you can convert WACME to ACME via <a href="https://bridge.accumulatenetwork.io/release" target="_blank" rel="noopener noreferrer">
-                    <strong>Accumulate Bridge<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
-                </a>
-            </div>
+            <Card style={{ marginBottom: 20 }}>
+            <Tabs defaultActiveKey="TabStaking">
+                <Tabs.TabPane tab="Staking" key="TabStaking">
+                    You can stake ACME following <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
+                        <strong>this guide<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
+                </Tabs.TabPane>
+                <Tabs.TabPane tab="Liquid staking" key="TabLiquidStaking">
+                    You can stake WACME in the liquid staking on <a href="https://accumulated.finance/" target="_blank" rel="noopener noreferrer">
+                        <strong>Accumulated Finance<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
+                </Tabs.TabPane>
+            </Tabs>
+            </Card>
 
             <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
                 <Row gutter={[16,16]}>
