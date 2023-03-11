@@ -580,3 +580,8 @@ h3.ant-typography .count, h4.ant-typography .count {
   margin-left: 3px;
   margin-right: 4px;
 }
+
+.name-tag {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
