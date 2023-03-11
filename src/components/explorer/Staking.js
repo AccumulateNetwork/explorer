@@ -39,6 +39,12 @@ const Staking = () => {
                             <Link to={'/acc/' + identity.replace("acc://", "")}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{identity}
                             </Link>
+                            {identity === "acc://accumulate.acme" ? (
+                                <div className="name-tag"><Tag color="orange">Accumulate Foundation</Tag></div>
+                            ) : null}
+                            {identity === "acc://accumulated.acme" ? (
+                                <div className="name-tag"><Tag color="orange">ACME Liquid Staking</Tag></div>
+                            ) : null}
                         </div>
                     )
                 } else {
@@ -206,7 +212,7 @@ const Staking = () => {
         }
     
         try {
-          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count );
+          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=balance&order=desc");
           if (response && response.data) {
 
             // workaround API bug response
