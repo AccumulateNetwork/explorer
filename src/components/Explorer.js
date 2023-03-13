@@ -182,14 +182,13 @@ const Explorer = props => {
                         <span className="nav-text">Staking</span>
                     </Link>
                 </Menu.Item>
-                {false ?  (
                 <Menu.Item key="/validators">
                     <Link to="/validators">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                ) : null}
+                )
                 <Menu.Item key="wallet">
                     <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
