@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-    Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Row, Col, Card, Progress, message
+    Typography, Descriptions, Table, Tag, Tooltip, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
+    RiExchangeLine, RiQuestionLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -74,7 +74,7 @@ const Validators = () => {
                 return (
                     <div>
                         <Link to={'/acc/' + row.stake.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
                         </Link>
                     </div>
                 )
@@ -88,7 +88,7 @@ const Validators = () => {
                 if (totalStaked || totalStaked === 0) {
                     return (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Total staked</nobr></span>}>
-                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
                         </Descriptions.Item>
                     )
                 } else {
@@ -138,6 +138,7 @@ const Validators = () => {
                     sort = "asc";
                     break;
                 case 'descend':
+                default:
                     sort = "desc";
                     break;
             }
