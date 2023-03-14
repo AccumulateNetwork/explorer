@@ -74,7 +74,7 @@ const Validators = () => {
                 return (
                     <div>
                         <Link to={'/acc/' + row.stake.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
                         </Link>
                     </div>
                 )
@@ -88,7 +88,7 @@ const Validators = () => {
                 if (totalStaked || totalStaked === 0) {
                     return (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Total staked</nobr></span>}>
-                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
                         </Descriptions.Item>
                     )
                 } else {
