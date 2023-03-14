@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiFileList2Line, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
+    RiInformationLine, RiFileList2Line, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -118,7 +118,7 @@ const Staking = () => {
                 return (
                     <div>
                         <Link to={'/acc/' + rewards.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{rewards}
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{rewards}
                         </Link>
                     </div>
                 )
@@ -320,20 +320,20 @@ const Staking = () => {
             {supply ? (
                 <Descriptions bordered column={1} size="middle">
                     <Descriptions.Item label="Max supply">
-                        {supply.maxTokens.toLocaleString('en-US')} ACME
+                        {supply.maxTokens.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ACME
                     </Descriptions.Item>
                     <Descriptions.Item label="Total supply">
-                        {supply.totalTokens.toLocaleString('en-US')} ACME
+                        {supply.totalTokens.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} strokeColor={"#1677ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.total/supply.max*100)}% of max supply is issued</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Circulating supply">
-                        {supply.circulatingTokens.toLocaleString('en-US')} ACME
+                        {supply.circulatingTokens.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.circulating/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.circulating/supply.total*100)}% of total supply is circulating</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Staked">
-                        {supply.stakedTokens.toLocaleString('en-US')} ACME
+                        {supply.stakedTokens.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.staked/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.staked/supply.total*100)}% of total supply is staked</Text>
                     </Descriptions.Item>

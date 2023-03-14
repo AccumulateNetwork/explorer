@@ -118,7 +118,7 @@ const TokenAccount = props => {
         const data = props.tx;
         const items = data.map((item, index) =>
             <Paragraph key={{index}}>
-                <Tooltip title={(item.amount / (10 ** props.token.precision)).toLocaleString('en-US') + " " + props.token.symbol}>
+                <Tooltip title={(item.amount / (10 ** props.token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + props.token.symbol}>
                     {(item.amount / (10 ** props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
                 </Tooltip>
             </Paragraph>
@@ -243,7 +243,7 @@ const TokenAccount = props => {
                 } else if (data.amount && data.token) {
                     return (
                         <Descriptions.Item>
-                            <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US') + " " + token.symbol}>
+                            <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + token.symbol}>
                                 {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
                             </Tooltip>
                         </Descriptions.Item>
@@ -341,7 +341,7 @@ const TokenAccount = props => {
                         {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                 {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
-                                <br /><Text className="formatted-balance">{parseFloat(tokenAccount.data.balance/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
+                                <br /><Text className="formatted-balance">{parseFloat(tokenAccount.data.balance/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
                             </Descriptions.Item>
                         ) :
                             null
