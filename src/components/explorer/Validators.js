@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiExchangeLine, RiQuestionLine
+    RiQuestionLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -35,7 +35,7 @@ const Validators = () => {
                     return (
                         <div>
                             <Link to={'/acc/' + identity.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{identity}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
                             </Link>
                             {identity === "acc://accumulate.acme" ? (
                                 <div className="name-tag"><Tag color="orange">Accumulate Foundation</Tag></div>
@@ -72,11 +72,11 @@ const Validators = () => {
             sorter: true,
             render: (row) => {
                 return (
-                    <div>
+                    <Tooltip overlayClassName="explorer-tooltip" title={row.stake}>
                         <Link to={'/acc/' + row.stake.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            {(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
                         </Link>
-                    </div>
+                    </Tooltip>
                 )
             }
         },
@@ -105,7 +105,7 @@ const Validators = () => {
                 return (
                     <div>
                         <Link to={'/acc/' + rewards.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{rewards}
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{rewards}
                         </Link>
                     </div>
                 )
