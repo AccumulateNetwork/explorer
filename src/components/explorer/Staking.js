@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
+    RiInformationLine, RiFileList2Line, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -37,7 +37,7 @@ const Staking = () => {
                     return (
                         <div>
                             <Link to={'/acc/' + identity.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{identity}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
                             </Link>
                             {identity === "acc://accumulate.acme" ? (
                                 <div className="name-tag"><Tag color="orange">Accumulate Foundation</Tag></div>
@@ -56,11 +56,18 @@ const Staking = () => {
         },
         {
             title: 'Type',
-            dataIndex: 'type',
-            render: (type) => {
-                if (type) {
+            render: (row) => {
+                if (row.type) {
                     return (
-                        <Tag color="green">{type}</Tag>
+                        <div>
+                            <Tag color="green">{row.type}</Tag>
+                            {row.delegate &&
+                                <div>
+                                    <Link to={'/acc/' + row.delegate.replace("acc://", "")}>
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.delegate}
+                                    </Link>
+                                </div>}
+                        </div>
                     )
                 } else {
                     return (
@@ -102,34 +109,16 @@ const Staking = () => {
             }
         },
         {
-            title: 'Delegation',
-            render: (row) => {
-                if (!row) {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }
-                if (row.delegate) {
-                    return (
-                        <div>
-                            <Link to={'/acc/' + row.delegate.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.delegate}
-                            </Link>
-                        </div>
-                    )
-                }
-                switch (row.acceptingDelegates) {
-                case 'yes':
-                    return (
-                        <Tag color="green">accepted</Tag>
-                    )
-                case 'no':
-                    return (
-                        <Tag color="volcano">not accepted</Tag>
-                    )
-                default:
-                    return null
-                }
+            title: 'Rewards',
+            dataIndex: 'rewards',
+            render: (rewards) => {
+                return (
+                    <div>
+                        <Link to={'/acc/' + rewards.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{rewards}
+                        </Link>
+                    </div>
+                )
             }
         },
         {
@@ -140,7 +129,7 @@ const Staking = () => {
                     return (
                         <div>
                             <Link to={'/acc/staking.acme/registered#data/' + entryHash }>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>staking.acme/registered#data/{entryHash}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiFileList2Line /></IconContext.Provider>{entryHash}
                             </Link>
                         </div>
                     )
