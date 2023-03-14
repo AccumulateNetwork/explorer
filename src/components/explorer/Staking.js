@@ -31,6 +31,7 @@ const Staking = () => {
     const columns = [
         {
             title: 'Identity',
+            sorter: true,
             dataIndex: 'identity',
             render: (identity) => {
                 if (identity) {
@@ -93,6 +94,8 @@ const Staking = () => {
         },
         {
             title: 'Balance',
+            sorter: true,
+            defaultSortOrder: 'descend',
             dataIndex: 'balance',
             render: (balance) => {
                 if (balance || balance===0) {
@@ -185,13 +188,15 @@ const Staking = () => {
 
     }
 
-    const getStakers = async (params = pagination) => {
+    const getStakers = async (params = pagination, filters, sorter) => {
         setTableIsLoading(true);
     
         let start = 0;
         let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
+        let sort = "desc";
+        let field = (sorter && sorter.field) || 'balance';
     
         if (params) {
             start = (params.current-1)*params.pageSize;
@@ -199,9 +204,21 @@ const Staking = () => {
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
-    
+
+        if (sorter) {
+            switch (sorter.order) {
+                case 'ascend':
+                    sort = "asc";
+                    break;
+                case 'descend':
+                default:
+                    sort = "desc";
+                    break;
+            }
+        }
+
         try {
-          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=balance&order=desc");
+          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
           if (response && response.data) {
 
             // workaround API bug response
@@ -342,6 +359,7 @@ const Staking = () => {
                 rowKey="entryHash"
                 loading={tableIsLoading}
                 onChange={getStakers}
+                sortDirections={["ascend", "descend", "ascend"]}
                 scroll={{ x: 'max-content' }}
             />
 

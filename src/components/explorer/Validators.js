@@ -83,6 +83,7 @@ const Validators = () => {
         {
             title: 'Total staked',
             sorter: true,
+            defaultSortOrder: 'descend',
             dataIndex: 'totalStaked',
             render: (totalStaked) => {
                 if (totalStaked || totalStaked === 0) {
