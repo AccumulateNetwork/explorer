@@ -74,7 +74,7 @@ const Validators = () => {
                 return (
                     <div>
                         <Link to={'/acc/' + row.stake.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{(row.balance / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
                         </Link>
                     </div>
                 )
@@ -88,7 +88,7 @@ const Validators = () => {
                 if (totalStaked || totalStaked === 0) {
                     return (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Total staked</nobr></span>}>
-                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })}Â ACME
+                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
                         </Descriptions.Item>
                     )
                 } else {
@@ -113,7 +113,7 @@ const Validators = () => {
         },
     ];
 
-    const getValidators = async (params = pagination, filters, sorter = { field: 'totalStaked' }) => {
+    const getValidators = async (params = pagination, filters, sorter) => {
         setTableIsLoading(true);
 
         let start = 0;
@@ -121,6 +121,7 @@ const Validators = () => {
         let showTotalStart = 1;
         let showTotalFinish = 10;
         let sort = "desc";
+        let field = (sorter && sorter.field) || 'totalStaked';
 
         if (params) {
             start = (params.current - 1) * params.pageSize;
@@ -131,7 +132,7 @@ const Validators = () => {
 
         if (sorter) {
             if (sorter?.column?.title === 'Self-stake')
-                sorter.field = 'balance'
+                field = 'balance'
 
             switch (sorter.order) {
                 case 'ascend':
@@ -144,7 +145,7 @@ const Validators = () => {
             }
         }
         try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/validators?start=" + start + "&count=" + count + "&sort=" + sorter.field + "&order=" + sort);
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/validators?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
             if (response && response.data) {
 
                 // workaround API bug response

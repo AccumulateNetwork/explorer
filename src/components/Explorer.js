@@ -188,7 +188,6 @@ const Explorer = props => {
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                )
                 <Menu.Item key="wallet">
                     <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
