@@ -45,6 +45,7 @@ const TokenAccount = props => {
             let params = {url: tokenAccount.data.tokenUrl};
             const response = await RPC.request("query", params);
             if (response && response.data) {
+                if (!response?.data?.precision) response.data.precision = 0
                 setToken(response.data);
             } else {
                 throw new Error("Token " + tokenAccount.data.tokenUrl + " not found");
@@ -119,7 +120,7 @@ const TokenAccount = props => {
         const items = data.map((item, index) =>
             <Paragraph key={{index}}>
                 <Tooltip title={(item.amount / (10 ** props.token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + props.token.symbol}>
-                    {(item.amount / (10 ** props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
+                    {(item.amount / (10 ** props.token.precision)).toFixed(props.token.precision).replace(/(\.\d*?[1-9])0+$/,"$1")} {props.token.symbol}
                 </Tooltip>
             </Paragraph>
         );
@@ -244,7 +245,7 @@ const TokenAccount = props => {
                     return (
                         <Descriptions.Item>
                             <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + token.symbol}>
-                                {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                                {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/(\.\d*?[1-9])0+$/,"$1")} {token.symbol}
                             </Tooltip>
                         </Descriptions.Item>
                     )
@@ -340,7 +341,7 @@ const TokenAccount = props => {
 
                         {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
+                                {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/(\.\d*?[1-9])0+$/,"$1")} {token.symbol}
                                 <br /><Text className="formatted-balance">{parseFloat(tokenAccount.data.balance/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
                             </Descriptions.Item>
                         ) :
