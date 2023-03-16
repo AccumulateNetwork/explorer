@@ -64,8 +64,8 @@ const TxIssueTokens = props => {
                 <br />
                 {(item.amount && token) ? (
                     <span>
-                        <Text>{(item.amount / (10 ** token.precision)).toFixed(token.precision).replace(/(\.\d*?[1-9])0+$/,"$1")} {token.symbol}</Text>
-                        <br /><Text className="formatted-balance">{parseFloat(item.amount / (10 ** token.precision)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {token.symbol}</Text>
+                        <Text>{(item.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")}Â {token.symbol}</Text>
+                        <br /><Text className="formatted-balance">{parseFloat(item.amount / (10 ** token.precision)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}Â {token.symbol}</Text>
                     </span>
                 ) :
                     null
