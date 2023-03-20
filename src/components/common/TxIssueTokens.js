@@ -21,6 +21,12 @@ const { Title, Text, Paragraph } = Typography;
 const TxIssueTokens = props => {
 
     const tx = props.data;
+    if (tx.data && tx.data.amount && tx.data.recipient) {
+        if (!tx.data.to) tx.data.to = []
+        tx.data.to.push({ amount: tx.data.amount, url: tx.data.recipient });
+        delete(tx.data.amount)
+        delete(tx.data.recipient);
+    }
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
@@ -31,9 +37,10 @@ const TxIssueTokens = props => {
             let params = {url: tx.origin};
             const response = await RPC.request("query", params);
             if (response && response.data) {
+                if (!response?.data?.precision) response.data.precision = 0
                 setToken(response.data);
             } else {
-                throw new Error("Token " + tx.origin + " not found"); 
+                throw new Error("Token " + tx.origin + " not found");
             }
         }
         catch(error) {
@@ -41,7 +48,7 @@ const TxIssueTokens = props => {
             setError(error.message);
         }
     }
-    
+
     //TODO Refactor (duplicated code in TxSendTokes.js)
     function TxTo(props) {
         const data = props.data;
@@ -57,8 +64,8 @@ const TxIssueTokens = props => {
                 <br />
                 {(item.amount && token) ? (
                     <span>
-                        <Text>{(item.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
-                        <br /><Text className="formatted-balance">{parseFloat(item.amount/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
+                        <Text>{(item.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                        <br /><Text className="formatted-balance">{parseFloat(item.amount / (10 ** token.precision)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {token.symbol}</Text>
                     </span>
                 ) :
                     null
@@ -77,25 +84,25 @@ const TxIssueTokens = props => {
     return (
         <div>
 
-        <Title level={4} style={{ marginTop: 30 }}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiInformationLine />
-            </IconContext.Provider>
-            Transaction Data
-        </Title>
+            <Title level={4} style={{ marginTop: 30 }}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiInformationLine />
+                </IconContext.Provider>
+                Transaction Data
+            </Title>
 
-        {tx && tx.data ? (
-            <Descriptions bordered column={1} size="middle">
+            {tx && tx.data ? (
+                <Descriptions bordered column={1} size="middle">
 
-                <Descriptions.Item label={"Token"}>
-                    {tx.origin ? (
-                        <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.origin}</Link>
-                        ) : 
-                        <Skeleton active paragraph={false} />
-                    }
-                </Descriptions.Item>
+                    <Descriptions.Item label={"Token"}>
+                        {tx.origin ? (
+                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.origin}</Link>
+                        ) :
+                            <Skeleton active paragraph={false} />
+                        }
+                    </Descriptions.Item>
 
-                    {tx.data.amount ? (
+                    {tx.data.amount > 0 ? (
                         <Descriptions.Item label={"Amount"}>
                             <Text>{tx.data.amount}</Text>
                         </Descriptions.Item>
@@ -111,30 +118,30 @@ const TxIssueTokens = props => {
                         null
                     }
 
-                {tx.data.to ? (
-                    <Descriptions.Item label={"To"} className={"align-top"}>
-                        {token &&
-                            <TxTo data={tx.data.to} />
-                        }
-                        {error &&
-                            <Alert message={error} type="error" showIcon />  
-                        }
-                        {(!error && !token) &&
-                            <Skeleton active title={false} />
-                        }
-                    </Descriptions.Item>
-                ) :
-                    null
-                }
+                    {tx.data.to ? (
+                        <Descriptions.Item label={"To"} className={"align-top"}>
+                            {token &&
+                                <TxTo data={tx.data.to} />
+                            }
+                            {error &&
+                                <Alert message={error} type="error" showIcon />
+                            }
+                            {(!error && !token) &&
+                                <Skeleton active title={false} />
+                            }
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
 
-            </Descriptions>
-        ) :
-            <div className="skeleton-holder">
-                <Skeleton active />
-            </div>
-        }
+                </Descriptions>
+            ) :
+                <div className="skeleton-holder">
+                    <Skeleton active />
+                </div>
+            }
 
-    </div>
+        </div>
     );
 }
 

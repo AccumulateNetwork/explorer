@@ -2,18 +2,22 @@ import React, { useState, useEffect } from 'react';
 
 import { Link } from 'react-router-dom';
 
+import Web3 from 'web3';
+
 import {
-  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Row, Col, Card, Progress, message
+  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Card, Progress, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiExchangeLine, RiQuestionLine, RiExternalLinkLine, RiHandCoinLine, RiShieldCheckLine, RiStackLine, RiPercentLine, RiAccountCircleLine, RiFlashlightLine, RiWaterFlashLine
+    RiInformationLine, RiFileList2Line, RiQuestionLine, RiExternalLinkLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
 import tooltipDescs from '../common/TooltipDescriptions';
 import axios from 'axios';
+
+import StakingRewardsABI from './../abi/StakingRewards.json';
 
 const { Title, Text } = Typography;
 
@@ -21,29 +25,42 @@ const Staking = () => {
 
     const [stakers, setStakers] = useState(null);
     const [supply, setSupply] = useState(null);
-    const [staking, setStaking] = useState(null);
     const [apr, setAPR] = useState(null);
+
+    const [srContract, setSRContract] = useState(null);
+
+    const [stakingRewardRate, setStakingRewardRate] = useState(0);
+    const [stakingRewardDuration, setStakingRewardDuration] = useState(0);
+    const [stakingTotal, setStakingTotal] = useState(0);
 
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalStakers, setTotalStakers] = useState(-1);
 
+    const calculateAPR = (rewardRate, rewardDuration, totalStaked) => {
+        const secondPerYear = 86400 * 365;
+        const rate = rewardRate * rewardDuration / totalStaked;
+        const apr = ((1+rate) ** (secondPerYear / rewardDuration) - 1) * 100;
+        return apr.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
     const columns = [
         {
             title: 'Identity',
+            sorter: true,
             dataIndex: 'identity',
             render: (identity) => {
                 if (identity) {
                     return (
                         <div>
                             <Link to={'/acc/' + identity.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{identity}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
                             </Link>
                             {identity === "acc://accumulate.acme" ? (
-                                <div className="name-tag"><Tag color="orange">Accumulate Foundation</Tag></div>
+                                <div className="name-tag"><Tag>Accumulate Foundation</Tag></div>
                             ) : null}
                             {identity === "acc://accumulated.acme" ? (
-                                <div className="name-tag"><Tag color="orange">ACME Liquid Staking</Tag></div>
+                                <div className="name-tag"><Tag>Liquid Staking</Tag></div>
                             ) : null}
                         </div>
                     )
@@ -56,26 +73,19 @@ const Staking = () => {
         },
         {
             title: 'Type',
-            dataIndex: 'type',
-            render: (type) => {
-                if (type) {
+            render: (row) => {
+                if (row.type) {
                     return (
-                        <Tag color="green">{type}</Tag>
-                    )
-                } else {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }
-            }
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            render: (status) => {
-                if (status) {
-                    return (
-                        <Tag color={status === 'registered' ? 'green' : 'orange'}>{status}</Tag>
+                        <div>
+                            <Tag color={row.delegate ? "green" : "cyan"}>{row.type}</Tag>
+                            {row.delegate &&
+                                <div>
+                                    <Link to={'/acc/' + row.delegate.replace("acc://", "")}>
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.delegate}
+                                    </Link>
+                                </div>
+                            }
+                        </div>
                     )
                 } else {
                     return (
@@ -86,6 +96,8 @@ const Staking = () => {
         },
         {
             title: 'Balance',
+            sorter: true,
+            defaultSortOrder: 'descend',
             dataIndex: 'balance',
             render: (balance) => {
                 if (balance || balance===0) {
@@ -102,34 +114,16 @@ const Staking = () => {
             }
         },
         {
-            title: 'Delegation',
-            render: (row) => {
-                if (!row) {
-                    return (
-                        <Text disabled>N/A</Text>
-                    )
-                }
-                if (row.delegate) {
-                    return (
-                        <div>
-                            <Link to={'/acc/' + row.delegate.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.delegate}
-                            </Link>
-                        </div>
-                    )
-                }
-                switch (row.acceptingDelegates) {
-                case 'yes':
-                    return (
-                        <Tag color="green">accepted</Tag>
-                    )
-                case 'no':
-                    return (
-                        <Tag color="volcano">not accepted</Tag>
-                    )
-                default:
-                    return null
-                }
+            title: 'Rewards',
+            dataIndex: 'rewards',
+            render: (rewards) => {
+                return (
+                    <div>
+                        <Link to={'/acc/' + rewards.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{rewards}
+                        </Link>
+                    </div>
+                )
             }
         },
         {
@@ -140,7 +134,7 @@ const Staking = () => {
                     return (
                         <div>
                             <Link to={'/acc/staking.acme/registered#data/' + entryHash }>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>staking.acme/registered#data/{entryHash}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiFileList2Line /></IconContext.Provider>{entryHash}
                             </Link>
                         </div>
                     )
@@ -177,32 +171,15 @@ const Staking = () => {
 
     }
 
-    const getStaking = async () => {
-
-        setStaking(null);
-
-        try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking");
-            if (response && response.data) {
-                setStaking(response.data);
-            } else {
-                throw new Error("Can not get staking stats metrics"); 
-            }
-        }
-        catch(error) {
-            setStaking(null);
-            message.error(error.message);
-        }
-
-    }
-
-    const getStakers = async (params = pagination) => {
+    const getStakers = async (params = pagination, filters, sorter) => {
         setTableIsLoading(true);
     
         let start = 0;
         let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
+        let sort = "desc";
+        let field = (sorter && sorter.field) || 'balance';
     
         if (params) {
             start = (params.current-1)*params.pageSize;
@@ -210,9 +187,21 @@ const Staking = () => {
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
-    
+
+        if (sorter) {
+            switch (sorter.order) {
+                case 'ascend':
+                    sort = "asc";
+                    break;
+                case 'descend':
+                default:
+                    sort = "desc";
+                    break;
+            }
+        }
+
         try {
-          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=balance&order=desc");
+          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
           if (response && response.data) {
 
             // workaround API bug response
@@ -228,7 +217,8 @@ const Staking = () => {
           }
         }
         catch(error) {
-          setStaking(null);
+          setStakers(null);
+          setTotalStakers(-1);
           message.error(error.message);
         }
         setTableIsLoading(false);
@@ -236,67 +226,43 @@ const Staking = () => {
 
     useEffect(() => {
         document.title = "Staking | Accumulate Explorer";
+        window.web3 = new Web3(process.env.REACT_APP_ETHEREUM_API);
         getSupply();
-        getStaking();
         getStakers();
+        if (process.env.REACT_APP_STAKING_REWARDS_CONTRACT) {
+            let contract = new window.web3.eth.Contract(StakingRewardsABI, process.env.REACT_APP_STAKING_REWARDS_CONTRACT);
+            setSRContract(contract);    
+        }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => {
+        if (srContract) {
+            srContract.methods.rewardRate().call().then(setStakingRewardRate);
+            srContract.methods.totalSupply().call().then(setStakingTotal);
+            srContract.methods.duration().call().then(setStakingRewardDuration);
+        }
+    }, [srContract]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
             <Title level={2}>Staking</Title>
 
-            <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
-                <Row gutter={[16,16]}>
-                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
-                    <Card>
-                        <span>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiPercentLine /></IconContext.Provider>
-                            <br />
-                            Staking APR
-                        </span>
-                        <Title level={4}>{apr ? <Text>{(apr*(10**2)).toFixed(2)}%</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
-                    <Card>
-                        <span>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>
-                            <br />
-                            Operators
-                        </span>
-                        <Title level={4}>{staking ? <Text>{staking.coreValidator + staking.coreFollower + staking.stakingValidator}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
-                    <Card>
-                        <span>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiHandCoinLine /></IconContext.Provider>
-                            <br />
-                            Delegates
-                        </span>
-                        <Title level={4}>{staking ? <Text>{staking.delegated}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
-                    </Card>
-                </Col>
-                <Col xs={24} sm={8} md={6} lg={5} xl={4}>
-                    <Card>
-                        <span>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>
-                            <br />
-                            Pure Stakers
-                        </span>
-                        <Title level={4}>{staking ? <Text>{staking.pure}</Text> : <Skeleton active title={true} paragraph={false} /> }</Title>
-                    </Card>
-                </Col>
-                </Row>
-            </div>
-
             <Card className="staking-card" style={{ marginBottom: 20 }}>
                 <Tabs defaultActiveKey="TabStaking">
-                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiFlashlightLine /></IconContext.Provider>ACME Staking</span>} key="TabStaking">
+                    <Tabs.TabPane tab={<span>ACME Staking
+                        {apr ?
+                            <Tag color="green" style={{marginLeft: 10}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
+                        : null}
+                    </span>} key="TabStaking">
                         You can stake ACME following <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
                             <strong>this guide<IconContext.Provider value={{ className: 'react-icons' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
                     </Tabs.TabPane>
-                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiWaterFlashLine /></IconContext.Provider>WACME Liquid Staking</span>} key="TabLiquidStaking">
+                    <Tabs.TabPane tab={<span>WACME Liquid Staking
+                        {stakingRewardRate && stakingRewardDuration && stakingRewardDuration > 0 && stakingTotal && stakingTotal > 0 ?
+                            <Tag color="green" style={{marginLeft: 10}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
+                            : null
+                        }
+                    </span>} key="TabLiquidStaking">
                         You can stake WACME in the liquid staking on <a href="https://accumulated.finance/" target="_blank" rel="noopener noreferrer">
                             <strong>Accumulated Finance<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
                     </Tabs.TabPane>
@@ -314,20 +280,20 @@ const Staking = () => {
             {supply ? (
                 <Descriptions bordered column={1} size="middle">
                     <Descriptions.Item label="Max supply">
-                        {supply.maxTokens.toLocaleString('en-US')} ACME
+                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                     </Descriptions.Item>
                     <Descriptions.Item label="Total supply">
-                        {supply.totalTokens.toLocaleString('en-US')} ACME
+                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} strokeColor={"#1677ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.total/supply.max*100)}% of max supply is issued</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Circulating supply">
-                        {supply.circulatingTokens.toLocaleString('en-US')} ACME
+                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.circulating/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.circulating/supply.total*100)}% of total supply is circulating</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Staked">
-                        {supply.stakedTokens.toLocaleString('en-US')} ACME
+                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.staked/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.staked/supply.total*100)}% of total supply is staked</Text>
                     </Descriptions.Item>
@@ -353,6 +319,7 @@ const Staking = () => {
                 rowKey="entryHash"
                 loading={tableIsLoading}
                 onChange={getStakers}
+                sortDirections={["ascend", "descend", "ascend"]}
                 scroll={{ x: 'max-content' }}
             />
 
