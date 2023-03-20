@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-    Typography, Descriptions, Table, Tag, Tooltip, message
+    Typography, Descriptions, Table, Tag, Tooltip, message, Card, Tabs
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiQuestionLine, RiAccountCircleLine
+    RiQuestionLine, RiAccountCircleLine, RiExternalLinkLine, RiShieldCheckLine, RiTrophyLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -38,10 +38,7 @@ const Validators = () => {
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
                             </Link>
                             {identity === "acc://accumulate.acme" ? (
-                                <div className="name-tag"><Tag color="orange">Accumulate Foundation</Tag></div>
-                            ) : null}
-                            {identity === "acc://accumulated.acme" ? (
-                                <div className="name-tag"><Tag color="orange">ACME Liquid Staking</Tag></div>
+                                <div className="name-tag"><Tag>Accumulate Foundation</Tag></div>
                             ) : null}
                         </div>
                     )
@@ -58,7 +55,7 @@ const Validators = () => {
             render: (type) => {
                 if (type) {
                     return (
-                        <Tag color="green">{type}</Tag>
+                        <Tag color="cyan">{type}</Tag>
                     )
                 } else {
                     return (
@@ -174,8 +171,27 @@ const Validators = () => {
 
     return (
         <div>
-            <Title level={3}>
-                Validators
+            <Title level={2}>Validators</Title>
+
+            <Card className="staking-card" style={{ marginBottom: 20 }}>
+                <Tabs defaultActiveKey="TabValidators">
+                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiShieldCheckLine /></IconContext.Provider>About Validators</span>} key="TabValidators">
+                        Validators are nodes that are responsible for verifying and validating transactions and adding them to the blockchain.<br />
+                        In Accumulate validators earn <strong>10%</strong> of staking rewards.
+                    </Tabs.TabPane>
+                    <Tabs.TabPane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiTrophyLine /></IconContext.Provider>Become Validator</span>} key="TabBecomeValidator">
+                        Anyone with a minimum stake of <strong>50,000 ACME</strong> can become a validator.<br />
+                        <a href="https://docs.accumulatenetwork.io/accumulate/setup/validator-node-setup-with-accman" target="_blank" rel="noopener noreferrer">
+                            <strong>Validator node setup<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
+                    </Tabs.TabPane>
+                </Tabs>
+            </Card>
+
+            <Title level={4}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiAccountCircleLine />
+                </IconContext.Provider>
+                Validators List
                 {totalValidators ? <Count count={totalValidators} /> : null}
             </Title>
 
