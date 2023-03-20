@@ -31,6 +31,7 @@ const TxSyntheticDepositTokens = props => {
             let params = {url: tx.data.token};
             const response = await RPC.request("query", params);
             if (response && response.data) {
+                if (!response?.data?.precision) response.data.precision = 0
                 setToken(response.data);
             } else {
                 throw new Error("Token " + tx.data.token + " not found"); 
@@ -71,7 +72,7 @@ const TxSyntheticDepositTokens = props => {
                     {token && tx.data.amount &&
                         <span>
                             <Text>{(tx.data.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
-                            <br /><Text className="formatted-balance">{parseFloat(tx.data.amount/(10**token.precision)).toLocaleString('en-US')} {token.symbol}</Text>
+                            <br /><Text className="formatted-balance">{parseFloat(tx.data.amount/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
                         </span>
                     }
                     {error &&
