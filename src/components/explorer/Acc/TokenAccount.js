@@ -246,7 +246,7 @@ const TokenAccount = props => {
                     return (
                         <Descriptions.Item>
                             <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + token.symbol}>
-                                {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0*$/, '')} {token.symbol}
+                                {tokenAmount(data.amount, token.precision, token.symbol)}
                             </Tooltip>
                         </Descriptions.Item>
                     )
