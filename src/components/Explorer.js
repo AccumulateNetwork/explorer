@@ -12,12 +12,12 @@ import {
 import { Layout, Menu, Dropdown, Button, Badge, Typography } from 'antd';
 
 import {
-  DownOutlined
+  DownOutlined, MoreOutlined
 } from '@ant-design/icons';
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -76,6 +76,7 @@ const Explorer = props => {
 
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
+  const [isMainnet, setIsMainnet] = useState(false);
 
   const handleMenuClick = e => {
     if (e.key === "logo") {
@@ -118,9 +119,11 @@ const Explorer = props => {
   useEffect(() => {
 
     if (process.env.REACT_APP_API_PATH) {
-      switch (process.env.REACT_APP_API_PATH) {
+        setIsMainnet(false);
+        switch (process.env.REACT_APP_API_PATH) {
         case 'https://mainnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Mainnet");
+            setIsMainnet(true);
             break;
         case 'https://testnet.accumulatenetwork.io/v2':
             setCurrentNetwork("Testnet");
@@ -167,9 +170,11 @@ const Explorer = props => {
                 <Menu.Item key="/blocks">
                     <Link to="/">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
-                        <span className="nav-text">Home</span>
+                        <span className="nav-text">Blocks</span>
                     </Link>
                 </Menu.Item>
+                {isMainnet &&
+                <>
                 <Menu.Item key="/tokens">
                     <Link to="/tokens">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>
@@ -188,18 +193,28 @@ const Explorer = props => {
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                <Menu.Item key="wallet">
-                    <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
-                        <span className="nav-text">Wallet</span>
-                    </a>
-                </Menu.Item>
-                <Menu.Item key="bridge">
-                    <a href="https://bridge.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
-                        <span className="nav-text">Bridge</span>
-                    </a>
-                </Menu.Item>
+                <Menu.SubMenu key="more" title="MORE" icon={<MoreOutlined />}>
+                    <Menu.Item key="wallet">
+                        <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
+                            <span className="nav-text">Wallet</span>
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item key="bridge">
+                        <a href="https://bridge.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
+                            <span className="nav-text">Bridge</span>
+                        </a>
+                    </Menu.Item>
+                    <Menu.Item key="liquidstaking">
+                        <a href="https://accumulated.finance" target="_blank" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiDropLine /></IconContext.Provider>
+                            <span className="nav-text">Liquid Staking</span>
+                        </a>
+                    </Menu.Item>
+                </Menu.SubMenu>
+                </>
+                }
             </Menu>
             {currentNetwork ? (
                 <Dropdown overlay={ExplorerSelect} trigger={['click']} className="network-badge">

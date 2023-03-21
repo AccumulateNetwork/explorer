@@ -15,8 +15,9 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
+import TxTo from './TxTo';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title } = Typography;
 
 const TxSendTokens = props => {
 
@@ -62,33 +63,6 @@ const TxSendTokens = props => {
         }
     }
     
-    function TxTo(props) {
-        const data = props.data;
-        const items = data.map((item, index) =>
-            <Paragraph key={{index}}>
-                {item.url ? (
-                    <Link to={'/acc/' + item.url.replace("acc://", "")}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
-                    </Link>
-                ) :
-                    <Text disabled>N/A</Text>
-                }
-                <br />
-                {(item.amount && token) ? (
-                    <span>
-                        <Text>{(item.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
-                        <br /><Text className="formatted-balance">{parseFloat(item.amount/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
-                    </span>
-                ) :
-                    null
-                }
-            </Paragraph>
-        );
-        return (
-            <span className="break-all">{items}</span>
-        );
-    }
-
     useEffect(() => {
         getToken();
     }, [tokenAccount]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -129,7 +103,7 @@ const TxSendTokens = props => {
                 {tx.data.to ? (
                     <Descriptions.Item label={"To"} className={"align-top"}>
                         {(tokenAccount && token) &&
-                            <TxTo data={tx.data.to} />
+                            <TxTo data={tx.data.to} token={token} />
                         }
                         {error &&
                             <Alert message={error} type="error" showIcon />  
