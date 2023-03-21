@@ -251,7 +251,7 @@ const Staking = () => {
                 <Tabs defaultActiveKey="TabStaking">
                     <Tabs.TabPane tab={<span>ACME Staking
                         {apr ?
-                            <Tag color="green" style={{marginLeft: 10}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
+                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
                         : null}
                     </span>} key="TabStaking">
                         You can stake ACME following <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
@@ -259,7 +259,7 @@ const Staking = () => {
                     </Tabs.TabPane>
                     <Tabs.TabPane tab={<span>WACME Liquid Staking
                         {stakingRewardRate && stakingRewardDuration && stakingRewardDuration > 0 && stakingTotal && stakingTotal > 0 ?
-                            <Tag color="green" style={{marginLeft: 10}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
+                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
                             : null
                         }
                     </span>} key="TabLiquidStaking">

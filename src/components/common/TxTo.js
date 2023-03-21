@@ -9,6 +9,8 @@ import {
     Typography, Button
 } from 'antd';
 
+import tokenAmount from './TokenAmount';
+
 const { Text, Paragraph } = Typography;
 
 export default function TxTo(props) {
@@ -27,7 +29,7 @@ export default function TxTo(props) {
             <br />
             {(item.amount && token) ? (
                 <span>
-                    <Text>{(item.amount/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
+                    <Text>{tokenAmount(item.amount, token.precision, token.symbol)}</Text>
                     <br /><Text className="formatted-balance">{parseFloat(item.amount/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
                 </span>
             ) :
