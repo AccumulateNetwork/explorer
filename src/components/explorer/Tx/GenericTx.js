@@ -28,6 +28,7 @@ import TxStatus from '../../common/TxStatus';
 import TxSendTokens from '../../common/TxSendTokens';
 import TxIssueTokens from '../../common/TxIssueTokens';
 import TxUpdateKeyPage from '../../common/TxUpdateKeyPage';
+import TxUpdateAccountAuth from '../../common/TxUpdateAccountAuth';
 import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 import Signatures from '../../common/Signatures';
@@ -189,6 +190,10 @@ const GenericTx = props => {
 
                 {(tx.type && tx.type === "updateKeyPage") &&
                     <TxUpdateKeyPage data={tx} />
+                }
+
+                {(tx.type && tx.type === "updateAccountAuth") &&
+                    <TxUpdateAccountAuth data={tx} />
                 }
 
                 {(tx.type && tx.type === "syntheticDepositTokens") &&

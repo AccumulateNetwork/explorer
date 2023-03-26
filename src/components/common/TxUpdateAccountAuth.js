@@ -17,7 +17,7 @@ import TxOperation from './TxOperations';
 
 const { Title, Text } = Typography;
 
-const TxUpdateKeyPage = props => {
+const TxUpdateAccountAuth = props => {
 
     const tx = props.data;
 
@@ -28,7 +28,7 @@ const TxUpdateKeyPage = props => {
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiInformationLine />
                 </IconContext.Provider>
-                Transaction Data
+                Transaction Data!
             </Title>
 
             {tx && tx.data ? (
@@ -50,9 +50,9 @@ const TxUpdateKeyPage = props => {
                         null
                     }
 
-                    {tx.data.operation ? (
+                    {tx.data.operations ? (
                         <Descriptions.Item label={"To"} className={"align-top"}>
-                            <TxOperation data={tx.data.operation} />
+                            <TxOperation data={tx.data.operations} />
                         </Descriptions.Item>
                     ) :
                         null
@@ -69,4 +69,4 @@ const TxUpdateKeyPage = props => {
     );
 }
 
-export default TxUpdateKeyPage;
+export default TxUpdateAccountAuth;

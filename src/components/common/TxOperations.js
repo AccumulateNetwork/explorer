@@ -16,7 +16,7 @@ export default function TxOperations(props) {
     const [showAll, setShowAll] = useState(false);
     const items = data.slice(0, showAll ? data.length : 5).map((item, index) =>
         <Paragraph key={{index}}>
-            {item.entry.delegate ? (
+            {item?.entry?.delegate ? (
                 <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
                 </Link>
