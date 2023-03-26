@@ -16,6 +16,7 @@ import {
 import Count from '../common/Count';
 import tooltipDescs from '../common/TooltipDescriptions';
 import axios from 'axios';
+import getSupply from '../common/GetSupply';
 
 import StakingRewardsABI from './../abi/StakingRewards.json';
 
@@ -147,30 +148,6 @@ const Staking = () => {
         },
     ];
 
-    const getSupply = async () => {
-
-        setSupply(null);
-
-        try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/supply");
-            if (response && response.data) {
-                setSupply(response.data);
-            } else {
-                throw new Error("Can not get ACME supply metrics"); 
-            }
-            const unissued = (Number(response.data.max) - Number(response.data.total))/(10**8);
-            const rewards = unissued * 0.16 / 365 * 7;
-            const rate = rewards / (response.data.staked/(10**8));
-            const apr = (1+rate) ** 52 - 1;
-            setAPR(apr);
-        }
-        catch(error) {
-            setSupply(null);
-            message.error(error.message);
-        }
-
-    }
-
     const getStakers = async (params = pagination, filters, sorter) => {
         setTableIsLoading(true);
     
@@ -227,7 +204,7 @@ const Staking = () => {
     useEffect(() => {
         document.title = "Staking | Accumulate Explorer";
         window.web3 = new Web3(process.env.REACT_APP_ETHEREUM_API);
-        getSupply();
+        getSupply(setSupply, setAPR);
         getStakers();
         if (process.env.REACT_APP_STAKING_REWARDS_CONTRACT) {
             let contract = new window.web3.eth.Contract(StakingRewardsABI, process.env.REACT_APP_STAKING_REWARDS_CONTRACT);
