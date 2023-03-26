@@ -15,7 +15,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
-import tokenAmount from './TokenAmount';
+import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 
 const { Title, Text } = Typography;
 
@@ -73,7 +73,7 @@ const TxSyntheticDepositTokens = props => {
                     {token && tx.data.amount &&
                         <span>
                             <Text>{tokenAmount(tx.data.amount, token.precision, token.symbol)}</Text>
-                            <br /><Text className="formatted-balance">{parseFloat(tx.data.amount/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
+                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.data.amount, token.precision, token.symbol)}</Text>
                         </span>
                     }
                     {error &&

@@ -16,21 +16,20 @@ import {
 
 import RPC from '../common/RPC';
 import TxTo from './TxTo';
-import tokenAmount from './TokenAmount';
+import {tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 
 const { Title, Text } = Typography;
 
 const TxIssueTokens = props => {
 
     const tx = props.data;
-    if (tx.data && tx.data.amount && tx.data.amount === "0" && tx.data.to && tx.data.to.length > 0 && !tx.data.recipient) {
-        tx.data.amount = tx.data.to.reduce((accumulator, currentValue) => accumulator + Number(currentValue.amount), 0);
-        console.log(`tx.data.amount = ${tx.data.amount}`);
-    } else if (tx.data && tx.data.amount && tx.data.recipient) {
+    if (tx.data && tx.data.amount && tx.data.recipient) {
         if (!tx.data.to) tx.data.to = []
         tx.data.to.push({ amount: tx.data.amount, url: tx.data.recipient });
         delete(tx.data.amount)
         delete(tx.data.recipient);
+    } else if (tx?.data?.to?.length > 0 && !tx.data.recipient) {
+        tx.data.amount = tx.data.to.reduce((accumulator, currentValue) => accumulator + Number(currentValue.amount), 0);
     }
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
@@ -82,7 +81,7 @@ const TxIssueTokens = props => {
                     {tx.data.amount > 0 && token ? (
                         <Descriptions.Item label={"Amount"}>
                             <Text>{tokenAmount(tx.data.amount, token.precision, token.symbol)}</Text>
-                            <br /><Text className="formatted-balance">{parseFloat(tx.data.amount/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
+                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.data.amount, token.precision, token.symbol)}</Text>
                         </Descriptions.Item>
                     ) :
                         null
