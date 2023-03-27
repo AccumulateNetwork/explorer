@@ -3,16 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-    Typography, Descriptions, Table, Tag, Tooltip, message, Card, Tabs
+    Typography, Table, Tag, Tooltip, message, Card, Tabs, Progress
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiQuestionLine, RiAccountCircleLine, RiExternalLinkLine, RiShieldCheckLine, RiTrophyLine
+    RiAccountCircleLine, RiExternalLinkLine, RiShieldCheckLine, RiTrophyLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
-import tooltipDescs from '../common/TooltipDescriptions';
+import { tokenAmountToLocaleString } from '../common/TokenAmount'
+import getSupply from '../common/GetSupply';
 import axios from 'axios';
 
 const { Title, Text } = Typography;
@@ -21,7 +22,7 @@ const Validators = () => {
 
     const [validators, setValidators] = useState(null);
     const [totalValidators, setTotalValidators] = useState(-1);
-
+    const [supply, setSupply] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1 });
 
@@ -84,10 +85,13 @@ const Validators = () => {
             dataIndex: 'totalStaked',
             render: (totalStaked) => {
                 if (totalStaked || totalStaked === 0) {
+                    const pt = (totalStaked / supply.staked * 100).toFixed(2)
                     return (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Total staked</nobr></span>}>
-                            {(totalStaked / (10 ** 8)).toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
-                        </Descriptions.Item>
+                        <Text>
+                            <Text>{tokenAmountToLocaleString(totalStaked, 8, "ACME", 0, 0)}</Text>
+                            <br/>
+                            <Progress percent={pt} strokeColor={"#1677ff"} showInfo={true} className="staking-progress" />
+                        </Text>
                     )
                 } else {
                     return (
@@ -166,6 +170,7 @@ const Validators = () => {
 
     useEffect(() => {
         document.title = "Validators | Accumulate Explorer";
+        getSupply(setSupply);
         getValidators();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
