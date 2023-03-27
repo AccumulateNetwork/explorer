@@ -6,38 +6,44 @@ import {
 } from 'react-icons/ri';
 
 import {
-    Typography, Button
+    Button, List
 } from 'antd';
-
-const { Text, Paragraph } = Typography;
 
 export default function TxOperations(props) {
     const data = props.data; //Always an array
     const [showAll, setShowAll] = useState(false);
     const items = data.slice(0, showAll ? data.length : 5).map((item, index) =>
-        <Paragraph key={{index}}>
-            {item?.entry?.delegate ? (
-                <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
-                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
-                </Link>
-            ) :
-                <Text disabled>N/A</Text>
+        <List.Item key={{index}}>
+            {item.type &&
+                <>
+                    Type: {item.type}
+                </>
             }
-            <br />
-            {(item.type) ? (
-                <span>
-                    <Text>{item.type}</Text>
-                </span>
-            ) :
-                null
+            {item?.entry?.delegate &&
+                <>
+                    <br />
+                    <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
+                    </Link>
+                </>
             }
-        </Paragraph>
+            {item?.authority &&
+                <>
+                    <br />
+                    <Link to={'/acc/' + item.authority.replace("acc://", "")}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}
+                    </Link>
+                </>
+            }
+        </List.Item>
     );
     let extra = data.length - 5;
     if (extra > 0 && !showAll) {
-        items.push(<Paragraph key={"more"}><Button onClick={e => setShowAll(true) } >+{extra} more</Button></Paragraph>);
+        items.push(<List.Item key={"more"}><Button onClick={e => setShowAll(true) } >+{extra} more</Button></List.Item>);
     }
     return (
-        <span className="break-all">{items}</span>
+        <List>
+            {items}
+        </List>
     );
 }

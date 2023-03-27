@@ -13,7 +13,7 @@ import {
     RiInformationLine, RiCoinLine
 } from 'react-icons/ri';
 
-import TxOperation from './TxOperations';
+import TxOperations from './TxOperations';
 
 const { Title, Text } = Typography;
 
@@ -28,7 +28,7 @@ const TxUpdateAccountAuth = props => {
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiInformationLine />
                 </IconContext.Provider>
-                Transaction Data!
+                Transaction Data
             </Title>
 
             {tx && tx.data ? (
@@ -51,8 +51,8 @@ const TxUpdateAccountAuth = props => {
                     }
 
                     {tx.data.operations ? (
-                        <Descriptions.Item label={"To"} className={"align-top"}>
-                            <TxOperation data={tx.data.operations} />
+                        <Descriptions.Item label={"Operations"} className={"align-top"}>
+                            <TxOperations data={tx.data.operations} />
                         </Descriptions.Item>
                     ) :
                         null

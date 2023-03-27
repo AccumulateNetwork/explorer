@@ -13,7 +13,7 @@ import {
     RiInformationLine, RiCoinLine
 } from 'react-icons/ri';
 
-import TxOperation from './TxOperations';
+import TxOperations from './TxOperations';
 
 const { Title, Text } = Typography;
 
@@ -51,8 +51,8 @@ const TxUpdateKeyPage = props => {
                     }
 
                     {tx.data.operation ? (
-                        <Descriptions.Item label={"To"} className={"align-top"}>
-                            <TxOperation data={tx.data.operation} />
+                        <Descriptions.Item label={"Operations"} className={"align-top"}>
+                            <TxOperations data={tx.data.operation} />
                         </Descriptions.Item>
                     ) :
                         null
