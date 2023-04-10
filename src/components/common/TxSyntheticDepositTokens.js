@@ -25,6 +25,7 @@ const TxSyntheticDepositTokens = props => {
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
+    //TODO Refactor
     const getToken = async () => {
         setToken(null);
         setError(null);

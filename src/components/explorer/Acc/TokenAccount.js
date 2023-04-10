@@ -37,6 +37,7 @@ const TokenAccount = props => {
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalTxs, setTotalTxs] = useState(-1);
 
+    //TODO Refactor
     const getToken = async () => {
         setPagination({...pagination, current: 1});
         setToken(null);
@@ -340,7 +341,7 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
+                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                 {tokenAmount(tokenAccount.data.balance, token.precision, token.symbol)}
                                 <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tokenAccount.data.balance, token.precision, token.symbol)}</Text>

@@ -44,6 +44,7 @@ const TxSendTokens = props => {
         }
     }
 
+    //TODO Refactor
     const getToken = async () => {
         setToken(null);
         setError(null);
