@@ -14,30 +14,24 @@ export default function TxOperations(props) {
     const [showAll, setShowAll] = useState(props.showAll || false);
     const items = data.slice(0, showAll ? data.length : 5).map((item, index) =>
         <List.Item key={{index}}>
+            <div>
             {item.type &&
-                <>
                 <Tag color="green">{item.type}</Tag>
-                </>
             }
             {item.threshold &&
-                <>
-                    {item.threshold}
-                </>
+                item.threshold
             }
             {item?.entry?.delegate &&
-                <>
-                    <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
-                    </Link>
-                </>
+                <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
+                </Link>
             }
             {item?.authority &&
-                <>
-                    <Link to={'/acc/' + item.authority.replace("acc://", "")}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}
-                    </Link>
-                </>
+                <Link to={'/acc/' + item.authority.replace("acc://", "")}>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}
+                </Link>
             }
+            </div>
         </List.Item>
     );
     let extra = data.length - 5;
