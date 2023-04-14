@@ -12,7 +12,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiCoinLine
+    RiInformationLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
@@ -72,9 +72,9 @@ const TxIssueTokens = props => {
             {tx && tx.data ? (
                 <Descriptions bordered column={1} size="middle">
 
-                    <Descriptions.Item label={"Token"}>
+                    <Descriptions.Item label={"Origin"}>
                         {tx.origin ? (
-                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.origin}</Link>
+                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.origin}</Link>
                         ) :
                             <Skeleton active paragraph={false} />
                         }
