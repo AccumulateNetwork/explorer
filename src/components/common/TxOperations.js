@@ -6,22 +6,26 @@ import {
 } from 'react-icons/ri';
 
 import {
-    Button, List
+    Button, List, Tag
 } from 'antd';
 
 export default function TxOperations(props) {
     const data = props.data; //Always an array
-    const [showAll, setShowAll] = useState(false);
+    const [showAll, setShowAll] = useState(props.showAll || false);
     const items = data.slice(0, showAll ? data.length : 5).map((item, index) =>
         <List.Item key={{index}}>
             {item.type &&
                 <>
-                    Type: {item.type}
+                <Tag color="green">{item.type}</Tag>
+                </>
+            }
+            {item.threshold &&
+                <>
+                    {item.threshold}
                 </>
             }
             {item?.entry?.delegate &&
                 <>
-                    <br />
                     <Link to={'/acc/' + item.entry.delegate.replace("acc://", "")}>
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.entry.delegate}
                     </Link>
@@ -29,7 +33,6 @@ export default function TxOperations(props) {
             }
             {item?.authority &&
                 <>
-                    <br />
                     <Link to={'/acc/' + item.authority.replace("acc://", "")}>
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}
                     </Link>

@@ -6,6 +6,7 @@ import {
     Typography,
     Skeleton,
     Descriptions,
+    Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -15,7 +16,7 @@ import {
 
 import TxOperations from './TxOperations';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const TxUpdateAccountAuth = props => {
 
@@ -44,7 +45,7 @@ const TxUpdateAccountAuth = props => {
 
                     {tx.data.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Text>{tx.data.type}</Text>
+                            <Tag color="green">{tx.data.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null

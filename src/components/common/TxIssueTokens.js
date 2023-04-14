@@ -6,7 +6,8 @@ import {
     Typography,
     Skeleton,
     Descriptions,
-    Alert
+    Alert,
+    Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -90,7 +91,7 @@ const TxIssueTokens = props => {
 
                     {tx.data.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Text>{tx.data.type}</Text>
+                            <Tag color="green">{tx.data.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null
