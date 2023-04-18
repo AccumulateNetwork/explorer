@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Web3 from 'web3';
 
 import {
-  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Card, Progress, message
+  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Card, Progress, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -49,18 +49,19 @@ const Staking = () => {
         {
             title: 'Identity',
             sorter: true,
-            dataIndex: 'identity',
-            render: (identity) => {
-                if (identity) {
+            render: (row) => {
+                if (row.identity) {
                     return (
                         <div>
-                            <Link to={'/acc/' + identity.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
+                    <Tooltip overlayClassName="explorer-tooltip" title={row.stake}>
+                            <Link to={'/acc/' + row.stake.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.identity}
                             </Link>
-                            {identity === "acc://accumulate.acme" ? (
+                    </Tooltip>
+                            {row.identity === "acc://accumulate.acme" ? (
                                 <div className="name-tag"><Tag>Accumulate Foundation</Tag></div>
                             ) : null}
-                            {identity === "acc://accumulated.acme" ? (
+                            {row.identity === "acc://accumulated.acme" ? (
                                 <div className="name-tag"><Tag>Liquid Staking</Tag></div>
                             ) : null}
                         </div>
@@ -260,20 +261,20 @@ const Staking = () => {
             {supply ? (
                 <Descriptions bordered column={1} size="middle">
                     <Descriptions.Item label="Max supply">
-                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
+                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                     </Descriptions.Item>
                     <Descriptions.Item label="Total supply">
-                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
+                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} strokeColor={"#1677ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.total/supply.max*100)}% of max supply is issued</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Circulating supply">
-                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
+                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.circulating/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.circulating/supply.total*100)}% of total supply is circulating</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Staked">
-                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
+                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.staked/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.staked/supply.total*100)}% of total supply is staked</Text>
                     </Descriptions.Item>
