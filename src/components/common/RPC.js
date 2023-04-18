@@ -9,8 +9,9 @@ class RPC {
     axios.defaults.headers.post['Content-Type'] = 'application/json';
   }
   
-  request = (method, params = null, showMessage = 0) => {
-    const result = axios.post('', {
+  request = (method, params = null, ver = 'v2') => {
+    const showMessage = 0
+    const result = axios.post(process.env.REACT_APP_API_PATH + '/' + ver, {
       jsonrpc: '2.0',
       id: ++this.currId,
       method,

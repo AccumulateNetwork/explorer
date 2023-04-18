@@ -121,11 +121,11 @@ const Explorer = props => {
     if (process.env.REACT_APP_API_PATH) {
         setIsMainnet(false);
         switch (process.env.REACT_APP_API_PATH) {
-        case 'https://mainnet.accumulatenetwork.io/v2':
+        case 'https://mainnet.accumulatenetwork.io':
             setCurrentNetwork("Mainnet");
             setIsMainnet(true);
             break;
-        case 'https://testnet.accumulatenetwork.io/v2':
+        case 'https://testnet.accumulatenetwork.io':
             setCurrentNetwork("Testnet");
             break;
         default:
