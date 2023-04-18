@@ -261,20 +261,20 @@ const Staking = () => {
             {supply ? (
                 <Descriptions bordered column={1} size="middle">
                     <Descriptions.Item label="Max supply">
-                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
+                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
                     </Descriptions.Item>
                     <Descriptions.Item label="Total supply">
-                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
+                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} strokeColor={"#1677ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.total/supply.max*100)}% of max supply is issued</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Circulating supply">
-                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
+                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.circulating/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.circulating/supply.total*100)}% of total supply is circulating</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Staked">
-                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
+                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})}Â ACME
                         <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.staked/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
                         <Text type="secondary">{Math.round(supply.staked/supply.total*100)}% of total supply is staked</Text>
                     </Descriptions.Item>
