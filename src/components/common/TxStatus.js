@@ -1,13 +1,14 @@
 import React from 'react';
 
 import {
-    Tag
+    Tag, Tooltip
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
     RiCheckLine,
-    RiLoader4Line
+    RiLoader4Line,
+    RiErrorWarningLine
 } from 'react-icons/ri';
 
 const TxStatus = props => {
@@ -23,11 +24,16 @@ const TxStatus = props => {
                         <Tag color="cyan" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig</Tag>
                         </span>
                     }
-                    {tx.status.delivered &&
+                    {tx.status.code === "delivered" &&
                         <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiCheckLine/></IconContext.Provider>Delivered</Tag>
                     }
+                    {tx.status.code === "unknownError" &&
+                        <Tooltip overlayClassName="explorer-tooltip" title={"Error " + tx.status?.codeNum + ": " + tx.status?.error?.message}>
+                            <Tag color="red" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiErrorWarningLine/></IconContext.Provider>Error</Tag>
+                        </Tooltip>
+                    }
                     {tx.signatures && tx.signatures.length > 0 ? (
-                        <Tag style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Signatures: <strong>{tx.signatures.filter(signature => signature.signer || signature.delegator).length}</strong></Tag>
+                        <Tag style={{textTransform: "uppercase"}}>Signatures: <strong>{tx.signatures.filter(signature => signature.signer || signature.delegator).length}</strong></Tag>
                     ) : null
                     }
                 </div>

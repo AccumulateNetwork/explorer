@@ -36,7 +36,7 @@ function SearchForm() {
     setSearchTs(moment());
     setSearchText(value);
     setSearchIsLoading(true);
-    var ishash = /^\b[0-9A-Fa-f]{64}\b/.test(value);
+    var ishash = /^[A-Fa-f0-9]{64}$/.test(value);
     var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
         redirect('/block/'+value);
