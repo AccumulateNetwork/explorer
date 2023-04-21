@@ -21,6 +21,7 @@ import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
 import Count from '../../common/Count';
+import { tokenAmount, tokenAmountToLocaleString } from '../../common/TokenAmount';
 import TxChain from '../../common/TxChain';
 import Authorities from '../../common/Authorities';
 
@@ -36,6 +37,7 @@ const TokenAccount = props => {
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalTxs, setTotalTxs] = useState(-1);
 
+    //TODO Refactor
     const getToken = async () => {
         setPagination({...pagination, current: 1});
         setToken(null);
@@ -119,8 +121,8 @@ const TokenAccount = props => {
         const data = props.tx;
         const items = data.map((item, index) =>
             <Paragraph key={{index}}>
-                <Tooltip title={(item.amount / (10 ** props.token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + props.token.symbol}>
-                    {(item.amount / (10 ** props.token.precision)).toFixed(props.token.precision).replace(/\.?0+$/, "")} {props.token.symbol}
+                <Tooltip title={tokenAmountToLocaleString(item.amount, props.token.precision, props.token.symbol)}>
+                    {tokenAmount(item.amount, props.token.precision, props.token.symbol)}
                 </Tooltip>
             </Paragraph>
         );
@@ -244,8 +246,8 @@ const TokenAccount = props => {
                 } else if (data.amount && data.token) {
                     return (
                         <Descriptions.Item>
-                            <Tooltip title={(data.amount / (10 ** token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " " + token.symbol}>
-                                {(data.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0*$/, '')} {token.symbol}
+                            <Tooltip title={tokenAmountToLocaleString(data.amount, token.precision, token.symbol)}>
+                                {tokenAmount(data.amount, token.precision, token.symbol)}
                             </Tooltip>
                         </Descriptions.Item>
                     )
@@ -339,10 +341,10 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.precision && token.symbol) ? (
+                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {(tokenAccount.data.balance/(10**token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}
-                                <br /><Text className="formatted-balance">{parseFloat(tokenAccount.data.balance/(10**token.precision)).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} {token.symbol}</Text>
+                                {tokenAmount(tokenAccount.data.balance, token.precision, token.symbol)}
+                                <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tokenAccount.data.balance, token.precision, token.symbol)}</Text>
                             </Descriptions.Item>
                         ) :
                             null

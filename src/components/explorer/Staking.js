@@ -10,12 +10,13 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiFileList2Line, RiQuestionLine, RiExternalLinkLine, RiAccountCircleLine
+    RiInformationLine, RiFileList2Line, RiExternalLinkLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
-import tooltipDescs from '../common/TooltipDescriptions';
+import { tokenAmountToLocaleString } from '../common/TokenAmount'
 import axios from 'axios';
+import getSupply from '../common/GetSupply';
 
 import StakingRewardsABI from './../abi/StakingRewards.json';
 
@@ -48,18 +49,19 @@ const Staking = () => {
         {
             title: 'Identity',
             sorter: true,
-            dataIndex: 'identity',
-            render: (identity) => {
-                if (identity) {
+            render: (row) => {
+                if (row.identity) {
                     return (
                         <div>
-                            <Link to={'/acc/' + identity.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{identity}
+                    <Tooltip overlayClassName="explorer-tooltip" title={row.stake}>
+                            <Link to={'/acc/' + row.stake.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.identity}
                             </Link>
-                            {identity === "acc://accumulate.acme" ? (
+                    </Tooltip>
+                            {row.identity === "acc://accumulate.acme" ? (
                                 <div className="name-tag"><Tag>Accumulate Foundation</Tag></div>
                             ) : null}
-                            {identity === "acc://accumulated.acme" ? (
+                            {row.identity === "acc://accumulated.acme" ? (
                                 <div className="name-tag"><Tag>Liquid Staking</Tag></div>
                             ) : null}
                         </div>
@@ -100,11 +102,14 @@ const Staking = () => {
             defaultSortOrder: 'descend',
             dataIndex: 'balance',
             render: (balance) => {
-                if (balance || balance===0) {
+                if ((balance || balance===0) && supply?.staked) {
+                    const pt = (balance / supply.staked * 100).toFixed(2)
                     return (
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                            {(balance / (10**8)).toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
-                        </Descriptions.Item>
+                        <span>
+                            <Text>{tokenAmountToLocaleString(balance, 8, "ACME", 0, 0)}</Text>
+                            <br/>
+                            <Progress percent={pt} strokeColor={"#1677ff"} showInfo={true} className="staking-progress" />
+                        </span>
                     )
                 } else {
                     return (
@@ -146,30 +151,6 @@ const Staking = () => {
             }
         },
     ];
-
-    const getSupply = async () => {
-
-        setSupply(null);
-
-        try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/supply");
-            if (response && response.data) {
-                setSupply(response.data);
-            } else {
-                throw new Error("Can not get ACME supply metrics"); 
-            }
-            const unissued = (Number(response.data.max) - Number(response.data.total))/(10**8);
-            const rewards = unissued * 0.16 / 365 * 7;
-            const rate = rewards / (response.data.staked/(10**8));
-            const apr = (1+rate) ** 52 - 1;
-            setAPR(apr);
-        }
-        catch(error) {
-            setSupply(null);
-            message.error(error.message);
-        }
-
-    }
 
     const getStakers = async (params = pagination, filters, sorter) => {
         setTableIsLoading(true);
@@ -227,7 +208,7 @@ const Staking = () => {
     useEffect(() => {
         document.title = "Staking | Accumulate Explorer";
         window.web3 = new Web3(process.env.REACT_APP_ETHEREUM_API);
-        getSupply();
+        getSupply(setSupply, setAPR);
         getStakers();
         if (process.env.REACT_APP_STAKING_REWARDS_CONTRACT) {
             let contract = new window.web3.eth.Contract(StakingRewardsABI, process.env.REACT_APP_STAKING_REWARDS_CONTRACT);
@@ -251,7 +232,7 @@ const Staking = () => {
                 <Tabs defaultActiveKey="TabStaking">
                     <Tabs.TabPane tab={<span>ACME Staking
                         {apr ?
-                            <Tag color="green" style={{marginLeft: 10}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
+                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
                         : null}
                     </span>} key="TabStaking">
                         You can stake ACME following <a href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens" target="_blank" rel="noopener noreferrer">
@@ -259,7 +240,7 @@ const Staking = () => {
                     </Tabs.TabPane>
                     <Tabs.TabPane tab={<span>WACME Liquid Staking
                         {stakingRewardRate && stakingRewardDuration && stakingRewardDuration > 0 && stakingTotal && stakingTotal > 0 ?
-                            <Tag color="green" style={{marginLeft: 10}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
+                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
                             : null
                         }
                     </span>} key="TabLiquidStaking">

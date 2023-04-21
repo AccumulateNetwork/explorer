@@ -39,7 +39,7 @@ const Blocks = () => {
 
   useEffect(() => {
     document.title = "Blocks | Accumulate Explorer";
-    if (process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://mainnet.accumulatenetwork.io/v2") {
+    if (process.env.REACT_APP_API_PATH && process.env.REACT_APP_API_PATH === "https://mainnet.accumulatenetwork.io") {
       setIsMainnet(true);
       getPrice();
     }

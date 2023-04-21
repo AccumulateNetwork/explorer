@@ -28,6 +28,9 @@ const tooltipDescs = {
     sponsor: "The URL of the principal",
     recipient: "the account that is receiving a transaction",
     threshold: "the required m of n to execute a transaction",
+    maxSupply: "The maximum number of ACME coded to exist in the lifetime of the cryptocurrency.",
+    totalSupply: "The amount of ACME that have already been created.",
+    circSupply: "The amount of ACME that are circulating in the market, calculated as total supply minus ACME owned by the Accumulate Foundation."
 };
 
 export default tooltipDescs;

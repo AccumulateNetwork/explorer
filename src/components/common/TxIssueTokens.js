@@ -6,17 +6,20 @@ import {
     Typography,
     Skeleton,
     Descriptions,
-    Alert
+    Alert,
+    Tag
 } from 'antd';
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiCoinLine
+    RiInformationLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
+import TxTo from './TxTo';
+import {tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 const TxIssueTokens = props => {
 
@@ -26,10 +29,13 @@ const TxIssueTokens = props => {
         tx.data.to.push({ amount: tx.data.amount, url: tx.data.recipient });
         delete(tx.data.amount)
         delete(tx.data.recipient);
+    } else if (tx?.data?.to?.length > 0 && !tx.data.recipient) {
+        tx.data.amount = tx.data.to.reduce((accumulator, currentValue) => accumulator + Number(currentValue.amount), 0);
     }
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
+    //TODO Refactor
     const getToken = async () => {
         setToken(null);
         setError(null);
@@ -49,34 +55,6 @@ const TxIssueTokens = props => {
         }
     }
 
-    //TODO Refactor (duplicated code in TxSendTokes.js)
-    function TxTo(props) {
-        const data = props.data;
-        const items = data.map((item, index) =>
-            <Paragraph key={{index}}>
-                {item.url ? (
-                    <Link to={'/acc/' + item.url.replace("acc://", "")}>
-                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.url}
-                    </Link>
-                ) :
-                    <Text disabled>N/A</Text>
-                }
-                <br />
-                {(item.amount && token) ? (
-                    <span>
-                        <Text>{(item.amount / (10 ** token.precision)).toFixed(token.precision).replace(/\.?0+$/, "")} {token.symbol}</Text>
-                        <br /><Text className="formatted-balance">{parseFloat(item.amount / (10 ** token.precision)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {token.symbol}</Text>
-                    </span>
-                ) :
-                    null
-                }
-            </Paragraph>
-        );
-        return (
-            <span className="break-all">{items}</span>
-        );
-    }
-
     useEffect(() => {
         getToken();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -94,17 +72,18 @@ const TxIssueTokens = props => {
             {tx && tx.data ? (
                 <Descriptions bordered column={1} size="middle">
 
-                    <Descriptions.Item label={"Token"}>
+                    <Descriptions.Item label={"Origin"}>
                         {tx.origin ? (
-                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tx.origin}</Link>
+                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.origin}</Link>
                         ) :
                             <Skeleton active paragraph={false} />
                         }
                     </Descriptions.Item>
 
-                    {tx.data.amount > 0 ? (
+                    {tx.data.amount > 0 && token ? (
                         <Descriptions.Item label={"Amount"}>
-                            <Text>{tx.data.amount}</Text>
+                            <Text>{tokenAmount(tx.data.amount, token.precision, token.symbol)}</Text>
+                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.data.amount, token.precision, token.symbol)}</Text>
                         </Descriptions.Item>
                     ) :
                         null
@@ -112,7 +91,7 @@ const TxIssueTokens = props => {
 
                     {tx.data.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Text>{tx.data.type}</Text>
+                            <Tag color="green">{tx.data.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null
@@ -121,7 +100,7 @@ const TxIssueTokens = props => {
                     {tx.data.to ? (
                         <Descriptions.Item label={"To"} className={"align-top"}>
                             {token &&
-                                <TxTo data={tx.data.to} />
+                                <TxTo data={tx.data.to} token={token} />
                             }
                             {error &&
                                 <Alert message={error} type="error" showIcon />
