@@ -7,12 +7,15 @@ import {
 } from 'antd';
 
 import { useLocation } from 'react-router-dom';
+import { IconContext } from "react-icons";
+import { RiStarLine, RiStarFill } from 'react-icons/ri';
 
 import RPC from './../common/RPC';
 
 import TokenAccount from './Acc/TokenAccount';
 import Token from './Acc/Token';
 import ADI from './Acc/ADI';
+import { isFavourite, addFavourite, removeFavourite } from '../common/Favourites';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
@@ -33,6 +36,7 @@ const Acc = ({ match }) => {
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
     const [isTx, setIsTx] = useState(false);
+    const [favourite, setFavourite] = useState(false);
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
@@ -54,6 +58,7 @@ const Acc = ({ match }) => {
             const response = await RPC.request("query", params);
             if (response && response.data) {
                 setAcc(response);
+                setFavourite(isFavourite(response.data?.url) && !url.includes("@"))
             } else {
                 throw new Error("acc://" + url + " not found"); 
             }
@@ -111,10 +116,30 @@ const Acc = ({ match }) => {
 
     let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "")
 
+    const handleStarClick = e => {
+        //Make it Favourite and back
+        if (!favourite) {
+            addFavourite(acc.data.url)
+            setFavourite(true)
+        } else {
+            removeFavourite(acc.data.url)
+            setFavourite(false)
+        }
+    };
+
     return (
         <div>
             <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
-            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{accountURL}</Title>
+            <Title level={4} type="secondary" className="break-all" copyable={{accountURL}}>
+                {!isTx  && <IconContext.Provider value={{ className: 'react-icons', style: { cursor: 'pointer' } }} >
+                    {favourite ? (
+                        <RiStarFill onClick={handleStarClick} />
+                    ) : (
+                        <RiStarLine onClick={handleStarClick} />
+                    )}
+                </IconContext.Provider>}
+                {accountURL}
+            </Title>
                 {acc ? (
                     <Render data={acc} />
                 ) :

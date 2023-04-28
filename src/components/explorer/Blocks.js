@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 import { Typography, Row, Col, Card, Tag, Skeleton, message } from 'antd';
 import { IconContext } from "react-icons";
 import {
-  RiHandCoinLine, RiCoinLine, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill, RiMoneyDollarCircleLine
+  RiHandCoinLine, RiCoinLine, RiUserSmileLine, RiTwitterFill, RiRedditFill, RiDiscordFill, RiTelegramFill, RiMoneyDollarCircleLine, RiStarLine
 } from 'react-icons/ri';
 
 import Stats from './../common/Stats';
+import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
 import axios from 'axios';
 
@@ -15,6 +16,7 @@ const { Title, Text } = Typography;
 
 const Blocks = () => {
 
+  const favourites = loadFavourites()
   const [price, setPrice] = useState(null);
   const [isMainnet, setIsMainnet] = useState(false);
 
@@ -98,6 +100,18 @@ const Blocks = () => {
             </Link>
           </Col>
           }
+          <Col xs={24} sm={8} md={6} lg={5} xl={4}>
+            <Link to="/favourites">
+            <Card>
+                <span>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiStarLine /></IconContext.Provider>
+                    <br />
+                    Favourites
+                </span>
+                <Title level={4}>{favourites.length}</Title>
+            </Card>
+            </Link>
+          </Col>
           <Col xs={24} sm={16} md={12} lg={10} xl={8}>
             <Card>
                 <span>

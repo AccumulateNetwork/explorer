@@ -204,7 +204,9 @@ const GenericTx = props => {
                     <TxAddCredits data={tx} />
                 }
 
-                <Signatures data={tx.signatures} />
+                {(tx.signatures && tx.signatures.length > 0) &&
+                    <Signatures data={tx.signatures} />            
+                }
 
                 <Title level={4}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
