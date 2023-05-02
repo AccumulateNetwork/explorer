@@ -117,7 +117,7 @@ const Acc = ({ match }) => {
     let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "")
 
     const handleStarClick = e => {
-        //Make it Favourite and back
+        // Make it Favourite and back
         if (!favourite) {
             addFavourite(acc.data.url)
             setFavourite(true)
@@ -130,8 +130,8 @@ const Acc = ({ match }) => {
     return (
         <div>
             <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
-            <Title level={4} type="secondary" className="break-all" copyable={{accountURL}}>
-                {!isTx  && <IconContext.Provider value={{ className: 'react-icons', style: { cursor: 'pointer' } }} >
+            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable={{text: accountURL}}>
+                {!isTx && <IconContext.Provider value={{ className: 'react-icons', style: { cursor: 'pointer' } }}>
                     {favourite ? (
                         <RiStarFill onClick={handleStarClick} />
                     ) : (
