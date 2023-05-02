@@ -178,7 +178,7 @@ h4.ant-typography .react-icons.react-icons-eblocks {
   margin-right: 8px;
 }
 
-h3.ant-typography .count, h4.ant-typography .count {
+h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   background: rgba(255,255,255,0.85);
   color: rgba(0, 0, 0, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
@@ -589,4 +589,21 @@ h3.ant-typography .count, h4.ant-typography .count {
 .name-tag {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.ant-rate.acc-fav {
+  margin: 0 !important;
+}
+
+.ant-rate.acc-fav li {
+  margin: 0 5px 0 0 !important;
+  padding: 0 !important;
+}
+
+.ant-rate.acc-fav .ant-rate-star-zero .ant-rate-star-second, .ant-rate.acc-fav .ant-rate-star-focused .ant-rate-star-second  {
+  color: rgba(24, 144, 255, 0.4);
+}
+
+.ant-rate.acc-fav .ant-rate-star-full .ant-rate-star-second  {
+  color: #1890ff;
 }

@@ -8,7 +8,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiStarLine, RiAccountCircleLine
+    RiAccountCircleLine
 } from 'react-icons/ri';
 
 import Count from '../common/Count';
@@ -24,14 +24,10 @@ const Favourites = () => {
 
     return (
         <div>
-            <Title level={4}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <RiStarLine />
-                </IconContext.Provider>
-                Favourites
+            <Title level={2}>Favourites
                 {favourites ? <Count count={favourites.length} /> : null}
             </Title>
-
+            
             <List
                 bordered
                 dataSource={favourites}
