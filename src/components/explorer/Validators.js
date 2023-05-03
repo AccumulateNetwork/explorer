@@ -84,7 +84,7 @@ const Validators = () => {
             defaultSortOrder: 'descend',
             dataIndex: 'totalStaked',
             render: (totalStaked) => {
-                if (totalStaked || totalStaked === 0) {
+                if ((totalStaked || totalStaked === 0) && supply?.staked ) {
                     const pt = (totalStaked / supply.staked * 100).toFixed(2)
                     return (
                         <Text>
