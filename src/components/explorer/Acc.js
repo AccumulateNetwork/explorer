@@ -35,6 +35,7 @@ const Acc = ({ match }) => {
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
     const [isTx, setIsTx] = useState(false);
+    const [isFav, setIsFav] = useState(false);
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
@@ -113,11 +114,15 @@ const Acc = ({ match }) => {
 
     let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "")
 
+    useEffect(() => {
+        setIsFav(isFavourite(accountURL));
+    }, [accountURL])
+
     const handleFavChange = (e) => {
         if (e === 0) {
-            removeFavourite(acc.data.url);
+            removeFavourite(accountURL);
         } else {
-            addFavourite(acc.data.url);
+            addFavourite(accountURL);
         }
     }
 
@@ -126,7 +131,7 @@ const Acc = ({ match }) => {
             <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable={{text: accountURL}}>
                 {!isTx ? (
-                    <Rate className={"acc-fav"} count={1} defaultValue={isFavourite(accountURL) ? 1 : 0} onChange={(e) => { handleFavChange(e) }} />
+                    <Rate className={"acc-fav"} count={1} value={isFav ? 1 : 0} onChange={(e) => { setIsFav(!isFav); handleFavChange(e) }} />
                 ) : null}
                 
                 {accountURL}
