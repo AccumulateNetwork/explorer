@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Typography,
   Skeleton,
-  Alert
+  Alert,
+  Rate
 } from 'antd';
 
 import { useLocation } from 'react-router-dom';
@@ -13,6 +14,7 @@ import RPC from './../common/RPC';
 import TokenAccount from './Acc/TokenAccount';
 import Token from './Acc/Token';
 import ADI from './Acc/ADI';
+import { isFavourite, addFavourite, removeFavourite } from '../common/Favourites';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
 import DataAccount from './Acc/DataAccount';
@@ -33,6 +35,7 @@ const Acc = ({ match }) => {
     const [acc, setAcc] = useState(null);
     const [error, setError] = useState(null);
     const [isTx, setIsTx] = useState(false);
+    const [isFav, setIsFav] = useState(-1);
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
@@ -106,15 +109,31 @@ const Acc = ({ match }) => {
     }
 
     useEffect(() => {
+        let url = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "");
+        isFavourite(url) ? setIsFav(1) : setIsFav(0);
         getAcc(match.params.url);
     }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
     let accountURL = "acc://" + match.params.url + (location.hash !== '' ? location.hash : "")
 
+    const handleFavChange = (e) => {
+        if (e === 0) {
+            removeFavourite(accountURL);
+        } else {
+            addFavourite(accountURL);
+        }
+    }
+
     return (
         <div>
             <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
-            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable>{accountURL}</Title>
+            <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable={{text: accountURL}}>
+                {!isTx && acc && isFav !== -1 ? (
+                    <Rate className={"acc-fav"} count={1} defaultValue={isFav} onChange={(e) => { handleFavChange(e) }} />
+                ) : null}
+                
+                {accountURL}
+            </Title>
                 {acc ? (
                     <Render data={acc} />
                 ) :

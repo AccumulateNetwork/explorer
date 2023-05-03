@@ -17,7 +17,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine, RiStarLine
 } from 'react-icons/ri';
 
 import Logo from './common/Logo';
@@ -27,7 +27,7 @@ import SearchForm from './common/SearchForm';
 
 import Blocks from './explorer/Blocks';
 import Staking from './explorer/Staking';
-
+import Favourites from './explorer/Favourites';
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
 import Error404 from './explorer/Error404';
@@ -200,6 +200,12 @@ const Explorer = props => {
                             <span className="nav-text">Wallet</span>
                         </a>
                     </Menu.Item>
+                    <Menu.Item key="favourites">
+                        <a href="/favourites" rel="noopener noreferrer">
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStarLine /></IconContext.Provider>
+                            <span className="nav-text">Favourites</span>
+                        </a>
+                    </Menu.Item>
                     <Menu.Item key="bridge">
                         <a href="https://bridge.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
                             <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
@@ -244,6 +250,7 @@ const Explorer = props => {
                 <Route path="/validators" component={Validators} />
                 <Route path="/tokens" component={Tokens} />
                 <Route path="/staking" component={Staking} />
+                <Route path="/favourites" component={Favourites} />
 
                 <Route component={Error404} />
             </Switch>
