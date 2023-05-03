@@ -5,8 +5,10 @@ function isFavourite(address) {
 
 function addFavourite(address) {
     const favourites = loadFavourites()
-    favourites.push(address)
-    saveFavourites(favourites)
+    if (!favourites.includes(address)) {
+        favourites.push(address)
+        saveFavourites(favourites)
+    }
 }
 
 function removeFavourite(address) {
@@ -16,7 +18,7 @@ function removeFavourite(address) {
 }
 
 function saveFavourites(favourites) {
-    localStorage.setItem('favourites', JSON.stringify(favourites))   
+    localStorage.setItem('favourites', JSON.stringify(favourites))
 }
 
 function loadFavourites() {
