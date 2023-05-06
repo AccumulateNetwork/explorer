@@ -3,14 +3,17 @@ import { message } from 'antd';
 
 const showMessage = 0
 const onError = (error) => {
+  console.error(error);
   if (error.data && error.code) {
     // exception for nothing was found error
     if ((error.code === -32807) || (error.code === -32804)) {
       if (showMessage) {
         message.info('Nothing was found');
       }
-    } else {
+    } else if (typeof error.data === 'string') {
       message.error('Error ' + error.code + ': ' + error.data);
+    } else {
+      message.error('Error ' + error.code + ': ' + error.message);
     }
   } else {
     message.error('Unexpected error received from Accumulate API');

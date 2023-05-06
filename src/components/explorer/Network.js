@@ -54,7 +54,13 @@ const Network = () => {
 
                 // Get each node's info (with a batch request)
                 const peers = [];
-                for (const peer of await RPC.batchRequest(peerIDs.map(({ peerID }) => ({ method: 'node-info', params: { peerID } })), 'v3')) {
+                const response = await RPC.batchRequest(peerIDs.map(({ peerID }) => ({ method: 'node-info', params: { peerID } })), 'v3')
+                for (const i in response) {
+                    if (!response[i]) {
+                        // message.warn(`No response from peer ${peerIDs[i].peerID}`)
+                        continue;
+                    }
+                    const peer = response[i];
                     const data = {};
                     peers.push({ info: peer, data });
 
@@ -72,7 +78,6 @@ const Network = () => {
                 setPeers(peers);
                 setPeersAreLoading(false);
             } catch (error) {
-                debugger
                 setError(error.message);
             }
         }
@@ -81,50 +86,36 @@ const Network = () => {
 
     // Show a table for each partition
     useEffect(() => {
-        // withStatus collects various bits used by column renderers, to reduce
-        // code duplication
-        const withStatus = (fn) => ({ peer, part, ...rest }) => {
-            const status = peer.data.partitions[part.lcid];
-            const validator = status && network.validators.find(x => x.publicKeyHash === status.validatorKeyHash);
-            return fn({ peer, part, status, validator, ...rest });
-        }
-
-        const colums = [
+        const columns = [
             {
                 title: 'Node',
-                render: withStatus(({ peer, status }) => (
+                render: ({ peer, status }) => (
                     <span>{status?.nodeKeyHash || peer.info.peerID}</span>
-                ))
+                )
             },
             {
                 title: 'Operator',
-                render: withStatus(({ validator }) => (
-                    <span>{validator?.operator}</span>
-                ))
+                dataIndex: ['validator', 'operator'],
+            },
+            {
+                title: "Version",
+                dataIndex: ['status', 'version'],
             },
             {
                 title: "Height",
-                render: withStatus(({ status }) => (
-                    <span>{status?.lastBlock.height}</span>
-                ))
+                dataIndex: ['status', 'lastBlock', 'height'],
             },
             {
                 title: "Time",
-                render: withStatus(({ status }) => (
-                    <span>{status?.lastBlock.time}</span>
-                ))
+                dataIndex: ['status', 'lastBlock', 'time'],
             },
             {
                 title: "DN Anchor",
-                render: withStatus(({ status }) => (
-                    <span>{status?.lastBlock.directoryAnchorHeight}</span>
-                ))
+                dataIndex: ['status', 'lastBlock', 'directoryAnchorHeight'],
             },
             {
                 title: "Peers",
-                render: withStatus(({ status }) => (
-                    <span>{status?.peers.length}</span>
-                ))
+                dataIndex: ['status', 'peers', 'length'],
             },
         ]
 
@@ -139,18 +130,31 @@ const Network = () => {
                 const partitions = [dir].concat(network.partitions.filter(x => x !== dir));
 
                 // Create a tab and a table for each partition
-                setDynamicTabs(partitions.map(part =>
-                    <Tabs.TabPane tab={part.id} key={part.lcid}>
-                        <Table
-                            dataSource={peers.filter(x => part.lcid in x.data.partitions).map(peer => ({ peer, part }))}
-                            columns={colums}
-                            rowKey="peerID"
-                            loading={peersAreLoading}
-                        />
-                    </Tabs.TabPane>
-                ));
+                setDynamicTabs(partitions.map(part => {
+                    const entries = [];
+                    for (const peer of peers) {
+                        // Skip nodes that do not participate in this partition
+                        if (!(part.lcid in peer.data.partitions)) continue;
+
+                        // Retrieve partition-specific data to simplify the
+                        // columns
+                        const status = peer.data.partitions[part.lcid];
+                        const validator = status && network.validators.find(x => x.publicKeyHash === status.validatorKeyHash);
+                        entries.push({ peer, part, status, validator });
+                    }
+
+                    return (
+                        <Tabs.TabPane tab={part.id} key={part.lcid}>
+                            <Table
+                                dataSource={entries}
+                                columns={columns}
+                                rowKey={({ peer }) => peer.info.peerID}
+                                loading={peersAreLoading}
+                            />
+                        </Tabs.TabPane>
+                    )
+                }));
             } catch (error) {
-                debugger
                 setError(error.message);
             }
         }
@@ -186,12 +190,16 @@ const Network = () => {
                 const status = {};
                 for (const i in requests) {
                     const { peer, partition } = requests[i];
+                    if (!response[i]) {
+                        // message.warn(`No response from ${peer.info.peerID}:${partition}`);
+                        continue;
+                    }
+
                     peer.data.partitions[partition] = response[i];
                     status[`${peer.info.peerID}:${partition}`] = peer.data.partitions[partition];
                 }
                 setPeerStatus(status);
             } catch (error) {
-                debugger
                 setError(error.message);
             }
         }
