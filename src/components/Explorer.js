@@ -121,7 +121,8 @@ const Explorer = props => {
     if (process.env.REACT_APP_API_PATH) {
         setIsMainnet(false);
         switch (process.env.REACT_APP_API_PATH) {
-        case 'https://mainnet.accumulatenetwork.io':
+            case 'https://mainnet.accumulatenetwork.io':
+            case 'https://api-gateway.accumulate.defidevs.io':
             setCurrentNetwork("Mainnet");
             setIsMainnet(true);
             break;
