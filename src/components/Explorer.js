@@ -168,12 +168,14 @@ const Explorer = props => {
                         <Logo />
                     </Link>
                 </Menu.Item>
+
                 <Menu.Item key="/blocks">
                     <Link to="/">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiDashboardLine /></IconContext.Provider>
                         <span className="nav-text">Blocks</span>
                     </Link>
                 </Menu.Item>
+
                 {isMainnet &&
                 <>
                 <Menu.Item key="/tokens">
@@ -194,34 +196,37 @@ const Explorer = props => {
                         <span className="nav-text">Validators</span>
                     </Link>
                 </Menu.Item>
-                <Menu.SubMenu key="more" title="MORE" icon={<MoreOutlined />}>
-                    <Menu.Item key="wallet">
-                        <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
-                            <span className="nav-text">Wallet</span>
-                        </a>
-                    </Menu.Item>
-                    <Menu.Item key="favourites">
-                        <a href="/favourites" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiStarLine /></IconContext.Provider>
-                            <span className="nav-text">Favourites</span>
-                        </a>
-                    </Menu.Item>
-                    <Menu.Item key="bridge">
-                        <a href="https://bridge.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
-                            <span className="nav-text">Bridge</span>
-                        </a>
-                    </Menu.Item>
-                    <Menu.Item key="liquidstaking">
-                        <a href="https://accumulated.finance" target="_blank" rel="noopener noreferrer">
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiDropLine /></IconContext.Provider>
-                            <span className="nav-text">Liquid Staking</span>
-                        </a>
-                    </Menu.Item>
-                </Menu.SubMenu>
                 </>
                 }
+
+                <Menu.Item key="favourites">
+                    <a href="/favourites" rel="noopener noreferrer">
+                        <IconContext.Provider value={{ className: 'react-icons' }}><RiStarLine /></IconContext.Provider>
+                        <span className="nav-text">Favourites</span>
+                    </a>
+                </Menu.Item>
+
+                <Menu.SubMenu key="more" title="More" icon={<MoreOutlined />}>
+                        <Menu.Item key="bridge">
+                            <a href={isMainnet ? "https://bridge.accumulatenetwork.io" : "https://testnet.bridge.accumulatenetwork.io"} target="_blank" rel="noopener noreferrer">
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiArrowLeftRightLine /></IconContext.Provider>
+                                <span className="nav-text">Bridge</span>
+                            </a>
+                        </Menu.Item>
+                        <Menu.Item key="liquidstaking" style={!isMainnet ? {display: "none"} : null}>
+                            <a href="https://accumulated.finance" target="_blank" rel="noopener noreferrer">
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiDropLine /></IconContext.Provider>
+                                <span className="nav-text">Liquid Staking</span>
+                            </a>
+                        </Menu.Item>
+                        <Menu.Item key="wallet" style={!isMainnet ? {display: "none"} : null}>
+                            <a href="https://accumulatenetwork.io/wallet" target="_blank" rel="noopener noreferrer">
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiWalletLine /></IconContext.Provider>
+                                <span className="nav-text">Mobile Wallet</span>
+                            </a>
+                        </Menu.Item>
+                </Menu.SubMenu>
+
             </Menu>
             {currentNetwork ? (
                 <Dropdown overlay={ExplorerSelect} trigger={['click']} className="network-badge">

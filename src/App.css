@@ -490,7 +490,7 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   right: 22px;
 }
 
-@media only screen and (min-width: 800px) {
+@media only screen and (min-width: 950px) {
   .network-badge {
     display: block !important;
   }
