@@ -199,11 +199,11 @@ const Explorer = props => {
                 </>
                 }
 
-                <Menu.Item key="favourites">
-                    <a href="/favourites" rel="noopener noreferrer">
+                <Menu.Item key="/favourites">
+                    <Link to="/favourites">
                         <IconContext.Provider value={{ className: 'react-icons' }}><RiStarLine /></IconContext.Provider>
                         <span className="nav-text">Favourites</span>
-                    </a>
+                    </Link>
                 </Menu.Item>
 
                 <Menu.SubMenu key="more" title="More" icon={<MoreOutlined />}>
