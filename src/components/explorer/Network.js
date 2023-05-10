@@ -6,7 +6,7 @@ import {
 
 import RPC from './../common/RPC';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Network = () => {
     const [error, setError] = useState(null);
@@ -89,8 +89,11 @@ const Network = () => {
         const columns = [
             {
                 title: 'Node',
-                render: ({ peer, status }) => (
-                    <span>{status?.nodeKeyHash || peer.info.peerID}</span>
+                render: ({ peer, status, validator }) => (
+                    <div>
+                        <Text className="code">{status?.nodeKeyHash || peer.info.peerID}</Text>&nbsp;
+                        {validator?.active ? <Tag color="green">validator</Tag> : null}
+                    </div>
                 )
             },
             {
@@ -139,7 +142,11 @@ const Network = () => {
                         // Retrieve partition-specific data to simplify the
                         // columns
                         const status = peer.data.partitions[part.lcid];
-                        const validator = status && network.validators.find(x => x.publicKeyHash === status.validatorKeyHash);
+                        let validator = status && network.validators.find(x => x.publicKeyHash === status.validatorKeyHash);
+                        if (validator) {
+                            const active = validator.partitions.some(x => x.active && x.id.toLowerCase() === part.lcid)
+                            validator = { active, ...validator };
+                        }
                         entries.push({ peer, part, status, validator });
                     }
 
