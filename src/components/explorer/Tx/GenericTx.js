@@ -129,6 +129,17 @@ const GenericTx = props => {
                         null
                     }
 
+                    {tx.produced?.length > 0 ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
+                            {tx.produced.map(item =>
+                                <List.Item>
+                                    <Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item}</Link>
+                                </List.Item>)}
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
                 </Descriptions>
 
                     <Title level={4}>
