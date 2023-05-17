@@ -303,7 +303,6 @@ const Staking = () => {
                 dataSource={stakers}
                 columns={columns}
                 pagination={pagination}
-                rowKey="entryHash"
                 loading={tableIsLoading}
                 onChange={getStakers}
                 sortDirections={["ascend", "descend", "ascend"]}
