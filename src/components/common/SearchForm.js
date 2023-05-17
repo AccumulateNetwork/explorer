@@ -4,9 +4,6 @@ import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
 
 import moment from 'moment-timezone';
 
-import { useLazyQuery } from '@apollo/client';
-import gql from "graphql-tag";
-
 import { Form, message, Input } from 'antd';
 
 import RPC from './RPC';
@@ -83,9 +80,9 @@ function SearchForm() {
         if (response && response.data) {
           setSearchIsLoading(false);
           redirect('/acc/'+url);
-        } else {
-          searchToken({ variables: { name: url.toUpperCase() } });
-        }
+        } /* else {
+          searchToken(url.toUpperCase());
+        } */
     }
     catch(error) {
       setSearchIsLoading(false);
@@ -93,27 +90,13 @@ function SearchForm() {
     }
   }
 
-  const SEARCH_TOKEN = gql`
-      query SearchToken($name: String!) {
-          token (
-              query: {
-                  symbol: $name
-              }
-          ) {
-              url
-          }
-      }
-  `;
-
-  const [searchToken, { data, error }] = useLazyQuery(
-    SEARCH_TOKEN, {
-      fetchPolicy: "network-only",
-    }
-  );
+/*   function searchToken(name) {
+    console.log(name)
+  } */
 
   useEffect(() => {
     setSearchIsLoading(false);
-    if (data && searchForm.getFieldValue('search') !== "") {
+    /* if (searchForm.getFieldValue('search') !== "") {
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
       } else {
@@ -124,15 +107,11 @@ function SearchForm() {
           }
           if (searchText !== "" && !searchText.includes("ACME")) {
             message.info('Searching for an account? Try ' + searchText + '.acme');
-          }  
+          } 
         }
       }
-    }
-  }, [searchTs, data, searchText, searchForm]);
-
-  useEffect(() => {
-      setSearchIsLoading(false);
-  }, [error]);
+    } */
+  }, [searchTs, searchText, searchForm]);
 
   return (
     <Form form={searchForm} initialValues={{ search: '' }} className="search-box">

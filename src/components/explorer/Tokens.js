@@ -1,36 +1,69 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import { useQuery } from "@apollo/client";
-import gql from "graphql-tag";
-
 import {
-  Table, Alert, Typography, Skeleton, Avatar
+  Table, Typography, Avatar, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
-import {
-    RiCoinLine, RiExternalLinkLine
-} from 'react-icons/ri';
+import { RiCoinLine, RiExternalLinkLine } from 'react-icons/ri';
+
+import axios from 'axios';
+import Count from '../common/Count';
 
 const { Title, Paragraph, Text } = Typography;
 
 const Tokens = () => {
 
-    const GET_TOKENS = gql`
-        query {
-            tokens (limit: 100) {
-                _id
-                name
-                symbol
-                logo
-                url
+    const [tokens, setTokens] = useState(null);
+    const [totalTokens, setTotalTokens] = useState(-1);
+    const [tableIsLoading, setTableIsLoading] = useState(true);
+    const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
+
+    //const { loading, error, data } = useQuery(GET_TOKENS);
+
+    const getTokens = async (params = pagination, filters) => {
+        setTableIsLoading(true);
+    
+        let start = 0;
+        let count = 10;
+        let showTotalStart = 1;
+        let showTotalFinish = 10;
+    
+        if (params) {
+            start = (params.current-1)*params.pageSize;
+            count = params.pageSize;
+            showTotalStart = (params.current-1)*params.pageSize+1;
+            showTotalFinish = params.current*params.pageSize;
+        }
+
+        try {
+            if (!process.env.REACT_APP_METRICS_API_PATH)
+                throw new Error();
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/tokens?start=" + start + "&count=" + count);
+            if (response && response.data) {
+
+                /* workaround API bug response
+                if (response.data.start === null || response.data.start === undefined) {
+                    response.data.start = 0;
+                } */
+
+                setTokens(response.data.result);
+                setPagination({ ...pagination, current: (response.data.start / response.data.count) + 1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}` });
+                setTotalTokens(response.data.total);
+            } else {
+                throw new Error("Tokens not found");
             }
         }
-    `;
-
-    const { loading, error, data } = useQuery(GET_TOKENS);
+        catch (error) {
+            setTokens(null);
+            setTotalTokens(-1);
+            if (error.message)
+                message.error(error.message);
+        }
+        setTableIsLoading(false);
+    }
 
     const columns = [
         {
@@ -65,12 +98,16 @@ const Tokens = () => {
     ];
 
     useEffect(() => {
-      document.title = "Tokens | Accumulate Explorer";
-    }, []);
+        document.title = "Tokens | Accumulate Explorer";
+        getTokens();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
     return (
         <div>
-            <Title level={2}>Tokens</Title>
+            <Title level={2}>
+                Tokens
+                {totalTokens ? <Count count={totalTokens} /> : null }
+            </Title>
             
             <div class="featured" style={{ marginBottom: 20 }}>
                 Learn how to launch your own token on Accumulate in 5 minutes: <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
@@ -78,27 +115,15 @@ const Tokens = () => {
                 </a>
             </div>
 
-            {data && data.tokens ? (
+            {tokens &&
                 <Table
-                    dataSource={data.tokens}
+                    dataSource={tokens}
                     columns={columns}
-                    pagination={false}
+                    pagination={pagination}
                     showHeader={false}
-                    loading={loading}
+                    loading={tableIsLoading}
                     scroll={{ x: 'max-content' }}
                 />
-            ) :
-                <div>
-                    {error ? (
-                        <div className="skeleton-holder">
-                            <Alert message="Can not connect the database" type="error" showIcon />
-                        </div>
-                    ) :
-                        <div className="skeleton-holder">
-                            <Skeleton active />
-                        </div>
-                    }
-                </div>
             }
         </div>
     );

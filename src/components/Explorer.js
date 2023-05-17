@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 
-import * as Realm from "realm-web";
-import {
-  ApolloClient,
-  ApolloProvider,
-  HttpLink,
-  InMemoryCache,
-} from "@apollo/client";
-
 import { Layout, Menu, Dropdown, Button, Badge, Typography } from 'antd';
 
 import {
@@ -40,39 +32,6 @@ const { Header, Content } = Layout;
 const { Text } = Typography;
 
 const Explorer = props => {
-
-    const app = new Realm.App(process.env.REACT_APP_ID);
-    const graphqlUri = `https://realm.mongodb.com/api/client/v2.0/app/` + process.env.REACT_APP_ID + `/graphql`;
-
-    // Gets a valid Realm user access token to authenticate requests
-    async function getValidAccessToken() {
-        // Guarantee that there's a logged in user with a valid access token
-        if (!app.currentUser) {
-            // If no user is logged in, log in an anonymous user. The logged in user will have a valid
-            // access token.
-            await app.logIn(Realm.Credentials.anonymous());
-        } else {
-            // An already logged in user's access token might be stale. To guarantee that the token is
-            // valid, we refresh the user's custom data which also refreshes their access token.
-            await app.currentUser.refreshCustomData();
-        }
-        return app.currentUser.accessToken;
-    }
-
-    const client = new ApolloClient({
-        link: new HttpLink({
-          uri: graphqlUri,
-          // We define a custom fetch handler for the Apollo client that lets us authenticate GraphQL requests.
-          // The function intercepts every Apollo HTTP request and adds an Authorization header with a valid
-          // access token before sending the request.
-          fetch: async (uri, options) => {
-            const accessToken = await getValidAccessToken();
-            options.headers.Authorization = `Bearer ${accessToken}`;
-            return fetch(uri, options);
-          },
-        }),
-        cache: new InMemoryCache(),
-    });
 
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
@@ -156,7 +115,6 @@ const Explorer = props => {
   }, []);
 
   return (
-    <ApolloProvider client={client}>
     <Router>
     <ScrollToTop />
       <Layout>
@@ -285,7 +243,6 @@ const Explorer = props => {
           <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>
       </div>
     </Router>
-    </ApolloProvider>
   );
 };
 
