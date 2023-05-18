@@ -7,7 +7,7 @@ import {
 } from 'antd';
 
 import { IconContext } from "react-icons";
-import { RiCoinLine, RiExternalLinkLine } from 'react-icons/ri';
+import { RiEarthLine, RiExternalLinkLine } from 'react-icons/ri';
 
 import axios from 'axios';
 import Count from '../common/Count';
@@ -83,16 +83,23 @@ const Tokens = () => {
                         {row.symbol}
                     </Link>
                     <br />
-                    <Text type="secondary">{row.name}</Text>
+                    <Text type="secondary">{row.tokenIssuer}</Text>
                 </Paragraph>
+            )
+        },
+        {
+            title: 'Name',
+            render: (row) => (
+                <Text>{row.name}</Text>
             )
         },
         {
             title: 'URL',
             render: (row) => (
-                <Link to={'/acc/' + row.url.replace("acc://", "")}>
-                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>acc://{row.url}
-                </Link>
+                <a href={row.url} target="_blank" rel="noopener noreferrer">
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiEarthLine /></IconContext.Provider>
+                    {row.url}
+                </a>
             )
         }
     ];
@@ -109,7 +116,7 @@ const Tokens = () => {
                 {totalTokens ? <Count count={totalTokens} /> : null }
             </Title>
             
-            <div class="featured" style={{ marginBottom: 20 }}>
+            <div className="featured" style={{ marginBottom: 20 }}>
                 Learn how to launch your own token on Accumulate in 5 minutes: <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
                     <strong>docs.accumulatenetwork.io<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
                 </a>
@@ -122,6 +129,7 @@ const Tokens = () => {
                     pagination={pagination}
                     showHeader={false}
                     loading={tableIsLoading}
+                    rowKey={() => Date.now()}
                     scroll={{ x: 'max-content' }}
                 />
             }
