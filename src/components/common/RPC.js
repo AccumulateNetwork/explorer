@@ -20,6 +20,12 @@ const onError = (error) => {
   }
 }
 
+export class RPCError {
+  constructor(props) {
+    Object.assign(this, props)
+  }
+}
+
 class RPC {
   constructor(opts) {
     this._opts = { ...opts };
@@ -85,6 +91,41 @@ class RPC {
     .catch(() => {
       message.error('Accumulate API is unavailable');
     });
+    return result;
+  }
+
+  rawRequest = (request, ver = 'v2') => {
+    // TODO: Refactor request and batchRequest to use rawRequest?
+
+    // Add version and id fields to the request(s)
+    if (request instanceof Array) {
+      // JSON-RPC does not like empty batches
+      if (!request.length) return [];
+
+      request = request.map(({ ...props }) => ({
+        jsonrpc: '2.0',
+        id: ++this.currId,
+        ...props
+      }))
+    } else {
+      request = {
+        jsonrpc: '2.0',
+        id: ++this.currId,
+        ...request
+      }
+    }
+
+    const result = axios
+    .post(process.env.REACT_APP_API_PATH + '/' + ver, request)
+    .then(function (response) {
+      // Convert the response(s) into the result or an RPCError
+      if (response.data instanceof Array) {
+        return response.data.map(r => r.error ? new RPCError(r.error) : r.result)
+      }
+      return response.data.error ? new RPCError(response.data.error) : response.data.result
+    }, () => {
+      message.error('Accumulate API is unavailable');
+    })
     return result;
   }
 }

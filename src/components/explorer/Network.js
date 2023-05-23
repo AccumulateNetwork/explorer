@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-    Typography, Table, Tag, Tabs, Alert, List
+    Typography, Table, Tag, Tabs, Alert, Collapse
 } from 'antd';
 
-import RPC from './../common/RPC';
+import {
+    CloseCircleFilled
+} from '@ant-design/icons';
+
+import RPC, { RPCError } from './../common/RPC';
 
 const { Title, Text } = Typography;
 
@@ -54,24 +58,30 @@ const Network = () => {
 
                 // Get each node's info (with a batch request)
                 const peers = [];
-                const response = await RPC.batchRequest(peerIDs.map(({ peerID }) => ({ method: 'node-info', params: { peerID } })), 'v3')
+                const response = await RPC.rawRequest(peerIDs.map(({ peerID }) => ({ method: 'node-info', params: { peerID } })), 'v3')
                 for (const i in response) {
-                    if (!response[i]) {
-                        // message.warn(`No response from peer ${peerIDs[i].peerID}`)
+                    const record = {
+                        ...peerIDs[i],
+                        data: {
+                            partitions: {},
+                        },
+                    };
+                    peers.push(record);
+
+                    if (response[i] instanceof RPCError) {
+                        record.error = response[i];
                         continue;
+                    } else {
+                        record.info = response[i];
                     }
-                    const peer = response[i];
-                    const data = {};
-                    peers.push({ info: peer, data });
 
                     // List which consensus networks it participates in. A given
                     // node participates in zero or more consensus networks. An
                     // API or bootstrap node does not participate in any whereas
                     // most core nodes participate in the directory and a BVN.
-                    data.partitions = {};
-                    for (const service of peer.services) {
+                    for (const service of record.info.services) {
                         if (service.type === 'consensus') {
-                            data.partitions[service.argument.toLowerCase()] = null
+                            record.data.partitions[service.argument.toLowerCase()] = null
                         }
                     }
                 }
@@ -91,7 +101,7 @@ const Network = () => {
                 title: 'Node',
                 render: ({ peer, status, validator }) => (
                     <div>
-                        <Text className="code">{status?.nodeKeyHash || peer.info.peerID}</Text>&nbsp;
+                        <Text className="code">{status?.nodeKeyHash || peer.peerID}</Text>&nbsp;
                         {validator?.active ? <Tag color="green">validator</Tag> : null}
                     </div>
                 )
@@ -155,7 +165,7 @@ const Network = () => {
                             <Table
                                 dataSource={entries}
                                 columns={columns}
-                                rowKey={({ peer }) => peer.info.peerID}
+                                rowKey={({ peer }) => peer.peerID}
                                 loading={peersAreLoading}
                             />
                         </Tabs.TabPane>
@@ -186,7 +196,7 @@ const Network = () => {
             try {
                 // Build a list of requests plus extra data we'll need later
                 const requests = peers.flatMap(peer => Object.keys(peer.data.partitions).map(partition => {
-                    const request = { method: 'consensus-status', params: { nodeID: peer.info.peerID, partition } }
+                    const request = { method: 'consensus-status', params: { nodeID: peer.peerID, partition } }
                     return { peer, partition, request }
                 }))
 
@@ -198,12 +208,12 @@ const Network = () => {
                 for (const i in requests) {
                     const { peer, partition } = requests[i];
                     if (!response[i]) {
-                        // message.warn(`No response from ${peer.info.peerID}:${partition}`);
+                        // TODO Add some indicator that there may be an issue
                         continue;
                     }
 
                     peer.data.partitions[partition] = response[i];
-                    status[`${peer.info.peerID}:${partition}`] = peer.data.partitions[partition];
+                    status[`${peer.peerID}:${partition}`] = peer.data.partitions[partition];
                 }
                 setPeerStatus(status);
             } catch (error) {
@@ -223,27 +233,27 @@ const Network = () => {
             {error ? <Alert message={error} type="error" showIcon /> : null}
 
             <Tabs defaultActiveKey="directory" children={dynamicTabs.concat([
-                <Tabs.TabPane tab="Services" key="all">
-                    <List
-                        dataSource={peers}
-                        renderItem={peer => {
-                            const parts = [
-                                <span>{peer.info.peerID}</span>,
-                            ]
-                            for (const service of peer.info.services) {
+                <Tabs.TabPane tab="All Nodes" key="all">
+                    <Collapse>{peers.map(peer =>
+                        <Collapse.Panel
+                            className={`node-details ${peer.error && "node-error"}`}
+                            key={peer.peerID}
+                            header={peer.error ? <span><CloseCircleFilled className="node-error-icon" /> {peer.peerID}</span> : <span>{peer.peerID}</span>}
+                            >
+                            {peer.error && <pre>{peer.error.message}</pre>}
+                            {peer.info && peer.info.services.filter(service => {
                                 switch (service.type) {
                                     case 'node':
                                     case 'ServiceType:61441':
-                                        continue;
-                                    default: // Ok
+                                        return false;
+                                    default:
+                                        return true;
                                 }
-                                parts.push(
-                                    <Tag color="blue">{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
-                                )
-                            }
-                            return <List.Item key={peer.info.peerID}><div>{parts}</div></List.Item>
-                        }}
-                    />
+                            }).map(service =>
+                                <Tag color="blue">{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
+                            )}
+                        </Collapse.Panel>
+                    )}</Collapse>
                 </Tabs.TabPane>
             ])} />
         </div>

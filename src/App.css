@@ -607,3 +607,12 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 .ant-rate.acc-fav .ant-rate-star-full .ant-rate-star-second  {
   color: #1890ff;
 }
+
+.node-details.node-error,
+.node-details.node-error > .ant-collapse-content {
+  background-color: #fff2f0;
+}
+
+.node-details .node-error-icon {
+  color: #ff4d4f;
+}
