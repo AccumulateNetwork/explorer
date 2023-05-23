@@ -70,7 +70,7 @@ const Tokens = () => {
             title: 'Logo',
             width: 30,
             render: (row) => (
-                <Link to={'/acc/' + row.url.replace("acc://", "")}>
+                <Link to={'/acc/' + row.tokenIssuer.replace("acc://", "")}>
                     <Avatar size={40} src={row.logo}>{row.symbol}</Avatar>
                 </Link>
             )
@@ -79,7 +79,7 @@ const Tokens = () => {
             title: 'Token',
             render: (row) => (
                 <Paragraph>
-                    <Link to={'/acc/' + row.url.replace("acc://", "")}>
+                    <Link to={'/acc/' + row.tokenIssuer.replace("acc://", "")}>
                         {row.symbol}
                     </Link>
                     <br />
@@ -116,12 +116,6 @@ const Tokens = () => {
                 {totalTokens ? <Count count={totalTokens} /> : null }
             </Title>
             
-            <div className="featured" style={{ marginBottom: 20 }}>
-                Learn how to launch your own token on Accumulate in 5 minutes: <a href="https://docs.accumulatenetwork.io" target="_blank" rel="noopener noreferrer">
-                    <strong>docs.accumulatenetwork.io<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong>
-                </a>
-            </div>
-
             {tokens &&
                 <Table
                     dataSource={tokens}
