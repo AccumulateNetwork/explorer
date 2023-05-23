@@ -7,7 +7,7 @@ import {
 } from 'antd';
 
 import { IconContext } from "react-icons";
-import { RiEarthLine, RiExternalLinkLine } from 'react-icons/ri';
+import { RiEarthLine } from 'react-icons/ri';
 
 import axios from 'axios';
 import Count from '../common/Count';
