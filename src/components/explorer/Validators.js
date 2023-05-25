@@ -147,6 +147,8 @@ const Validators = () => {
             }
         }
         try {
+            if (!process.env.REACT_APP_METRICS_API_PATH)
+                throw new Error();
             const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/validators?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
             if (response && response.data) {
 
@@ -163,7 +165,8 @@ const Validators = () => {
             }
         }
         catch (error) {
-            message.error(error.message);
+            if (error.message)
+                message.error(error.message);
         }
         setTableIsLoading(false);
     }
