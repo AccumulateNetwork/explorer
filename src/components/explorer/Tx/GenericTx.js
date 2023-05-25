@@ -16,7 +16,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill, RiFileList2Line
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill, RiFileList2Line, RiExchangeLine
 } from 'react-icons/ri';
 
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -124,6 +124,17 @@ const GenericTx = props => {
                     {tx.sponsor ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Principal</nobr></span>}>
                             <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
+                        </Descriptions.Item>
+                    ) :
+                        null
+                    }
+
+                    {tx.produced?.length > 0 ? (
+                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
+                            {tx.produced.map(item =>
+                                <List.Item>
+                                    <Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{item}</Link>
+                                </List.Item>)}
                         </Descriptions.Item>
                     ) :
                         null

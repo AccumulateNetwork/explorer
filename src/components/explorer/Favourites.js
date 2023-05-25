@@ -16,7 +16,7 @@ const { Title } = Typography;
 
 const Favourites = () => {
 
-    const [favourites, setFavourites] = useState(JSON.parse(localStorage.getItem('favourites')).map((address) => {
+    const [favourites, setFavourites] = useState(JSON.parse(localStorage.getItem('favourites') || '[]').map((address) => {
         return { address, star: true }
     }));
 

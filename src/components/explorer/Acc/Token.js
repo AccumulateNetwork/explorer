@@ -44,7 +44,7 @@ const Token = props => {
 
             </Descriptions>
             
-            {token?.data?.symbol === "ACME" && 
+            {(token?.data?.symbol === "ACME" && process.env.REACT_APP_METRICS_API_PATH) && 
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

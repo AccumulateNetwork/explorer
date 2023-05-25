@@ -3,10 +3,11 @@ import { message } from 'antd';
 
 export default async function getSupply(setSupply, setAPR) {
     setSupply(null);
+    if (!process.env.REACT_APP_METRICS_API_PATH) return
 
     try {
         const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/supply");
-        if (response && response.data) {
+        if (response?.data) {
             setSupply(response.data);
         } else {
             throw new Error("Can not get ACME supply metrics");

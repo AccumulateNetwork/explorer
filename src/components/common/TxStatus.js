@@ -25,9 +25,9 @@ const TxStatus = props => {
                         </span>
                     }
                     {tx.status.code === "delivered" &&
-                        <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiCheckLine/></IconContext.Provider>Delivered</Tag>
+                        <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiCheckLine/></IconContext.Provider>Success</Tag>
                     }
-                    {tx.status.code === "unknownError" &&
+                    {tx.status.failed === true &&
                         <Tooltip overlayClassName="explorer-tooltip" title={"Error " + tx.status?.codeNum + ": " + tx.status?.error?.message}>
                             <Tag color="red" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiErrorWarningLine/></IconContext.Provider>Error</Tag>
                         </Tooltip>

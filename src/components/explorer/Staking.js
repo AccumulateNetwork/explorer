@@ -182,25 +182,28 @@ const Staking = () => {
         }
 
         try {
-          const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
-          if (response && response.data) {
+            if (!process.env.REACT_APP_METRICS_API_PATH)
+                throw new Error();
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
+            if (response && response.data) {
 
-            // workaround API bug response
-            if (response.data.start === null || response.data.start === undefined) {
-                response.data.start = 0;
+                // workaround API bug response
+                if (response.data.start === null || response.data.start === undefined) {
+                    response.data.start = 0;
+                }
+
+                setStakers(response.data.result);
+                setPagination({ ...pagination, current: (response.data.start / response.data.count) + 1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}` });
+                setTotalStakers(response.data.total);
+            } else {
+                throw new Error("Stakers not found");
             }
-
-            setStakers(response.data.result);
-            setPagination({...pagination, current: (response.data.start/response.data.count)+1, pageSize: response.data.count, total: response.data.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`});
-            setTotalStakers(response.data.total);
-          } else {
-            throw new Error("Stakers not found"); 
-          }
         }
-        catch(error) {
-          setStakers(null);
-          setTotalStakers(-1);
-          message.error(error.message);
+        catch (error) {
+            setStakers(null);
+            setTotalStakers(-1);
+            if (error.message)
+                message.error(error.message);
         }
         setTableIsLoading(false);
     }
@@ -250,39 +253,42 @@ const Staking = () => {
                 </Tabs>
             </Card>
 
+            {process.env.REACT_APP_METRICS_API_PATH &&
+                <>
+                    <Title level={4}>
+                        <IconContext.Provider value={{ className: 'react-icons' }}>
+                            <RiInformationLine />
+                        </IconContext.Provider>
+                        ACME Supply
+                    </Title>
 
-            <Title level={4}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiInformationLine />
-                </IconContext.Provider>
-                ACME Supply
-            </Title>
-            
-            {supply ? (
-                <Descriptions bordered column={1} size="middle">
-                    <Descriptions.Item label="Max supply">
-                        {supply.maxTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Total supply">
-                        {supply.totalTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
-                        <Progress percent={Math.round(supply.total/supply.max*100)} strokeColor={"#1677ff"} showInfo={false} />
-                        <Text type="secondary">{Math.round(supply.total/supply.max*100)}% of max supply is issued</Text>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Circulating supply">
-                        {supply.circulatingTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
-                        <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.circulating/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
-                        <Text type="secondary">{Math.round(supply.circulating/supply.total*100)}% of total supply is circulating</Text>
-                    </Descriptions.Item>
-                    <Descriptions.Item label="Staked">
-                        {supply.stakedTokens.toLocaleString('en-US', {maximumFractionDigits: 0})} ACME
-                        <Progress percent={Math.round(supply.total/supply.max*100)} success={{ percent: Math.round(supply.staked/supply.max*100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
-                        <Text type="secondary">{Math.round(supply.staked/supply.total*100)}% of total supply is staked</Text>
-                    </Descriptions.Item>
-                </Descriptions>
-            ) :
-                <div className="skeleton-holder">
-                    <Skeleton active />
-                </div>
+                    {supply ? (
+                        <Descriptions bordered column={1} size="middle">
+                            <Descriptions.Item label="Max supply">
+                                {supply.maxTokens.toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Total supply">
+                                {supply.totalTokens.toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                                <Progress percent={Math.round(supply.total / supply.max * 100)} strokeColor={"#1677ff"} showInfo={false} />
+                                <Text type="secondary">{Math.round(supply.total / supply.max * 100)}% of max supply is issued</Text>
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Circulating supply">
+                                {supply.circulatingTokens.toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                                <Progress percent={Math.round(supply.total / supply.max * 100)} success={{ percent: Math.round(supply.circulating / supply.max * 100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
+                                <Text type="secondary">{Math.round(supply.circulating / supply.total * 100)}% of total supply is circulating</Text>
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Staked">
+                                {supply.stakedTokens.toLocaleString('en-US', { maximumFractionDigits: 0 })} ACME
+                                <Progress percent={Math.round(supply.total / supply.max * 100)} success={{ percent: Math.round(supply.staked / supply.max * 100), strokeColor: "#1677ff" }} strokeColor={"#d6e4ff"} showInfo={false} />
+                                <Text type="secondary">{Math.round(supply.staked / supply.total * 100)}% of total supply is staked</Text>
+                            </Descriptions.Item>
+                        </Descriptions>
+                    ) :
+                        <div className="skeleton-holder">
+                            <Skeleton active />
+                        </div>
+                    }
+                </>
             }
         
             <Title level={4}>
@@ -297,7 +303,6 @@ const Staking = () => {
                 dataSource={stakers}
                 columns={columns}
                 pagination={pagination}
-                rowKey="entryHash"
                 loading={tableIsLoading}
                 onChange={getStakers}
                 sortDirections={["ascend", "descend", "ascend"]}
