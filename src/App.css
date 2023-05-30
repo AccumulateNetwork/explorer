@@ -608,9 +608,17 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   color: #1890ff;
 }
 
-.node-details.node-error,
-.node-details.node-error > .ant-collapse-content {
-  background-color: #fff2f0;
+.ant-table-row.node-details.node-error {
+  background-color: hsl(8, 100%, 97%);
+}
+
+.ant-table-row.node-details.node-error + .ant-table-expanded-row > .ant-table-cell {
+  background-color: hsl(8, 100%, 95%);
+}
+
+.ant-table-row.node-details.node-error:hover,
+.ant-table-row.node-details.node-error:hover > .ant-table-cell {
+  background-color: hsl(8, 100%, 95%);
 }
 
 .node-details .node-error-icon {

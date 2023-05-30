@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-    Typography, Table, Tag, Tabs, Alert, Collapse, Select
+    Typography, Table, Tag, Tabs, Alert, Select
 } from 'antd';
 
 import {
@@ -65,6 +65,8 @@ const Network = () => {
                         ...peerIDs[i],
                         data: {
                             partitions: {},
+                            validator: {},
+                            services: [],
                         },
                     };
                     peers.push(record);
@@ -74,6 +76,16 @@ const Network = () => {
                         continue;
                     } else {
                         record.info = response[i];
+                    }
+
+                    for (const service of record.info.services) {
+                        switch (service.type) {
+                            case 'node':
+                            case 'ServiceType:61441':
+                                continue;
+                            default:
+                                record.data.services.push(service);
+                        }
                     }
 
                     // List which consensus networks it participates in. A given
@@ -153,23 +165,15 @@ const Network = () => {
                         // Retrieve partition-specific data to simplify the
                         // columns
                         const status = peer.data.partitions[part.lcid];
-                        let validator = status && network.validators.find(x => x.publicKeyHash === status.validatorKeyHash);
-                        if (validator) {
-                            const active = validator.partitions.some(x => x.active && x.id.toLowerCase() === part.lcid)
-                            validator = { active, ...validator };
-                        }
+                        const validator = peer.data.validator[part.lcid];
 
-                        // Check the filter
-                        const entry = { peer, part, status, validator };
-                        if (!filter(entry)) continue;
-
-                        entries.push(entry);
+                        entries.push({ peer, part, status, validator });
                     }
 
                     return (
                         <Tabs.TabPane tab={part.id} key={part.lcid}>
                             <Table
-                                dataSource={entries}
+                                dataSource={entries.filter(({ peer, part }) => filter({ ...peer, part }))}
                                 columns={columns}
                                 rowKey={({ peer }) => peer.peerID}
                                 loading={peersAreLoading}
@@ -219,8 +223,16 @@ const Network = () => {
                         continue;
                     }
 
+                    // Record consensus status
                     peer.data.partitions[partition] = response[i];
                     status[`${peer.peerID}:${partition}`] = peer.data.partitions[partition];
+
+                    // Record validator info
+                    const validator = network.validators.find(x => x.publicKeyHash === response[i].validatorKeyHash);
+                    if (validator) {
+                        const active = validator.partitions.some(x => x.active && x.id.toLowerCase() === partition);
+                        peer.data.validator[partition] = { active, ...validator };
+                    }
                 }
                 setPeerStatus(status);
             } catch (error) {
@@ -229,31 +241,34 @@ const Network = () => {
         }
 
         load();
-    }, [peers, time])
+    }, [peers, time, network])
 
     const didChangeSelector = (values) => {
-        if (!values || !values.length) {
-            // Default to show all
-            setFilter(() => () => true);
-            return;
+        const fns = [];
+
+        const validators = values?.includes('validators');
+        const followers = values?.includes('followers');
+        if (!(validators && followers)) {
+            fns.push(peer => {
+                // Are we a validator on...
+                const isVal = peer.part
+                    ? peer.data.validator[peer.part.lcid]?.active             // The specified partition
+                    : Object.values(peer.data.validator).some(x => x.active); // Any partition
+
+                return (isVal && validators) || (!isVal && followers);
+            })
         }
 
-        const validators = values.includes('validators');
-        const followers = values.includes('followers');
-
-        if (!validators && !followers) {
-            // Default to show all
-            setFilter(() => () => true);
-        } else if (validators && followers) {
-            // Show validators and followers
-            setFilter(() => () => true);
-        } else if (validators) {
-            // Only show validators
-            setFilter(() => ({ validator }) => validator?.active);
-        } else {
-            // Only show followers
-            setFilter(() => ({ validator }) => !validator?.active);
+        if (values?.includes('errors')) {
+            fns.push((peer) => peer.error);
         }
+        
+        setFilter(() => peer => {
+            for (const fn of fns)
+                if (!fn(peer))
+                    return false;
+            return true;
+        })
     }
 
     const tabsExtra = (
@@ -266,7 +281,48 @@ const Network = () => {
             >
             <Select.Option key="validators">Validators</Select.Option>
             <Select.Option key="followers">Followers</Select.Option>
+            <Select.Option key="errors">Errors</Select.Option>
         </Select>
+    );
+
+    const allNodesColumns = [
+        {
+            title: 'ID',
+            dataIndex: ['peerID'],
+        },
+        {
+            title: '', // Status
+            render: (peer) => (
+                peer.error && <CloseCircleFilled className="node-error-icon" />
+            ),
+        },
+        {
+            title: 'Services',
+            dataIndex: ['data', 'services', 'length'],
+        }
+    ];
+
+    const allNodesExpanded = (peer) => (
+        <div>
+            {peer.error && <pre>{peer.error.message}</pre>}
+            {peer.info && peer.data.services.map(service =>
+                <Tag color="blue">{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
+            )}
+        </div>
+    );
+
+    const allNodes = (
+        <Table
+            dataSource={peers.filter(peer => filter(peer))}
+            columns={allNodesColumns}
+            rowClassName={(peer) => `node-details ${peer.error && "node-error"}`}
+            rowKey="peerID"
+            loading={peersAreLoading}
+            expandable={{
+                rowExpandable: (peer) => peer.error || peer.data.services.length > 0,
+                expandedRowRender: allNodesExpanded,
+            }}
+        />
     );
 
     return (
@@ -278,28 +334,7 @@ const Network = () => {
             {error ? <Alert message={error} type="error" showIcon /> : null}
 
             <Tabs defaultActiveKey="directory" tabBarExtraContent={tabsExtra} children={dynamicTabs.concat([
-                <Tabs.TabPane tab="All Nodes" key="all">
-                    <Collapse>{peers.map(peer =>
-                        <Collapse.Panel
-                            className={`node-details ${peer.error && "node-error"}`}
-                            key={peer.peerID}
-                            header={peer.error ? <span><CloseCircleFilled className="node-error-icon" /> {peer.peerID}</span> : <span>{peer.peerID}</span>}
-                            >
-                            {peer.error && <pre>{peer.error.message}</pre>}
-                            {peer.info && peer.info.services.filter(service => {
-                                switch (service.type) {
-                                    case 'node':
-                                    case 'ServiceType:61441':
-                                        return false;
-                                    default:
-                                        return true;
-                                }
-                            }).map(service =>
-                                <Tag color="blue">{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
-                            )}
-                        </Collapse.Panel>
-                    )}</Collapse>
-                </Tabs.TabPane>
+                <Tabs.TabPane tab="All Nodes" key="all" children={allNodes} />
             ])} />
         </div>
     )
