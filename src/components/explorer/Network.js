@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-    Typography, Table, Tag, Tabs, Alert, Collapse
+    Typography, Table, Tag, Tabs, Alert, Collapse, Select
 } from 'antd';
 
 import {
@@ -22,6 +22,7 @@ const Network = () => {
             Loading...
         </Tabs.TabPane>
     ]);
+    const [filter, setFilter] = useState(() => () => true)
 
     // Fetch network global variables, such as partitions and validators. This
     // changes extremely infrequently so loading this once is sufficient.
@@ -157,7 +158,12 @@ const Network = () => {
                             const active = validator.partitions.some(x => x.active && x.id.toLowerCase() === part.lcid)
                             validator = { active, ...validator };
                         }
-                        entries.push({ peer, part, status, validator });
+
+                        // Check the filter
+                        const entry = { peer, part, status, validator };
+                        if (!filter(entry)) continue;
+
+                        entries.push(entry);
                     }
 
                     return (
@@ -180,6 +186,7 @@ const Network = () => {
         peers,
         peersAreLoading,
         network,
+        filter,
         peerStatus, // This ensures the table is updated when the statuses are updated
     ])
 
@@ -224,6 +231,44 @@ const Network = () => {
         load();
     }, [peers, time])
 
+    const didChangeSelector = (values) => {
+        if (!values || !values.length) {
+            // Default to show all
+            setFilter(() => () => true);
+            return;
+        }
+
+        const validators = values.includes('validators');
+        const followers = values.includes('followers');
+
+        if (!validators && !followers) {
+            // Default to show all
+            setFilter(() => () => true);
+        } else if (validators && followers) {
+            // Show validators and followers
+            setFilter(() => () => true);
+        } else if (validators) {
+            // Only show validators
+            setFilter(() => ({ validator }) => validator?.active);
+        } else {
+            // Only show followers
+            setFilter(() => ({ validator }) => !validator?.active);
+        }
+    }
+
+    const tabsExtra = (
+        <Select
+            mode='multiple'
+            placeholder="Place select a value"
+            defaultValue={['validators', 'followers']}
+            onChange={didChangeSelector}
+            style={{ minWidth: 150 }}
+            >
+            <Select.Option key="validators">Validators</Select.Option>
+            <Select.Option key="followers">Followers</Select.Option>
+        </Select>
+    );
+
     return (
         <div>
             <Title level={2} style={{ display: 'flex' }}>
@@ -232,7 +277,7 @@ const Network = () => {
 
             {error ? <Alert message={error} type="error" showIcon /> : null}
 
-            <Tabs defaultActiveKey="directory" children={dynamicTabs.concat([
+            <Tabs defaultActiveKey="directory" tabBarExtraContent={tabsExtra} children={dynamicTabs.concat([
                 <Tabs.TabPane tab="All Nodes" key="all">
                     <Collapse>{peers.map(peer =>
                         <Collapse.Panel
