@@ -33,7 +33,7 @@ import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
 import TxAddCredits from '../../common/TxAddCredits';
 import Signatures from '../../common/Signatures';
 import getTs from '../../common/GetTS';
-
+import { Button } from 'antd';
 const { Title, Text, Paragraph } = Typography;
 
 const GenericTx = props => {
@@ -51,6 +51,7 @@ const GenericTx = props => {
     const [ts, setTs] = useState(null);
     const [block, setBlock] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
+    const [showAllProduced, setShowAllProduced] = useState(false);
 
     let utcOffset = moment().utcOffset() / 60;
 
@@ -131,10 +132,13 @@ const GenericTx = props => {
 
                     {tx.produced?.length > 0 ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
-                            {tx.produced.map(item =>
+                            {tx.produced.slice(0, showAllProduced ? tx.produced.length : 5).map((item, index) =>
                                 <List.Item>
                                     <Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{item}</Link>
                                 </List.Item>)}
+                            {tx.produced.length > 5 && !showAllProduced && (
+                                <List.Item key={"more"}><Button onClick={e => setShowAllProduced(true) } >+{tx.produced.length - 5} more</Button></List.Item>
+                            )}
                         </Descriptions.Item>
                     ) :
                         null
