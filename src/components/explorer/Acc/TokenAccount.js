@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import querystring from 'querystring'
 
 import { Link } from 'react-router-dom';
 
@@ -95,6 +97,20 @@ const TokenAccount = props => {
             // error is managed by RPC.js, no need to display anything
         }
         setTableIsLoading(false);
+    }
+
+    const getStakingInfo = async (url) => {
+        try {
+            let params = {stake: url};
+            const response = await axios.post(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/search", querystring.stringify(params), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+            if (response && response.data && !response.data.error) {
+                tokenAccount.rewards = response.data.rewards
+                tokenAccount.delegate = response.data.delegate
+            }
+        }
+        catch(error) {
+            setError(error.message);
+        }
     }
 
     function TxOutputs(props) {
@@ -267,6 +283,7 @@ const TokenAccount = props => {
 
     useEffect(() => {
         getToken();
+        getStakingInfo(tokenAccount.data.url);
         getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -345,6 +362,26 @@ const TokenAccount = props => {
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
                                 {tokenAmount(tokenAccount.data.balance, token.precision, token.symbol)}
                                 <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tokenAccount.data.balance, token.precision, token.symbol)}</Text>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+
+                        {tokenAccount.delegate ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.delegate}><RiQuestionLine /></Tooltip></IconContext.Provider>Delegate</nobr></span>}>
+                                <Link to={'/acc/' + tokenAccount.delegate.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.delegate}
+                                </Link>
+                            </Descriptions.Item>
+                        ) :
+                            null
+                        }
+
+                        {tokenAccount.rewards ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.rewards}><RiQuestionLine /></Tooltip></IconContext.Provider>Rewards</nobr></span>}>
+                                <Link to={'/acc/' + tokenAccount.rewards.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.rewards}
+                                </Link>
                             </Descriptions.Item>
                         ) :
                             null
