@@ -41,8 +41,8 @@ const MinorBlocks = props => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/block/' + row.blockIndex}>
-                                {row.blockIndex}
+                            <Link to={'/block/' + row.index}>
+                                {row.index}
                             </Link>
                         </div>
                     )
@@ -58,9 +58,9 @@ const MinorBlocks = props => {
             width: 225,
             render: (row) => {
                 if (row) {
-                    if (row.blockTime) {
+                    if (row.time) {
                         return (
-                            <Text className="code">{moment(row.blockTime).format("YYYY-MM-DD HH:mm:ss")}</Text>                        
+                            <Text className="code">{moment(row.time).format("YYYY-MM-DD HH:mm:ss")}</Text>                        
                         )    
                     } else {
                         return (
@@ -78,9 +78,9 @@ const MinorBlocks = props => {
             title: 'Transactions',
             render: (row) => {
                 if (row) {
-                    if (row.transactions) {
+                    if (row.entries) {
                         return (
-                            <BlockTxs data={row.transactions} />                 
+                            <BlockTxs data={row.entries} />                 
                         )    
                     } else {
                         return (
@@ -101,9 +101,9 @@ const MinorBlocks = props => {
             align: 'center',
             render: (row) => {
                 if (row) {
-                    if (row.txCount) {
+                    if (row.entries?.total) {
                         return (
-                            <Text>{row.txCount}</Text>                        
+                            <Text>{row.entries.total}</Text>                        
                         )    
                     } else {
                         return (
@@ -120,15 +120,15 @@ const MinorBlocks = props => {
     ];
 
     function BlockTxs(props) {
-        const data = props.data;
+        const data = props.data.records;
         const items = data.map((item) =>
-          <span>
+          <span key={item.entry}>
           <Tooltip overlayClassName="explorer-tooltip" title={item.type ? item.type : "Unknown type"}>
-          <Link to={'/acc/' + item.txid.replace("acc://", "")}>
+          <Link to={'/acc/' + item.entry}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiExchangeLine />
             </IconContext.Provider>
-            {item.txid}
+            {item.entry}
           </Link>
           </Tooltip>
           <br />
@@ -141,24 +141,15 @@ const MinorBlocks = props => {
 
     const getMinorBlocks = async (params = pagination) => {
         setTableIsLoading(true);
-    
-        let start = 1; // in `query-minor-blocks` API the first item has index 1, not 0
-        let count = 10;
-        let showTotalStart = 1;
-        let showTotalFinish = 10;
-    
-        if (params) {
-            start = (params.current-1)*params.pageSize+1; // in `query-minor-blocks` API the first item has index 1, not 0
-            count = params.pageSize;
-            showTotalStart = (params.current-1)*params.pageSize+1;
-            showTotalFinish = params.current*params.pageSize;
-        }
-    
+            
+        if (!params) return
+        const start = (params.current - 1) * params.pageSize; // in `query-minor-blocks` API the first item has index 1, not 0
+
         try {
-          const response = await RPC.request("query-minor-blocks", { url: props.url, start: start, count: count } );
-          if (response && response.type === 'minorBlock') {
-            setMinorBlocks(response.items.slice(0, response.count));
-            setPagination({...pagination, current: ((response.start-1)/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`}); // in `query-minor-blocks` API the first item has index 1, not 0
+          const response = await RPC.request("query", { "scope": "dn.acme", "query": { "queryType": "block", "minorRange": { "fromEnd": true, "count": params.pageSize, start } } }, 'v3' );
+          if (response && response.recordType === 'range') {
+            setMinorBlocks(response.records.reverse());
+            setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
             setTotalEntries(response.total);
           } else {
             throw new Error("Transaction chain not found"); 
@@ -187,6 +178,7 @@ const MinorBlocks = props => {
                         dataSource={minorBlocks}
                         columns={columns}
                         pagination={pagination}
+                        rowKey="index"
                         loading={tableIsLoading}
                         onChange={getMinorBlocks}
                         scroll={{ x: 'max-content' }}
