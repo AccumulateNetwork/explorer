@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import querystring from 'querystring'
 
 import { Link } from 'react-router-dom';
 
@@ -11,7 +10,8 @@ import {
     Tag,
     Table,
     Alert,
-    Skeleton
+    Skeleton,
+    message
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -34,6 +34,7 @@ const TokenAccount = props => {
     const tokenAccount = props.data;
     const [token, setToken] = useState(null);
     const [txs, setTxs] = useState(null);
+    const [stakingAccount, setStakingAccount] = useState(null);
     const [error, setError] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
@@ -87,7 +88,7 @@ const TokenAccount = props => {
                 }
 
                 setTxs(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+                setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
                 setTotalTxs(response.total);
             } else {
                 throw new Error("Token account not found");
@@ -101,15 +102,21 @@ const TokenAccount = props => {
 
     const getStakingInfo = async (url) => {
         try {
-            let params = {stake: url};
-            const response = await axios.post(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/search", querystring.stringify(params), { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
+            if (!process.env.REACT_APP_METRICS_API_PATH)
+                throw new Error();
+
+            // prepare form
+            let params = new FormData();
+            params.append('stake', url);
+
+            const response = await axios.post(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/search", params, { headers: { 'Content-Type': 'multipart/form-data' } });
             if (response && response.data && !response.data.error) {
-                tokenAccount.rewards = response.data.rewards
-                tokenAccount.delegate = response.data.delegate
+                setStakingAccount(response.data);
             }
         }
         catch(error) {
-            setError(error.message);
+            // no need to setError here, because an error won't prevent rendering of the page
+            message.error("Can not connect to Metrics API");
         }
     }
 
@@ -367,20 +374,25 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {tokenAccount.delegate ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.delegate}><RiQuestionLine /></Tooltip></IconContext.Provider>Delegate</nobr></span>}>
-                                <Link to={'/acc/' + tokenAccount.delegate.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.delegate}
-                                </Link>
+                        {stakingAccount && stakingAccount.type ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.stakingType}><RiQuestionLine /></Tooltip></IconContext.Provider>Staking Type</nobr></span>}>
+                                <Tag color={stakingAccount.type ? "green" : "cyan"}>{stakingAccount.type}</Tag>
+                                {stakingAccount.delegate ? (
+                                    <Link to={'/acc/' + stakingAccount.delegate.replace("acc://", "")}>
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{stakingAccount.delegate}
+                                    </Link>
+                                ) :
+                                    null
+                                }
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {tokenAccount.rewards ? (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.rewards}><RiQuestionLine /></Tooltip></IconContext.Provider>Rewards</nobr></span>}>
-                                <Link to={'/acc/' + tokenAccount.rewards.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tokenAccount.rewards}
+                        {stakingAccount && stakingAccount.rewards ? (
+                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.stakingRewards}><RiQuestionLine /></Tooltip></IconContext.Provider>Staking Rewards</nobr></span>}>
+                                <Link to={'/acc/' + stakingAccount.rewards.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{stakingAccount.rewards}
                                 </Link>
                             </Descriptions.Item>
                         ) :

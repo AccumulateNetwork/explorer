@@ -31,8 +31,8 @@ const tooltipDescs = {
     maxSupply: "The maximum number of ACME coded to exist in the lifetime of the cryptocurrency.",
     totalSupply: "The amount of ACME that have already been created.",
     circSupply: "The amount of ACME that are circulating in the market, calculated as total supply minus ACME owned by the Accumulate Foundation.",
-    delegate: "Delegate",
-    rewards: "Rewards"
+    stakingType: "Type of the staking",
+    stakingRewards: "Token account where staking rewards are deposited"
 };
 
 export default tooltipDescs;
