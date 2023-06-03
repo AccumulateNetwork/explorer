@@ -50,14 +50,13 @@ const Staking = () => {
             title: 'Identity',
             sorter: true,
             render: (row) => {
-                if (row.identity) {
+                if (row.identity && row.stake) {
                     return (
                         <div>
-                    <Tooltip overlayClassName="explorer-tooltip" title={row.stake}>
                             <Link to={'/acc/' + row.stake.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.identity}
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{row.identity}<br />
+                                <Text type="secondary">{row.stake.replace(row.identity, "")}</Text>
                             </Link>
-                    </Tooltip>
                             {row.identity === "acc://accumulate.acme" ? (
                                 <div className="name-tag"><Tag>Accumulate Foundation</Tag></div>
                             ) : null}
