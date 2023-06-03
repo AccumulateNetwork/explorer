@@ -116,7 +116,7 @@ const TokenAccount = props => {
         }
         catch(error) {
             // no need to setError here, because an error won't prevent rendering of the page
-            message.error("Can not connect to Metrics API");
+            message.error("Can not get staking data from Metrics API");
         }
     }
 
