@@ -52,7 +52,7 @@ const TxUpdateKeyPage = props => {
                     }
 
                     {tx.data.operation ? (
-                        <Descriptions.Item label={"Operations"} className={"align-top"}>
+                        <Descriptions.Item label={"Operations"} className={"align-top has-list"}>
                             <TxOperations data={tx.data.operation} showAll={true}/>
                         </Descriptions.Item>
                     ) :

@@ -52,7 +52,7 @@ const TxUpdateAccountAuth = props => {
                     }
 
                     {tx.data.operations ? (
-                        <Descriptions.Item label={"Operations"} className={"align-top"}>
+                        <Descriptions.Item label={"Operations"} className={"align-top has-list"}>
                             <TxOperations data={tx.data.operations} />
                         </Descriptions.Item>
                     ) :
