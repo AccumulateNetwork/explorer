@@ -14,6 +14,10 @@ const Tx = ({ match }) => {
     const [tx, setTx] = useState(null);
     const [error, setError] = useState(null);
 
+    const redirect = (url) => {
+        window.location.href = url;
+    }
+
     const getTx = async (hash) => {
         document.title = "Transaction " + hash + " | Accumulate Explorer";
         setTx(null);
@@ -22,13 +26,8 @@ const Tx = ({ match }) => {
 
             let params = {txid: hash};
             const response = await RPC.request("query-tx", params);
-            if (response && response.data) {
-                if (response.type === "syntheticTokenDeposit") {
-                    let to = {url: response.data.to, amount: response.data.amount, txid: response.data.txid};
-                    response.data.to = [];
-                    response.data.to.push(to);
-                }
-                setTx(response);
+            if (response && response.txid) {
+                redirect('/acc/'+response.txid.replace("acc://", ""));
             } else {
                 throw new Error("Transaction " + hash + " not found"); 
             }
@@ -49,7 +48,7 @@ const Tx = ({ match }) => {
 
     useEffect(() => {
         getTx(match.params.hash);
-    }, [match.params.hash]);
+    }, [match.params.hash]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>

@@ -16,7 +16,7 @@ export default function TxOperations(props) {
         <List.Item key={{index}}>
             <div>
             {item.type &&
-                <Tag color="green">{item.type}</Tag>
+                <Tag color="default">{item.type}</Tag>
             }
             {item.threshold &&
                 item.threshold
@@ -39,7 +39,7 @@ export default function TxOperations(props) {
         items.push(<List.Item key={"more"}><Button onClick={e => setShowAll(true) } >+{extra} more</Button></List.Item>);
     }
     return (
-        <List>
+        <List split={false}>
             {items}
         </List>
     );

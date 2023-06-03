@@ -607,3 +607,11 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 .ant-rate.acc-fav .ant-rate-star-full .ant-rate-star-second  {
   color: #1890ff;
 }
+
+.ant-descriptions-item-content.has-list .ant-list-item {
+  padding: 0 0 10px 0 !important;
+}
+
+.ant-descriptions-item-content.has-list .ant-list-item:last-child {
+  padding-bottom: 0 !important;
+}
