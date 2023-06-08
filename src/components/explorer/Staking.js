@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import Web3 from 'web3';
 
 import {
-  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Tooltip, Card, Progress, message
+  Typography, Skeleton, Descriptions, Table, Tag, Tabs, Card, Progress, message
 } from 'antd';
 
 import { IconContext } from "react-icons";
