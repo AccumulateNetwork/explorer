@@ -7,6 +7,7 @@ import {
   DownOutlined, MoreOutlined
 } from '@ant-design/icons';
 
+import networks from "./common/Networks.json";
 import { IconContext } from "react-icons";
 import {
   RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine, RiStarLine
@@ -46,54 +47,41 @@ const Explorer = props => {
   };
 
   const ExplorerSelect = (
-    <Menu>
-      <Menu.Item key="Mainnet">
-          <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-              <Badge status="success" text="Mainnet" />
-          </a>
-      </Menu.Item>
-      <Menu.Item key="Testnet">
-          <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
-              <Badge status="success" text="Testnet" />
-          </a>
-      </Menu.Item>
-    </Menu>
+      <Menu>
+          {networks.map((item) => (
+              <Menu.Item key={item.name}>
+                  <a target="_blank" rel="noopener noreferrer" href={item.url}>
+                      <Badge status="success" text={item.name} />
+                  </a>
+              </Menu.Item>
+          ))}
+      </Menu>
   );
 
   const ExplorerSelectFooter = (
     <Menu>
-      <Menu.Item key="Mainnet">
-            <a target="_blank" rel="noopener noreferrer" href="https://explorer.accumulatenetwork.io">
-                Mainnet
-            </a>
-      </Menu.Item>
-      <Menu.Item key="Testnet">
-            <a target="_blank" rel="noopener noreferrer" href="https://testnet.explorer.accumulatenetwork.io">
-                Testnet
-            </a>
-      </Menu.Item>
+        {networks.map((item) => (
+            <Menu.Item key={item.name}>
+                <a target="_blank" rel="noopener noreferrer" href={item.url}>
+                    {item.name}
+                </a>
+            </Menu.Item>
+        ))}
     </Menu>
   );
 
   useEffect(() => {
 
     if (process.env.REACT_APP_API_PATH) {
-        setIsMainnet(false);
-        switch (process.env.REACT_APP_API_PATH) {
-            case 'https://mainnet.accumulatenetwork.io':
-            case 'https://api-gateway.accumulate.defidevs.io':
-            setCurrentNetwork("Mainnet");
-            setIsMainnet(true);
+        for (const network of networks)
+          if (network.api.includes(process.env.REACT_APP_API_PATH)) {
+            setCurrentNetwork(network.name);
+            setIsMainnet(network.mainnet);
             break;
-        case 'https://testnet.accumulatenetwork.io':
-            setCurrentNetwork("Testnet");
-            break;
-        default:
-            setCurrentNetwork("Unknown");
-            break;
-      }
+          }
+      
     } else {
-      setCurrentNetwork("Unknown");
+        setCurrentNetwork('Unknown');
     }
 
     if (window.location.pathname === "/" || window.location.pathname.includes("blocks")) {
