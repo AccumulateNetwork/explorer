@@ -73,13 +73,10 @@ const Explorer = props => {
   useEffect(() => {
 
     if (process.env.REACT_APP_API_PATH) {
-        for (const network of networks)
-          if (network.api.includes(process.env.REACT_APP_API_PATH)) {
-            setCurrentNetwork(network.name);
-            setIsMainnet(network.mainnet);
-            break;
-          }
+        const matchedNetwork = networks.find(network => network.api.includes(process.env.REACT_APP_API_PATH));
       
+        setCurrentNetwork(matchedNetwork?.name || 'Unknown');
+        setIsMainnet(matchedNetwork?.mainnet || false);
     } else {
         setCurrentNetwork('Unknown');
     }
