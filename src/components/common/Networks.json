@@ -1,0 +1,19 @@
+[
+    {
+      "name": "Mainnet",
+      "mainnet": true,
+      "url": "https://explorer.accumulatenetwork.io",
+      "api": [
+        "https://api-gateway.accumulate.defidevs.io",
+        "https://mainnet.accumulatenetwork.io"
+      ]
+    },
+    {
+      "name": "Testnet",
+      "mainnet": false,
+      "url": "https://testnet.explorer.accumulatenetwork.io",
+      "api": [
+        "https://testnet.accumulatenetwork.io"
+      ]
+    }
+  ]

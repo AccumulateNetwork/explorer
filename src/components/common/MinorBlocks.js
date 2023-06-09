@@ -124,7 +124,7 @@ const MinorBlocks = props => {
         const items = data.map((item) =>
           <span key={item.entry}>
           <Tooltip overlayClassName="explorer-tooltip" title={item.type ? item.type : "Unknown type"}>
-          <Link to={'/acc/' + item.entry}>
+          <Link to={'/tx/' + item.entry}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiExchangeLine />
             </IconContext.Provider>
