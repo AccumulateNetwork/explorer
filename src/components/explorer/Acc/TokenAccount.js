@@ -32,6 +32,7 @@ const { Text, Title, Paragraph } = Typography;
 const TokenAccount = props => {
 
     const tokenAccount = props.data;
+    if (tokenAccount.data && !tokenAccount.data.balance) tokenAccount.data.balance = 0;
     const [token, setToken] = useState(null);
     const [txs, setTxs] = useState(null);
     const [stakingAccount, setStakingAccount] = useState(null);
