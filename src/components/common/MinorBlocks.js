@@ -78,7 +78,7 @@ const MinorBlocks = props => {
             title: 'Transactions',
             render: (row) => {
                 if (row) {
-                    if (row.entries) {
+                    if (row?.entries) {
                         return (
                             <BlockTxs data={row.entries} />                 
                         )    
@@ -120,8 +120,8 @@ const MinorBlocks = props => {
     ];
 
     function BlockTxs(props) {
-        const data = props.data.records;
-        const items = data.map((item) =>
+        if (!props?.data?.records) return (<Text disabled>Empty block</Text>);
+        const items = props.data.records.map((item) =>
           <span key={item.entry}>
           <Tooltip overlayClassName="explorer-tooltip" title={item.type ? item.type : "Unknown type"}>
           <Link to={'/tx/' + item.entry}>
