@@ -20,6 +20,7 @@ import SearchForm from './common/SearchForm';
 
 import Blocks from './explorer/Blocks';
 import Staking from './explorer/Staking';
+import MinorBlocks from './common/MinorBlocks';
 import Favourites from './explorer/Favourites';
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
@@ -200,6 +201,7 @@ const Explorer = props => {
                 <Route path="/tokens" component={Tokens} />
                 <Route path="/staking" component={Staking} />
                 <Route path="/favourites" component={Favourites} />
+                <Route path="/blocks" component={MinorBlocks} />
 
                 <Route component={Error404} />
             </Switch>

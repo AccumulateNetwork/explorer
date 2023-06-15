@@ -167,7 +167,7 @@ const MinorBlocks = props => {
 
     return (
         <div>
-            {props.url ? (
+            {(props.url || "acc://dn.acme") ? (
                 <div>
                     <Title level={3} style={{ marginTop: 30 }}>
                         {header}
