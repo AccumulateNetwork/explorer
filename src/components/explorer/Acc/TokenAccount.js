@@ -102,10 +102,9 @@ const TokenAccount = props => {
     }
 
     const getStakingInfo = async (url) => {
-        try {
-            if (!process.env.REACT_APP_METRICS_API_PATH)
-                throw new Error();
+        if (!process.env.REACT_APP_METRICS_API_PATH) return
 
+        try {
             // prepare form
             let params = new FormData();
             params.append('stake', url);
