@@ -10,7 +10,6 @@ const Web3 = require('web3');
 
 const getLibrary = (provider) => {
   const library = new Web3(provider);
-  library.pollingInterval = 8000; // frequency provider is polling
   return library;
 };
 
