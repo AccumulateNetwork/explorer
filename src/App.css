@@ -615,3 +615,86 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 .ant-descriptions-item-content.has-list .ant-list-item:last-child {
   padding-bottom: 0 !important;
 }
+
+.web3-module {
+  margin-bottom: 20px;
+  margin-top: -25px;
+  margin-left: -20px;
+  margin-right: -20px;
+  background: #d6e4ff;
+  padding: 10px 20px 0px 20px;
+}
+
+.web3-module.connected {
+  background: #ffffff;
+}
+
+.web3-module .react-icons {
+  margin-right: 5px;
+  margin-top: -3px;
+}
+
+.web3-module .react-icons.react-icons-only-icon {
+  margin-right: 0;
+}
+
+.web3-module .react-icons.react-icons-end {
+  margin-right: 0;
+  margin-left: 5px;
+}
+
+.web3-module .login .react-icons {
+  color: #1890ff;
+}
+
+.web3-module .ant-typography {
+  margin-bottom: 0 !important;
+}
+
+.web3-module .login .ant-col {
+  margin-bottom: 10px;
+}
+
+.web3-module .account .ant-btn {
+  margin-bottom: 10px;
+  margin-right: 8px;
+}
+
+.web3-module .account .card-container {
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.web3-module .account .card-container .react-icons {
+  opacity: 0.5;
+  margin-top: -1px;
+  margin-right: 4px;
+}
+
+.web3-module .account .card-container .ant-tabs-nav .react-icons {
+  margin-top: -2px;
+  margin-left: -2px;
+}
+
+.web3-module .account .card-container h5 {
+  font-size: 14px;
+}
+
+.web3-module .account .card-container h5.ant-typography .react-icons {
+  margin-left: 4px;
+  margin-top: -2px;
+}
+
+.web3-module .account .card-container .ant-tabs-nav {
+  margin: 0;
+}
+
+.web3-module .account .card-container .ant-tabs-content-holder {
+  background: #FFFFFF;
+  padding: 18px 16px 12px 16px;
+}
+
+.web3-module .account .card-container .ant-tabs-nav .ant-badge {
+  margin-top: -3px;
+  margin-left: 5px;
+}

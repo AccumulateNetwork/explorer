@@ -13,7 +13,8 @@
       "mainnet": false,
       "url": "https://kermit.explorer.accumulatenetwork.io",
       "api": [
-        "https://kermit.accumulatenetwork.io"
+        "https://kermit.accumulatenetwork.io",
+        "https://testnet.accumulatenetwork.io"
       ]
     },
     {
@@ -21,7 +22,7 @@
       "mainnet": false,
       "url": "https://fozzie.explorer.accumulatenetwork.io",
       "api": [
-        "https://testnet.accumulatenetwork.io"
+        "https://fozzie.accumulatenetwork.io"
       ]
     }
   ]

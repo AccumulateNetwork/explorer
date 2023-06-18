@@ -44,4 +44,6 @@ class RPC {
 
 }
 
-export default new RPC();
+const rpc = new RPC()
+
+export default rpc;
