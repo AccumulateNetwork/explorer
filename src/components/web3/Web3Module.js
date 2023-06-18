@@ -31,7 +31,7 @@ const { Title, Paragraph } = Typography;
 const Web3Module = props => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDashboardOpen, setIsDashboardOpen] = useState(false);
+  const [isDashboardOpen, setIsDashboardOpen] = useState(localStorage.getItem("isDashboardOpen") ? true : false);
 
   const {
     account,
@@ -53,6 +53,11 @@ const Web3Module = props => {
 
   const toggleDashboard = () => {
     setIsDashboardOpen(!isDashboardOpen);
+    if (!isDashboardOpen) {
+      localStorage.setItem("isDashboardOpen", true);
+    } else {
+      localStorage.removeItem("isDashboardOpen");
+    }
   }
 
   const injected = new InjectedConnector();
@@ -62,6 +67,7 @@ const Web3Module = props => {
         activate(injected);
         localStorage.setItem("connected", injected);
         setIsModalOpen(false);
+        toggleDashboard();
     } else {
         message.warning("Web3 browser extension not found");
     }
