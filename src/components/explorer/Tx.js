@@ -24,10 +24,10 @@ const Tx = ({ match }) => {
         setError(null);
         try {
 
-            let params = {txid: hash};
-            const response = await RPC.request("query-tx", params);
-            if (response && response.txid) {
-                redirect('/acc/'+response.txid.replace("acc://", ""));
+            let params = {scope: `${hash}@unknown`};
+            const response = await RPC.request("query", params, "v3");
+            if (response && response.id) {
+                redirect('/acc/'+response.id.replace("acc://", ""));
             } else {
                 throw new Error("Transaction " + hash + " not found"); 
             }

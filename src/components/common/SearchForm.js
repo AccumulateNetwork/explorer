@@ -57,11 +57,11 @@ function SearchForm() {
 
   const searchTxhash = async (txhash) => {
     try {
-        let params = {txid: txhash};
-        const response = await RPC.request("query-tx", params);
-        if (response && response.data && response.txid) {
+        let params = {scope: `${txhash}@unknown`};
+        const response = await RPC.request("query", params, "v3");
+        if (response && response.id) {
           setSearchIsLoading(false);
-          redirect('/acc/'+response.txid.replace("acc://", ""));
+          redirect('/acc/'+response.id.replace("acc://", ""));
         } else {
           setSearchIsLoading(false);
           message.info('Nothing was found');
