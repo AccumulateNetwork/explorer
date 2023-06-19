@@ -21,7 +21,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiPenNibLine, RiListCheck
+    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiPenNibLine, RiListCheck, RiStackLine
 } from 'react-icons/ri';
 
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
@@ -52,12 +52,12 @@ const Web3Module = props => {
   };
 
   const toggleDashboard = () => {
-    setIsDashboardOpen(!isDashboardOpen);
     if (!isDashboardOpen) {
       localStorage.setItem("isDashboardOpen", true);
     } else {
       localStorage.removeItem("isDashboardOpen");
     }
+    setIsDashboardOpen(!isDashboardOpen);
   }
 
   const injected = new InjectedConnector();
@@ -143,7 +143,7 @@ const Web3Module = props => {
                       123
                     </Paragraph>
                   </Tabs.Pane>
-                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiPenNibLine /></IconContext.Provider>Signers</span>} key="signers">
+                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>Key Pages</span>} key="signers">
                     <Paragraph>
                       123
                     </Paragraph>
