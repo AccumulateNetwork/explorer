@@ -640,8 +640,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .web3-module .react-icons.react-icons-end {
-  margin-right: 0;
-  margin-left: 5px;
+  margin-right: 1px !important;
+  margin-left: 2px;
 }
 
 .web3-module .login .react-icons {
@@ -718,6 +718,11 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 
 .web3-module .account .card-container .ant-alert ul {
   margin-bottom: 0;
+}
+
+.web3-module .account .card-container .ant-alert .react-icons {
+  opacity: 1;
+  margin-top: -3px;
 }
 
 .web3-module .account .card-container .ant-divider {

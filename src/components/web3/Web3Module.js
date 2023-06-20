@@ -24,7 +24,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill
+    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill, RiExternalLinkLine
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
@@ -174,7 +174,8 @@ const Web3Module = props => {
                       <Alert type="warning" message={
                         <Text>
                           <strong>Lite Identity does not exist yet</strong><br />
-                          To create a lite identity send ACME to <Text copyable={{text: ethToAccumulate(account, "liteTokenAccount")}}><Text mark>{ethToAccumulate(account, "liteTokenAccount")}</Text></Text>
+                          To create a lite identity send ACME to <Text copyable={{text: ethToAccumulate(account, "liteTokenAccount")}}><Text mark>{ethToAccumulate(account, "liteTokenAccount")}</Text></Text><br />
+                          You can also <a href="https://bridge.accumulatenetwork.io/release" target="_blank" rel="noreferrer"><strong>bridge WACME<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a> from Ethereum or Arbitrum, using the above address as the destination.
                         </Text>
                       } />
                     ) : 
