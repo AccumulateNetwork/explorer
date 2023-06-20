@@ -174,7 +174,7 @@ const Web3Module = props => {
                       <Alert type="warning" message={
                         <Text>
                           <strong>Lite Identity does not exist yet</strong><br />
-                          To create a lite identity send ACME to <Tag><Text copyable>{ethToAccumulate(account, "liteTokenAccount")}</Text></Tag>
+                          To create a lite identity send ACME to <Text copyable={{text: ethToAccumulate(account, "liteTokenAccount")}}><Text mark>{ethToAccumulate(account, "liteTokenAccount")}</Text></Text>
                         </Text>
                       } />
                     ) : 
