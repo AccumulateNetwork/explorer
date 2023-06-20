@@ -12,6 +12,9 @@ export const truncateAddress = (address) => {
 export const ethToAccumulate = (address, type = "liteIdentity") => {
     if (!address) return "No Account";
     let pubKey = address.substring(2).toLowerCase();
+    if (type === "publicKey") {
+        return pubKey;
+    }
     let checkSum = createHash('sha256').update(pubKey).digest("hex");
     let accumulate = "acc://" + pubKey + checkSum.substring(56);
     if (type === "liteTokenAccount") {

@@ -626,6 +626,7 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .web3-module.connected {
+  padding-top: 2px;
   background: #ffffff;
 }
 
@@ -655,8 +656,12 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-bottom: 10px;
 }
 
-.web3-module .account .ant-btn {
+.web3-module .account .account-connected {
   margin-bottom: 10px;
+}
+
+.web3-module .account .ant-btn {
+  margin-top: 8px;
   margin-right: 8px;
 }
 
@@ -671,6 +676,11 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-right: 4px;
 }
 
+.web3-module .account .card-container .ant-btn .react-icons {
+  opacity: 0.75;
+  margin-top: -2px;
+}
+
 .web3-module .account .card-container .ant-tabs-nav .react-icons {
   margin-top: -2px;
   margin-left: -2px;
@@ -681,7 +691,7 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .web3-module .account .card-container h5.ant-typography .react-icons {
-  margin-left: 4px;
+  margin-left: 3px;
   margin-top: -2px;
 }
 
@@ -691,10 +701,31 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 
 .web3-module .account .card-container .ant-tabs-content-holder {
   background: #FFFFFF;
-  padding: 18px 15px 12px;
+  padding: 14px 15px 12px;
 }
 
 .web3-module .account .card-container .ant-tabs-nav .ant-badge {
   margin-top: -3px;
   margin-left: 5px;
+}
+
+.web3-module .account .card-container .ant-tabs-nav .ant-badge .ant-badge-count {
+  background: #8c8c8c;
+}
+
+.web3-module .account .card-container .ant-tabs-nav .ant-tabs-tab-active .ant-badge .ant-badge-count {
+  background: #1890ff;
+}
+
+.web3-module .account .card-container .ant-alert ul {
+  margin-bottom: 0;
+}
+
+.web3-module .account .card-container .ant-divider {
+  border: 0;
+  margin: 5px 0;
+}
+
+.web3-module .account .card-container .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
 }

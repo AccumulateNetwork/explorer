@@ -13,7 +13,10 @@ import {
   Col,
   Tag,
   Tabs,
-  Tooltip
+  Tooltip,
+  Alert,
+  Skeleton,
+  Divider
 } from 'antd';
 
 import { useWeb3React } from "@web3-react/core";
@@ -21,17 +24,20 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiPenNibLine, RiListCheck, RiStackLine
+    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill
 } from 'react-icons/ri';
 
+import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
 
-const { Title, Paragraph } = Typography;
+const { Title, Paragraph, Text } = Typography;
 
 const Web3Module = props => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(localStorage.getItem("isDashboardOpen") ? true : false);
+  const [liteIdentity, setLiteIdentity] = useState(false);
+  const [liteIdentityError, setLiteIdentityError] = useState(false);
 
   const {
     account,
@@ -78,6 +84,31 @@ const Web3Module = props => {
     localStorage.removeItem("connected");
   }
 
+  const query = async (url, setResult, setError) => {
+    setResult(null);
+    setError(null);
+    try {
+        let params = {url: url};
+        const response = await RPC.request("query", params);
+        if (response && response.data) {
+            setResult(response);
+        } else {
+            throw new Error(url + " not found");
+        }
+    }
+    catch(error) {
+      setResult(null);
+      setError(error.message);
+    }
+  }
+
+  useEffect(() => {
+    if (account) {
+      let liteIdentity = ethToAccumulate(account);
+      query(liteIdentity, setLiteIdentity, setLiteIdentityError);
+    }
+  }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     let connected = localStorage.getItem("connected");
     if (connected !== null) {
@@ -106,7 +137,7 @@ const Web3Module = props => {
         ) :
           <div className="account">
             <Row>
-              <Col>
+              <Col className="account-connected">
                 <Button shape="round" type="primary" onClick={toggleDashboard}>
                   <IconContext.Provider value={{ className: 'react-icons' }}><RiUserLine /></IconContext.Provider>{truncateAddress(account)}
                 </Button>
@@ -124,34 +155,74 @@ const Web3Module = props => {
                 >
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>Account</span>} key="account">
                     <Title level={5}>
-                      Lite Identity
-                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate Lite Identity associated with your Ethereum address"><RiQuestionLine /></Tooltip></IconContext.Provider>
+                      Accumulate Lite Identity
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate Lite Identity is an account associated with your Ethereum key"><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                     <Paragraph>
-                      <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{ethToAccumulate(account)}</Link>
+                      {liteIdentity ? (
+                        <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}>
+                          {ethToAccumulate(account)}
+                        </Link>
+                      ) : 
+                        <Text>
+                          {ethToAccumulate(account)}
+                        </Text>                      
+                      }
                     </Paragraph>
-                    <Title level={5}>
-                      Lite Token Account
-                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate Lite Identity associated with your Ethereum address"><RiQuestionLine /></Tooltip></IconContext.Provider>
-                    </Title>
+                    <Divider />
+                    {liteIdentityError ? (
+                      <Alert type="warning" message={
+                        <Text>
+                          <strong>Lite Identity does not exist yet</strong><br />
+                          To create a lite identity send ACME to <Tag><Text copyable>{ethToAccumulate(account, "liteTokenAccount")}</Text></Tag>
+                        </Text>
+                      } />
+                    ) : 
+                      <>
+                      {liteIdentity && liteIdentity.data ? (
+                          <Paragraph>
+                            <Title level={5}>Credit balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
+                            {liteIdentity.data.creditBalance ? liteIdentity.data.creditBalance/100 : 0} credits<br />
+                            <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}>
+                              <Button shape="round" type="primary" disabled>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
+                              </Button>
+                            </Link>
+                          </Paragraph>
+                      ) :
+                        <Skeleton paragraph={false} />
+                      }
+                      </>
+                    }
                     <Paragraph>
-                      <Link to={'/acc/' + ethToAccumulate(account, "liteTokenAccount").replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{ethToAccumulate(account, "liteTokenAccount")}</Link>
                     </Paragraph>
                   </Tabs.Pane>
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiKey2Line /></IconContext.Provider>Key</span>} key="key">
+                    <Title level={5}>
+                      Accumulate Public Key
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key associated with your Ethereum key in the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
+                    </Title>
                     <Paragraph>
-                      123
+                      <Text copyable className="code">
+                        {ethToAccumulate(account, "publicKey")}
+                      </Text>
                     </Paragraph>
                   </Tabs.Pane>
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>Key Pages</span>} key="signers">
+                    <Title level={5}>
+                      Accumulate Key Pages
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate key pages contain a key or set of keys "><RiQuestionLine /></Tooltip></IconContext.Provider>
+                    </Title>
                     <Paragraph>
-                      123
+                      <Text copyable className="code">
+                        {ethToAccumulate(account, "publicKey")}
+                      </Text>
                     </Paragraph>
                   </Tabs.Pane>
-                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Actions<Badge count={3} showZero color="#bfbfbf" /></span>} key="actions">
-                    <Paragraph>
-                      123
-                    </Paragraph>
+                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Actions<Badge count={3} showZero /></span>} key="actions">
+                    <Title level={5}>
+                      Actions
+                    </Title>
                   </Tabs.Pane>
                 </Tabs>
               </Col>
