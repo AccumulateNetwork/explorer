@@ -50,6 +50,7 @@ const Web3Module = props => {
 
   const [formAddCredits] = Form.useForm();
   const [formAddCreditsLiteTA, setFormAddCreditsLiteTA] = useState(null);
+  const [formAddCreditsDestination, setFormAddCreditsDestination] = useState(null);
   const [formAddCreditsAmount, setFormAddCreditsAmount] = useState(null);
 
   const [liteTokenAccount, setLiteTokenAccount] = useState(null);
@@ -126,6 +127,15 @@ const Web3Module = props => {
     catch(error) {
       setNetworkStatus(null);
       setNetworkStatusError(error.message);
+    }
+  }
+
+  const handleFormAddCredits = async () => {
+    try {
+      console.log("Generating tx to add " + formAddCreditsAmount + " credits to " + formAddCreditsDestination + ", payer " + formAddCreditsLiteTA);
+    }
+    catch(error) {
+      message.error(error);
     }
   }
 
@@ -323,6 +333,11 @@ const Web3Module = props => {
               </>
             }
           </Form.Item>
+          <Form.Item label="Credits Destination">
+            <Select value={formAddCreditsDestination} placeholder="Choose credits destination" onChange={setFormAddCreditsDestination}>
+              <Select.Option value={ethToAccumulate(account)}>{ethToAccumulate(account)}</Select.Option>
+            </Select>
+          </Form.Item>
           <Form.Item label="Amount">
             <InputNumber addonAfter="credits" placeholder="100" min={1} value={formAddCreditsAmount} onChange={setFormAddCreditsAmount} />
             {networkStatus?.oracle?.price &&
@@ -332,7 +347,7 @@ const Web3Module = props => {
             }
           </Form.Item>
           <Form.Item>
-            <Button type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount) ? true : false}>Submit</Button>
+            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
           </Form.Item>
         </Form>
         
