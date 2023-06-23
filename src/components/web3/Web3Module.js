@@ -35,7 +35,10 @@ const { Title, Paragraph, Text } = Typography;
 const Web3Module = props => {
 
   const [isConnectWalletOpen, setIsConnectWalletOpen] = useState(false);
+  const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
+
   const [isDashboardOpen, setIsDashboardOpen] = useState(localStorage.getItem("isDashboardOpen") ? true : false);
+
   const [liteIdentity, setLiteIdentity] = useState(false);
   const [liteIdentityError, setLiteIdentityError] = useState(false);
 
@@ -44,10 +47,6 @@ const Web3Module = props => {
     activate,
     deactivate,
   } = useWeb3React();
-
-  const showModal = () => {
-    setIsConnectWalletOpen(true);
-  };
 
   const toggleDashboard = () => {
     if (!isDashboardOpen) {
@@ -116,7 +115,7 @@ const Web3Module = props => {
           <div className="login">
             <Row align={"middle"}>
               <Col>
-                <Button type="primary" onClick={showModal} shape="round" style={{marginRight: 10}}>
+                <Button type="primary" onClick={() => setIsConnectWalletOpen(true)} shape="round" style={{marginRight: 10}}>
                   Connect Wallet
                 </Button>
               </Col>
@@ -178,11 +177,9 @@ const Web3Module = props => {
                           <Paragraph>
                             <Title level={5}>Credit Balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
                             {liteIdentity.data.creditBalance ? liteIdentity.data.creditBalance/100 : 0} credits<br />
-                            <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}>
-                              <Button shape="round" type="primary">
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
-                              </Button>
-                            </Link>
+                            <Button shape="round" type="primary" onClick={() => setIsAddCreditsOpen(true)}>
+                              <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
+                            </Button>
                           </Paragraph>
                       ) :
                         <Skeleton paragraph={false} />
@@ -241,7 +238,7 @@ const Web3Module = props => {
           </div>
       }
 
-      <Modal title="Connect Wallet" open={isConnectWalletOpen} footer={false}>
+      <Modal title="Connect Wallet" open={isConnectWalletOpen} onCancel={() => setIsConnectWalletOpen(false)} footer={false}>
         <List>
           <List.Item>
             <Button block shape="round" size='large' onClick={connectWeb3}>MetaMask</Button>
@@ -252,6 +249,10 @@ const Web3Module = props => {
             <Button block shape="round" size='large'>WalletConnect</Button>
           </List.Item>
         </List>
+      </Modal>
+
+      <Modal title="Add Credits" open={isAddCreditsOpen} onCancel={() => setIsAddCreditsOpen(false)} footer={false}>
+        <>Test</>
       </Modal>
 
     </div>
