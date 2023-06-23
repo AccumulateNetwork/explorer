@@ -16,7 +16,10 @@ import {
   Tooltip,
   Alert,
   Skeleton,
-  Divider
+  Divider,
+  Form,
+  Select,
+  InputNumber
 } from 'antd';
 
 import { useWeb3React } from "@web3-react/core";
@@ -39,8 +42,21 @@ const Web3Module = props => {
 
   const [isDashboardOpen, setIsDashboardOpen] = useState(localStorage.getItem("isDashboardOpen") ? true : false);
 
-  const [liteIdentity, setLiteIdentity] = useState(false);
-  const [liteIdentityError, setLiteIdentityError] = useState(false);
+  const [ACME, setACME] = useState(null);
+  const [ACMEError, setACMEError] = useState(null);
+
+  const [liteIdentity, setLiteIdentity] = useState(null);
+  const [liteIdentityError, setLiteIdentityError] = useState(null);
+
+  const [formAddCredits] = Form.useForm();
+  const [formAddCreditsLiteTA, setFormAddCreditsLiteTA] = useState(null);
+  const [formAddCreditsAmount, setFormAddCreditsAmount] = useState(null);
+
+  const [liteTokenAccount, setLiteTokenAccount] = useState(null);
+  const [liteTokenAccountError, setLiteTokenAccountError] = useState(null);
+
+  const [networkStatus, setNetworkStatus] = useState(null);
+  const [networkStatusError, setNetworkStatusError] = useState(null);
 
   const {
     account,
@@ -95,14 +111,37 @@ const Web3Module = props => {
     }
   }
 
+  const getNetworkStatus = async () => {
+    setNetworkStatus(null);
+    setNetworkStatusError(null);
+    try {
+      let params = {partition: "directory"};
+        const response = await RPC.request("network-status", params, "v3");
+        if (response && response.oracle && response.oracle.price) {
+            setNetworkStatus(response);
+        } else {
+            throw new Error("can not get network status");
+        }
+    }
+    catch(error) {
+      setNetworkStatus(null);
+      setNetworkStatusError(error.message);
+    }
+  }
+
   useEffect(() => {
     if (account) {
+      setFormAddCreditsLiteTA(null);
+      setLiteTokenAccount(null);
+      setLiteTokenAccountError(null);
       let liteIdentity = ethToAccumulate(account);
       query(liteIdentity, setLiteIdentity, setLiteIdentityError);
     }
   }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    getNetworkStatus();
+    query("ACME", setACME, setACMEError);
     let connected = localStorage.getItem("connected");
     if (connected !== null) {
       activate(injected);
@@ -251,8 +290,52 @@ const Web3Module = props => {
         </List>
       </Modal>
 
-      <Modal title="Add Credits" open={isAddCreditsOpen} onCancel={() => setIsAddCreditsOpen(false)} footer={false}>
-        <>Test</>
+      <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => setIsAddCreditsOpen(false)} footer={false}>
+        <Alert showIcon type="info" message={
+          <span>
+            ACME tokens can be converted to credits
+          </span>
+        } />
+        <Divider />
+        <Divider />
+        <Form form={formAddCredits} layout="vertical" className="modal-form">
+          <Form.Item label="Price Oracle" className="text-row">
+            {networkStatus?.oracle?.price &&
+              <Text type="secondary">1 ACME = {networkStatus.oracle.price/100} credits</Text>
+            }
+            {networkStatusError &&
+              <Alert showIcon type="error" message={<span>{networkStatusError}</span>} />
+            }
+          </Form.Item>
+          <Form.Item label="ACME Token Account">
+            <Select value={formAddCreditsLiteTA} placeholder="Choose token account" onChange={e => { setFormAddCreditsLiteTA(e); query(e, setLiteTokenAccount, setLiteTokenAccountError); }}>
+              <Select.Option value={ethToAccumulate(account, "liteTokenAccount")}>{ethToAccumulate(account, "liteTokenAccount")}</Select.Option>
+            </Select>
+            {!ACMEError && ACME?.data?.precision && liteTokenAccount?.data?.balance &&
+              <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
+                <Text type="secondary">Available balance: {liteTokenAccount.data.balance ? liteTokenAccount.data.balance/Math.pow(10, ACME.data.precision) : 0} ACME</Text>
+              </Paragraph>
+            }
+            {liteTokenAccountError &&
+              <>
+                <Divider />
+                <Alert showIcon type="error" message={<span>{liteTokenAccountError}</span>} />
+              </>
+            }
+          </Form.Item>
+          <Form.Item label="Amount">
+            <InputNumber addonAfter="credits" placeholder="100" min={1} value={formAddCreditsAmount} onChange={setFormAddCreditsAmount} />
+            {networkStatus?.oracle?.price &&
+              <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
+                <Text type="secondary">{formAddCreditsAmount ? formAddCreditsAmount : 0} credits = {formAddCreditsAmount ? formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price/Math.pow(10, 8) : 0} ACME</Text>
+              </Paragraph>
+            }
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount) ? true : false}>Submit</Button>
+          </Form.Item>
+        </Form>
+        
       </Modal>
 
     </div>

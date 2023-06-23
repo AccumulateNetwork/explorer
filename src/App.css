@@ -733,3 +733,20 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 .web3-module .account .card-container .code {
   font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
 }
+
+.ant-modal-content .ant-divider {
+  border: 0;
+  margin: 5px 0;
+}
+
+.ant-modal-content .ant-form .ant-form-item:last-child {
+  margin-bottom: 0;
+}
+
+.ant-modal-content .ant-form .ant-form-item.text-row .ant-form-item-control-input {
+  min-height: auto;
+}
+
+.ant-modal-content .ant-form .ant-form-item .ant-form-item-label {
+  font-weight: bold;
+}
