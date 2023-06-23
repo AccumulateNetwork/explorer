@@ -34,7 +34,7 @@ const { Title, Paragraph, Text } = Typography;
 
 const Web3Module = props => {
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConnectWalletOpen, setIsConnectWalletOpen] = useState(false);
   const [isDashboardOpen, setIsDashboardOpen] = useState(localStorage.getItem("isDashboardOpen") ? true : false);
   const [liteIdentity, setLiteIdentity] = useState(false);
   const [liteIdentityError, setLiteIdentityError] = useState(false);
@@ -46,15 +46,7 @@ const Web3Module = props => {
   } = useWeb3React();
 
   const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
+    setIsConnectWalletOpen(true);
   };
 
   const toggleDashboard = () => {
@@ -72,8 +64,10 @@ const Web3Module = props => {
     if (window.ethereum) {
         activate(injected);
         localStorage.setItem("connected", injected);
-        setIsModalOpen(false);
-        toggleDashboard();
+        setIsConnectWalletOpen(false);
+        if (!isDashboardOpen) {
+          toggleDashboard();
+        }
     } else {
         message.warning("Web3 browser extension not found");
     }
@@ -182,10 +176,10 @@ const Web3Module = props => {
                       <>
                       {liteIdentity && liteIdentity.data ? (
                           <Paragraph>
-                            <Title level={5}>Credit balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
+                            <Title level={5}>Credit Balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
                             {liteIdentity.data.creditBalance ? liteIdentity.data.creditBalance/100 : 0} credits<br />
                             <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}>
-                              <Button shape="round" type="primary" disabled>
+                              <Button shape="round" type="primary">
                                 <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
                               </Button>
                             </Link>
@@ -247,7 +241,7 @@ const Web3Module = props => {
           </div>
       }
 
-      <Modal title="Connect Wallet" open={isModalOpen} onOk={handleOk} onCancel={handleCancel} footer={false}>
+      <Modal title="Connect Wallet" open={isConnectWalletOpen} footer={false}>
         <List>
           <List.Item>
             <Button block shape="round" size='large' onClick={connectWeb3}>MetaMask</Button>
