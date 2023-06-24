@@ -22,6 +22,8 @@ import {
   InputNumber
 } from 'antd';
 
+import Web3 from 'web3';
+
 import { useWeb3React } from "@web3-react/core";
 import { InjectedConnector } from "@web3-react/injected-connector";
 
@@ -59,6 +61,8 @@ const Web3Module = props => {
   const [networkStatus, setNetworkStatus] = useState(null);
   const [networkStatusError, setNetworkStatusError] = useState(null);
 
+  const [signWeb3Error, setSignWeb3Error] = useState(null);
+
   const {
     account,
     activate,
@@ -78,6 +82,7 @@ const Web3Module = props => {
 
   const connectWeb3 = async () => {
     if (window.ethereum) {
+        window.web3 = new Web3(window.ethereum);
         activate(injected);
         localStorage.setItem("connected", injected);
         setIsConnectWalletOpen(false);
@@ -131,17 +136,33 @@ const Web3Module = props => {
   }
 
   const handleFormAddCredits = async () => {
-    try {
-      console.log("Generating tx to add " + formAddCreditsAmount + " credits to " + formAddCreditsDestination + ", payer " + formAddCreditsLiteTA);
+    let message = {
+      "credits": formAddCreditsAmount,
+      "destination": formAddCreditsDestination
     }
-    catch(error) {
-      message.error(error);
+    let sig = await signWeb3(message);
+    if (sig) {
+      setIsAddCreditsOpen(false);
+      console.log(sig);
     }
   }
+
+  const signWeb3 = async (message) => {
+    setSignWeb3Error(null);
+    try {
+      let sig = await window.web3.eth.personal.sign(JSON.stringify(message), account);
+      return sig;
+    }
+    catch(error) {
+      setSignWeb3Error(error.message);
+      return;
+    }
+  };
 
   useEffect(() => {
     if (account) {
       setFormAddCreditsLiteTA(null);
+      setFormAddCreditsDestination(null);
       setLiteTokenAccount(null);
       setLiteTokenAccountError(null);
       let liteIdentity = ethToAccumulate(account);
@@ -154,6 +175,7 @@ const Web3Module = props => {
     query("ACME", setACME, setACMEError);
     let connected = localStorage.getItem("connected");
     if (connected !== null) {
+      window.web3 = new Web3(window.ethereum);
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -348,6 +370,9 @@ const Web3Module = props => {
           </Form.Item>
           <Form.Item>
             <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
+            {signWeb3Error &&
+              <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
+            }
           </Form.Item>
         </Form>
         
