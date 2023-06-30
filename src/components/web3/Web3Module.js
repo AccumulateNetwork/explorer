@@ -31,7 +31,7 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill, RiExternalLinkLine
+    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill, RiExternalLinkLine, RiPenNibLine
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
@@ -53,6 +53,8 @@ const Web3Module = props => {
 
   const [liteIdentity, setLiteIdentity] = useState(null);
   const [liteIdentityError, setLiteIdentityError] = useState(null);
+
+  const [publicKey, setPublicKey] = useState(null);
 
   const [formAddCredits] = Form.useForm();
   const [formAddCreditsLiteTA, setFormAddCreditsLiteTA] = useState(null);
@@ -99,8 +101,9 @@ const Web3Module = props => {
   }
 
   const disconnect = async () => {
-    deactivate();
+    localStorage.removeItem(account);
     localStorage.removeItem("connected");
+    deactivate();
   }
 
   const query = async (url, setResult, setError) => {
@@ -139,13 +142,43 @@ const Web3Module = props => {
     }
   }
 
+  // loadPublicKey loads ethereum public key from local storage
+  const loadPublicKey = async (account) => {
+    
+    let pub = localStorage.getItem(account);
+
+    // need more complex check here
+    if (pub) {
+      setPublicKey(pub);
+    }
+
+  }
+
+  // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
+  const recoverPublicKey = async () => {
+
+    localStorage.removeItem(account);
+
+    let message = window.web3.utils.padRight(account, 64);
+    let signature = await signWeb3(message);
+
+    if (signature) {
+      let pub = EthCrypto.recoverPublicKey(signature, message);
+      setPublicKey(pub);
+      localStorage.setItem(account, pub);
+      setIsDashboardOpen(true);
+    }
+
+  }
+
   const handleFormAddCredits = async () => {
 
     let sig = {
       "type": "eth",
       "signer": formAddCreditsLiteTA,
       "signerVersion": 1,
-      "timestamp": Date.now()
+      "timestamp": Date.now(),
+      "publicKey": Buffer.from("04b9cface47d55537d8edd6b73d54d59027149a6580d071c9c7902c398f7c44f18a2cfd43bb242bec0b04590e4ddf1c78909e8bd243f08c38fbf29659299716b0b")
     }
 
     let sigMdHash = await createHash('sha256').update(JSON.stringify(sig)).digest('');
@@ -176,12 +209,12 @@ const Web3Module = props => {
 
       console.log("Signature: " + signature);
 
-      let publicKey = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
-      console.log("Recovered public key: " + publicKey);
+      let pub = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
+      console.log("Recovered public key: " + pub);
 
       sig.signature = signature.substring(2);
       sig.transactionHash = txHash.toString('hex');
-      sig.publicKey = "04" + publicKey;
+      sig.publicKey = "04" + pub;
 
       let envelope = {
         signatures: [
@@ -220,8 +253,11 @@ const Web3Module = props => {
       setFormAddCreditsDestination(null);
       setLiteTokenAccount(null);
       setLiteTokenAccountError(null);
+      setPublicKey(null);
+
       let liteIdentity = ethToAccumulate(account);
       query(liteIdentity, setLiteIdentity, setLiteIdentityError);
+      loadPublicKey(account);
     }
   }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -246,7 +282,7 @@ const Web3Module = props => {
                 </Button>
               </Col>
               <Col>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
+                <IconContext.Provider value={{ className: 'react-icons react-icons-blue' }}>
                   <RiInformationLine />
                 </IconContext.Provider>
                 Connect Web3 wallet to sign and submit txs on the Accumulate Network
@@ -255,17 +291,33 @@ const Web3Module = props => {
           </div>
         ) :
           <div className="account">
-            <Row>
+            <Row align={"middle"}>
               <Col className="account-connected">
-                <Button shape="round" type="primary" onClick={toggleDashboard}>
-                  <IconContext.Provider value={{ className: 'react-icons' }}><RiUserLine /></IconContext.Provider>{truncateAddress(account)}
-                </Button>
+                {publicKey ? (
+                  <Button shape="round" type="primary" onClick={toggleDashboard}>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiUserLine /></IconContext.Provider>{truncateAddress(account)}
+                  </Button>
+                ) : 
+                  <Button shape="round" type="primary" onClick={recoverPublicKey}>
+                    <IconContext.Provider value={{ className: 'react-icons' }}><RiPenNibLine /></IconContext.Provider>Sign to login
+                  </Button>
+                }
                 <Button danger shape="round" type="primary" onClick={disconnect}>
                   <IconContext.Provider value={{ className: 'react-icons react-icons-only-icon' }}><RiShutDownLine /></IconContext.Provider>
                 </Button>
               </Col>
             </Row>
-            {isDashboardOpen && (
+            {!publicKey && (
+            <Row style={{ paddingBottom: 8 }}>
+              <Col>
+                <IconContext.Provider value={{ className: 'react-icons react-icons-blue' }}>
+                  <RiInformationLine />
+                </IconContext.Provider>
+                Please sign a message containing <strong>only your public key</strong> to access all features
+              </Col>
+            </Row>
+            )}
+            {publicKey && isDashboardOpen && (
             <Row>
               <Col className="card-container">
                 <Tabs
@@ -318,11 +370,20 @@ const Web3Module = props => {
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiKey2Line /></IconContext.Provider>Key</span>} key="key">
                     <Title level={5}>
                       Accumulate Public Key
-                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key associated with your Ethereum key in the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key associated with your Ethereum address in the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                     <Paragraph>
                       <Text copyable className="code">
                         {ethToAccumulate(account, "publicKey")}
+                      </Text>
+                    </Paragraph>
+                    <Title level={5}>
+                      Accumulate Public Key (uncompressed)
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="The same public key (in the uncompressed format), that is used to sign txs on the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
+                    </Title>
+                    <Paragraph>
+                      <Text copyable className="code">
+                        {publicKey ? publicKey : "N/A"}
                       </Text>
                     </Paragraph>
                   </Tabs.Pane>
