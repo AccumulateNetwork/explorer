@@ -148,7 +148,7 @@ const Web3Module = props => {
     let pub = localStorage.getItem(account);
 
     // need more complex check here
-    if (pub) {
+    if (pub && EthCrypto.publicKey.toAddress(pub) === account) {
       setPublicKey(pub);
     }
 
@@ -369,7 +369,7 @@ const Web3Module = props => {
                   </Tabs.Pane>
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiKey2Line /></IconContext.Provider>Key</span>} key="key">
                     <Title level={5}>
-                      Accumulate Public Key
+                      Public Key
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Public key associated with your Ethereum address in the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                     <Paragraph>
@@ -378,7 +378,7 @@ const Web3Module = props => {
                       </Text>
                     </Paragraph>
                     <Title level={5}>
-                      Accumulate Public Key (uncompressed)
+                      Public Key (uncompressed)
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="The same public key (in the uncompressed format), that is used to sign txs on the Accumulate network"><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                     <Paragraph>
@@ -392,11 +392,6 @@ const Web3Module = props => {
                       Accumulate Key Pages
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate key pages contain a key or set of keys "><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
-                    <Paragraph>
-                      <Text copyable className="code">
-                        {ethToAccumulate(account, "publicKey")}
-                      </Text>
-                    </Paragraph>
                   </Tabs.Pane>
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Actions<Badge count={3} showZero /></span>} key="actions">
                     <Title level={5}>
