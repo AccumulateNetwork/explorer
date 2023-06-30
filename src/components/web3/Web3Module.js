@@ -165,7 +165,7 @@ const Web3Module = props => {
 
     let txHash = await createHash('sha256').update(JSON.stringify(tx)).digest('');
 
-    let message = [sig, tx];
+    let message = [sigMdHash, txHash];
     let messageHash = await createHash('sha256').update(message).digest('');
 
     console.log("Message: " + messageHash.toString('hex'));
