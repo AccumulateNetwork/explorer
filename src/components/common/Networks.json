@@ -9,11 +9,20 @@
       ]
     },
     {
-      "name": "Testnet",
+      "name": "Kermit Testnet",
       "mainnet": false,
-      "url": "https://testnet.explorer.accumulatenetwork.io",
+      "url": "https://kermit.explorer.accumulatenetwork.io",
       "api": [
+        "https://kermit.accumulatenetwork.io",
         "https://testnet.accumulatenetwork.io"
+      ]
+    },
+    {
+      "name": "Fozzie Testnet",
+      "mainnet": false,
+      "url": "https://fozzie.explorer.accumulatenetwork.io",
+      "api": [
+        "https://fozzie.accumulatenetwork.io"
       ]
     }
   ]

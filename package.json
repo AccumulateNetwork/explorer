@@ -8,8 +8,12 @@
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "@web3-react/core": "^6.1.9",
+    "@web3-react/injected-connector": "^6.0.7",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
+    "crypto": "^1.0.1",
+    "eth-crypto": "^2.6.0",
     "factom": "^1.4.3",
     "graphql": "^16.3.0",
     "graphql-tag": "^2.12.6",
@@ -30,7 +34,7 @@
     "web3": "^1.8.2"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='https://beta.testnet.accumulatenetwork.io/v2' REACT_APP_ID='explorer-wespx' react-scripts start",
+    "start": "REACT_APP_API_PATH='https://testnet.accumulatenetwork.io' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

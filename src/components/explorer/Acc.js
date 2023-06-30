@@ -28,7 +28,7 @@ import ParseDataAccount from '../common/ParseDataAccount';
 
 const { Title } = Typography;
 
-const Acc = ({ match }) => {
+const Acc = ({ match, parentCallback }) => {
 
     const location = useLocation();
     
@@ -36,6 +36,10 @@ const Acc = ({ match }) => {
     const [error, setError] = useState(null);
     const [isTx, setIsTx] = useState(false);
     const [isFav, setIsFav] = useState(-1);
+
+    const sendToWeb3Module = e => {
+        parentCallback(e);
+    }
 
     const getAcc = async (url) => {
         document.title = url + " | Accumulate Explorer";
@@ -69,6 +73,7 @@ const Acc = ({ match }) => {
 
     function Render(props) {
         if (props.data) {
+            sendToWeb3Module(props.data);
             if (isTx) {
                 return <GenericTx data={props.data} />;
             }
