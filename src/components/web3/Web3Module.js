@@ -24,6 +24,8 @@ import {
 
 import Web3 from 'web3';
 
+import EthCrypto from 'eth-crypto';
+
 import { useWeb3React } from "@web3-react/core";
 import { InjectedConnector } from "@web3-react/injected-connector";
 
@@ -34,6 +36,8 @@ import {
 
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
+
+import { createHash } from "crypto";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -136,25 +140,76 @@ const Web3Module = props => {
   }
 
   const handleFormAddCredits = async () => {
-    let message = {
-      "credits": formAddCreditsAmount,
-      "destination": formAddCreditsDestination
+
+    let sig = {
+      "type": "eth",
+      "signer": formAddCreditsLiteTA,
+      "signerVersion": 1,
+      "timestamp": Date.now()
     }
-    let sig = await signWeb3(message);
-    if (sig) {
+
+    let sigMdHash = await createHash('sha256').update(JSON.stringify(sig)).digest('');
+
+    let tx = {
+      "header": {
+        "principal": formAddCreditsLiteTA,
+        "initiator": sigMdHash.toString('hex')
+      },
+      "body": {
+        "type": "addCredits",
+        "recipient": formAddCreditsDestination,
+        "amount": (formAddCreditsAmount*100).toString(),
+        "oracle": networkStatus.oracle.price
+      }
+    }
+
+    let txHash = await createHash('sha256').update(JSON.stringify(tx)).digest('');
+
+    let message = [sig, tx];
+    let messageHash = await createHash('sha256').update(message).digest('');
+
+    console.log("Message: " + messageHash.toString('hex'));
+
+    let signature = await signWeb3(window.web3.utils.bytesToHex(messageHash));
+
+    if (signature) {
+
+      console.log("Signature: " + signature);
+
+      let publicKey = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
+      console.log("Recovered public key: " + publicKey);
+
+      sig.signature = signature.substring(2);
+      sig.transactionHash = txHash.toString('hex');
+      sig.publicKey = "04" + publicKey;
+
+      let envelope = {
+        signatures: [
+          sig
+        ],
+        transaction: [
+          tx
+        ]
+      }
+
       setIsAddCreditsOpen(false);
-      console.log(sig);
+      console.log(envelope);
+
+      const response = await RPC.request("execute-direct", {"envelope": envelope});
+      console.log(response);
+
     }
+
   }
 
   const signWeb3 = async (message) => {
     setSignWeb3Error(null);
     try {
-      let sig = await window.web3.eth.personal.sign(JSON.stringify(message), account);
+      let sig = await window.web3.eth.sign(message, account);
       return sig;
     }
     catch(error) {
-      setSignWeb3Error(error.message);
+      setSignWeb3Error(error);
       return;
     }
   };
