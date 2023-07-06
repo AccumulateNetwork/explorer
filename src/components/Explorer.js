@@ -13,6 +13,8 @@ import {
   RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine, RiStarLine
 } from 'react-icons/ri';
 
+import Web3Module from './web3/Web3Module';
+
 import Logo from './common/Logo';
 import Version from './common/Version';
 import ScrollToTop from './common/ScrollToTop';
@@ -20,6 +22,7 @@ import SearchForm from './common/SearchForm';
 
 import Blocks from './explorer/Blocks';
 import Staking from './explorer/Staking';
+import MinorBlocks from './common/MinorBlocks';
 import Favourites from './explorer/Favourites';
 import Acc from './explorer/Acc';
 import Tx from './explorer/Tx';
@@ -37,6 +40,7 @@ const Explorer = props => {
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
   const [isMainnet, setIsMainnet] = useState(false);
+  const [web3ModuleData, setWeb3ModuleData] = useState(null);
 
   const handleMenuClick = e => {
     if (e.key === "logo") {
@@ -45,6 +49,10 @@ const Explorer = props => {
         setCurrentMenu([e.key]);
     }
   };
+
+  const handleWeb3ModuleData = e => {
+    setWeb3ModuleData(e);
+  }
 
   const ExplorerSelect = (
       <Menu>
@@ -94,7 +102,7 @@ const Explorer = props => {
     }
 
     if (window.location.pathname.includes("validators")) {
-        setCurrentMenu("/validators");
+      setCurrentMenu("/validators");
     }
   
   }, []);
@@ -184,6 +192,9 @@ const Explorer = props => {
         </Header>
 
         <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
+            {!isMainnet && (
+                <Web3Module data={web3ModuleData} />
+            )}
             <SearchForm />
             <Switch>
                 <Route exact path="/" component={Blocks} />
@@ -192,7 +203,11 @@ const Explorer = props => {
                     <Route exact path="/faucet" component={Faucet} />
                 }
 
-                <Route path="/acc/:url+" component={Acc} />
+                <Route path="/acc/:url+" render={
+                    (match) => 
+                        <Acc {...match} parentCallback={handleWeb3ModuleData} />
+                } />
+
                 <Route path="/tx/:hash" component={Tx} />
                 <Route path="/block/:index" component={Block} />
 
@@ -200,6 +215,7 @@ const Explorer = props => {
                 <Route path="/tokens" component={Tokens} />
                 <Route path="/staking" component={Staking} />
                 <Route path="/favourites" component={Favourites} />
+                <Route path="/blocks" component={MinorBlocks} />
 
                 <Route component={Error404} />
             </Switch>
