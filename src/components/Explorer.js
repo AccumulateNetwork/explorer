@@ -192,7 +192,9 @@ const Explorer = props => {
         </Header>
 
         <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
-            <Web3Module data={web3ModuleData} />
+            {!isMainnet && (
+                <Web3Module data={web3ModuleData} />
+            )}
             <SearchForm />
             <Switch>
                 <Route exact path="/" component={Blocks} />
