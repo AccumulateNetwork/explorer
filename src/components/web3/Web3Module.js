@@ -35,7 +35,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
-import { ethToAccumulate, truncateAddress } from "../common/Web3";
+import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers } from "../common/Web3";
 
 import { createHash } from "crypto";
 
@@ -173,20 +173,25 @@ const Web3Module = props => {
 
   const handleFormAddCredits = async () => {
 
+    let upk = "04" + publicKey;
+
     let sig = {
       "type": "eth",
       "signer": formAddCreditsLiteTA,
       "signerVersion": 1,
       "timestamp": Date.now(),
-      "publicKey": Buffer.from("04b9cface47d55537d8edd6b73d54d59027149a6580d071c9c7902c398f7c44f18a2cfd43bb242bec0b04590e4ddf1c78909e8bd243f08c38fbf29659299716b0b")
+      "publicKey": upk
     }
 
-    let sigMdHash = await createHash('sha256').update(JSON.stringify(sig)).digest('');
+    console.log("Signature:", sig);
+
+    let sigHash = await sigMdHash(sig);
+    console.log("SigMdHash:", sigHash.toString('hex'));
 
     let tx = {
       "header": {
         "principal": formAddCreditsLiteTA,
-        "initiator": sigMdHash.toString('hex')
+        "initiator": sigHash.toString('hex')
       },
       "body": {
         "type": "addCredits",
@@ -196,25 +201,32 @@ const Web3Module = props => {
       }
     }
 
-    let txHash = await createHash('sha256').update(JSON.stringify(tx)).digest('');
+    console.log("Tx:", tx);
 
-    let message = Buffer.concat([sigMdHash, txHash]);
+    let hash = await txHash(tx);
+    console.log("TxHash:", hash.toString('hex'));
+
+    let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
+    console.log("SigMdHash+TxHash:", Buffer.from(message).toString('hex'));
+
     let messageHash = await createHash('sha256').update(message).digest('');
 
-    console.log("Message: " + messageHash.toString('hex'));
+    console.log("Hash(SigMdHash+TxHash):", messageHash.toString('hex'));
 
     let signature = await signWeb3(window.web3.utils.bytesToHex(messageHash));
 
     if (signature) {
 
-      console.log("Signature: " + signature);
+      console.log("Signature from MetaMask:", signature);
 
-      let pub = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
-      console.log("Recovered public key: " + pub);
+      let signatureBytes = window.web3.utils.hexToBytes(signature);
+      let signatureHex = Buffer.from(signatureBytes).toString('hex')
 
-      sig.signature = signature.substring(2);
-      sig.transactionHash = txHash.toString('hex');
-      sig.publicKey = "04" + pub;
+      console.log("Signature bytes:", signatureHex);
+
+      sig.signature = signatureHex;
+      sig.transactionHash = hash.toString('hex');
+      sig.publicKey = upk;
 
       let envelope = {
         signatures: [
@@ -226,7 +238,7 @@ const Web3Module = props => {
       }
 
       setIsAddCreditsOpen(false);
-      console.log(envelope);
+      console.log("Envelope:", envelope);
 
       const response = await RPC.request("execute-direct", {"envelope": envelope});
       console.log(response);
