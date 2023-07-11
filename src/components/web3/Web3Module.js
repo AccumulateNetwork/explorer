@@ -35,7 +35,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
-import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers } from "../common/Web3";
+import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSigToDER } from "../common/Web3";
 
 import { createHash } from "crypto";
 
@@ -196,7 +196,7 @@ const Web3Module = props => {
       "body": {
         "type": "addCredits",
         "recipient": formAddCreditsDestination,
-        "amount": (formAddCreditsAmount*100).toString(),
+        "amount": (formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price).toString(),
         "oracle": networkStatus.oracle.price
       }
     }
@@ -219,12 +219,11 @@ const Web3Module = props => {
 
       console.log("Signature from MetaMask:", signature);
 
-      let signatureBytes = window.web3.utils.hexToBytes(signature);
-      let signatureHex = Buffer.from(signatureBytes).toString('hex')
+      let signatureDER = await rsvSigToDER(signature);
 
-      console.log("Signature bytes:", signatureHex);
+      console.log("Signature DER:", signatureDER.toString('hex'));
 
-      sig.signature = signatureHex;
+      sig.signature = signatureDER.toString('hex');
       sig.transactionHash = hash.toString('hex');
       sig.publicKey = upk;
 

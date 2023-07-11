@@ -129,6 +129,31 @@ export const sigMdHash = async (sig) => {
 
 }
 
+export const rsvSigToDER = async (sig) => {
+
+    try {
+
+        sig = sig.split('x')[1];
+
+        let sigBuffer = joinBuffers([
+            Buffer.from("3044", 'hex'),
+            Buffer.from("0220", 'hex'),
+            Buffer.from(sig.substring(0, 64), 'hex'),
+            Buffer.from("0220", 'hex'),
+            Buffer.from(sig.substring(64, 128), 'hex')
+        ]);
+
+        console.log("DER sig:", Buffer.from(sigBuffer).toString('hex'));
+
+        return sigBuffer;
+
+    }
+    catch (error) {
+        message.error(error.message);
+    }
+
+}
+
 export const joinBuffers = (buffers, delimiter = '') => {
     let d = Buffer.from(delimiter);
     return buffers.reduce((prev, b) => Buffer.concat([prev, d, b]));
