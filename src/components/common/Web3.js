@@ -49,6 +49,13 @@ export const txHash = async (tx) => {
         let headerHash = await createHash('sha256').update(headerBuffer).digest('');
         console.log("Tx.Header Hash:", headerHash.toString('hex'));
 
+        let amount = Number.parseInt(tx.body.amount);
+
+        console.log("Tx amount:", amount);
+        let amountBytes = numberToBytes(amount);
+        console.log("Tx amount (hex):", Buffer.from(amountBytes).toString('hex'));
+        console.log("Bytes length:", amountBytes.byteLength);
+
         let bodyBuffer = joinBuffers([
             Buffer.from([1], 'hex'),
             Buffer.from([14], 'hex'),
@@ -56,8 +63,8 @@ export const txHash = async (tx) => {
             Buffer.from([tx.body.recipient.length], 'hex'),
             Buffer.from(tx.body.recipient),
             Buffer.from([3], 'hex'),
-            Buffer.from([Buffer.from(parseInt(tx.body.amount).toString(16), 'hex').length], 'hex'),
-            Buffer.from(parseInt(tx.body.amount).toString(16), 'hex'),
+            Buffer.from([amountBytes.byteLength], 'hex'),
+            Buffer.from(amountBytes),
             Buffer.from([4], 'hex'),
             Buffer.from(uvarintMarshalBinary(tx.body.oracle)),
         ]);
@@ -187,4 +194,29 @@ export const fieldMarshalBinary = (field, val) => {
       throw new Error(`Field number is out of range [1, 32]: ${field}`);
     }
     return Buffer.concat([uvarintMarshalBinary(field), val]);
+}
+
+export const numberToBytes = (number) => {
+    if (!Number.isSafeInteger(number)) {
+      throw new Error("Number is out of range");
+    }
+  
+    const size = number === 0 ? 0 : byteLength(number);
+    const bytes = new Uint8ClampedArray(size);
+    let x = number;
+    for (let i = (size - 1); i >= 0; i--) {
+      const rightByte = x & 0xff;
+      bytes[i] = rightByte;
+      x = Math.floor(x / 0x100);
+    }
+  
+    return bytes.buffer;
+}
+
+export const bitLength = (number) => {
+    return Math.floor(Math.log2(number)) + 1;
+}
+  
+export const byteLength = (number) => {
+    return Math.ceil(bitLength(number) / 8);
 }
