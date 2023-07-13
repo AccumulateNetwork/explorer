@@ -16,7 +16,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiRefund2Fill
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -68,19 +68,13 @@ const TokenAccount = props => {
         setTableIsLoading(true);
 
         let start = 0;
-        let count = 10;
-        let showTotalStart = 1;
-        let showTotalFinish = 10;
 
         if (params) {
             start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
-            showTotalStart = (params.current-1)*params.pageSize+1;
-            showTotalFinish = params.current*params.pageSize;
         }
 
         try {
-            const response = await RPC.request("query", { "scope": tokenAccount.data.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, count, start } } }, 'v3' );
+            const response = await RPC.request("query", { "scope": tokenAccount.data.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3' );
             if (response?.records) {
 
                 // workaround API bug response
