@@ -99,11 +99,7 @@ const TokenAccount = props => {
         if (!process.env.REACT_APP_METRICS_API_PATH) return
 
         try {
-            // prepare form
-            let params = new FormData();
-            params.append('stake', url);
-
-            const response = await axios.post(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/search", params, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/" + url, { headers: { 'Content-Type': 'multipart/form-data' } });
             if (response && response.data && !response.data.error) {
                 setStakingAccount(response.data);
             }
@@ -173,7 +169,7 @@ const TokenAccount = props => {
             render: (entry) => {
                 if (entry) {
                     return (
-                        <Link to={'/tx/' + entry}>
+                        <Link to={'/acc/' + entry + '@' + tokenAccount.data.url.replace("acc://", "")}>
                             <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{entry}
                         </Link>
                     )
