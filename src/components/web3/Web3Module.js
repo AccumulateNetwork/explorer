@@ -404,9 +404,9 @@ const Web3Module = props => {
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate key pages contain a key or set of keys "><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                   </Tabs.Pane>
-                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Actions<Badge count={3} showZero /></span>} key="actions">
+                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Transactions<Badge count={0} showZero /></span>} key="actions">
                     <Title level={5}>
-                      Actions
+                      Transactions
                     </Title>
                   </Tabs.Pane>
                 </Tabs>
@@ -491,7 +491,7 @@ const Web3Module = props => {
             }
           </Form.Item>
           <Form.Item>
-            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
+            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (!liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA || !liteTokenAccount.data || !liteTokenAccount.data.balance || formAddCreditsAmount <= 0 || formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price > liteTokenAccount.data.balance) ? true : false}>Submit</Button>
             {signWeb3Error &&
               <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
             }
