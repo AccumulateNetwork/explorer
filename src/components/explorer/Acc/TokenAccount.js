@@ -99,7 +99,7 @@ const TokenAccount = props => {
         if (!process.env.REACT_APP_METRICS_API_PATH) return
 
         try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/" + url, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/" + url);
             if (response && response.data && !response.data.error) {
                 setStakingAccount(response.data);
             }
@@ -206,7 +206,7 @@ const TokenAccount = props => {
             title: 'From',
             className: 'align-top no-break',
             render: (tx) => {
-                const from = tx?.value?.message?.transaction?.body?.source
+                const from = tx?.value?.message?.transaction?.body?.source || tx?.value?.message?.transaction?.header?.principal
 
                 if (from === undefined) {
                     return (
@@ -228,7 +228,7 @@ const TokenAccount = props => {
             className: 'align-top no-break',
             render: (tx) => {
                 const to = tx?.value?.message?.transaction?.body?.to
-                const recipient = tx?.value?.message?.transaction?.body?.recipient
+                const recipient = tx?.value?.message?.transaction?.body?.recipient || tx?.value?.message?.transaction?.header?.principal
                 if (to || recipient) {
                     if (to && Array.isArray(to) && to[0]) {
                         return (

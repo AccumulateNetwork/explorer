@@ -62,10 +62,10 @@ const TxChain = props => {
             title: 'Transaction ID',
             className: 'align-top no-break',
             render: (row) => {
-                if (row?.entry) {
+                if (row?.entry?.value?.id) {
                     return (
                         <div>
-                            <Link to={'/tx/' + row.entry}>
+                            <Link to={row.entry.value.id}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.entry}
                             </Link>
                         </div>
