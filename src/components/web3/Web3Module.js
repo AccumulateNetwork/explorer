@@ -444,7 +444,7 @@ const Web3Module = props => {
         </List>
       </Modal>
 
-      <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => setIsAddCreditsOpen(false)} footer={false}>
+      <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => { setIsAddCreditsOpen(false); setSignWeb3Error(null) }} footer={false}>
         <Alert showIcon type="info" message={
           <span>
             ACME tokens can be converted to credits
@@ -492,8 +492,8 @@ const Web3Module = props => {
           </Form.Item>
           <Form.Item>
             <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (!liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA || !liteTokenAccount.data || !liteTokenAccount.data.balance || formAddCreditsAmount <= 0 || formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price > liteTokenAccount.data.balance) ? true : false}>Submit</Button>
-            {signWeb3Error &&
-              <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
+            {signWeb3Error?.message &&
+              <Paragraph style={{ marginTop: 10, marginBottom: 0 }}><Text type="danger">{signWeb3Error.message}</Text></Paragraph>
             }
           </Form.Item>
         </Form>
