@@ -55,19 +55,29 @@ export const txHash = async (tx) => {
         let amountBytes = numberToBytes(amount);
         console.log("Tx amount (hex):", Buffer.from(amountBytes).toString('hex'));
         console.log("Bytes length:", amountBytes.byteLength);
+        
+        let txCodes = {
+            "addCredits": 14,
+        };
 
-        let bodyBuffer = joinBuffers([
-            Buffer.from([1], 'hex'),
-            Buffer.from([14], 'hex'),
-            Buffer.from([2], 'hex'),
-            Buffer.from([tx.body.recipient.length], 'hex'),
-            Buffer.from(tx.body.recipient),
-            Buffer.from([3], 'hex'),
-            Buffer.from([amountBytes.byteLength], 'hex'),
-            Buffer.from(amountBytes),
-            Buffer.from([4], 'hex'),
-            Buffer.from(uvarintMarshalBinary(tx.body.oracle)),
-        ]);
+        let bodyBuffer = Buffer.from([1], 'hex');
+
+        switch (tx.body.type) {
+            case "addCredits":
+            bodyBuffer = joinBuffers([
+                bodyBuffer,
+                Buffer.from([txCodes[tx.body.type]], 'hex'),
+                Buffer.from([2], 'hex'),
+                Buffer.from([tx.body.recipient.length], 'hex'),
+                Buffer.from(tx.body.recipient),
+                Buffer.from([3], 'hex'),
+                Buffer.from([amountBytes.byteLength], 'hex'),
+                Buffer.from(amountBytes),
+                Buffer.from([4], 'hex'),
+                Buffer.from(uvarintMarshalBinary(tx.body.oracle)),
+            ]);
+            break;
+        }
 
         console.log("Tx.Body Bytes:", Buffer.from(bodyBuffer).toString('hex'));
 
