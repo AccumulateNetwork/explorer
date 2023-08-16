@@ -1,4 +1,8 @@
+/* eslint-disable no-ex-assign */
 import React, { useState, useEffect } from 'react';
+import { AddCredits, ETHSignature } from "accumulate.js/lib/core";
+import { sha256 } from "accumulate.js/lib/common";
+import { encode } from "accumulate.js/lib/encoding";
 
 import { Link } from 'react-router-dom';
 
@@ -19,12 +23,13 @@ import {
   Divider,
   Form,
   Select,
-  InputNumber
+  InputNumber,
+  notification
 } from 'antd';
 
 import Web3 from 'web3';
 
-import EthCrypto from 'eth-crypto';
+import EthCrypto, { vrs } from 'eth-crypto';
 
 import { useWeb3React } from "@web3-react/core";
 import { InjectedConnector } from "@web3-react/injected-connector";
@@ -38,6 +43,7 @@ import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
 
 import { createHash } from "crypto";
+import { Transaction } from 'factom';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -171,35 +177,55 @@ const Web3Module = props => {
 
   }
 
+  const vrsToDer = vrs => {
+    // Convert a VRS signature (prefixed with 0x) to DER (unprefixed)
+    //
+    // 0x30 <length> 0x02 <length r> r 0x02 <length s> s
+
+    // Decode VRS
+    const { r, s } = EthCrypto.vrs.fromString(vrs);
+    const rb = Buffer.from(r.substring(2), 'hex');
+    const sb = Buffer.from(s.substring(2), 'hex');
+
+    // total length of returned signature is 1 byte for each magic and
+    // length (6 total), plus lengths of r and s
+    const b = new Uint8Array(6 + rb.length + sb.length)
+    b[0] = 0x30
+    b[1] = b.length - 2
+    b[2] = 0x02
+    b[3] = rb.length
+    b.set(rb, 4);
+    b[4 + rb.length] = 0x02;
+    b[5 + rb.length] = sb.length
+    b.set(sb, 6 + rb.length);
+    return Buffer.from(b).toString('hex');
+  }
+
   const handleFormAddCredits = async () => {
+    const sig = new ETHSignature({
+      signer: formAddCreditsLiteTA,
+      signerVersion: 1,
+      timestamp: Date.now(),
+      publicKey: "04" + publicKey,
+    })
+    const sigMdHash = await sha256(encode(sig));
 
-    let sig = {
-      "type": "eth",
-      "signer": formAddCreditsLiteTA,
-      "signerVersion": 1,
-      "timestamp": Date.now(),
-      "publicKey": Buffer.from("04b9cface47d55537d8edd6b73d54d59027149a6580d071c9c7902c398f7c44f18a2cfd43bb242bec0b04590e4ddf1c78909e8bd243f08c38fbf29659299716b0b")
-    }
-
-    let sigMdHash = await createHash('sha256').update(JSON.stringify(sig)).digest('');
-
-    let tx = {
-      "header": {
-        "principal": formAddCreditsLiteTA,
-        "initiator": sigMdHash.toString('hex')
+    const tx = new Transaction({
+      header: {
+        principal: formAddCreditsLiteTA,
+        initiator: sigMdHash,
       },
-      "body": {
-        "type": "addCredits",
-        "recipient": formAddCreditsDestination,
-        "amount": (formAddCreditsAmount*100).toString(),
-        "oracle": networkStatus.oracle.price
-      }
-    }
+      body: AddCredits({
+        recipient: formAddCreditsDestination,
+        amount: formAddCreditsAmount*100,
+        oracle: networkStatus.oracle.price
+      })
+    })
 
-    let txHash = await createHash('sha256').update(JSON.stringify(tx)).digest('');
+    let txHash = await sha256(encode(tx));
 
     let message = Buffer.concat([sigMdHash, txHash]);
-    let messageHash = await createHash('sha256').update(message).digest('');
+    let messageHash = await sha256(message);
 
     console.log("Message: " + messageHash.toString('hex'));
 
@@ -212,9 +238,8 @@ const Web3Module = props => {
       let pub = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
       console.log("Recovered public key: " + pub);
 
-      sig.signature = signature.substring(2);
+      sig.signature = vrsToDer(signature);
       sig.transactionHash = txHash.toString('hex');
-      sig.publicKey = "04" + pub;
 
       let envelope = {
         signatures: [
@@ -228,7 +253,7 @@ const Web3Module = props => {
       setIsAddCreditsOpen(false);
       console.log(envelope);
 
-      const response = await RPC.request("execute-direct", {"envelope": envelope});
+      const response = await RPC.request("submit", {"envelope": envelope}, 'v3');
       console.log(response);
 
     }
@@ -242,7 +267,33 @@ const Web3Module = props => {
       return sig;
     }
     catch(error) {
-      setSignWeb3Error(error);
+      // Extract the Ledger error
+      if (error.message.startsWith('Ledger device: ')) {
+        const i = error.message.indexOf('\n')
+        try {
+          const { originalError } = JSON.parse(error.message.substring(i+1));
+          if (originalError) error = originalError;
+        } catch (_) {}
+      }
+      
+      // Parse the status code
+      if ('statusCode' in error) {
+        // eslint-disable-next-line default-case
+        switch (error.statusCode) {
+          case 0x6d02:
+          case 0x6511:
+            error = new Error("Ledger: the Accumulate app is not running")
+            break;
+          case 0x530c:
+          case 0x6b0c:
+          case 0x5515:
+            error = new Error("Ledger: device is locked")
+            break;
+        }
+      }
+
+      notification.error({ message: error.message });
+      setSignWeb3Error(error.message);
       return;
     }
   };
