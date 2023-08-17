@@ -1,7 +1,6 @@
 /* eslint-disable no-ex-assign */
 import React, { useState, useEffect } from 'react';
-import { AddCredits, ETHSignature } from "accumulate.js/lib/core";
-import { sha256 } from "accumulate.js/lib/common";
+import { AddCredits, ETHSignature, Transaction } from "accumulate.js/lib/core";
 import { encode } from "accumulate.js/lib/encoding";
 
 import { Link } from 'react-router-dom';
@@ -29,7 +28,7 @@ import {
 
 import Web3 from 'web3';
 
-import EthCrypto, { vrs } from 'eth-crypto';
+import EthCrypto from 'eth-crypto';
 
 import { useWeb3React } from "@web3-react/core";
 import { InjectedConnector } from "@web3-react/injected-connector";
@@ -41,11 +40,13 @@ import {
 
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
-
-import { createHash } from "crypto";
-import { Transaction } from 'factom';
+import { Envelope } from 'accumulate.js/lib/messaging';
 
 const { Title, Paragraph, Text } = Typography;
+
+export async function sha256(data) {
+  return Buffer.from(new Uint8Array(await crypto.subtle.digest("SHA-256", data)))
+}
 
 const Web3Module = props => {
 
@@ -198,7 +199,7 @@ const Web3Module = props => {
     b[4 + rb.length] = 0x02;
     b[5 + rb.length] = sb.length
     b.set(sb, 6 + rb.length);
-    return Buffer.from(b).toString('hex');
+    return Buffer.from(b);
   }
 
   const handleFormAddCredits = async () => {
@@ -215,14 +216,14 @@ const Web3Module = props => {
         principal: formAddCreditsLiteTA,
         initiator: sigMdHash,
       },
-      body: AddCredits({
+      body: new AddCredits({
         recipient: formAddCreditsDestination,
         amount: formAddCreditsAmount*100,
         oracle: networkStatus.oracle.price
       })
     })
 
-    let txHash = await sha256(encode(tx));
+    let txHash = Buffer.from(await tx.hash());
 
     let message = Buffer.concat([sigMdHash, txHash]);
     let messageHash = await sha256(message);
@@ -239,21 +240,21 @@ const Web3Module = props => {
       console.log("Recovered public key: " + pub);
 
       sig.signature = vrsToDer(signature);
-      sig.transactionHash = txHash.toString('hex');
+      sig.transactionHash = txHash;
 
-      let envelope = {
+      let envelope = new Envelope({
         signatures: [
           sig
         ],
         transaction: [
           tx
         ]
-      }
+      })
 
       setIsAddCreditsOpen(false);
       console.log(envelope);
 
-      const response = await RPC.request("submit", {"envelope": envelope}, 'v3');
+      const response = await RPC.request("submit", {"envelope": envelope.asObject()}, 'v3');
       console.log(response);
 
     }
