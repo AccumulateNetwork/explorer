@@ -1,85 +1,39 @@
+import { Address } from "accumulate.js";
+import { SignatureType } from "accumulate.js/lib/core";
 import { Alert, Input, Select, Skeleton, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { base58btc } from "multiformats/src/bases/base58";
-import { identity } from "multiformats/src/hashes/identity";
 
 const { Text } = Typography;
-
-async function doChecksum(...parts) {
-    const c = await crypto.subtle.digest('SHA-256', Buffer.concat(parts));
-    return Buffer.from(await crypto.subtle.digest('SHA-256', c));
-}
-
-async function formatMH(hash) {
-    const digested = Buffer.from(identity.digest(hash).bytes);
-    const checksum = (await doChecksum(Buffer.from('MH', 'utf-8'), digested)).slice(0, 4);
-    const encoded = base58btc.encode(Buffer.concat([digested, checksum]));
-    return 'MH' + Buffer.from(encoded).toString('utf-8');
-}
-
-async function formatAC1(hash) {
-    const checksum = (await doChecksum(Buffer.from('AC1', 'utf-8'), hash)).slice(0, 4);
-    const encoded = base58btc.baseEncode(Buffer.concat([hash, checksum]));
-    return 'AC1' + Buffer.from(encoded).toString('utf-8');
-}
-
-function formatFA(hash) {
-    return formatWithPrefix(Buffer.from([0x5f, 0xb1]), hash);
-}
-
-async function formatBTC(hash) {
-    return 'BT' + await formatWithPrefix(Buffer.from([0x00]), hash);
-}
-
-async function formatETH(hash) {
-    if (hash.length > 20) {
-        hash = hash.slice(0, 20);
-    }
-    return '0x' + hash.toString('hex');
-}
-
-async function formatWithPrefix(prefix, hash) {
-    const checksum = (await doChecksum(prefix, hash)).slice(0, 4);
-    const encoded = base58btc.baseEncode(Buffer.concat([prefix, hash, checksum]))
-    return Buffer.from(encoded).toString('utf-8');
-}
 
 const Key = props => {
 
     const [address, setAddress] = useState(null);
     const [error, setError] = useState(null);
 
-    const getAddress = async () => {
+    const getAddress = async (type) => {
         try {
-            let hashRaw;
+            let hash;
             if (props.publicKey) {
                 const keyRaw = Buffer.from(props.publicKey, 'hex');
-                hashRaw = Buffer.from(await crypto.subtle.digest('SHA-256', keyRaw));
+                hash = Buffer.from(await crypto.subtle.digest('SHA-256', keyRaw));
             } else {
-                hashRaw = Buffer.from(props.keyHash, 'hex');
+                hash = Buffer.from(props.keyHash, 'hex');
             }
 
-            switch (props.type) {
-                case 'ed25519':
-                    setAddress(await formatAC1(hashRaw));
-                    break;
-                case 'legacyED25519':
-                    setAddress(props.keyHash);
-                    break;
-                case 'rcd1':
-                    setAddress(await formatFA(hashRaw));
-                    break;
-                case 'btc':
-                    setAddress(await formatBTC(hashRaw));
-                    break;
-                case 'eth':
-                    setAddress(await formatETH(hashRaw));
-                    break;
-                default:
-                    setAddress(await formatMH(hashRaw));
-                    break;
+            if (type === 'hex') {
+                setAddress(hash.toString('hex'));
+                return;
             }
 
+            if (type)
+                ; // Ok
+            else if (props.type)
+                type = SignatureType.byName(props.type);
+            else
+                type = SignatureType.Unknown;
+
+            const addr = await Address.fromKeyHash(type, hash);
+            setAddress(await addr.format());
         } catch (error) {
             setError(error.message);
         }
@@ -87,35 +41,7 @@ const Key = props => {
 
     const handleChange = async event => {
         try {
-            setError(null);
-            let hashRaw;
-            if (props.publicKey) {
-                const keyRaw = Buffer.from(props.publicKey, 'hex');
-                hashRaw = Buffer.from(await crypto.subtle.digest('SHA-256', keyRaw));
-            } else {
-                hashRaw = Buffer.from(props.keyHash, 'hex');
-            }
-
-            switch (event) {
-                case 'ed25519':
-                    setAddress(await formatAC1(hashRaw));
-                    break;
-                case 'legacyED25519':
-                    setAddress(props.keyHash);
-                    break;
-                case 'rcd1':
-                    setAddress(await formatFA(hashRaw));
-                    break;
-                case 'btc':
-                    setAddress(await formatBTC(hashRaw));
-                    break;
-                case 'eth':
-                    setAddress(await formatETH(hashRaw));
-                    break;
-                default:
-                    setAddress(await formatMH(hashRaw));
-                    break;
-            }
+            getAddress(event === 'hex' ? event : SignatureType.byName(event));
         } catch (error) {
             setError(error.message);
         }
@@ -135,10 +61,10 @@ const Key = props => {
                 <span><Tag color="blue" style={{textTransform: "uppercase"}}>{props.type}</Tag><Text className="code" copyable>{address}</Text></span>
             :
                 <Input.Group compact className={"key"}>
-                    <Select defaultValue="raw" size="small" className="key-type" onChange={handleChange}>
-                        <Select.Option value="raw">Raw Key</Select.Option>
+                    <Select defaultValue="unknown" size="small" className="key-type" onChange={handleChange}>
+                        <Select.Option value="unknown">Raw Key</Select.Option>
                         <Select.Option value="ed25519">ED25519</Select.Option>
-                        <Select.Option value="legacyED25519">Hex</Select.Option>
+                        <Select.Option value="hex">Hex</Select.Option>
                         <Select.Option value="rcd1">RCD1</Select.Option>
                         <Select.Option value="btc">BTC</Select.Option>
                         <Select.Option value="eth">ETH</Select.Option>
