@@ -177,17 +177,21 @@ const Web3Module = props => {
 
     let message = web3.utils.padRight(account, 64);
     let signature = await signWeb3(message);
+    if (!signature) return;
+
     console.log('Message:', message)
     console.log('Signature:', signature)
 
-    if (signature) {
-      let pub = EthCrypto.recoverPublicKey(signature, message);
-      console.log('Public key:', pub)
-      setPublicKey(pub);
-      localStorage.setItem(account, pub);
-      setIsDashboardOpen(true);
+    let pub = EthCrypto.recoverPublicKey(signature, message);
+    console.log('Public key:', pub)
+    if (EthCrypto.publicKey.toAddress(pub) != account) {
+      notification.error({ message: 'Failed to recover public key'})
+      return;
     }
 
+    setPublicKey(pub);
+    localStorage.setItem(account, pub);
+    setIsDashboardOpen(true);
   }
 
   const vrsToDer = vrs => {
