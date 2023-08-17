@@ -44,7 +44,7 @@ import { Envelope } from 'accumulate.js/lib/messaging';
 
 const { Title, Paragraph, Text } = Typography;
 
-export async function sha256(data) {
+async function sha256(data) {
   return Buffer.from(new Uint8Array(await crypto.subtle.digest("SHA-256", data)))
 }
 
@@ -74,6 +74,7 @@ const Web3Module = props => {
   const [networkStatus, setNetworkStatus] = useState(null);
   const [networkStatusError, setNetworkStatusError] = useState(null);
 
+  const [web3, setWeb3] = useState(null);
   const [signWeb3Error, setSignWeb3Error] = useState(null);
 
   const {
@@ -95,15 +96,15 @@ const Web3Module = props => {
 
   const connectWeb3 = async () => {
     if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum);
-        activate(injected);
-        localStorage.setItem("connected", injected);
-        setIsConnectWalletOpen(false);
-        if (!isDashboardOpen) {
-          toggleDashboard();
-        }
+      setWeb3(new Web3(window.ethereum));
+      activate(injected);
+      localStorage.setItem("connected", "Web3");
+      setIsConnectWalletOpen(false);
+      if (!isDashboardOpen) {
+        toggleDashboard();
+      }
     } else {
-        message.warning("Web3 browser extension not found");
+      message.warning("Web3 browser extension not found");
     }
   }
 
@@ -161,16 +162,27 @@ const Web3Module = props => {
 
   }
 
+  const safe = (fn) => async () => {
+    try {
+      await fn()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
   const recoverPublicKey = async () => {
 
     localStorage.removeItem(account);
 
-    let message = window.web3.utils.padRight(account, 64);
+    let message = web3.utils.padRight(account, 64);
     let signature = await signWeb3(message);
+    console.log('Message:', message)
+    console.log('Signature:', signature)
 
     if (signature) {
       let pub = EthCrypto.recoverPublicKey(signature, message);
+      console.log('Public key:', pub)
       setPublicKey(pub);
       localStorage.setItem(account, pub);
       setIsDashboardOpen(true);
@@ -218,7 +230,7 @@ const Web3Module = props => {
       },
       body: new AddCredits({
         recipient: formAddCreditsDestination,
-        amount: formAddCreditsAmount*100,
+        amount: formAddCreditsAmount*100*1e8/networkStatus.oracle.price,
         oracle: networkStatus.oracle.price
       })
     })
@@ -230,13 +242,13 @@ const Web3Module = props => {
 
     console.log("Message: " + messageHash.toString('hex'));
 
-    let signature = await signWeb3(window.web3.utils.bytesToHex(messageHash));
+    let signature = await signWeb3(web3.utils.bytesToHex(messageHash));
 
     if (signature) {
 
       console.log("Signature: " + signature);
 
-      let pub = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
+      let pub = EthCrypto.recoverPublicKey(signature, web3.utils.bytesToHex(messageHash));
       console.log("Recovered public key: " + pub);
 
       sig.signature = vrsToDer(signature);
@@ -264,7 +276,7 @@ const Web3Module = props => {
   const signWeb3 = async (message) => {
     setSignWeb3Error(null);
     try {
-      let sig = await window.web3.eth.sign(message, account);
+      let sig = await web3.eth.sign(message, account);
       return sig;
     }
     catch(error) {
@@ -318,7 +330,7 @@ const Web3Module = props => {
     query("ACME", setACME, setACMEError);
     let connected = localStorage.getItem("connected");
     if (connected !== null) {
-      window.web3 = new Web3(window.ethereum);
+      setWeb3(new Web3(window.ethereum));
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -350,7 +362,7 @@ const Web3Module = props => {
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiUserLine /></IconContext.Provider>{truncateAddress(account)}
                   </Button>
                 ) : 
-                  <Button shape="round" type="primary" onClick={recoverPublicKey}>
+                  <Button shape="round" type="primary" onClick={safe(recoverPublicKey)}>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiPenNibLine /></IconContext.Provider>Sign to login
                   </Button>
                 }
@@ -532,7 +544,7 @@ const Web3Module = props => {
             }
           </Form.Item>
           <Form.Item>
-            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
+            <Button onClick={safe(handleFormAddCredits)} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
             {signWeb3Error &&
               <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
             }
