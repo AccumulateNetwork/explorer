@@ -31,6 +31,7 @@ import Faucet from './explorer/Faucet';
 import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
 import Block from './explorer/Block';
+import Network from './explorer/Network';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -214,6 +215,7 @@ const Explorer = props => {
                 <Route path="/staking" component={Staking} />
                 <Route path="/favourites" component={Favourites} />
                 <Route path="/blocks" component={MinorBlocks} />
+                <Route path="/network" component={Network} />
 
                 <Route component={Error404} />
             </Switch>
