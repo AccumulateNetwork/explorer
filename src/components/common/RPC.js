@@ -17,7 +17,9 @@ class RPC {
       method,
       params: typeof params === 'string' ? [params] : params
     })
-    .then(function(response) {
+    .then(response => {
+      if (response.data.error?.data?.code === 'notFound' && method === 'query')
+        window.location.href = '/acc/' + params.scope;
       if (response.data.error) {
         if (response.data.error.data && response.data.error.code) {
           // exception for nothing was found error
