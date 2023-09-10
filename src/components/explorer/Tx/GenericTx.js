@@ -220,7 +220,7 @@ const GenericTx = props => {
                 }
 
                 {(tx.signatures && tx.signatures.length > 0) &&
-                    <Signatures data={tx.signatures} />            
+                    <Signatures data={tx.v3.signatures.records} />            
                 }
 
                 <Title level={4}>

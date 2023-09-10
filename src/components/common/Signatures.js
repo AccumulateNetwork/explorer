@@ -16,7 +16,24 @@ import Count from './Count';
 const { Title, Text, Paragraph } = Typography;
 
 const Signatures = props => {
-    const signatures = props.data.filter(signature => signature.signer || signature.delegator);
+    const sets = [];
+    for (const set of props.data) {
+        const signatures = [];
+        for (const sig of set.signatures.records) {
+            if (sig.message.type != 'signature') continue;
+            signatures.push(sig.message.signature);
+        }
+        if (signatures.length > 0)
+            sets.push({ account: set.account, signatures });
+    }
+
+    function Account(props) {
+        const { account } = props;
+
+        return (
+            <strong>For {account.url}</strong>
+        )
+    }
 
     function SignatureSet(props) {
         const data = props.data;
@@ -33,6 +50,23 @@ const Signatures = props => {
     function Signature(props) {
         const item = props.data;
         const level = props.level ? props.level : 0;
+
+        if (item.type === 'authority') {
+            return (
+                <div>
+                    <Paragraph>
+                        <Tag color="yellow">Authority</Tag>&nbsp;
+                        <Link to={'/acc/' + item.authority.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}</Link>
+                    </Paragraph>
+                        {item.delegator?.map(delegator => 
+                            <Paragraph key={delegator}>
+                                <Tag color="green">Delegated</Tag>&nbsp;
+                                <Link to={'/acc/' + delegator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{delegator}</Link>
+                            </Paragraph>
+                        )}
+                </div>
+            )
+        }
 
         return (
             <div className={level ? "subsignature" : null}>
@@ -76,20 +110,23 @@ const Signatures = props => {
                     <RiPenNibLine />
                 </IconContext.Provider>
                 Signatures
-                <Count count={signatures && signatures.length ? signatures.length : 0} />
             </Title>
-            {(signatures && signatures.length>0) ? (
-                <List
-                    size="small"
-                    bordered
-                    dataSource={signatures}
-                    renderItem={item =>
-                        <List.Item>
-                            <Signature data={item} />
-                        </List.Item>
-                    }
-                    style={{ marginBottom: "30px" }}
+            {sets ? sets?.map(({ account, signatures }) =>
+                <div key={account.url}>
+                    <Title level={5}>For <Link to={'/acc/' + account.url.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{account.url}</Link></Title>
+
+                    <List
+                        size="small"
+                        bordered
+                        dataSource={signatures}
+                        renderItem={signature =>
+                            <List.Item>
+                                <Signature data={signature} />
+                            </List.Item>
+                        }
+                        style={{ marginBottom: "30px" }}
                 />
+                </div>
             ) :
                 <Text disabled>N/A</Text>
             }
