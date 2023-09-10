@@ -1,9 +1,8 @@
-import React from 'react';
-
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-    Tag, Typography, List
+    Tag, Typography, List, Switch, Table
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -11,28 +10,98 @@ import {
     RiPenNibLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
-import Count from './Count';
+import RPC from './../common/RPC';
 
 const { Title, Text, Paragraph } = Typography;
 
 const Signatures = props => {
-    const sets = [];
-    for (const set of props.data) {
-        const signatures = [];
-        for (const sig of set.signatures.records) {
-            if (sig.message.type != 'signature') continue;
-            signatures.push(sig.message.signature);
+    const { transaction } = props;
+
+    const [authorities, setAuthorities] = useState(null);
+
+    const getAuthorities = async(scope) => {
+        while (true) {
+            const { account } = await RPC.request("query", { scope }, 'v3');
+    
+            switch (account.type) {
+                case 'keyPage':
+                    scope = account.keyBook;
+                    continue;
+                case 'liteTokenAccount':
+                    const [,id] = scope.match(/^(acc:\/\/\w+)\/.*/);
+                    return [{ url: id }];
+                default:
+                    return account.authorities || [];
+            }
         }
-        if (signatures.length > 0)
-            sets.push({ account: set.account, signatures });
     }
 
-    function Account(props) {
-        const { account } = props;
+    const getAllAuthorities = async () => {
+        try {
+            const authorities = [];
+            const addAuth = (url) => {
+                url = url.toLowerCase();
+                if (!authorities.find(x => x.toLowerCase() == url.toLowerCase())) {
+                    authorities.push(url);
+                }
+            };
 
-        return (
-            <strong>For {account.url}</strong>
-        )
+            for (const { url, disabled } of await getAuthorities(transaction.header.principal)) {
+                if (!disabled) addAuth(url);
+            }
+
+            switch (transaction.body.type) {
+                case 'updateKeyPage':
+                    for (const op of transaction.body.operation) {
+                        switch (op.type) {
+                            case 'add':
+                                if (op.entry.delegate) {
+                                    addAuth(op.entry.delegate);
+                                }
+                                break;
+                        }
+                    }
+                    break;
+                case 'updateAccountAuth':
+                    for (const op of transaction.body.operations) {
+                        switch (op.type) {
+                            case 'addAuthority':
+                                addAuth(op.authority);
+                                break;
+                        }
+                    }
+                    break;
+            }
+
+            setAuthorities(authorities);
+        }
+        catch (error) {
+            console.log(error);
+        }
+    };
+
+    const signatures = [];
+    let principalSigs = [];
+    for (const set of props.data) {
+        if (set.account.url.toLowerCase() === transaction.header.principal.toLowerCase()) {
+            principalSigs = set.signatures.records;
+        }
+
+        for (const sig of set.signatures.records) {
+            if (sig.message.type !== 'signature') continue;
+            if (sig.message.signature.type === 'authority') continue;
+            signatures.push(sig.message.signature);
+        }
+    }
+
+    const signatureAuthority = (signature) => {
+        if (signature.type === 'delegated')
+            return signature.delegator.replace(/\/\d+$/, '');
+        return signature.signer.replace(/\/\d+$/, '');
+    }
+
+    const signaturesForAuthority = (authority) => {
+        return signatures.filter(x => signatureAuthority(x).toLowerCase() === authority.toLowerCase());
     }
 
     function SignatureSet(props) {
@@ -50,23 +119,6 @@ const Signatures = props => {
     function Signature(props) {
         const item = props.data;
         const level = props.level ? props.level : 0;
-
-        if (item.type === 'authority') {
-            return (
-                <div>
-                    <Paragraph>
-                        <Tag color="yellow">Authority</Tag>&nbsp;
-                        <Link to={'/acc/' + item.authority.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{item.authority}</Link>
-                    </Paragraph>
-                        {item.delegator?.map(delegator => 
-                            <Paragraph key={delegator}>
-                                <Tag color="green">Delegated</Tag>&nbsp;
-                                <Link to={'/acc/' + delegator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{delegator}</Link>
-                            </Paragraph>
-                        )}
-                </div>
-            )
-        }
 
         return (
             <div className={level ? "subsignature" : null}>
@@ -102,6 +154,115 @@ const Signatures = props => {
             </div>
         );
     }
+
+    function ListOfSignatures({ signatures, ...props }) {
+        return (
+            <List
+                {...props}
+                size="small"
+                dataSource={signatures}
+                renderItem={signature =>
+                    <List.Item>
+                        <Signature data={signature} />
+                    </List.Item>
+                }
+            />
+        )
+    }
+
+    function Required() {
+        const creditPayments = principalSigs.filter(x => x.message.type === 'creditPayment');
+        const otherSigs = signatures.filter(x => !authorities.some(y => signatureAuthority(x).toLowerCase() === y.toLowerCase()));
+        const columns = [
+            {
+                key: 'type',
+                render(_, authority) {
+                    if (authority === 'credits') {
+                        return <span>Credits</span>
+                    }
+                    if (authority === 'other') {
+                        return <span>Other</span>
+                    }
+                    return <span>Authority</span>
+                }
+            },
+            {
+                key: 'info',
+                render(_, authority) {
+                    if (authority === 'credits') {
+                        const paid = creditPayments.reduce((sum, x) => sum + x.message.paid, 0);
+                        return <span>{paid * 1e-2} paid</span>
+                    }
+                    if (authority === 'other') {
+                        return <span>{otherSigs.length} signature(s)</span>;
+                    }
+                    return <Link to={'/acc/' + authority.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{authority}</Link>
+                }
+            },
+            {
+                key: 'status',
+                render(_, authority) {
+                    if (authority === 'other') {
+                        return;
+                    }
+                    const status = authority === 'credits'
+                        ? creditPayments.length > 0
+                        : principalSigs.some(x => x.message.type === 'signature' && x.message.signature.type === 'authority' && x.message.signature.authority.toLowerCase() === authority.toLowerCase());
+
+                    if (status)
+                        return <Tag color="green">Received</Tag>
+                    return <Tag color="yellow">Pending</Tag>
+                }
+            }
+        ]
+
+        const rowExpandable = (authority) => {
+            if (authority === 'credits') {
+                return creditPayments.length > 0
+            }
+            if (authority === 'other') {
+                return otherSigs.length > 0
+            }
+            return signaturesForAuthority(authority).length > 0
+        }
+
+        const expandedRowRender = (authority) => {
+            if (authority === 'credits') {
+                return (
+                    <div>
+                        {creditPayments.map(x =>
+                            <div key={x.id}>
+                                {x.message.paid * 1e-2} paid by <Link to={'/acc/' + x.message.payer.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{x.message.payer}</Link>
+                            </div>
+                        )}
+                    </div>
+                )
+            }
+            if (authority === 'other') {
+                return <ListOfSignatures signatures={otherSigs} />
+            }
+            return <ListOfSignatures signatures={signaturesForAuthority(authority)} />
+        }
+
+        return (
+            <Table
+                showHeader={false}
+                dataSource={[
+                    'credits',
+                    ...authorities,
+                    ...(otherSigs.length > 0 ? ['other'] : []),
+                ]}
+                columns={columns}
+                rowKey={(authority) => authority}
+                pagination={false}
+                expandable={{ expandedRowRender, rowExpandable }}
+            />
+        )
+    }
+
+    useEffect(() => {
+        getAllAuthorities();
+    }, [])
     
     return (
         <div style={{ marginBottom: "20px" }} >
@@ -111,24 +272,12 @@ const Signatures = props => {
                 </IconContext.Provider>
                 Signatures
             </Title>
-            {sets ? sets?.map(({ account, signatures }) =>
-                <div key={account.url}>
-                    <Title level={5}>For <Link to={'/acc/' + account.url.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{account.url}</Link></Title>
-
-                    <List
-                        size="small"
-                        bordered
-                        dataSource={signatures}
-                        renderItem={signature =>
-                            <List.Item>
-                                <Signature data={signature} />
-                            </List.Item>
-                        }
-                        style={{ marginBottom: "30px" }}
-                />
-                </div>
-            ) :
+            {!signatures?.length ?
                 <Text disabled>N/A</Text>
+            : !authorities?.length ?
+                <ListOfSignatures bordered signatures={signatures} />
+            :
+                <Required />
             }
         </div>
     );
