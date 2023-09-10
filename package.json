@@ -10,6 +10,7 @@
     "@testing-library/user-event": "^12.1.10",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
+    "accumulate.js": "0.9.1",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "crypto": "^1.0.1",
@@ -21,7 +22,6 @@
     "js-base64": "^3.7.2",
     "moment": "^2.29.3",
     "moment-timezone": "^0.5.34",
-    "multiformats": "^11.0.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",
@@ -32,6 +32,10 @@
     "realm-web": "^1.7.0",
     "web-vitals": "^1.0.1",
     "web3": "^1.8.2"
+  },
+  "resolutions": {
+    "//": "See https://github.com/facebook/create-react-app/issues/11773",
+    "react-error-overlay": "6.0.9"
   },
   "scripts": {
     "start": "REACT_APP_API_PATH='https://api-gateway.accumulate.defidevs.io' REACT_APP_ID='explorer-wespx' react-scripts start",
