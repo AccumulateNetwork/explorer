@@ -39,10 +39,15 @@ const TxAddCredits = props => {
                 }
 
                 {(tx.data.amount && tx.data.oracle) &&
-                    <Descriptions.Item label={"Amount"}>
-                        <Text>{tx.data.amount * tx.data.oracle * 1e-10} credits</Text>
-                    </Descriptions.Item>
-                }
+                    <>
+                        <Descriptions.Item label={"Credits"}>
+                            <Text>{tx.data.amount * tx.data.oracle * 1e-10} credits</Text>
+                        </Descriptions.Item>
+                        <Descriptions.Item label={"ACME spent"}>
+                            <Text>{tx.data.amount / (10**8)} ACME</Text>
+                        </Descriptions.Item>
+                    </>
+            }
 
                 {tx.data.oracle &&
                     <Descriptions.Item label={"Oracle"}>

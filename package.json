@@ -34,7 +34,7 @@
     "web3": "^1.8.2"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='https://testnet.accumulatenetwork.io' react-scripts start",
+    "start": "REACT_APP_API_PATH='https://api-gateway.accumulate.defidevs.io' REACT_APP_ID='explorer-wespx' react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

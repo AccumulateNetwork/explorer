@@ -31,7 +31,7 @@ const TxChain = props => {
             header = "Signature Chain"
             break
         default:
-            header = "Transaction History"
+            header = "Transactions"
             break
     }
     
@@ -42,14 +42,31 @@ const TxChain = props => {
 
     const columns = [
         {
+            title: '#',
+            className: 'align-top no-break',
+            render: (row) => {
+                if (row?.index >= 0) {
+                    return (
+                        <div>
+                            <Text>{row.index}</Text>
+                        </div>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
+            }
+        },
+        {
             title: 'Transaction ID',
             className: 'align-top no-break',
             render: (row) => {
-                if (row && row.txid) {
+                if (row?.entry?.value?.id) {
                     return (
                         <div>
-                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.txid}
+                            <Link to={row.entry.value.id}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.entry}
                             </Link>
                         </div>
                     )
@@ -63,10 +80,11 @@ const TxChain = props => {
         {
             title: 'Type',
             className: 'align-top no-break',
-            render: (row) => {
-                if (row && row.type) {
+            render: (tx) => {
+                const type = tx?.value?.message?.transaction?.body?.type
+                if (type) {
                     return (
-                        <Tag color="green">{row.type}</Tag>                        
+                        <Tag color="green">{type}</Tag>                        
                     )
                 } else {
                     return (
@@ -91,38 +109,32 @@ const TxChain = props => {
     const getTxChain = async (params = pagination) => {
         setTableIsLoading(true);    
         let start = 0;
-        let count = 10;
-        let showTotalStart = 1;
-        let showTotalFinish = 10;
     
         if (params) {
             start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
-            showTotalStart = (params.current-1)*params.pageSize+1;
-            showTotalFinish = params.current*params.pageSize;
         }
     
         try {
-          let response;
-          if (type === 'pending')
-            response = await RPC.request("query", { url: props.url + `#${type}` } );
-          else
-            response = await RPC.request("query", { url : props.url + `?start=${start}&count=${count}#${type}` } );
+            let response;
+            if (type === 'pending')
+                response = await RPC.request("query", { url: props.url + `#${type}` });
+            else
+                response = await RPC.request("query", { "scope": props.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3');
 
             if (response) {
-            // workaround API bug response
-            if (response.start === null || response.start === undefined) {
-                response.start = 0;
+                // workaround API bug response
+                if (response.start === null || response.start === undefined) {
+                    response.start = 0;
+                }
+                setTxChain(response.records.reverse());
+                setPagination({ ...pagination, current: params.current, pageSize: params.pageSize, total: response.total });
+                if (type === 'pending')
+                    setTotalEntries(response.items.length);
+                else
+                    setTotalEntries(response.total);
+            } else {
+                throw new Error("Chain not found");
             }
-            setTxChain(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
-            if (type === 'pending')
-              setTotalEntries(response.items.length);
-            else
-              setTotalEntries(response.total);
-          } else {
-            throw new Error("Chain not found"); 
-          }
         }
         catch(error) {
           // error is managed by RPC.js, no need to display anything
