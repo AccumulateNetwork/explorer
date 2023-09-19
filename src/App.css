@@ -750,3 +750,20 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 .ant-modal-content .ant-form .ant-form-item .ant-form-item-label {
   font-weight: bold;
 }
+
+.ant-table-row.node-details.node-error {
+  background-color: hsl(8, 100%, 97%);
+}
+
+.ant-table-row.node-details.node-error + .ant-table-expanded-row > .ant-table-cell {
+  background-color: hsl(8, 100%, 95%);
+}
+
+.ant-table-row.node-details.node-error:hover,
+.ant-table-row.node-details.node-error:hover > .ant-table-cell {
+  background-color: hsl(8, 100%, 95%);
+}
+
+.node-details .node-error-icon {
+  color: #ff4d4f;
+}

@@ -16,7 +16,7 @@ import {
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine, RiRefund2Fill
+    RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiExchangeLine, RiCoinLine
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
@@ -68,28 +68,22 @@ const TokenAccount = props => {
         setTableIsLoading(true);
 
         let start = 0;
-        let count = 10;
-        let showTotalStart = 1;
-        let showTotalFinish = 10;
 
         if (params) {
             start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
-            showTotalStart = (params.current-1)*params.pageSize+1;
-            showTotalFinish = params.current*params.pageSize;
         }
 
         try {
-          const response = await RPC.request("query-tx-history", { url: tokenAccount.data.url, start: start, count: count } );
-            if (response && response.items) {
+            const response = await RPC.request("query", { "scope": tokenAccount.data.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3' );
+            if (response?.records) {
 
                 // workaround API bug response
                 if (response.start === null || response.start === undefined) {
                     response.start = 0;
                 }
 
-                setTxs(response.items);
-                setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+                setTxs(response.records.reverse());
+                setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
                 setTotalTxs(response.total);
             } else {
                 throw new Error("Token account not found");
@@ -105,11 +99,7 @@ const TokenAccount = props => {
         if (!process.env.REACT_APP_METRICS_API_PATH) return
 
         try {
-            // prepare form
-            let params = new FormData();
-            params.append('stake', url);
-
-            const response = await axios.post(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/search", params, { headers: { 'Content-Type': 'multipart/form-data' } });
+            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/" + url);
             if (response && response.data && !response.data.error) {
                 setStakingAccount(response.data);
             }
@@ -156,14 +146,31 @@ const TokenAccount = props => {
 
     const columns = [
         {
-            title: 'Transaction ID',
-            dataIndex: 'txid',
+            title: '#',
             className: 'align-top no-break',
-            render: (txid) => {
-                if (txid) {
+            render: (row) => {
+                if (row?.index >= 0) {
                     return (
-                        <Link to={'/acc/' + txid.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{txid}
+                        <div>
+                            <Text>{row.index}</Text>
+                        </div>
+                    )
+                } else {
+                    return (
+                        <Text disabled>N/A</Text>
+                    )
+                }                
+            }
+        },
+        {
+            title: 'Transaction ID',
+            dataIndex: 'entry',
+            className: 'align-top no-break',
+            render: (entry) => {
+                if (entry) {
+                    return (
+                        <Link to={'/acc/' + entry + '@' + tokenAccount.data.url.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{entry}
                         </Link>
                     )
                 } else {
@@ -177,13 +184,13 @@ const TokenAccount = props => {
             title: 'Type',
             className: 'align-top no-break',
             render: (tx) => {
-                if (tx && tx.type) {
+                const type = tx?.value?.message?.transaction?.body?.type
+                if (type) {
                     return (
                         <div>
                             <Tag color="green">
-                                {tx.type}
+                                {type}
                             </Tag>
-                        {tx.data && tx.data.isRefund ? <Tag color="orange" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag> : null}
                         </div>
                     )
                 } else {
@@ -199,10 +206,7 @@ const TokenAccount = props => {
             title: 'From',
             className: 'align-top no-break',
             render: (tx) => {
-                let from
-
-                if (tx.data.from) from = tx.data.from
-                else if (tx.transaction.body.source) from = tx.transaction.body.source
+                const from = tx?.value?.message?.transaction?.body?.source || tx?.value?.message?.transaction?.header?.principal
 
                 if (from === undefined) {
                     return (
@@ -223,20 +227,22 @@ const TokenAccount = props => {
             title: 'To',
             className: 'align-top no-break',
             render: (tx) => {
-                if (tx.data.to || tx.data.recipient) {
-                    if (tx.data.to && Array.isArray(tx.data.to) && tx.data.to[0]) {
+                const to = tx?.value?.message?.transaction?.body?.to
+                const recipient = tx?.value?.message?.transaction?.body?.recipient || tx?.value?.message?.transaction?.header?.principal
+                if (to || recipient) {
+                    if (to && Array.isArray(to) && to[0]) {
                         return (
-                            <TxOutputs tx={tx.data.to} token={token} />
+                            <TxOutputs tx={to} token={token} />
                         )
                     }
-                    if (tx.data.recipient) {
-                        if (tx.data.recipient === tokenAccount.data.url) {
+                    if (recipient) {
+                        if (recipient === tokenAccount.data.url) {
                             return (
-                                <Text type="secondary">{tx.data.recipient}</Text>
+                                <Text type="secondary">{recipient}</Text>
                             )
                         } else {
                             return (
-                                <Link to={'/acc/' + tx.data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.recipient}</Link>
+                                <Link to={'/acc/' + recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{recipient}</Link>
                             )
                         }
                     }
@@ -260,23 +266,24 @@ const TokenAccount = props => {
         {
             title: 'Amount',
             className: 'align-top no-break',
-            dataIndex: 'data',
-            render: (data) => {
-                if (data.to && Array.isArray(data.to) && data.to[0]) {
+            render: (tx) => {
+                const to = tx?.value?.message?.transaction?.body?.to
+                const amount = tx?.value?.message?.transaction?.body?.amount
+                if (to && Array.isArray(to) && to[0] && token) {
                     return (
-                        <TxAmounts tx={data.to} token={token} />
+                        <TxAmounts tx={to} token={token} />
                     )
-                } else if (data.amount && data.token) {
+                } else if (amount && token) {
                     return (
                         <Descriptions.Item>
-                            <Tooltip title={tokenAmountToLocaleString(data.amount, token.precision, token.symbol)}>
-                                {tokenAmount(data.amount, token.precision, token.symbol)}
+                            <Tooltip title={tokenAmountToLocaleString(amount, token.precision, token.symbol)}>
+                                {tokenAmount(amount, token.precision, token.symbol)}
                             </Tooltip>
                         </Descriptions.Item>
                     )
-                } else if (data.amount && data.oracle) { //if not a TOKEN, then it is a CREDIT
+                } else if (amount && tx.oracle) { //if not a TOKEN, then it is a CREDIT - NOT WORKING
                     return (
-                        <Text>{data.amount * data.oracle * 1e-10} credits</Text>
+                        <Text>{amount * tx.oracle * 1e-10} credits</Text>
                     )
                 }
                 else {
