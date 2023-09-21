@@ -219,8 +219,8 @@ const GenericTx = props => {
                     <TxAddCredits data={tx} />
                 }
 
-                {(tx.signatures && tx.signatures.length > 0) &&
-                    <Signatures data={tx.signatures} />            
+                {(tx.signatures?.length > 0 && tx.v3?.message?.transaction) &&
+                    <Signatures transaction={tx.v3.message.transaction} data={tx.v3.signatures.records} />            
                 }
 
                 <Title level={4}>
