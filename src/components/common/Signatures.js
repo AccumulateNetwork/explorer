@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import {
-    Tag, Typography, List, Switch, Table
+    Tag, Typography, List, Table
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -41,7 +41,7 @@ const Signatures = props => {
             const authorities = [];
             const addAuth = (url) => {
                 url = url.toLowerCase();
-                if (!authorities.find(x => x.toLowerCase() == url.toLowerCase())) {
+                if (!authorities.find(x => x.toLowerCase() === url.toLowerCase())) {
                     authorities.push(url);
                 }
             };
@@ -59,6 +59,8 @@ const Signatures = props => {
                                     addAuth(op.entry.delegate);
                                 }
                                 break;
+                            default:
+                                break;
                         }
                     }
                     break;
@@ -68,8 +70,12 @@ const Signatures = props => {
                             case 'addAuthority':
                                 addAuth(op.authority);
                                 break;
+                            default:
+                                break;
                         }
                     }
+                    break;
+                default:
                     break;
             }
 
@@ -261,7 +267,7 @@ const Signatures = props => {
     }
 
     useEffect(() => {
-        getAllAuthorities();
+        getAllAuthorities(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
     
     return (

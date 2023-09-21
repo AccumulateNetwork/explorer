@@ -30,11 +30,11 @@
     "react-scripts": "4.0.3",
     "react-syntax-highlighter": "^15.5.0",
     "realm-web": "^1.7.0",
+    "rxjs": "^7.8.1",
     "web-vitals": "^1.0.1",
     "web3": "^1.8.2"
   },
   "resolutions": {
-    "//": "See https://github.com/facebook/create-react-app/issues/11773",
     "react-error-overlay": "6.0.9"
   },
   "scripts": {

@@ -184,7 +184,7 @@ const Web3Module = props => {
 
     let pub = EthCrypto.recoverPublicKey(signature, message);
     console.log('Public key:', pub)
-    if (EthCrypto.publicKey.toAddress(pub) != account) {
+    if (EthCrypto.publicKey.toAddress(pub) !== account) {
       notification.error({ message: 'Failed to recover public key'})
       return;
     }
