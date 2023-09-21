@@ -1,4 +1,7 @@
+/* eslint-disable no-ex-assign */
 import React, { useState, useEffect } from 'react';
+import { AddCredits, ETHSignature, Transaction } from "accumulate.js/lib/core";
+import { encode } from "accumulate.js/lib/encoding";
 
 import { Link } from 'react-router-dom';
 
@@ -19,7 +22,8 @@ import {
   Divider,
   Form,
   Select,
-  InputNumber
+  InputNumber,
+  notification
 } from 'antd';
 
 import Web3 from 'web3';
@@ -36,10 +40,13 @@ import {
 
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress } from "../common/Web3";
-
-import { createHash } from "crypto";
+import { Envelope } from 'accumulate.js/lib/messaging';
 
 const { Title, Paragraph, Text } = Typography;
+
+async function sha256(data) {
+  return Buffer.from(new Uint8Array(await crypto.subtle.digest("SHA-256", data)))
+}
 
 const Web3Module = props => {
 
@@ -67,6 +74,7 @@ const Web3Module = props => {
   const [networkStatus, setNetworkStatus] = useState(null);
   const [networkStatusError, setNetworkStatusError] = useState(null);
 
+  const [web3, setWeb3] = useState(null);
   const [signWeb3Error, setSignWeb3Error] = useState(null);
 
   const {
@@ -88,15 +96,15 @@ const Web3Module = props => {
 
   const connectWeb3 = async () => {
     if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum);
-        activate(injected);
-        localStorage.setItem("connected", injected);
-        setIsConnectWalletOpen(false);
-        if (!isDashboardOpen) {
-          toggleDashboard();
-        }
+      setWeb3(new Web3(window.ethereum));
+      activate(injected);
+      localStorage.setItem("connected", "Web3");
+      setIsConnectWalletOpen(false);
+      if (!isDashboardOpen) {
+        toggleDashboard();
+      }
     } else {
-        message.warning("Web3 browser extension not found");
+      message.warning("Web3 browser extension not found");
     }
   }
 
@@ -154,81 +162,115 @@ const Web3Module = props => {
 
   }
 
+  const safe = (fn) => async () => {
+    try {
+      await fn()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
   const recoverPublicKey = async () => {
 
     localStorage.removeItem(account);
 
-    let message = window.web3.utils.padRight(account, 64);
+    let message = web3.utils.padRight(account, 64);
     let signature = await signWeb3(message);
+    if (!signature) return;
 
-    if (signature) {
-      let pub = EthCrypto.recoverPublicKey(signature, message);
-      setPublicKey(pub);
-      localStorage.setItem(account, pub);
-      setIsDashboardOpen(true);
+    console.log('Message:', message)
+    console.log('Signature:', signature)
+
+    let pub = EthCrypto.recoverPublicKey(signature, message);
+    console.log('Public key:', pub)
+    if (EthCrypto.publicKey.toAddress(pub) != account) {
+      notification.error({ message: 'Failed to recover public key'})
+      return;
     }
 
+    setPublicKey(pub);
+    localStorage.setItem(account, pub);
+    setIsDashboardOpen(true);
+  }
+
+  const vrsToDer = vrs => {
+    // Convert a VRS signature (prefixed with 0x) to DER (unprefixed)
+    //
+    // 0x30 <length> 0x02 <length r> r 0x02 <length s> s
+
+    // Decode VRS
+    const { r, s } = EthCrypto.vrs.fromString(vrs);
+    const rb = Buffer.from(r.substring(2), 'hex');
+    const sb = Buffer.from(s.substring(2), 'hex');
+
+    // total length of returned signature is 1 byte for each magic and
+    // length (6 total), plus lengths of r and s
+    const b = new Uint8Array(6 + rb.length + sb.length)
+    b[0] = 0x30
+    b[1] = b.length - 2
+    b[2] = 0x02
+    b[3] = rb.length
+    b.set(rb, 4);
+    b[4 + rb.length] = 0x02;
+    b[5 + rb.length] = sb.length
+    b.set(sb, 6 + rb.length);
+    return Buffer.from(b);
   }
 
   const handleFormAddCredits = async () => {
+    const sig = new ETHSignature({
+      signer: formAddCreditsLiteTA,
+      signerVersion: 1,
+      timestamp: Date.now(),
+      publicKey: "04" + publicKey,
+    })
+    const sigMdHash = await sha256(encode(sig));
 
-    let sig = {
-      "type": "eth",
-      "signer": formAddCreditsLiteTA,
-      "signerVersion": 1,
-      "timestamp": Date.now(),
-      "publicKey": Buffer.from("04b9cface47d55537d8edd6b73d54d59027149a6580d071c9c7902c398f7c44f18a2cfd43bb242bec0b04590e4ddf1c78909e8bd243f08c38fbf29659299716b0b")
-    }
-
-    let sigMdHash = await createHash('sha256').update(JSON.stringify(sig)).digest('');
-
-    let tx = {
-      "header": {
-        "principal": formAddCreditsLiteTA,
-        "initiator": sigMdHash.toString('hex')
+    const tx = new Transaction({
+      header: {
+        principal: formAddCreditsLiteTA,
+        initiator: sigMdHash,
       },
-      "body": {
-        "type": "addCredits",
-        "recipient": formAddCreditsDestination,
-        "amount": (formAddCreditsAmount*100).toString(),
-        "oracle": networkStatus.oracle.price
-      }
-    }
+      body: new AddCredits({
+        recipient: formAddCreditsDestination,
+        amount: formAddCreditsAmount*100*1e8/networkStatus.oracle.price,
+        oracle: networkStatus.oracle.price
+      })
+    })
 
-    let txHash = await createHash('sha256').update(JSON.stringify(tx)).digest('');
+    let txHash = Buffer.from(await tx.hash());
 
     let message = Buffer.concat([sigMdHash, txHash]);
-    let messageHash = await createHash('sha256').update(message).digest('');
+    let messageHash = await sha256(message);
 
     console.log("Message: " + messageHash.toString('hex'));
 
-    let signature = await signWeb3(window.web3.utils.bytesToHex(messageHash));
+    let signature = await signWeb3(web3.utils.bytesToHex(messageHash));
 
     if (signature) {
 
       console.log("Signature: " + signature);
 
-      let pub = EthCrypto.recoverPublicKey(signature, window.web3.utils.bytesToHex(messageHash));
+      let pub = EthCrypto.recoverPublicKey(signature, web3.utils.bytesToHex(messageHash));
       console.log("Recovered public key: " + pub);
 
-      sig.signature = signature.substring(2);
-      sig.transactionHash = txHash.toString('hex');
-      sig.publicKey = "04" + pub;
+      sig.signature = vrsToDer(signature);
+      sig.transactionHash = txHash;
 
-      let envelope = {
+      let envelope = new Envelope({
         signatures: [
           sig
         ],
         transaction: [
           tx
         ]
-      }
+      })
 
       setIsAddCreditsOpen(false);
       console.log(envelope);
 
-      const response = await RPC.request("execute-direct", {"envelope": envelope});
+      const response = await RPC.request("submit", {"envelope": envelope.asObject()}, 'v3');
       console.log(response);
 
     }
@@ -238,11 +280,37 @@ const Web3Module = props => {
   const signWeb3 = async (message) => {
     setSignWeb3Error(null);
     try {
-      let sig = await window.web3.eth.sign(message, account);
+      let sig = await web3.eth.sign(message, account);
       return sig;
     }
     catch(error) {
-      setSignWeb3Error(error);
+      // Extract the Ledger error
+      if (error.message.startsWith('Ledger device: ')) {
+        const i = error.message.indexOf('\n')
+        try {
+          const { originalError } = JSON.parse(error.message.substring(i+1));
+          if (originalError) error = originalError;
+        } catch (_) {}
+      }
+      
+      // Parse the status code
+      if ('statusCode' in error) {
+        // eslint-disable-next-line default-case
+        switch (error.statusCode) {
+          case 0x6d02:
+          case 0x6511:
+            error = new Error("Ledger: the Accumulate app is not running")
+            break;
+          case 0x530c:
+          case 0x6b0c:
+          case 0x5515:
+            error = new Error("Ledger: device is locked")
+            break;
+        }
+      }
+
+      notification.error({ message: error.message });
+      setSignWeb3Error(error.message);
       return;
     }
   };
@@ -266,7 +334,7 @@ const Web3Module = props => {
     query("ACME", setACME, setACMEError);
     let connected = localStorage.getItem("connected");
     if (connected !== null) {
-      window.web3 = new Web3(window.ethereum);
+      setWeb3(new Web3(window.ethereum));
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -298,7 +366,7 @@ const Web3Module = props => {
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiUserLine /></IconContext.Provider>{truncateAddress(account)}
                   </Button>
                 ) : 
-                  <Button shape="round" type="primary" onClick={recoverPublicKey}>
+                  <Button shape="round" type="primary" onClick={safe(recoverPublicKey)}>
                     <IconContext.Provider value={{ className: 'react-icons' }}><RiPenNibLine /></IconContext.Provider>Sign to login
                   </Button>
                 }
@@ -480,7 +548,7 @@ const Web3Module = props => {
             }
           </Form.Item>
           <Form.Item>
-            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
+            <Button onClick={safe(handleFormAddCredits)} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
             {signWeb3Error &&
               <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
             }
