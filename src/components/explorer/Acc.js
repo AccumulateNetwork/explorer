@@ -160,18 +160,21 @@ const Acc = ({ match, parentCallback }) => {
 
     let title = "Account";
     if (isTx) {
-        title = "Transaction"
+        title = "Message"
     }
-    if (isTx && acc?.message) {
-        switch (acc.message.type) {
+    if (isTx && acc?.v3?.message) {
+        switch (acc.v3.message.type) {
             case 'transaction':
                 title = "Transaction";
                 break;
             case 'signature':
                 title = "Signature";
                 break;
-            default:
-                title = "Message";
+            case 'creditPayment':
+                title = "Credit Payment";
+                break;
+            case 'signatureRequest':
+                title = "Signature Request";
                 break;
         }
     }

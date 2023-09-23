@@ -136,6 +136,8 @@ const Signatures = props => {
                 }
                 {item.type && item.publicKey ? (
                     <Paragraph>
+                        {item.vote === 'reject' && <Tag color="red">Reject</Tag>}
+                        {item.vote === 'abstain' && <Tag color="yellow">Abstain</Tag>}
                         <Tag color="blue" style={{textTransform: "uppercase"}}>{item.type}</Tag>
                         <Text className="code" copyable>{item.publicKey}</Text>
                     </Paragraph>
