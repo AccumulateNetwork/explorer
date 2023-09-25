@@ -88,7 +88,7 @@ const Signatures = props => {
 
     const signatures = [];
     let principalSigs = [];
-    for (const set of props.data) {
+    for (const set of props?.data) {
         if (set.account.url.toLowerCase() === transaction.header.principal.toLowerCase()) {
             principalSigs = set.signatures.records;
         }
@@ -102,8 +102,8 @@ const Signatures = props => {
 
     const signatureAuthority = (signature) => {
         if (signature.type === 'delegated')
-            return signature.delegator.replace(/\/\d+$/, '');
-        return signature.signer.replace(/\/\d+$/, '');
+            return signature?.delegator?.replace(/\/\d+$/, '') || '';
+        return signature?.signer?.replace(/\/\d+$/, '') || '';
     }
 
     const signaturesForAuthority = (authority) => {
