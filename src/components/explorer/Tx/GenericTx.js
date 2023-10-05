@@ -14,6 +14,7 @@ import {
   Skeleton
 } from 'antd';
 
+import wrapLinksInHtml from '../../common/LinksRenderer';
 import { IconContext } from "react-icons";
 import {
     RiInformationLine, RiQuestionLine, RiAccountCircleLine, RiRefund2Fill, RiFileList2Line, RiExchangeLine
@@ -177,7 +178,7 @@ const GenericTx = props => {
                     <Descriptions bordered column={1} size="middle" layout="vertical">
                         {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
-                                <Text copyable>{tx.transaction.header.memo}</Text>
+                                <div className="span ant-typography" dangerouslySetInnerHTML={{ __html: wrapLinksInHtml(tx.transaction.header.memo) }} />
                             </Descriptions.Item>
                         ) :
                             null
