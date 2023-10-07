@@ -25,6 +25,7 @@ import GenericTx from './Tx/GenericTx';
 
 import ParseADI from '../common/ParseADI';
 import ParseDataAccount from '../common/ParseDataAccount';
+import GenericMsg from './Tx/GenericMsg';
 
 const { Title } = Typography;
 
@@ -52,15 +53,37 @@ const Acc = ({ match, parentCallback }) => {
             url += location.hash;
         }
 
+        let v3;
         if (url.includes("@")) {
             setIsTx(true);
+
+            // Using @unknown for transactions ensures the query fetches
+            // signatures from all network partitions
+            url = url.replace(/@.*/, '@unknown');
+
+            // Query API v3
+            try {
+                let params = { scope: url };
+                v3 = await RPC.request("query", params, 'v3');
+
+                // Only query API v2 if the message is a transaction
+                if (v3.message.type !== 'transaction') {
+                    setAcc({ v3 });
+                    return;
+                }
+            }
+            catch(error) {
+                setAcc(null);
+                setError(error.message);
+                return;
+            }
         }
 
         try {
             let params = {url: url};
             const response = await RPC.request("query", params);
             if (response && response.data) {
-                setAcc(response);
+                setAcc({ ...response, v3 });
             } else {
                 throw new Error("acc://" + url + " not found"); 
             }
@@ -73,9 +96,15 @@ const Acc = ({ match, parentCallback }) => {
 
     function Render(props) {
         if (props.data) {
-            sendToWeb3Module(props.data);
+            setTimeout(() => sendToWeb3Module(props.data), 0);
+            
             if (isTx) {
-                return <GenericTx data={props.data} />;
+                switch (props.data.v3.message.type) {
+                    case 'transaction':
+                        return <GenericTx data={props.data} />;
+                    default:
+                        return <GenericMsg data={props.data.v3} />;
+                }
             }
             switch(props.data.type) {
                 case 'liteTokenAccount':
@@ -129,9 +158,27 @@ const Acc = ({ match, parentCallback }) => {
         }
     }
 
+    let title = "Account";
+    if (isTx) {
+        title = "Transaction"
+    }
+    if (isTx && acc?.message) {
+        switch (acc.message.type) {
+            case 'transaction':
+                title = "Transaction";
+                break;
+            case 'signature':
+                title = "Signature";
+                break;
+            default:
+                title = "Message";
+                break;
+        }
+    }
+
     return (
         <div>
-            <Title level={2} className="break-all">{isTx ? "Transaction" : "Account"}</Title>
+            <Title level={2} className="break-all">{title}</Title>
             <Title level={4} type="secondary" style={{ marginTop: "-10px" }} className="break-all" copyable={{text: accountURL}}>
                 {!isTx && acc && isFav !== -1 ? (
                     <Rate className={"acc-fav"} count={1} defaultValue={isFav} onChange={(e) => { handleFavChange(e) }} />

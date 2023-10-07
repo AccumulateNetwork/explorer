@@ -77,6 +77,8 @@ export const txHash = async (tx) => {
                 Buffer.from(uvarintMarshalBinary(tx.body.oracle)),
             ]);
             break;
+            default:
+            break;
         }
 
         console.log("Tx.Body Bytes:", Buffer.from(bodyBuffer).toString('hex'));
