@@ -39,8 +39,9 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../common/RPC';
-import { ethToAccumulate, truncateAddress } from "../common/Web3";
-import { Envelope } from 'accumulate.js/lib/messaging';
+import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSigToDER } from "../common/Web3";
+
+import { createHash } from "crypto";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -194,69 +195,61 @@ const Web3Module = props => {
     setIsDashboardOpen(true);
   }
 
-  const vrsToDer = vrs => {
-    // Convert a VRS signature (prefixed with 0x) to DER (unprefixed)
-    //
-    // 0x30 <length> 0x02 <length r> r 0x02 <length s> s
-
-    // Decode VRS
-    const { r, s } = EthCrypto.vrs.fromString(vrs);
-    const rb = Buffer.from(r.substring(2), 'hex');
-    const sb = Buffer.from(s.substring(2), 'hex');
-
-    // total length of returned signature is 1 byte for each magic and
-    // length (6 total), plus lengths of r and s
-    const b = new Uint8Array(6 + rb.length + sb.length)
-    b[0] = 0x30
-    b[1] = b.length - 2
-    b[2] = 0x02
-    b[3] = rb.length
-    b.set(rb, 4);
-    b[4 + rb.length] = 0x02;
-    b[5 + rb.length] = sb.length
-    b.set(sb, 6 + rb.length);
-    return Buffer.from(b);
-  }
-
   const handleFormAddCredits = async () => {
-    const sig = new ETHSignature({
-      signer: formAddCreditsLiteTA,
-      signerVersion: 1,
-      timestamp: Date.now(),
-      publicKey: "04" + publicKey,
-    })
-    const sigMdHash = await sha256(encode(sig));
 
-    const tx = new Transaction({
-      header: {
-        principal: formAddCreditsLiteTA,
-        initiator: sigMdHash,
+    let upk = "04" + publicKey;
+
+    let sig = {
+      "type": "eth",
+      "signer": formAddCreditsLiteTA,
+      "signerVersion": 1,
+      "timestamp": Date.now(),
+      "publicKey": upk
+    }
+
+    console.log("Signature:", sig);
+
+    let sigHash = await sigMdHash(sig);
+    console.log("SigMdHash:", sigHash.toString('hex'));
+
+    let tx = {
+      "header": {
+        "principal": formAddCreditsLiteTA,
+        "initiator": sigHash.toString('hex')
       },
-      body: new AddCredits({
-        recipient: formAddCreditsDestination,
-        amount: formAddCreditsAmount*100*1e8/networkStatus.oracle.price,
-        oracle: networkStatus.oracle.price
-      })
-    })
+      "body": {
+        "type": "addCredits",
+        "recipient": formAddCreditsDestination,
+        "amount": (formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price).toString(),
+        "oracle": networkStatus.oracle.price
+      }
+    }
 
-    let txHash = Buffer.from(await tx.hash());
+    console.log("Tx:", tx);
 
-    let message = Buffer.concat([sigMdHash, txHash]);
-    let messageHash = await sha256(message);
+    let hash = await txHash(tx);
+    console.log("TxHash:", hash.toString('hex'));
 
-    console.log("Message: " + messageHash.toString('hex'));
+    let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
+    console.log("SigMdHash+TxHash:", Buffer.from(message).toString('hex'));
+
+    let messageHash = await createHash('sha256').update(message).digest('');
+
+    console.log("Hash(SigMdHash+TxHash):", messageHash.toString('hex'));
 
     let signature = await signWeb3(web3.utils.bytesToHex(messageHash));
 
     if (signature) {
 
-      console.log("Signature: " + signature);
+      console.log("Signature from MetaMask:", signature);
 
-      let pub = EthCrypto.recoverPublicKey(signature, web3.utils.bytesToHex(messageHash));
-      console.log("Recovered public key: " + pub);
+      let signatureDER = await rsvSigToDER(signature);
 
-      sig.signature = vrsToDer(signature);
-      sig.transactionHash = txHash;
+      console.log("Signature DER:", signatureDER.toString('hex'));
+
+      sig.signature = signatureDER.toString('hex');
+      sig.transactionHash = hash.toString('hex');
+      sig.publicKey = upk;
 
       let envelope = new Envelope({
         signatures: [
@@ -268,7 +261,7 @@ const Web3Module = props => {
       })
 
       setIsAddCreditsOpen(false);
-      console.log(envelope);
+      console.log("Envelope:", envelope);
 
       const response = await RPC.request("submit", {"envelope": envelope.asObject()}, 'v3');
       console.log(response);
@@ -461,9 +454,9 @@ const Web3Module = props => {
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Accumulate key pages contain a key or set of keys "><RiQuestionLine /></Tooltip></IconContext.Provider>
                     </Title>
                   </Tabs.Pane>
-                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Actions<Badge count={3} showZero /></span>} key="actions">
+                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiListCheck /></IconContext.Provider>Transactions<Badge count={0} showZero /></span>} key="actions">
                     <Title level={5}>
-                      Actions
+                      Transactions
                     </Title>
                   </Tabs.Pane>
                 </Tabs>
@@ -501,7 +494,7 @@ const Web3Module = props => {
         </List>
       </Modal>
 
-      <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => setIsAddCreditsOpen(false)} footer={false}>
+      <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => { setIsAddCreditsOpen(false); setSignWeb3Error(null) }} footer={false}>
         <Alert showIcon type="info" message={
           <span>
             ACME tokens can be converted to credits
@@ -548,9 +541,9 @@ const Web3Module = props => {
             }
           </Form.Item>
           <Form.Item>
-            <Button onClick={safe(handleFormAddCredits)} type="primary" shape="round" size="large" disabled={ (formAddCreditsAmount <= 0 || !liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA) ? true : false}>Submit</Button>
-            {signWeb3Error &&
-              <Paragraph style={{ marginTop: 10 }}><Text type="danger">{signWeb3Error}</Text></Paragraph>
+            <Button onClick={handleFormAddCredits} type="primary" shape="round" size="large" disabled={ (!liteTokenAccount || !formAddCreditsDestination || !formAddCreditsLiteTA || !liteTokenAccount.data || !liteTokenAccount.data.balance || formAddCreditsAmount <= 0 || formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price > liteTokenAccount.data.balance) ? true : false}>Submit</Button>
+            {signWeb3Error?.message &&
+              <Paragraph style={{ marginTop: 10, marginBottom: 0 }}><Text type="danger">{signWeb3Error.message}</Text></Paragraph>
             }
           </Form.Item>
         </Form>
