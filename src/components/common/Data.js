@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Select, Input, Typography } from 'antd';
 import { Base64 } from 'js-base64';
+import wrapLinksInHtml from '../common/LinksRenderer';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -8,7 +9,7 @@ const { Text } = Typography;
 const Data = props => {
   
   const textHex = props.children;
-  const textRaw = Buffer.from(props.children, 'hex').toString('utf8');
+  const textRaw = wrapLinksInHtml(Buffer.from(props.children, 'hex').toString('utf8'));
   const textBase64 = Base64.encode(Buffer.from(props.children, 'hex'));
 
   const defaultType = "ASCII";
@@ -40,9 +41,7 @@ const Data = props => {
         <Option value="Hex">Hex</Option>
       </Select>
       {current ?
-        <Text copyable>
-          {current}
-        </Text>
+        <div className="span ant-typography" dangerouslySetInnerHTML={{ __html: current }} />
       : 
         <Text className="extid-empty" disabled>Empty</Text>
       }
