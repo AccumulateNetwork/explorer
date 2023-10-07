@@ -1,7 +1,6 @@
 /* eslint-disable no-ex-assign */
 import React, { useState, useEffect } from 'react';
-import { AddCredits, ETHSignature, Transaction } from "accumulate.js/lib/core";
-import { encode } from "accumulate.js/lib/encoding";
+import { Envelope } from 'accumulate.js/lib/messaging';
 
 import { Link } from 'react-router-dom';
 
@@ -44,10 +43,6 @@ import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSi
 import { createHash } from "crypto";
 
 const { Title, Paragraph, Text } = Typography;
-
-async function sha256(data) {
-  return Buffer.from(new Uint8Array(await crypto.subtle.digest("SHA-256", data)))
-}
 
 const Web3Module = props => {
 
