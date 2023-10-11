@@ -65,6 +65,9 @@ const Acc = ({ match, parentCallback }) => {
             try {
                 let params = { scope: url };
                 v3 = await RPC.request("query", params, 'v3');
+                if (!v3) {
+                    throw new Error("acc://" + url + " not found"); 
+                }
 
                 // Only query API v2 if the message is a transaction
                 if (v3.message.type !== 'transaction') {
