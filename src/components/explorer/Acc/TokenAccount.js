@@ -48,11 +48,10 @@ const TokenAccount = props => {
         setTxs(null);
         setError(null);
         try {
-            let params = {url: tokenAccount.data.tokenUrl};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                if (!response?.data?.precision) response.data.precision = 0
-                setToken(response.data);
+            const response = await RPC.request("query", { "scope": tokenAccount.data.tokenUrl }, 'v3');
+            if (response) {
+                if (!response?.account?.precision) response.account.precision = 0
+                setToken(response);
             } else {
                 throw new Error("Token " + tokenAccount.data.tokenUrl + " not found");
             }
