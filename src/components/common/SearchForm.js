@@ -59,12 +59,11 @@ function SearchForm() {
     try {
         let params = {scope: `${txhash}@unknown`};
         const response = await RPC.request("query", params, "v3");
+        setSearchIsLoading(false);
         if (response && response.id) {
-          setSearchIsLoading(false);
           redirect('/acc/'+response.id.replace("acc://", ""));
         } else {
-          setSearchIsLoading(false);
-          message.info('Nothing was found');
+          redirect(`/acc/${txhash}@unknown`);
         }
     }
     catch(error) {
@@ -74,20 +73,8 @@ function SearchForm() {
   }
 
   const search = async (url) => {
-    try {
-        let params = {url: url};
-        const response = await RPC.request("query", params);
-        if (response && response.data) {
-          setSearchIsLoading(false);
-          redirect('/acc/'+url);
-        } /* else {
-          searchToken(url.toUpperCase());
-        } */
-    }
-    catch(error) {
-      setSearchIsLoading(false);
-      message.info('Nothing was found');
-    }
+    setSearchIsLoading(false);
+    redirect('/acc/'+url);
   }
 
 /*   function searchToken(name) {

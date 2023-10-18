@@ -66,7 +66,7 @@ const GenericTx = props => {
 
     return (
         <div>
-            <TxStatus data={tx} />
+            <TxStatus data={props.data.v3} />
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
