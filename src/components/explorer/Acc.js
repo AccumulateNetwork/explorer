@@ -166,6 +166,7 @@ const Acc = ({ match, parentCallback }) => {
         title = "Message"
     }
     if (isTx && acc?.v3?.message) {
+        /* eslint-disable default-case */
         switch (acc.v3.message.type) {
             case 'transaction':
                 title = "Transaction";
@@ -180,6 +181,7 @@ const Acc = ({ match, parentCallback }) => {
                 title = "Signature Request";
                 break;
         }
+        /* eslint-enable default-case */
     }
 
     return (

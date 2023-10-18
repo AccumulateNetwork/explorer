@@ -26,7 +26,7 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
 import Key from '../../common/Key';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 const GenericMsg = (props) => {
     const { message } = props.data;
@@ -39,6 +39,7 @@ const GenericMsg = (props) => {
 
     let title = 'Message';
     let showMsgType = true;
+    /* eslint-disable default-case */
     switch (props.data.message.type) {
         case 'signature':
             title = "Signature";
@@ -53,6 +54,7 @@ const GenericMsg = (props) => {
             showMsgType = false;
             break;
     }
+    /* eslint-enable default-case */
 
     let signature = props.data.message?.signature;
     let delegators = [];
