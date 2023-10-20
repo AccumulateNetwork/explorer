@@ -7,7 +7,7 @@ export default async function getToken(url, setToken, setError) {
         const response = await RPC.request("query", { "scope": url }, 'v3');
         if (response) {
             if (!response?.account?.precision) response.account.precision = 0
-            setToken(response);
+            setToken(response.account);
         } else {
             throw new Error("Token " + url + " not found");
         }
