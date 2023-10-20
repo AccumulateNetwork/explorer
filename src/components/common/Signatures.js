@@ -15,7 +15,7 @@ import RPC from './../common/RPC';
 const { Title, Text, Paragraph } = Typography;
 
 const Signatures = props => {
-    const { transaction } = props;
+    const transaction = props.transaction;
 
     const [authorities, setAuthorities] = useState(null);
 
