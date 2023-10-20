@@ -20,6 +20,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
+import getToken from '../../common/GetToken';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
 import Count from '../../common/Count';
@@ -40,28 +41,6 @@ const TokenAccount = props => {
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalTxs, setTotalTxs] = useState(-1);
-
-    //TODO Refactor
-    const getToken = async () => {
-        setPagination({...pagination, current: 1});
-        setToken(null);
-        setTxs(null);
-        setError(null);
-        try {
-            const response = await RPC.request("query", { "scope": tokenAccount.data.tokenUrl }, 'v3');
-            if (response) {
-                if (!response?.account?.precision) response.account.precision = 0
-                setToken(response);
-            } else {
-                throw new Error("Token " + tokenAccount.data.tokenUrl + " not found");
-            }
-        }
-        catch(error) {
-            setToken(null);
-            setTxs(null);
-            setError(error.message);
-        }
-    }
 
     const getTxs = async (params = pagination) => {
         setTableIsLoading(true);
@@ -295,7 +274,9 @@ const TokenAccount = props => {
     ];
 
     useEffect(() => {
-        getToken();
+        setPagination({...pagination, current: 1});
+        setTxs(null);
+        getToken(tokenAccount.data.tokenUrl, setToken, setError);
         getStakingInfo(tokenAccount.data.url);
         getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -321,7 +302,7 @@ const TokenAccount = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
                         </IconContext.Provider>
-                        Token Account Info
+                        Token Account Info!
                     </Title>
 
                     <Descriptions bordered column={1} size="middle">

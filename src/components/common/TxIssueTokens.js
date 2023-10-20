@@ -15,7 +15,7 @@ import {
     RiInformationLine, RiAccountCircleLine
 } from 'react-icons/ri';
 
-import RPC from '../common/RPC';
+import getToken from './GetToken';
 import TxTo from './TxTo';
 import {tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 
@@ -35,28 +35,8 @@ const TxIssueTokens = props => {
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
-    //TODO Refactor
-    const getToken = async () => {
-        setToken(null);
-        setError(null);
-        try {
-            let params = {url: tx.origin};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                if (!response?.data?.precision) response.data.precision = 0
-                setToken(response.data);
-            } else {
-                throw new Error("Token " + tx.origin + " not found");
-            }
-        }
-        catch(error) {
-            setToken(null);
-            setError(error.message);
-        }
-    }
-
     useEffect(() => {
-        getToken();
+        getToken(tx.origin, setToken, setError);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (

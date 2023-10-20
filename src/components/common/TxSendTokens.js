@@ -16,6 +16,7 @@ import {
 
 import RPC from '../common/RPC';
 import TxTo from './TxTo';
+import getToken from './GetToken';
 
 const { Title } = Typography;
 
@@ -43,29 +44,10 @@ const TxSendTokens = props => {
             setError(error.message);
         }
     }
-
-    //TODO Refactor
-    const getToken = async () => {
-        setToken(null);
-        setError(null);
-        try {
-            let params = {url: tokenAccount.tokenUrl};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                if (!response?.data?.precision) response.data.precision = 0
-                setToken(response.data);
-            } else {
-                throw new Error("Token " + tokenAccount.tokenUrl + " not found"); 
-            }
-        }
-        catch(error) {
-            setToken(null);
-            setError(error.message);
-        }
-    }
     
     useEffect(() => {
-        getToken();
+        if (tokenAccount?.tokenUrl)
+            getToken(tokenAccount.tokenUrl, setToken, setError);
     }, [tokenAccount]); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
@@ -79,7 +61,7 @@ const TxSendTokens = props => {
             <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiInformationLine />
             </IconContext.Provider>
-            Token Transaction
+            Token Transaction!
         </Title>
 
         {tx && tx.data ? (
