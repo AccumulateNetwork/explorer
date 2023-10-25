@@ -34,13 +34,18 @@ import { InjectedConnector } from "@web3-react/injected-connector";
 
 import { IconContext } from "react-icons";
 import {
-    RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill, RiExternalLinkLine, RiPenNibLine
+  RiInformationLine, RiAccountCircleLine, RiShutDownLine, RiQuestionLine, RiUserLine, RiKey2Line, RiListCheck, RiStackLine, RiAddCircleFill, RiExternalLinkLine, RiPenNibLine
 } from 'react-icons/ri';
+import {
+  LuDatabaseBackup
+} from 'react-icons/lu';
 
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSigToDER } from "../common/Web3";
 
 import { createHash } from "crypto";
+import { createBackupLDATxn, deriveBackupLDA, ethToUniversal } from '../common/Backup';
+import { Transaction } from 'accumulate.js/lib/core';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -56,6 +61,9 @@ const Web3Module = props => {
 
   const [liteIdentity, setLiteIdentity] = useState(null);
   const [liteIdentityError, setLiteIdentityError] = useState(null);
+  const [backupUrl, setBackupUrl] = useState(null);
+  const [backupLDA, setBackupLDA] = useState(null);
+  const [backupLDAError, setBackupLDAError] = useState(null);
 
   const [publicKey, setPublicKey] = useState(null);
 
@@ -190,13 +198,31 @@ const Web3Module = props => {
     setIsDashboardOpen(true);
   }
 
-  const handleFormAddCredits = async () => {
+  const handleFormAddCredits = () => {
+    return signAccumulate({
+      "header": {
+        "principal": formAddCreditsLiteTA,
+      },
+      "body": {
+        "type": "addCredits",
+        "recipient": formAddCreditsDestination,
+        "amount": (formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price).toString(),
+        "oracle": networkStatus.oracle.price
+      }
+    })
+  }
+
+  const createBackupLDA = async () => {
+    return signAccumulate(await createBackupLDATxn(await ethToUniversal(account)));
+  }
+
+  const signAccumulate = async (args) => {
 
     let upk = "04" + publicKey;
 
     let sig = {
       "type": "eth",
-      "signer": formAddCreditsLiteTA,
+      "signer": ethToAccumulate(account),
       "signerVersion": 1,
       "timestamp": Date.now(),
       "publicKey": upk
@@ -207,22 +233,20 @@ const Web3Module = props => {
     let sigHash = await sigMdHash(sig);
     console.log("SigMdHash:", sigHash.toString('hex'));
 
-    let tx = {
-      "header": {
-        "principal": formAddCreditsLiteTA,
-        "initiator": sigHash.toString('hex')
-      },
-      "body": {
-        "type": "addCredits",
-        "recipient": formAddCreditsDestination,
-        "amount": (formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price).toString(),
-        "oracle": networkStatus.oracle.price
-      }
+    if (typeof args.asObject === 'function') {
+      args = args.asObject();
     }
+    let tx = new Transaction({
+      header: {
+        ...args.header,
+        initiator: sigHash,
+      },
+      body: args.body,
+    })
 
-    console.log("Tx:", tx);
+    console.log("Tx:", tx.asObject());
 
-    let hash = await txHash(tx);
+    let hash = Buffer.from(await tx.hash());
     console.log("TxHash:", hash.toString('hex'));
 
     let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
@@ -262,7 +286,6 @@ const Web3Module = props => {
       console.log(response);
 
     }
-
   }
 
   const signWeb3 = async (message) => {
@@ -303,7 +326,7 @@ const Web3Module = props => {
     }
   };
 
-  useEffect(() => {
+  useEffect(async () => {
     if (account) {
       setFormAddCreditsLiteTA(null);
       setFormAddCreditsDestination(null);
@@ -311,9 +334,13 @@ const Web3Module = props => {
       setLiteTokenAccountError(null);
       setPublicKey(null);
 
-      let liteIdentity = ethToAccumulate(account);
+      const liteIdentity = ethToAccumulate(account);
       query(liteIdentity, setLiteIdentity, setLiteIdentityError);
       loadPublicKey(account);
+
+      const backupLDA = await deriveBackupLDA(await ethToUniversal(account));
+      setBackupUrl(backupLDA);
+      query(backupLDA, setBackupLDA, setBackupLDAError);
     }
   }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -421,6 +448,43 @@ const Web3Module = props => {
                       </>
                     }
                     <Paragraph>
+                    </Paragraph>
+                  </Tabs.Pane>
+                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><LuDatabaseBackup /></IconContext.Provider>Backup</span>} key="backup">
+                    <Title level={5}>
+                      Backup Account
+                      <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Backup Account is a lite data account used to backup your settings"><RiQuestionLine /></Tooltip></IconContext.Provider>
+                    </Title>
+                    <Paragraph>
+                      {backupLDA ? (
+                        <Link to={'/acc/' + backupUrl.replace("acc://", "")}>
+                          {backupUrl}
+                        </Link>
+                      ) : 
+                        <Text>
+                          {backupUrl}
+                        </Text>                      
+                      }
+                      <Divider />
+                      {backupLDAError ? (
+                        <Button shape="round" type="primary" onClick={() => createBackupLDA()}>
+                          <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Create
+                        </Button>
+                      ) : 
+                        <>
+                        {/* {liteIdentity && liteIdentity.data ? (
+                            <Paragraph>
+                              <Title level={5}>Credit Balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
+                              {liteIdentity.data.creditBalance ? liteIdentity.data.creditBalance/100 : 0} credits<br />
+                              <Button shape="round" type="primary" onClick={() => setIsAddCreditsOpen(true)}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
+                              </Button>
+                            </Paragraph>
+                        ) :
+                          <Skeleton paragraph={false} />
+                        } */}
+                        </>
+                      }
                     </Paragraph>
                   </Tabs.Pane>
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiKey2Line /></IconContext.Provider>Key</span>} key="key">
