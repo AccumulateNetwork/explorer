@@ -101,9 +101,9 @@ const MinorBlocks = props => {
             align: 'center',
             render: (row) => {
                 if (row) {
-                    if (row.entries?.total) {
+                    if (row.entries?.records?.length) {
                         return (
-                            <Text>{row.entries.total}</Text>                        
+                            <Text>{row.entries.records.length}</Text>                        
                         )    
                     } else {
                         return (
@@ -159,22 +159,22 @@ const MinorBlocks = props => {
         }
 
         if (response && response.recordType === 'range') {
-          for (const block of response.records) {
-              if (!block.entries?.records) continue;
+            for (const block of response.records) {
+                if (!block.entries?.records) continue;
 
-              // Aggregate DN entries and anchored BVN entries
-              const entries = [
-                  ...block.entries.records,
-                  ...(block.anchored?.records?.flatMap(x => x.entries?.records || []) || []),
-              ];
+                // Aggregate DN entries and anchored BVN entries
+                const entries = [
+                    ...block.entries.records,
+                    ...(block.anchored?.records?.flatMap(x => x.entries?.records || []) || []),
+                ];
 
-              // Filter out anything that's not a message
-              block.entries.records = entries.filter(x => x.type === 'transaction');
-          }
+                // Filter out anything that's not a message
+                block.entries.records = entries.filter(x => x.type === 'transaction');
+            }
 
-          setMinorBlocks(response.records.reverse());
-          setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
-          setTotalEntries(response.total);
+            setMinorBlocks(response.records.reverse());
+            setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
+            setTotalEntries(response.total);
         }
         setTableIsLoading(false);
     }
