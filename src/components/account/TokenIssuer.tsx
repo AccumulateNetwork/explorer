@@ -1,5 +1,5 @@
 import { Descriptions, Progress, Skeleton, Tooltip, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
@@ -12,6 +12,7 @@ import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
 import { Nobr } from '../common/Nobr';
+import { Shared } from '../common/Shared';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
@@ -125,12 +126,12 @@ export function TokenIssuer({
 TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
   const [supply, setSupply] = useState(null);
 
+  const { network } = useContext(Shared);
   const isACME =
-    account.url.toString().toLowerCase() === 'acc://acme' &&
-    import.meta.env.VITE_APP_METRICS_API_PATH;
+    account.url.toString().toLowerCase() === 'acc://acme' && network.metrics;
   useEffect(() => {
     if (isACME) {
-      getSupply(setSupply);
+      getSupply(network, setSupply);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

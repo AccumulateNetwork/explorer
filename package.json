@@ -12,6 +12,7 @@
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "eth-crypto": "^2.6.0",
+    "eth-sig-util": "^3.0.1",
     "factom": "^1.4.3",
     "history": "^5.0.1",
     "js-base64": "^3.7.2",

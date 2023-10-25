@@ -9,7 +9,7 @@ import {
   message,
 } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -20,12 +20,14 @@ import {
 import { Link } from 'react-router-dom';
 
 import getSupply from '../../utils/getSupply';
-import { tokenAmountToLocaleString } from '../common/Amount';
+import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
+import { Shared } from '../common/Shared';
 
 const { Title, Text } = Typography;
 
 const Validators = () => {
+  const { network } = useContext(Shared);
   const [validators, setValidators] = useState(null);
   const [totalValidators, setTotalValidators] = useState(-1);
   const [supply, setSupply] = useState(null);
@@ -82,10 +84,12 @@ const Validators = () => {
         return (
           <Tooltip overlayClassName="explorer-tooltip" title={row.stake}>
             <Link to={'/acc/' + row.stake.replace('acc://', '')}>
-              {(row.balance / 10 ** 8).toLocaleString('en-US', {
-                maximumFractionDigits: 0,
-              })}
-               ACME
+              <TokenAmount
+                bare
+                amount={row.balance}
+                issuer="ACME"
+                digits={{ max: 0, group: true }}
+              />
             </Link>
           </Tooltip>
         );
@@ -101,9 +105,11 @@ const Validators = () => {
           const pt = ((totalStaked / supply.staked) * 100).toFixed(2);
           return (
             <Text>
-              <Text>
-                {tokenAmountToLocaleString(totalStaked, 8, 'ACME', 0, 0)}
-              </Text>
+              <TokenAmount
+                amount={totalStaked}
+                issuer="ACME"
+                digits={{ min: 0, max: 0, group: true }}
+              />
               <br />
               <Progress
                 percent={pt}
@@ -167,9 +173,9 @@ const Validators = () => {
       }
     }
     try {
-      if (!import.meta.env.VITE_APP_METRICS_API_PATH) throw new Error();
+      if (!network.metrics) throw new Error();
       const response = await axios.get(
-        import.meta.env.VITE_APP_METRICS_API_PATH +
+        network.metrics +
           '/validators?start=' +
           start +
           '&count=' +
@@ -206,7 +212,7 @@ const Validators = () => {
 
   useEffect(() => {
     document.title = 'Validators | Accumulate Explorer';
-    getSupply(setSupply);
+    getSupply(network, setSupply);
     getValidators();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

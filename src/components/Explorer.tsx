@@ -42,7 +42,7 @@ import Settings from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import Web3Module from './web3/Web3Module';
+import Web3 from './web3/Web3';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -57,7 +57,6 @@ export default function Explorer() {
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
-  const [web3ModuleData, setWeb3ModuleData] = useState(null);
 
   let searchDidLoad;
 
@@ -67,10 +66,6 @@ export default function Explorer() {
     } else {
       setCurrentMenu([e.key]);
     }
-  };
-
-  const handleWeb3ModuleData = (e) => {
-    setWeb3ModuleData(e);
   };
 
   const ExplorerSelect = (
@@ -257,9 +252,9 @@ export default function Explorer() {
             </Dropdown>
           </Header>
 
-          {false && !shared.network.mainnet && (
+          {!shared.network.mainnet && (
             <Header className="web3">
-              <Web3Module data={web3ModuleData} />
+              <Web3 />
             </Header>
           )}
 
@@ -279,14 +274,7 @@ export default function Explorer() {
                 <Route exact path="/faucet" children={<Faucet />} />
               )}
 
-              <Route path="/acc/:url+">
-                <Acc
-                  didLoad={(x) => searchDidLoad?.(x)}
-                  parentCallback={handleWeb3ModuleData}
-                />
-              </Route>
-
-              <Route path="/tx/:hash">
+              <Route path={['/acc/:url+', '/tx/:hash']}>
                 <Acc didLoad={(x) => searchDidLoad?.(x)} />
               </Route>
 

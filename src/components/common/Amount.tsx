@@ -82,12 +82,14 @@ export function Amount({
   label,
   className,
   debit = false,
+  bare = false,
   digits = {},
 }: {
   amount: number;
   label?: string | { singular: string; plural: string };
   className?: string;
   debit?: boolean;
+  bare?: boolean;
   digits?: {
     group?: boolean;
     min?: number;
@@ -112,6 +114,9 @@ export function Amount({
   if (debit) {
     s = '(' + s + ')';
   }
+  if (bare) {
+    return s;
+  }
   const color = debit ? 'hsl(0, 75%, 50%)' : null;
   return (
     <Text className={className} style={{ color }}>
@@ -119,38 +124,6 @@ export function Amount({
     </Text>
   );
 }
-
-function tokenAmount(amount, precision, symbol) {
-  let symbolStr = symbol ? ' ' + symbol : '';
-
-  if (precision === 0) {
-    return amount.toString() + symbolStr;
-  } else {
-    return (
-      (amount / 10 ** precision).toFixed(precision).replace(/\.?0+$/, '') +
-      symbolStr
-    );
-  }
-}
-
-function tokenAmountToLocaleString(
-  amount,
-  precision,
-  symbol,
-  min = 2,
-  max = 2,
-) {
-  let symbolStr = symbol ? ' ' + symbol : '';
-
-  return (
-    parseFloat((amount / 10 ** precision) as any).toLocaleString('en-US', {
-      minimumFractionDigits: min,
-      maximumFractionDigits: max,
-    }) + symbolStr
-  );
-}
-
-export { tokenAmount, tokenAmountToLocaleString };
 
 export function recipientsOfTx(
   tx: Transaction,

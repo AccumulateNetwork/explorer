@@ -1,14 +1,12 @@
 import { message } from 'antd';
 import axios from 'axios';
 
-export default async function getSupply(setSupply, setAPR) {
+export default async function getSupply(network, setSupply, setAPR) {
   setSupply(null);
-  if (!import.meta.env.VITE_APP_METRICS_API_PATH) return;
+  if (!network.metrics) return;
 
   try {
-    const response = await axios.get(
-      import.meta.env.VITE_APP_METRICS_API_PATH + '/supply',
-    );
+    const response = await axios.get(network.metrics + '/supply');
     if (response?.data) {
       setSupply(response.data);
     } else {

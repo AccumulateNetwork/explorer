@@ -7,7 +7,7 @@ import {
   message,
 } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -25,6 +25,7 @@ import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Shared } from '../common/Shared';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { queryEffect } from '../common/query';
 import { AccChains } from './AccChains';
@@ -51,12 +52,13 @@ export function TokenAccount({
     }
   });
 
+  const { network } = useContext(Shared);
   const getStakingInfo = async (url) => {
-    if (!import.meta.env.VITE_APP_METRICS_API_PATH) return;
+    if (!network.metrics) return;
 
     try {
       const response = await axios.get(
-        import.meta.env.VITE_APP_METRICS_API_PATH + '/staking/stakers/' + url,
+        `${network.metrics}/staking/stakers/${url}`,
       );
       if (response && response.data && !response.data.error) {
         setStakingAccount(response.data);

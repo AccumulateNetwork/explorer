@@ -9,4 +9,7 @@ window.Buffer = {
   alloc(len) {
     return Buffer.from(new Uint8Array(len));
   },
+  isBuffer(b) {
+    return b instanceof Buffer;
+  },
 };

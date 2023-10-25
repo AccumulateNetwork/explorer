@@ -1,10 +1,36 @@
 import { message } from 'antd';
+import { toChecksumAddress } from 'ethereumjs-util';
+import newKeccak from 'keccak';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
+import { KeySignature } from 'accumulate.js/lib/core';
+import { encode } from 'accumulate.js/lib/encoding';
+
+function keccak(name: string): (msg: Uint8Array) => Uint8Array {
+  return (msg) => {
+    const hash = newKeccak(name);
+    hash.update(Buffer.from(msg));
+    return hash.digest();
+  };
+}
+
+export const keccak224 = keccak('keccak224');
+export const keccak256 = keccak('keccak256');
+export const keccak384 = keccak('keccak384');
+export const keccak512 = keccak('keccak512');
+
+export function ethAddress(pub: Uint8Array | string) {
+  if (typeof pub === 'string') {
+    pub = Buffer.from(pub, 'hex');
+  }
+  const hash = keccak256(pub);
+  const addr = '0x' + Buffer.from(hash.slice(-20)).toString('hex');
+  return toChecksumAddress(addr);
+}
 
 /* global BigInt */
 
-export const truncateAddress = (address) => {
+export const truncateAddress = (address?: string) => {
   if (!address) return 'No Account';
   const match = address.match(
     /^(0x[a-zA-Z0-9]{4})[a-zA-Z0-9]+([a-zA-Z0-9]{4})$/,
@@ -13,13 +39,16 @@ export const truncateAddress = (address) => {
   return `${match[1]}…${match[2]}`;
 };
 
-export const ethToAccumulate = async (address, type = 'liteIdentity') => {
+export const ethToAccumulate = async (
+  address?: string,
+  type = 'liteIdentity',
+) => {
   if (!address) return 'No Account';
   let pubKey = address.substring(2).toLowerCase();
   if (type === 'publicKey') {
     return pubKey;
   }
-  let checkSum = Buffer.from(await sha256(pubKey)).toString('hex');
+  let checkSum = Buffer.from(await sha256(Buffer.from(pubKey))).toString('hex');
   let accumulate = 'acc://' + pubKey + checkSum.substring(56);
   if (type === 'liteTokenAccount') {
     accumulate += '/ACME';
@@ -114,31 +143,11 @@ export const txHash = async (tx) => {
   }
 };
 
-export const sigMdHash = async (sig) => {
-  try {
-    let sigBuffer = joinBuffers([
-      Buffer.from([1]),
-      Buffer.from([10]),
-      Buffer.from([2]),
-      Buffer.from([Buffer.from(sig.publicKey, 'hex').length]),
-      Buffer.from(sig.publicKey, 'hex'),
-      Buffer.from([4]),
-      Buffer.from([sig.signer.length]),
-      Buffer.from(sig.signer),
-      Buffer.from([5]),
-      Buffer.from([1]),
-      Buffer.from([6]),
-      Buffer.from(uvarintMarshalBinary(sig.timestamp)),
-    ]);
-
-    console.log('Sig bytes:', Buffer.from(sigBuffer).toString('hex'));
-
-    let sigMdHash = Buffer.from(await sha256(sigBuffer));
-
-    return sigMdHash;
-  } catch (error) {
-    message.error(`${error}`);
-  }
+export const sigMdHash = async (sig: KeySignature) => {
+  sig = sig.copy();
+  sig.transactionHash = null;
+  sig.signature = null;
+  return await sha256(encode(sig));
 };
 
 export const rsvSigToDER = async (sig) => {
@@ -161,12 +170,12 @@ export const rsvSigToDER = async (sig) => {
   }
 };
 
-export const joinBuffers = (buffers, delimiter = '') => {
+export const joinBuffers = (buffers: Uint8Array[], delimiter = '') => {
   let d = Buffer.from(delimiter);
   return buffers.reduce((prev, b) => Buffer.concat([prev, d, b]));
 };
 
-export const uvarintMarshalBinary = (val, field) => {
+export const uvarintMarshalBinary = (val: number | bigint, field?: number) => {
   if (typeof val === 'number' && val > Number.MAX_SAFE_INTEGER) {
     throw new Error(
       'Cannot marshal binary number greater than MAX_SAFE_INTEGER. Use bigint instead.',

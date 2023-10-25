@@ -8,6 +8,7 @@ import {
   Col,
   Divider,
   Form,
+  Input,
   InputNumber,
   List,
   Modal,
@@ -15,15 +16,15 @@ import {
   Select,
   Skeleton,
   Tabs,
-  Tag,
   Tooltip,
   Typography,
   message,
   notification,
 } from 'antd';
 import EthCrypto from 'eth-crypto';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
+import { LuDatabaseBackup } from 'react-icons/lu';
 import {
   RiAccountCircleLine,
   RiAddCircleFill,
@@ -41,22 +42,55 @@ import { Link } from 'react-router-dom';
 import Web3 from 'web3';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
-import { AddCredits } from 'accumulate.js/lib/core';
+import { Transaction } from 'accumulate.js/lib/core';
+import { ETHSignature } from 'accumulate.js/lib/core';
 import { Envelope } from 'accumulate.js/lib/messaging';
 
-import RPC from '../../utils/RPC';
 import {
+  backupIsSupported,
+  createBackupEntry,
+  createBackupLDATxn,
+  decryptBackupEntry,
+  deriveBackupLDA,
+  ethToUniversal,
+} from '../../utils/backup';
+import {
+  ethAddress,
   ethToAccumulate,
   joinBuffers,
   rsvSigToDER,
   sigMdHash,
   truncateAddress,
-  txHash,
-} from '../common/Web3';
+} from '../../utils/web3';
+import { Shared } from '../common/Shared';
+import { useAsyncEffect } from '../common/useAsync';
 
 const { Title, Paragraph, Text } = Typography;
 
-const Web3Module = (props) => {
+const Ethereum = 'ethereum' in window ? (window.ethereum as any) : void 0;
+
+const TabsPane = (Tabs as any).Pane;
+
+// Cache decrypted messages to avoid asking the user to decrypt every single
+// time the component renders. This is ok as long as the messages aren't
+// sensitive.
+if (!(window as any).decryptedBackupCache) {
+  (window as any).decryptedBackupCache = new Map();
+
+  const v = localStorage.getItem('backup');
+  if (v)
+    try {
+      for (const [key, value] of Object.entries(JSON.parse(v))) {
+        (window as any).decryptedBackupCache.set(key, value);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+}
+
+export default function Component() {
+  const { api } = useContext(Shared);
+
   const [isConnectWalletOpen, setIsConnectWalletOpen] = useState(false);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
 
@@ -69,6 +103,10 @@ const Web3Module = (props) => {
 
   const [liteIdentity, setLiteIdentity] = useState(null);
   const [liteIdentityError, setLiteIdentityError] = useState(null);
+  const [backupUrl, setBackupUrl] = useState(null);
+  const [backupLDA, setBackupLDA] = useState(null);
+  const [backupItems, setBackupItems] = useState([]);
+  const [backupLDAError, setBackupLDAError] = useState(null);
 
   const [publicKey, setPublicKey] = useState(null);
 
@@ -77,6 +115,9 @@ const Web3Module = (props) => {
   const [formAddCreditsDestination, setFormAddCreditsDestination] =
     useState(null);
   const [formAddCreditsAmount, setFormAddCreditsAmount] = useState(null);
+
+  const [formAddNote] = Form.useForm();
+  const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
 
   const [liteTokenAccount, setLiteTokenAccount] = useState(null);
   const [liteTokenAccountError, setLiteTokenAccountError] = useState(null);
@@ -103,8 +144,8 @@ const Web3Module = (props) => {
   const injected = new InjectedConnector({});
 
   const connectWeb3 = async () => {
-    if (window.ethereum) {
-      setWeb3(new Web3(window.ethereum));
+    if (Ethereum) {
+      setWeb3(new Web3(Ethereum));
       activate(injected);
       localStorage.setItem('connected', 'Web3');
       setIsConnectWalletOpen(false);
@@ -126,16 +167,37 @@ const Web3Module = (props) => {
     setResult(null);
     setError(null);
     try {
-      let params = { url: url };
-      const response = await RPC.request('query', params);
-      if (response && response.data) {
-        setResult(response);
-      } else {
-        throw new Error(url + ' not found');
-      }
+      setResult(await api.query(url));
     } catch (error) {
       setResult(null);
       setError(`${error}`);
+    }
+  };
+
+  const queryBackup = async (url, setResult, setError) => {
+    setError(null);
+    try {
+      let start = 1;
+      while (true) {
+        const r = await api.query(url, {
+          queryType: 'chain',
+          name: 'main',
+          range: {
+            start: start,
+            expand: true,
+          },
+        });
+        if (!r.records?.length) {
+          return;
+        }
+        await setResult(r.asObject().records);
+        start += r.records.length;
+        if (start >= r.total) {
+          return;
+        }
+      }
+    } catch (error) {
+      setError(error.message);
     }
   };
 
@@ -143,13 +205,8 @@ const Web3Module = (props) => {
     setNetworkStatus(null);
     setNetworkStatusError(null);
     try {
-      let params = { partition: 'directory' };
-      const response = await RPC.request('network-status', params, 'v3');
-      if (response && response.oracle && response.oracle.price) {
-        setNetworkStatus(response);
-      } else {
-        throw new Error('can not get network status');
-      }
+      const r = await api.networkStatus({ partition: 'directory' });
+      setNetworkStatus(r.oracle.price);
     } catch (error) {
       setNetworkStatus(null);
       setNetworkStatusError(`${error}`);
@@ -178,16 +235,19 @@ const Web3Module = (props) => {
   const recoverPublicKey = async () => {
     localStorage.removeItem(`${account}`);
 
-    let message = web3.utils.padRight(account, 64);
-    let signature = await signWeb3(message);
+    let message = 'Login to Accumulate';
+    let signature = await signWeb3(web3.utils.utf8ToHex(message), true);
     if (!signature) return;
 
     console.log('Message:', message);
     console.log('Signature:', signature);
 
-    let pub = EthCrypto.recoverPublicKey(signature, message);
+    let pub = EthCrypto.recoverPublicKey(
+      signature,
+      web3.eth.accounts.hashMessage(message),
+    );
     console.log('Public key:', pub);
-    if (EthCrypto.publicKey.toAddress(pub) !== account) {
+    if (ethAddress(pub) !== account) {
       notification.error({ message: 'Failed to recover public key' });
       return;
     }
@@ -198,25 +258,9 @@ const Web3Module = (props) => {
   };
 
   const handleFormAddCredits = async () => {
-    let upk = '04' + publicKey;
-
-    let sig = {
-      type: 'eth',
-      signer: formAddCreditsLiteTA,
-      signerVersion: 1,
-      timestamp: Date.now(),
-      publicKey: upk,
-    };
-
-    console.log('Signature:', sig);
-
-    let sigHash = await sigMdHash(sig);
-    console.log('SigMdHash:', sigHash.toString('hex'));
-
-    let tx = {
+    await signAccumulate({
       header: {
         principal: formAddCreditsLiteTA,
-        initiator: sigHash.toString('hex'),
       },
       body: {
         type: 'addCredits',
@@ -227,11 +271,53 @@ const Web3Module = (props) => {
         ).toString(),
         oracle: networkStatus.oracle.price,
       },
-    };
+    });
 
-    console.log('Tx:', tx);
+    setIsAddCreditsOpen(false);
+  };
 
-    let hash = await txHash(tx);
+  const createBackupLDA = async () => {
+    await signAccumulate(
+      await createBackupLDATxn(await ethToUniversal(account)),
+    );
+  };
+
+  const handleFormAddNote = async () => {
+    const v = formAddNote.getFieldValue('value');
+    const txn = await createBackupEntry(account, { type: 'note', value: v });
+    await signAccumulate(txn);
+    setIsAddNoteOpen(false);
+  };
+
+  const signAccumulate = async (args) => {
+    let upk = '04' + publicKey;
+
+    let sig = new ETHSignature({
+      signer: await ethToAccumulate(account),
+      signerVersion: 1,
+      timestamp: Date.now(),
+      publicKey: upk,
+    });
+
+    console.log('Signature:', sig);
+
+    let sigHash = await sigMdHash(sig);
+    console.log('SigMdHash:', sigHash.toString('hex'));
+
+    if (typeof args.asObject === 'function') {
+      args = args.asObject();
+    }
+    let tx = new Transaction({
+      header: {
+        ...args.header,
+        initiator: sigHash,
+      },
+      body: args.body,
+    });
+
+    console.log('Tx:', tx.asObject());
+
+    let hash = Buffer.from(await tx.hash());
     console.log('TxHash:', hash.toString('hex'));
 
     let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
@@ -248,52 +334,46 @@ const Web3Module = (props) => {
 
       let signatureDER = await rsvSigToDER(signature);
 
-      console.log('Signature DER:', signatureDER.toString('hex'));
+      console.log('Signature DER:', Buffer.from(signatureDER).toString('hex'));
 
-      sig.signature = signatureDER.toString('hex');
-      sig.transactionHash = hash.toString('hex');
-      sig.publicKey = upk;
+      sig.signature = signatureDER;
+      sig.transactionHash = hash;
 
       let envelope = new Envelope({
         signatures: [sig],
-        transaction: [
-          {
-            header: tx.header,
-            body: new AddCredits(tx.body),
-          },
-        ],
+        transaction: [tx],
       });
 
-      setIsAddCreditsOpen(false);
       console.log('Envelope:', envelope);
 
-      const response = await RPC.request(
-        'submit',
-        { envelope: envelope.asObject() },
-        'v3',
-      );
-      console.log(response);
+      const r = await api.submit(envelope);
+      console.log(r);
     }
   };
 
-  const signWeb3 = async (message) => {
+  const signWeb3 = async (message, personal = false) => {
     setSignWeb3Error(null);
     try {
-      let sig = await web3.eth.sign(message, account);
-      return sig;
+      if (Ethereum.isMetaMask && personal) {
+        return await Ethereum.request({
+          method: 'personal_sign',
+          params: [message, account],
+        });
+      }
+
+      return await web3.eth.sign(message, account);
     } catch (error) {
       // Extract the Ledger error
-      const message = `${error}`;
-      if (message.startsWith('Ledger device: ')) {
-        const i = message.indexOf('\n');
+      if (error.message.startsWith('Ledger device: ')) {
+        const i = error.message.indexOf('\n');
         try {
-          const { originalError } = JSON.parse(message.substring(i + 1));
+          const { originalError } = JSON.parse(error.message.substring(i + 1));
           if (originalError) error = originalError;
         } catch (_) {}
       }
 
       // Parse the status code
-      if (error && typeof error === 'object' && 'statusCode' in error) {
+      if ('statusCode' in error) {
         // eslint-disable-next-line default-case
         switch (error.statusCode) {
           case 0x6d02:
@@ -308,33 +388,73 @@ const Web3Module = (props) => {
         }
       }
 
-      notification.error({ message });
-      setSignWeb3Error(message);
+      notification.error({ message: `${error}` });
+      setSignWeb3Error(`${error}`);
       return;
     }
   };
 
-  useEffect(async () => {
-    if (account) {
-      setFormAddCreditsLiteTA(null);
-      setFormAddCreditsDestination(null);
-      setLiteTokenAccount(null);
-      setLiteTokenAccountError(null);
-      setPublicKey(null);
+  useAsyncEffect(
+    async (mounted) => {
+      if (account) {
+        setFormAddCreditsLiteTA(null);
+        setFormAddCreditsDestination(null);
+        setLiteTokenAccount(null);
+        setLiteTokenAccountError(null);
+        setPublicKey(null);
 
-      let liteIdentity = await ethToAccumulate(account);
-      query(liteIdentity, setLiteIdentity, setLiteIdentityError);
-      loadPublicKey(account);
-      setAccAccount(liteIdentity);
-    }
-  }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
+        const liteIdentity = await ethToAccumulate(account);
+        query(liteIdentity, setLiteIdentity, setLiteIdentityError);
+        loadPublicKey(account);
+        setAccAccount(liteIdentity);
+
+        const entries = [];
+        const backupLDA = await deriveBackupLDA(await ethToUniversal(account));
+        setBackupUrl(backupLDA);
+        await query(backupLDA, setBackupLDA, setBackupLDAError);
+        await queryBackup(
+          backupLDA,
+          async (records) => {
+            for (const r of records) {
+              try {
+                if ((window as any).decryptedBackupCache.has(r.entry)) {
+                  entries.push(
+                    (window as any).decryptedBackupCache.get(r.entry),
+                  );
+                  continue;
+                }
+
+                const plain = await decryptBackupEntry(
+                  account,
+                  r.value.message.transaction,
+                );
+                entries.push(plain);
+                (window as any).decryptedBackupCache.set(r.entry, plain);
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          },
+          setBackupLDAError,
+        );
+        localStorage.setItem(
+          'backup',
+          JSON.stringify(
+            Object.fromEntries((window as any).decryptedBackupCache.entries()),
+          ),
+        );
+        setBackupItems(entries);
+      }
+    },
+    [account],
+  ); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     getNetworkStatus();
     query('ACME', setACME, setACMEError);
     let connected = localStorage.getItem('connected');
     if (connected !== null) {
-      setWeb3(new Web3(window.ethereum));
+      setWeb3(new Web3(Ethereum));
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -414,7 +534,7 @@ const Web3Module = (props) => {
             <Row>
               <Col className="card-container">
                 <Tabs defaultActiveKey="account" type="card">
-                  <Tabs.Pane
+                  <TabsPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -525,8 +645,79 @@ const Web3Module = (props) => {
                       </>
                     )}
                     <Paragraph></Paragraph>
-                  </Tabs.Pane>
-                  <Tabs.Pane
+                  </TabsPane>
+                  {backupIsSupported() && (
+                    <TabsPane
+                      tab={
+                        <span>
+                          <IconContext.Provider
+                            value={{ className: 'react-icons' }}
+                          >
+                            <LuDatabaseBackup />
+                          </IconContext.Provider>
+                          Backup
+                        </span>
+                      }
+                      key="backup"
+                    >
+                      <Title level={5}>
+                        Backup Account
+                        <IconContext.Provider
+                          value={{ className: 'react-icons' }}
+                        >
+                          <Tooltip
+                            overlayClassName="explorer-tooltip"
+                            title="Backup Account is a lite data account used to backup your settings"
+                          >
+                            <RiQuestionLine />
+                          </Tooltip>
+                        </IconContext.Provider>
+                      </Title>
+                      <Paragraph>
+                        {backupLDA ? (
+                          <Link to={'/acc/' + backupUrl.replace('acc://', '')}>
+                            {backupUrl}
+                          </Link>
+                        ) : (
+                          <Text>{backupUrl}</Text>
+                        )}
+                        <Divider />
+                        {backupLDAError ? (
+                          <Button
+                            shape="round"
+                            type="primary"
+                            onClick={() => createBackupLDA()}
+                          >
+                            <IconContext.Provider
+                              value={{ className: 'react-icons' }}
+                            >
+                              <RiAddCircleFill />
+                            </IconContext.Provider>
+                            Create
+                          </Button>
+                        ) : (
+                          <>
+                            {backupItems.map((x) => (
+                              <pre>{JSON.stringify(x)}</pre>
+                            ))}
+                            <Button
+                              shape="round"
+                              type="primary"
+                              onClick={() => setIsAddNoteOpen(true)}
+                            >
+                              <IconContext.Provider
+                                value={{ className: 'react-icons' }}
+                              >
+                                <RiAddCircleFill />
+                              </IconContext.Provider>
+                              Add note
+                            </Button>
+                          </>
+                        )}
+                      </Paragraph>
+                    </TabsPane>
+                  )}
+                  <TabsPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -575,8 +766,8 @@ const Web3Module = (props) => {
                         {publicKey ? publicKey : 'N/A'}
                       </Text>
                     </Paragraph>
-                  </Tabs.Pane>
-                  <Tabs.Pane
+                  </TabsPane>
+                  <TabsPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -602,8 +793,8 @@ const Web3Module = (props) => {
                         </Tooltip>
                       </IconContext.Provider>
                     </Title>
-                  </Tabs.Pane>
-                  <Tabs.Pane
+                  </TabsPane>
+                  <TabsPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -618,24 +809,11 @@ const Web3Module = (props) => {
                     key="actions"
                   >
                     <Title level={5}>Transactions</Title>
-                  </Tabs.Pane>
+                  </TabsPane>
                 </Tabs>
               </Col>
             </Row>
           )}
-          {false ? (
-            <Row>
-              <Col>
-                {props.data && props.data.data ? (
-                  <>
-                    {props.data.data.type ? (
-                      <Tag>{props.data.data.type}</Tag>
-                    ) : null}
-                  </>
-                ) : null}
-              </Col>
-            </Row>
-          ) : null}
         </div>
       )}
 
@@ -659,6 +837,38 @@ const Web3Module = (props) => {
             </Button>
           </List.Item>
         </List>
+      </Modal>
+
+      <Modal
+        title="Add Note"
+        open={isAddNoteOpen && account && backupLDA}
+        onCancel={() => {
+          setIsAddNoteOpen(false);
+          setSignWeb3Error(null);
+        }}
+        footer={false}
+      >
+        <Form form={formAddNote} layout="vertical" className="modal-form">
+          <Form.Item label="Note" className="text-row" name="value">
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              onClick={handleFormAddNote}
+              type="primary"
+              shape="round"
+              size="large"
+              disabled={formAddNote.getFieldValue('value') == ''}
+            >
+              Submit
+            </Button>
+            {signWeb3Error?.message && (
+              <Paragraph style={{ marginTop: 10, marginBottom: 0 }}>
+                <Text type="danger">{signWeb3Error.message}</Text>
+              </Paragraph>
+            )}
+          </Form.Item>
+        </Form>
       </Modal>
 
       <Modal
@@ -793,6 +1003,4 @@ const Web3Module = (props) => {
       </Modal>
     </div>
   );
-};
-
-export default Web3Module;
+}

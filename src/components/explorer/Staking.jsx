@@ -10,7 +10,7 @@ import {
   message,
 } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -21,12 +21,15 @@ import {
 import { Link } from 'react-router-dom';
 
 import getSupply from '../../utils/getSupply';
-import { tokenAmountToLocaleString } from '../common/Amount';
+import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
+import { Shared } from '../common/Shared';
 
 const { Title, Text } = Typography;
 
 const Staking = () => {
+  const { network } = useContext(Shared);
+
   const [stakers, setStakers] = useState(null);
   const [supply, setSupply] = useState(null);
   const [apr, setAPR] = useState(null);
@@ -110,7 +113,11 @@ const Staking = () => {
           const pt = ((balance / supply.staked) * 100).toFixed(2);
           return (
             <span>
-              <Text>{tokenAmountToLocaleString(balance, 8, 'ACME', 0, 0)}</Text>
+              <TokenAmount
+                amount={balance}
+                issuer="ACME"
+                digits={{ min: 0, max: 0, group: true }}
+              />
               <br />
               <Progress
                 percent={pt}
@@ -193,9 +200,9 @@ const Staking = () => {
     }
 
     try {
-      if (!import.meta.env.VITE_APP_METRICS_API_PATH) throw new Error();
+      if (!network.metrics) throw new Error();
       const response = await axios.get(
-        import.meta.env.VITE_APP_METRICS_API_PATH +
+        network.metrics +
           '/staking/stakers?start=' +
           start +
           '&count=' +
@@ -248,7 +255,7 @@ const Staking = () => {
 
   useEffect(() => {
     document.title = 'Staking | Accumulate Explorer';
-    getSupply(setSupply, setAPR);
+    getSupply(network, setSupply, setAPR);
     getStakers();
     fetchLiquidStakingInfo();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -318,7 +325,7 @@ const Staking = () => {
         </Tabs>
       </Card>
 
-      {import.meta.env.VITE_APP_METRICS_API_PATH && (
+      {network.metrics && (
         <>
           <Title level={4}>
             <IconContext.Provider value={{ className: 'react-icons' }}>

@@ -1,15 +1,17 @@
 import { Avatar, Table, Typography, message } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiEarthLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
+import { Shared } from '../common/Shared';
 
 const { Title, Paragraph, Text } = Typography;
 
 const Tokens = () => {
+  const { network } = useContext(Shared);
   const [tokens, setTokens] = useState(null);
   const [totalTokens, setTotalTokens] = useState(-1);
   const [tableIsLoading, setTableIsLoading] = useState(true);
@@ -38,13 +40,9 @@ const Tokens = () => {
     }
 
     try {
-      if (!import.meta.env.VITE_APP_METRICS_API_PATH) throw new Error();
+      if (!network.metrics) throw new Error();
       const response = await axios.get(
-        import.meta.env.VITE_APP_METRICS_API_PATH +
-          '/tokens?start=' +
-          start +
-          '&count=' +
-          count,
+        network.metrics + '/tokens?start=' + start + '&count=' + count,
       );
       if (response && response.data) {
         /* workaround API bug response

@@ -4,6 +4,7 @@ export interface Network {
   mainnet: boolean;
   explorer: string;
   api: string[];
+  metrics?: string;
 }
 
 export const Mainnet: Network = {
@@ -15,6 +16,7 @@ export const Mainnet: Network = {
     'https://mainnet.accumulatenetwork.io',
     'https://api-gateway.accumulate.defidevs.io',
   ],
+  metrics: 'https://metrics.accumulatenetwork.io/v1',
 };
 
 export const Kermit: Network = {

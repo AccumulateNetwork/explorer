@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom';
 // work without it even though nothing explicitly depends on it. So I'm adding
 // an explicit dependency here.
 import 'rxjs';
-import { Web3 } from 'web3';
+import Web3 from 'web3';
 
 import App from './App';
 import './index.css';
