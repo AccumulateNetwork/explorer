@@ -17,6 +17,7 @@ import {
 
 import Count from './Count';
 import RPC from './RPC';
+import getBlockEntries from './GetBlockEntries';
 
 const { Title, Text } = Typography;
 
@@ -161,15 +162,7 @@ const MinorBlocks = props => {
         if (response && response.recordType === 'range') {
             for (const block of response.records) {
                 if (!block.entries?.records) continue;
-
-                // Aggregate DN entries and anchored BVN entries
-                const entries = [
-                    ...block.entries.records,
-                    ...(block.anchored?.records?.flatMap(x => x.entries?.records || []) || []),
-                ];
-
-                // Filter out anything that's not a message
-                block.entries.records = entries.filter(x => x.type === 'transaction');
+                block.entries.records = getBlockEntries(block);
             }
 
             setMinorBlocks(response.records.reverse());
