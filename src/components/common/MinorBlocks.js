@@ -123,7 +123,12 @@ const MinorBlocks = props => {
         if (!props?.data?.records) return (<Text disabled>Empty block</Text>);
         const items = props.data.records.map((item) =>
           <span key={item.entry}>
-          <Tooltip overlayClassName="explorer-tooltip" title={item.type ? item.type : "Unknown type"}>
+          <Tooltip overlayClassName="explorer-tooltip" title={
+            item.name === 'main'            ? 'transaction' :
+            item.name === 'anchor-sequence' ? 'anchor'      :
+            item.name                       ? item.name     :
+                                              'unknown'
+          }>
           <Link to={'/tx/' + item.entry}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiExchangeLine />
@@ -145,18 +150,31 @@ const MinorBlocks = props => {
         if (!params) return
         const start = (params.current - 1) * params.pageSize; // in `query-minor-blocks` API the first item has index 1, not 0
 
+        let response;
         try {
-          const response = await RPC.request("query", { "scope": "dn.acme", "query": { "queryType": "block", "minorRange": { "fromEnd": true, "count": params.pageSize, start } } }, 'v3' );
-          if (response && response.recordType === 'range') {
-            setMinorBlocks(response.records.reverse());
-            setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
-            setTotalEntries(response.total);
-          } else {
-            throw new Error("Transaction chain not found"); 
-          }
+          response = await RPC.request("query", { "scope": "dn.acme", "query": { "queryType": "block", "minorRange": { "fromEnd": true, "count": params.pageSize, start } } }, 'v3' );
         }
         catch(error) {
-          // error is managed by RPC.js, no need to display anything
+            // error is managed by RPC.js, no need to display anything
+        }
+
+        if (response && response.recordType === 'range') {
+          for (const block of response.records) {
+              if (!block.entries?.records) continue;
+
+              // Aggregate DN entries and anchored BVN entries
+              const entries = [
+                  ...block.entries.records,
+                  ...(block.anchored?.records?.flatMap(x => x.entries?.records || []) || []),
+              ];
+
+              // Filter out anything that's not a message
+              block.entries.records = entries.filter(x => x.type === 'transaction');
+          }
+
+          setMinorBlocks(response.records.reverse());
+          setPagination({...pagination, current: params.current, pageSize: params.pageSize, total: response.total});
+          setTotalEntries(response.total);
         }
         setTableIsLoading(false);
     }
