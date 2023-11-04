@@ -22,7 +22,8 @@ import {
   Form,
   Select,
   InputNumber,
-  notification
+  notification,
+  Input
 } from 'antd';
 
 import Web3 from 'web3';
@@ -43,11 +44,28 @@ import {
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSigToDER } from "../common/Web3";
 
-import { createHash } from "crypto";
-import { createBackupLDATxn, deriveBackupLDA, ethToUniversal } from '../common/Backup';
+import { createHash, randomBytes } from "crypto";
+import { backupIsSupported, createBackupEntry, createBackupLDATxn, decryptBackupEntry, deriveBackupLDA, ethToUniversal } from '../common/Backup';
 import { Transaction } from 'accumulate.js/lib/core';
 
 const { Title, Paragraph, Text } = Typography;
+
+// Cache decrypted messages to avoid asking the user to decrypt every single
+// time the component renders. This is ok as long as the messages aren't
+// sensitive.
+if (!window.decryptedBackupCache) {
+  window.decryptedBackupCache = new Map();
+
+  const v = localStorage.getItem('backup');
+  if (v)
+  try {
+    for (const [key, value] of Object.entries(JSON.parse(v))) {
+      window.decryptedBackupCache.set(key, value);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 const Web3Module = props => {
 
@@ -63,6 +81,7 @@ const Web3Module = props => {
   const [liteIdentityError, setLiteIdentityError] = useState(null);
   const [backupUrl, setBackupUrl] = useState(null);
   const [backupLDA, setBackupLDA] = useState(null);
+  const [backupItems, setBackupItems] = useState([]);
   const [backupLDAError, setBackupLDAError] = useState(null);
 
   const [publicKey, setPublicKey] = useState(null);
@@ -71,6 +90,9 @@ const Web3Module = props => {
   const [formAddCreditsLiteTA, setFormAddCreditsLiteTA] = useState(null);
   const [formAddCreditsDestination, setFormAddCreditsDestination] = useState(null);
   const [formAddCreditsAmount, setFormAddCreditsAmount] = useState(null);
+
+  const [formAddNote] = Form.useForm();
+  const [isAddNoteOpen, setIsAddNoteOpen] = useState(false);
 
   const [liteTokenAccount, setLiteTokenAccount] = useState(null);
   const [liteTokenAccountError, setLiteTokenAccountError] = useState(null);
@@ -132,6 +154,37 @@ const Web3Module = props => {
     }
     catch(error) {
       setResult(null);
+      setError(error.message);
+    }
+  }
+
+  const queryBackup = async (url, setResult, setError) => {
+    setError(null);
+    try {
+      let start = 1;
+      while (true) {
+        const response = await RPC.request("query", {
+          scope: url,
+          query: {
+            queryType: 'chain',
+            name: 'main',
+            range: {
+              start: start,
+              expand: true,
+            }
+          }
+        }, 'v3');
+        if (!response || !response.records || !response.records.length) {
+          return;
+        }
+        await setResult(response.records);
+        start += response.records.length;
+        if (start >= response.records.total) {
+          return;
+        }
+      }
+    }
+    catch(error) {
       setError(error.message);
     }
   }
@@ -198,8 +251,8 @@ const Web3Module = props => {
     setIsDashboardOpen(true);
   }
 
-  const handleFormAddCredits = () => {
-    return signAccumulate({
+  const handleFormAddCredits = async () => {
+    await signAccumulate({
       "header": {
         "principal": formAddCreditsLiteTA,
       },
@@ -209,11 +262,20 @@ const Web3Module = props => {
         "amount": (formAddCreditsAmount*100*Math.pow(10, 8)/networkStatus.oracle.price).toString(),
         "oracle": networkStatus.oracle.price
       }
-    })
+    });
+
+    setIsAddCreditsOpen(false);
   }
 
   const createBackupLDA = async () => {
-    return signAccumulate(await createBackupLDATxn(await ethToUniversal(account)));
+    await signAccumulate(await createBackupLDATxn(await ethToUniversal(account)));
+  }
+
+  const handleFormAddNote = async () => {
+    const v = formAddNote.getFieldValue('value');
+    const txn = await createBackupEntry(account, { type: 'note', value: v });
+    await signAccumulate(txn);
+    setIsAddNoteOpen(false);
   }
 
   const signAccumulate = async (args) => {
@@ -279,7 +341,6 @@ const Web3Module = props => {
         ]
       })
 
-      setIsAddCreditsOpen(false);
       console.log("Envelope:", envelope);
 
       const response = await RPC.request("submit", {"envelope": envelope.asObject()}, 'v3');
@@ -338,9 +399,28 @@ const Web3Module = props => {
       query(liteIdentity, setLiteIdentity, setLiteIdentityError);
       loadPublicKey(account);
 
+      const entries = [];
       const backupLDA = await deriveBackupLDA(await ethToUniversal(account));
       setBackupUrl(backupLDA);
-      query(backupLDA, setBackupLDA, setBackupLDAError);
+      await query(backupLDA, setBackupLDA, setBackupLDAError);
+      await queryBackup(backupLDA, async records => {
+        for (const r of records) {
+          try {
+            if (window.decryptedBackupCache.has(r.entry)) {
+              entries.push(window.decryptedBackupCache.get(r.entry));
+              continue;
+            }
+
+            const plain = await decryptBackupEntry(account, r.value.message.transaction);
+            entries.push(plain);
+            window.decryptedBackupCache.set(r.entry, plain);
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }, setBackupLDAError);
+      localStorage.setItem('backup', JSON.stringify(Object.fromEntries(window.decryptedBackupCache.entries())));
+      setBackupItems(entries);
     }
   }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -450,7 +530,7 @@ const Web3Module = props => {
                     <Paragraph>
                     </Paragraph>
                   </Tabs.Pane>
-                  <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><LuDatabaseBackup /></IconContext.Provider>Backup</span>} key="backup">
+                  {backupIsSupported() && <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><LuDatabaseBackup /></IconContext.Provider>Backup</span>} key="backup">
                     <Title level={5}>
                       Backup Account
                       <IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Backup Account is a lite data account used to backup your settings"><RiQuestionLine /></Tooltip></IconContext.Provider>
@@ -463,7 +543,7 @@ const Web3Module = props => {
                       ) : 
                         <Text>
                           {backupUrl}
-                        </Text>                      
+                        </Text>
                       }
                       <Divider />
                       {backupLDAError ? (
@@ -472,21 +552,14 @@ const Web3Module = props => {
                         </Button>
                       ) : 
                         <>
-                        {/* {liteIdentity && liteIdentity.data ? (
-                            <Paragraph>
-                              <Title level={5}>Credit Balance<IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."><RiQuestionLine /></Tooltip></IconContext.Provider></Title>
-                              {liteIdentity.data.creditBalance ? liteIdentity.data.creditBalance/100 : 0} credits<br />
-                              <Button shape="round" type="primary" onClick={() => setIsAddCreditsOpen(true)}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add credits
-                              </Button>
-                            </Paragraph>
-                        ) :
-                          <Skeleton paragraph={false} />
-                        } */}
+                          {backupItems.map(x => <pre>{JSON.stringify(x)}</pre>)}
+                          <Button shape="round" type="primary" onClick={() => setIsAddNoteOpen(true)}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiAddCircleFill /></IconContext.Provider>Add note
+                          </Button>
                         </>
                       }
                     </Paragraph>
-                  </Tabs.Pane>
+                  </Tabs.Pane>}
                   <Tabs.Pane tab={<span><IconContext.Provider value={{ className: 'react-icons' }}><RiKey2Line /></IconContext.Provider>Key</span>} key="key">
                     <Title level={5}>
                       Public Key
@@ -551,6 +624,20 @@ const Web3Module = props => {
             <Button block shape="round" size='large'>WalletConnect</Button>
           </List.Item>
         </List>
+      </Modal>
+
+      <Modal title="Add Note" open={isAddNoteOpen && account && backupLDA} onCancel={() => { setIsAddNoteOpen(false); setSignWeb3Error(null) }} footer={false}>
+        <Form form={formAddNote} layout="vertical" className="modal-form">
+          <Form.Item label="Note" className="text-row" name="value">
+            <Input />
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={handleFormAddNote} type="primary" shape="round" size="large" disabled={formAddNote.getFieldValue('value') == ''}>Submit</Button>
+            {signWeb3Error?.message &&
+              <Paragraph style={{ marginTop: 10, marginBottom: 0 }}><Text type="danger">{signWeb3Error.message}</Text></Paragraph>
+            }
+          </Form.Item>
+        </Form>
       </Modal>
 
       <Modal title="Add Credits" open={isAddCreditsOpen && account && liteIdentity} onCancel={() => { setIsAddCreditsOpen(false); setSignWeb3Error(null) }} footer={false}>

@@ -2,6 +2,7 @@ import { Address, PublicKeyHashAddress } from "accumulate.js";
 import { SignatureType, Transaction } from "accumulate.js/lib/core";
 import { Buffer } from "accumulate.js/lib/common";
 import { createHash } from "crypto";
+import { encrypt } from "eth-sig-util";
 
 // Bug fix
 const bufferFrom = Buffer.from
@@ -10,6 +11,88 @@ Buffer.from = function(...args) {
         return new Uint8Array([]);
     }
     return bufferFrom.apply(this, args);
+}
+
+/**
+ * Checks if backup functionality is supported for the connected Web3 provider.
+ */
+export function backupIsSupported() {
+    // We only support backups using MetaMask
+    return window.ethereum.isMetaMask;
+}
+
+const x25519_xsalsa20_poly1305 = (async () => Buffer.from(await sha256(Buffer.from("x25519-xsalsa20-poly1305", 'utf-8'))).toString('hex'))();
+
+export async function decryptBackupEntry(account, entry) {
+    if (!entry.header.metadata || entry.body.entry.data.length !== 3) {
+        throw new Error('Invalid entry')
+    }
+
+    switch (entry.header.metadata) {
+        case await x25519_xsalsa20_poly1305:
+            const msg = '0x'+ Buffer.from(JSON.stringify({
+                version:        "x25519-xsalsa20-poly1305",
+                nonce:          Buffer.from(entry.body.entry.data[0], 'hex').toString('base64'),
+                ephemPublicKey: Buffer.from(entry.body.entry.data[1], 'hex').toString('base64'),
+                ciphertext:     Buffer.from(entry.body.entry.data[2], 'hex').toString('base64'),
+            }), 'utf-8').toString('hex');
+
+            return JSON.parse(await window.ethereum.request({
+                "method": "eth_decrypt",
+                "params": [msg, account]
+            }));
+
+        default:
+            throw new Error('Unknown encryption method');
+    }
+}
+
+/**
+ * Creates a backup entry.
+ * @param {string} account The Ethereum address
+ * @param  {any} data The data to encrypt
+ */
+export async function createBackupEntry(account, data) {
+    const key = await getEncryptionPublicKey(account);
+    const { version, nonce, ephemPublicKey, ciphertext } = encrypt(key, { data: JSON.stringify(data) }, 'x25519-xsalsa20-poly1305');
+
+    // const v = '0x'+ Buffer.from(JSON.stringify({ version: "x25519-xsalsa20-poly1305", nonce, ephemPublicKey, ciphertext }), 'utf-8').toString('hex');
+    // const asdf = await window.ethereum.request({
+    //     "method": "eth_decrypt",
+    //     "params": [v, account]
+    // });
+    // console.log(asdf);
+
+    const token = await backupToken(await ethToUniversal(account));
+    const chainID = await sha256(await sha256(token));
+    return new Transaction({
+        header: {
+            principal: `acc://${Buffer.from(chainID).toString('hex')}`,
+            metadata: await sha256(Buffer.from(version, 'utf-8')),
+        },
+        body: {
+            type: "writeData",
+            entry: {
+                type: 'doubleHash',
+                data: [
+                    Buffer.from(nonce, 'base64'),
+                    Buffer.from(ephemPublicKey, 'base64'),
+                    Buffer.from(ciphertext, 'base64'),
+                ]
+            }
+        }
+    })
+}
+
+async function getEncryptionPublicKey(account) {
+    if (!window.ethereum.isMetaMask) {
+        throw new Error(`Backup not supported for connected Web3 provider`);
+    }
+
+    return await window.ethereum.request({
+        "method": "eth_getEncryptionPublicKey",
+        "params": [account]
+    });
 }
 
 /**
