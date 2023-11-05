@@ -31,10 +31,9 @@ const TxSendTokens = props => {
         setTokenAccount(null);
         setError(null);
         try {
-            let params = {url: tx.data.from};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                setTokenAccount(response.data);
+            const response = await RPC.request("query", { "scope": tx.data.from }, 'v3');
+            if (response && response.account) {
+                setTokenAccount(response.account);
             } else {
                 throw new Error("Token account " + tx.data.from + " not found"); 
             }
@@ -61,7 +60,7 @@ const TxSendTokens = props => {
             <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiInformationLine />
             </IconContext.Provider>
-            Token Transaction!
+            Token Transaction
         </Title>
 
         {tx && tx.data ? (
