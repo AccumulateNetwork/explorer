@@ -302,7 +302,7 @@ const TokenAccount = props => {
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                             <RiInformationLine />
                         </IconContext.Provider>
-                        Token Account Info!
+                        Token Account Info
                     </Title>
 
                     <Descriptions bordered column={1} size="middle">

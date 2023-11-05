@@ -36,10 +36,10 @@ const ADI = props => {
         {
             title: 'Accounts',
             render: (row) => {
-                if (row) {
+                if (row?.value) {
                     return (
-                        <Link to={'/acc/' + row.replace("acc://", "")}>
-                            <IconContext.Provider value={{ className: 'react-icons' }}><RiFolder2Line /></IconContext.Provider>{row}
+                        <Link to={'/acc/' + row.value.replace("acc://", "")}>
+                            <IconContext.Provider value={{ className: 'react-icons' }}><RiFolder2Line /></IconContext.Provider>{row.value}
                         </Link>
                     )
                 } else {
@@ -67,16 +67,16 @@ const ADI = props => {
         }
     
         try {
-          const response = await RPC.request("query-directory", { url: adi.data.url, start: start, count: count } );
-          if (response && response.items) {
+          const response = await RPC.request("query", { "scope": adi.data.url, query: { "queryType": 'directory', "range": {"start": start, "count": count} }}, 'v3');
+          if (response && response.records) {
 
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
                 response.start = 0;
             }
 
-            setDirectory(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setDirectory(response.records);
+            setPagination({...pagination, current: (response.start/count)+1, pageSize: count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
             setTotalDirectory(response.total);
           } else {
             throw new Error("ADI Directory not found"); 
