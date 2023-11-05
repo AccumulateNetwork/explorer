@@ -61,7 +61,7 @@ const GenericTx = props => {
     };
 
     useEffect(() => {
-        getTs(props.data.transactionHash, setTs, setBlock);
+        getTs(props.data.transactionHash, setTs, setBlock, x => x.chain === 'main' || x.chain === 'scratch');
     }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (

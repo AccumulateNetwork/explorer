@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import moment from 'moment-timezone';
 
 import { Link } from 'react-router-dom';
 import {
@@ -9,7 +10,8 @@ import {
   Switch,
   Tag,
   List,
-  Button
+  Button,
+  Skeleton
 } from 'antd';
 
 import { IconContext } from "react-icons";
@@ -25,11 +27,15 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
 import Key from '../../common/Key';
+import getTs from '../../common/GetTS';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const GenericMsg = (props) => {
     const { message } = props.data;
+    const utcOffset = moment().utcOffset() / 60;
+    const [ts, setTs] = useState(null);
+    const [block, setBlock] = useState(null);
     const [rawDataDisplay, setRawDataDisplay] = useState('none');
     const [showAllProduced, setShowAllProduced] = useState(false);
 
@@ -68,6 +74,13 @@ const GenericMsg = (props) => {
         delegators = signature.delegator;
     }
 
+    useEffect(() => {
+        if (props.data.id) {
+            let txId = props.data.id.replace(/^acc:\/\/|@.*$/g, '');
+            getTs(txId, setTs, setBlock);
+        }
+    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
+
     return (
         <div>
             <TxStatus data={props.data} />
@@ -99,11 +112,19 @@ const GenericMsg = (props) => {
 
                     <Descriptions bordered column={1} size="middle">
 
-                        {props.data.id && (
-                            <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.msgId}><RiQuestionLine /></Tooltip></IconContext.Provider>ID</nobr></span>}>
+                        {props.data.id && [
+                            <Descriptions.Item key="id" label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.msgId}><RiQuestionLine /></Tooltip></IconContext.Provider>ID</nobr></span>}>
                                 <span>{props.data.id}</span>
+                            </Descriptions.Item>,
+
+                            <Descriptions.Item key="time" label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.timestamp}><RiQuestionLine /></Tooltip></IconContext.Provider>Timestamp (UTC{utcOffset < 0 ? '-' : '+'}{utcOffset})</nobr></span>}>
+                                {ts || ts===0 ? <Text>{ts ? <Text className="code">{moment(ts).format("YYYY-MM-DD HH:mm:ss")}</Text> : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
+                            </Descriptions.Item>,
+
+                            <Descriptions.Item key="block" label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.block}><RiQuestionLine /></Tooltip></IconContext.Provider>Block</nobr></span>}>
+                                {block || block===0 ? <Text>{block ? ( <Link className="code" to={'/block/' + block}>{block}</Link> ) : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
                             </Descriptions.Item>
-                        )}
+                        ]}
 
                         {(signature?.signer || signature?.origin) && (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sigSignerUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Signer</nobr></span>}>
