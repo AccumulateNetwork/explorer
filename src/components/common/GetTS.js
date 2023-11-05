@@ -32,6 +32,11 @@ export default async function getTs(hash, setTs, setBlock, predicate) {
         }
     }
     catch (error) {
+        if (error.message === "Request failed with status code 404") {
+            setTs(0);
+            setBlock(0);
+            return;
+        }
         setTs(null);
         setBlock(null);
         message.error(error.message);
