@@ -17,6 +17,7 @@ import {
 
 import Count from './Count';
 import RPC from './RPC';
+import AccLink from './AccLink';
 
 const { Title, Text } = Typography;
 
@@ -65,9 +66,9 @@ const TxChain = props => {
                 if (row?.value?.id) {
                     return (
                         <div>
-                            <Link to={row.value.id}>
+                            <AccLink to={row.value.id}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.entry}
-                            </Link>
+                            </AccLink>
                         </div>
                     )
                 } else {
