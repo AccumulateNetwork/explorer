@@ -232,14 +232,14 @@ const Web3Module = props => {
 
     localStorage.removeItem(account);
 
-    let message = web3.utils.padRight(account, 64);
-    let signature = await signWeb3(message);
+    let message = "Login to Accumulate";
+    let signature = await signWeb3(web3.utils.utf8ToHex(message), true);
     if (!signature) return;
 
     console.log('Message:', message)
     console.log('Signature:', signature)
 
-    let pub = EthCrypto.recoverPublicKey(signature, message);
+    let pub = EthCrypto.recoverPublicKey(signature, web3.eth.accounts.hashMessage(message));
     console.log('Public key:', pub)
     if (EthCrypto.publicKey.toAddress(pub) !== account) {
       notification.error({ message: 'Failed to recover public key'})
@@ -349,11 +349,17 @@ const Web3Module = props => {
     }
   }
 
-  const signWeb3 = async (message) => {
+  const signWeb3 = async (message, personal = false) => {
     setSignWeb3Error(null);
     try {
-      let sig = await web3.eth.sign(message, account);
-      return sig;
+      if (window.ethereum.isMetaMask && personal) {
+        return await window.ethereum.request({
+          method: "personal_sign",
+          params: [message, account],
+        })
+      }
+
+      return await web3.eth.sign(message, account);
     }
     catch(error) {
       // Extract the Ledger error
@@ -364,7 +370,7 @@ const Web3Module = props => {
           if (originalError) error = originalError;
         } catch (_) {}
       }
-      
+
       // Parse the status code
       if ('statusCode' in error) {
         // eslint-disable-next-line default-case
