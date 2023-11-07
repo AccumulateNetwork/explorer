@@ -17,6 +17,7 @@ import {
 
 import Count from './Count';
 import RPC from './RPC';
+import AccLink from './AccLink';
 
 const { Title, Text } = Typography;
 
@@ -62,12 +63,12 @@ const TxChain = props => {
             title: 'Transaction ID',
             className: 'align-top no-break',
             render: (row) => {
-                if (row?.entry?.value?.id) {
+                if (row?.value?.id) {
                     return (
                         <div>
-                            <Link to={row.entry.value.id}>
+                            <AccLink to={row.value.id}>
                                 <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{row.entry}
-                            </Link>
+                            </AccLink>
                         </div>
                     )
                 } else {
@@ -81,10 +82,20 @@ const TxChain = props => {
             title: 'Type',
             className: 'align-top no-break',
             render: (tx) => {
-                const type = tx?.value?.message?.transaction?.body?.type
-                if (type) {
+                const txType = tx?.value?.message?.transaction?.body?.type
+                const sigType = tx?.value?.message?.signature?.type
+                const msgType = tx?.value?.message?.type
+                if (txType) {
                     return (
-                        <Tag color="green">{type}</Tag>                        
+                        <Tag color="green">{txType}</Tag>
+                    )
+                } else if (sigType) {
+                    return (
+                        <Tag color="green">{sigType}</Tag>
+                    )
+                } else if (msgType) {
+                    return (
+                        <Tag color="green">{msgType}</Tag>
                     )
                 } else {
                     return (
@@ -119,7 +130,19 @@ const TxChain = props => {
             if (type === 'pending')
                 response = await RPC.request("query", { url: props.url + `#${type}` });
             else
-                response = await RPC.request("query", { "scope": props.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3');
+                response = await RPC.request("query", {
+                    "scope": props.url,
+                    "query": {
+                        "queryType": "chain",
+                        "name": type === 'transaction' ? "main" : type,
+                        "range": {
+                            "fromEnd": true,
+                            "expand": true,
+                            "count": params.pageSize,
+                            start,
+                        },
+                    },
+                }, 'v3');
 
             if (response) {
                 // workaround API bug response

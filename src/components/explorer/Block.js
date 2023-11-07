@@ -17,6 +17,7 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import RPC from '../common/RPC';
 import Count from '../common/Count';
+import getBlockEntries from '../common/GetBlockEntries';
 
 const { Title, Text } = Typography;
 
@@ -41,8 +42,8 @@ const Block = ({ match }) => {
                 if (row) {
                     return (
                         <div>
-                            <Link to={'/acc/' + row.txid.replace("acc://", "")}>
-                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.txid}
+                            <Link to={'/acc/' + row.value.id.replace("acc://", "")}>
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{row.value.id}
                             </Link>
                         </div>
                     )
@@ -58,7 +59,7 @@ const Block = ({ match }) => {
             render: (row) => {
                 if (row) {
                     return (
-                        <Tag color="green">{row.type}</Tag>                        
+                        <Tag color="green">{row.value.message.type}</Tag>                        
                     )
                 } else {
                     return (
@@ -73,11 +74,13 @@ const Block = ({ match }) => {
         document.title = "Minor block #" + index + " | Accumulate Explorer";
         setError(null);
         try {
-            let params = {url: "acc://dn.acme", start: parseInt(index), count: 1};
-            const response = await RPC.request("query-minor-blocks", params);
-            if (response && response.items && response.items[0]) {
-                setBlock(response.items[0]);
-                
+            let params = {scope: "acc://dn.acme", query: {queryType: "block", minor: parseInt(index)}};
+            const response = await RPC.request("query", params, 'v3');
+            if (response && response.entries) {
+                setBlock({
+                    ...response,
+                    messages: getBlockEntries(response),
+                });
             } else {
                 throw new Error("Minor block #" + index + " not found"); 
             }
@@ -99,8 +102,8 @@ const Block = ({ match }) => {
                     <div>
                         <Descriptions bordered column={1} size="middle">
                             <Descriptions.Item label={`Timestamp (UTC${utcOffsetString})`}>
-                                {block.blockTime ? (
-                                    <Text className="code">{moment(block.blockTime).format("YYYY-MM-DD HH:mm:ss")}</Text>
+                                {block.time ? (
+                                    <Text className="code">{moment(block.time).format("YYYY-MM-DD HH:mm:ss")}</Text>
                                 ) :
                                     <Text disabled>Timestamp not recorded</Text>
                                 }
@@ -112,12 +115,12 @@ const Block = ({ match }) => {
                                 <RiExchangeLine />
                             </IconContext.Provider>
                             Transactions
-                            <Count count={block.transactions ? block.transactions.length : 0} />
+                            <Count count={block.messages ? block.messages.length : 0} />
                         </Title>
 
-                        {block.transactions ? (
+                        {block.messages ? (
                         <Table
-                            dataSource={block.transactions}
+                            dataSource={block.messages}
                             columns={columns}
                             pagination={pagination}
                             rowKey="txid"

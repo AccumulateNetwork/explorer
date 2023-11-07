@@ -13,27 +13,40 @@ import {
 
 const TxStatus = props => {
     const tx = props.data;
-    
+
+    let sigCount = 0;
+    for (const set of tx?.signatures?.records || []) {
+        for (const sig of set?.signatures?.records || []) {
+            // Ignore non-signatures
+            if (sig.message?.type !== 'signature') continue;
+
+            // Don't count authority signatures
+            if (sig.message.signature?.type === 'authority') continue;
+
+            sigCount++;
+        }
+    }
+
     return (
         <div style={{ marginBottom: "20px" }} >
             {(tx && tx.status) ? (
                 <div>
-                    {tx.status.pending &&
+                    {tx.status === 'pending' &&
                         <span>
                         <Tag color="gold" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiLoader4Line className={'anticon-spin'} /></IconContext.Provider>Pending</Tag>
-                        <Tag color="cyan" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig</Tag>
+                        {tx?.message?.type === 'transaction' && <Tag color="cyan" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}></IconContext.Provider>Multi-sig</Tag>}
                         </span>
                     }
-                    {tx.status.code === "delivered" &&
+                    {tx.status === "delivered" &&
                         <Tag color="green" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiCheckLine/></IconContext.Provider>Success</Tag>
                     }
-                    {tx.status.failed === true &&
-                        <Tooltip overlayClassName="explorer-tooltip" title={"Error " + tx.status?.codeNum + ": " + tx.status?.error?.message}>
+                    {tx.statusNo >= 400 &&
+                        <Tooltip overlayClassName="explorer-tooltip" title={"Error " + tx.statusNo + ": " + tx.error?.message}>
                             <Tag color="red" style={{textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiErrorWarningLine/></IconContext.Provider>Error</Tag>
                         </Tooltip>
                     }
-                    {tx.signatures && tx.signatures.length > 0 ? (
-                        <Tag style={{textTransform: "uppercase"}}>Signatures: <strong>{tx.signatures.filter(signature => signature.signer || signature.delegator).length}</strong></Tag>
+                    {sigCount > 0 ? (
+                        <Tag style={{textTransform: "uppercase"}}>Signatures: <strong>{sigCount}</strong></Tag>
                     ) : null
                     }
                 </div>

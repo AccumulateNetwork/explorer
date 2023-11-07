@@ -65,6 +65,9 @@ const Acc = ({ match, parentCallback }) => {
             try {
                 let params = { scope: url };
                 v3 = await RPC.request("query", params, 'v3');
+                if (!v3) {
+                    throw new Error("acc://" + url + " not found"); 
+                }
 
                 // Only query API v2 if the message is a transaction
                 if (v3.message.type !== 'transaction') {
@@ -160,20 +163,25 @@ const Acc = ({ match, parentCallback }) => {
 
     let title = "Account";
     if (isTx) {
-        title = "Transaction"
+        title = "Message"
     }
-    if (isTx && acc?.message) {
-        switch (acc.message.type) {
+    if (isTx && acc?.v3?.message) {
+        /* eslint-disable default-case */
+        switch (acc.v3.message.type) {
             case 'transaction':
                 title = "Transaction";
                 break;
             case 'signature':
                 title = "Signature";
                 break;
-            default:
-                title = "Message";
+            case 'creditPayment':
+                title = "Credit Payment";
+                break;
+            case 'signatureRequest':
+                title = "Signature Request";
                 break;
         }
+        /* eslint-enable default-case */
     }
 
     return (

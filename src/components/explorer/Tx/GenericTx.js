@@ -61,12 +61,12 @@ const GenericTx = props => {
     };
 
     useEffect(() => {
-        getTs(props.data.transactionHash, setTs, setBlock);
+        getTs(props.data.transactionHash, setTs, setBlock, x => x.chain === 'main' || x.chain === 'scratch');
     }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
-            <TxStatus data={tx} />
+            <TxStatus data={props.data.v3} />
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>

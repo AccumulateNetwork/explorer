@@ -14,7 +14,7 @@ import {
     RiInformationLine, RiAccountCircleLine, RiCoinLine, RiExchangeLine
 } from 'react-icons/ri';
 
-import RPC from '../common/RPC';
+import getToken from './GetToken';
 import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 
 const { Title, Text } = Typography;
@@ -25,28 +25,8 @@ const TxSyntheticDepositTokens = props => {
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
-    //TODO Refactor
-    const getToken = async () => {
-        setToken(null);
-        setError(null);
-        try {
-            let params = {url: tx.data.token};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                if (!response?.data?.precision) response.data.precision = 0
-                setToken(response.data);
-            } else {
-                throw new Error("Token " + tx.data.token + " not found"); 
-            }
-        }
-        catch(error) {
-            setToken(null);
-            setError(error.message);
-        }
-    }
-
     useEffect(() => {
-        getToken();
+        getToken(tx.data.token, setToken, setError);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (

@@ -42,7 +42,7 @@ const DataEntry = props => {
 
     useEffect(() => {
         let txId = props.data.data.txId.replace(/^acc:\/\/|@.*$/g, '');
-        getTs(txId, setTs, setBlock);
+        getTs(txId, setTs, setBlock, x => x.chain === 'main' || x.chain === 'scratch');
     }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
