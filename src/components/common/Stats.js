@@ -22,8 +22,8 @@ const Stats = props => {
 
   const getStats = async () => {
     try {
-        const response = await RPC.request("metrics", { metric: "tps", duration: "1h" });
-        setTPS(response.data.value);
+        const response = await RPC.request("metrics", {}, 'v3');
+        setTPS(response.tps);
     }
     catch(error) {
 
