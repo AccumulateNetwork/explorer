@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 import { Link } from 'react-router-dom';
 
-import Web3 from 'web3';
-
 import {
   Typography, Skeleton, Descriptions, Table, Tag, Tabs, Card, Progress, message
 } from 'antd';
@@ -18,8 +16,6 @@ import { tokenAmountToLocaleString } from '../common/TokenAmount'
 import axios from 'axios';
 import getSupply from '../common/GetSupply';
 
-import StakingRewardsABI from './../abi/StakingRewards.json';
-
 const { Title, Text } = Typography;
 
 const Staking = () => {
@@ -27,23 +23,11 @@ const Staking = () => {
     const [stakers, setStakers] = useState(null);
     const [supply, setSupply] = useState(null);
     const [apr, setAPR] = useState(null);
-
-    const [srContract, setSRContract] = useState(null);
-
     const [stakingRewardRate, setStakingRewardRate] = useState(0);
-    const [stakingRewardDuration, setStakingRewardDuration] = useState(0);
-    const [stakingTotal, setStakingTotal] = useState(0);
 
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalStakers, setTotalStakers] = useState(-1);
-
-    const calculateAPR = (rewardRate, rewardDuration, totalStaked) => {
-        const secondPerYear = 86400 * 365;
-        const rate = rewardRate * rewardDuration / totalStaked;
-        const apr = ((1+rate) ** (secondPerYear / rewardDuration) - 1) * 100;
-        return apr.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    }
 
     const columns = [
         {
@@ -207,24 +191,22 @@ const Staking = () => {
         setTableIsLoading(false);
     }
 
-    useEffect(() => {
-        document.title = "Staking | Accumulate Explorer";
-        window.web3 = new Web3(process.env.REACT_APP_ETHEREUM_API);
-        getSupply(setSupply, setAPR);
-        getStakers();
-        if (process.env.REACT_APP_STAKING_REWARDS_CONTRACT) {
-            let contract = new window.web3.eth.Contract(StakingRewardsABI, process.env.REACT_APP_STAKING_REWARDS_CONTRACT);
-            setSRContract(contract);    
+    const fetchLiquidStakingInfo = async () => {
+        try {
+            // Fetch data from the API using Axios
+            const response = await axios.get('https://api.accumulated.finance/v1/lsd/wacme');
+            setStakingRewardRate(Math.max(Number(response.data[0]?.apr), Number(response.data[1]?.apr)));
+        } catch (error) {
+            console.error('Error fetching data:', error);
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    };  
 
     useEffect(() => {
-        if (srContract) {
-            srContract.methods.rewardRate().call().then(setStakingRewardRate);
-            srContract.methods.totalSupply().call().then(setStakingTotal);
-            srContract.methods.duration().call().then(setStakingRewardDuration);
-        }
-    }, [srContract]) // eslint-disable-line react-hooks/exhaustive-deps
+        document.title = "Staking | Accumulate Explorer";
+        getSupply(setSupply, setAPR);
+        getStakers();
+        fetchLiquidStakingInfo();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
@@ -241,8 +223,8 @@ const Staking = () => {
                             <strong>this guide<IconContext.Provider value={{ className: 'react-icons' }}><RiExternalLinkLine /></IconContext.Provider></strong></a>
                     </Tabs.TabPane>
                     <Tabs.TabPane tab={<span>WACME Liquid Staking
-                        {stakingRewardRate && stakingRewardDuration && stakingRewardDuration > 0 && stakingTotal && stakingTotal > 0 ?
-                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {calculateAPR(stakingRewardRate, stakingRewardDuration, stakingTotal)}%</Tag>
+                        {stakingRewardRate > 0 ?
+                            <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {stakingRewardRate.toFixed(2)}%</Tag>
                             : null
                         }
                     </span>} key="TabLiquidStaking">
