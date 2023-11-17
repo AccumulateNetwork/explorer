@@ -39,27 +39,25 @@ const DataAccount = props => {
         setTableIsLoading(true);
     
         let start = 0;
-        let count = 10;
         let showTotalStart = 1;
         let showTotalFinish = 10;
     
         if (params) {
             start = (params.current-1)*params.pageSize;
-            count = params.pageSize;
             showTotalStart = (params.current-1)*params.pageSize+1;
             showTotalFinish = params.current*params.pageSize;
         }
     
         try {
-          const response = await RPC.request("query-data-set", { url: account.data.url, start: start, count: count, expand: true } );
-          if (response) {
+          const response = await RPC.request("query", { "scope": account.data.url, "query": { "queryType": "data", "range": { "count": params.pageSize, start } } }, 'v3' );
+          if (response?.records) {
 
             // workaround API bug response
             if (response.start === null || response.start === undefined) {
                 response.start = 0;
             }
-            setEntries(response.items);
-            setPagination({...pagination, current: (response.start/response.count)+1, pageSize: response.count, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
+            setEntries(response.records);
+            setPagination({...pagination, current: (response.start/response.records.length)+1, pageSize: response.records.length, total: response.total, showTotal: (total, range) => `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`});
             setTotalEntries(response.total);
           } else {
             throw new Error("Data set not found"); 
@@ -74,31 +72,31 @@ const DataAccount = props => {
     const columns = [
         {
             title: 'Entry Hash',
-            dataIndex: 'entryHash',
+            dataIndex: 'entry',
             className: 'code',
-            render: (entryHash) => (
-                <Link to={'#data/'+entryHash}>
+            render: (entry) => (
+                <Link to={'#data/' + entry}>
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiFileList2Line />
                     </IconContext.Provider>
-                    {entryHash}
+                    {entry}
                 </Link>
             )
         },
         {
             title: 'Entry Data',
-            dataIndex: 'entry',
             render: (entry) => {
-              if (entry.data !== null && entry.data !== undefined) {
+              const data = entry?.value?.message?.transaction?.body?.entry?.data
+              if (data?.length > 0) {
                 var items = [];
-                if (Array.isArray(entry.data)) {
-                    items = entry.data.slice(0,3).map((item) => <ExtId compact>{item ? item : ""}</ExtId>);
-                    let extra = entry.data.length-3;
+                if (Array.isArray(data)) {
+                    items = data.slice(0,3).map((item) => <ExtId compact>{item ? item : ""}</ExtId>);
+                    let extra = data.length-3;
                     if (extra > 0) {
                       items.push(<Tag className="extid-tag">+{extra} more</Tag>);
                     }    
                 } else {
-                    items.push(<ExtId compact>{entry.data ? entry.data : ""}</ExtId>)
+                    items.push(<ExtId compact>{data ? data : ""}</ExtId>)
                 }
                 return <nobr>{items}</nobr>;
               } else {
@@ -191,7 +189,7 @@ const DataAccount = props => {
                         dataSource={entries}
                         columns={columns}
                         pagination={pagination}
-                        rowKey="entryHash"
+                        rowKey="entry"
                         loading={tableIsLoading}
                         onChange={getEntries}
                         scroll={{ x: 'max-content' }}

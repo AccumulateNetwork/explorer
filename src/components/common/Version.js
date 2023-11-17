@@ -13,8 +13,8 @@ const Version = props => {
 
   const getVersion = async () => {
     try {
-        const response = await RPC.request("version");
-        setVersion(response.data.version);
+        const response = await RPC.request("network-status", {}, 'v3');
+        setVersion(response.executorVersion);
     }
     catch(error) {
         setVersion("unknown");

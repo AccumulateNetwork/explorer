@@ -38,7 +38,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
-    "start": "REACT_APP_API_PATH='https://api-gateway.accumulate.defidevs.io' REACT_APP_ID='explorer-wespx' react-scripts start",
+    "start": "REACT_APP_API_PATH='https://api-gateway.accumulate.defidevs.io' REACT_APP_ID='explorer-wespx' react-scripts --openssl-legacy-provider start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

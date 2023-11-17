@@ -6,7 +6,7 @@ const onError = (error) => {
   console.error(error);
   if (error.data && error.code) {
     // exception for nothing was found error
-    if ((error.code === -32807) || (error.code === -32804)) {
+    if ((error.code === -32807) || (error.code === -32804) || (error.code === -33404)) {
       if (showMessage) {
         message.info('Nothing was found');
       }
@@ -42,8 +42,6 @@ class RPC {
       params: typeof params === 'string' ? [params] : params
     })
     .then(response => {
-      if (response.data.error?.data?.code === 'notFound' && method === 'query')
-        window.location.href = '/acc/' + params.scope;
       if (response.data.error) {
         onError(response.data.error)
       }

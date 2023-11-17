@@ -20,6 +20,7 @@ import {
 } from 'react-icons/ri';
 
 import RPC from '../../common/RPC';
+import getToken from '../../common/GetToken';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import FaucetAddress from '../../common/Faucet';
 import Count from '../../common/Count';
@@ -40,29 +41,6 @@ const TokenAccount = props => {
     const [tableIsLoading, setTableIsLoading] = useState(true);
     const [pagination, setPagination] = useState({pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], current: 1});
     const [totalTxs, setTotalTxs] = useState(-1);
-
-    //TODO Refactor
-    const getToken = async () => {
-        setPagination({...pagination, current: 1});
-        setToken(null);
-        setTxs(null);
-        setError(null);
-        try {
-            let params = {url: tokenAccount.data.tokenUrl};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                if (!response?.data?.precision) response.data.precision = 0
-                setToken(response.data);
-            } else {
-                throw new Error("Token " + tokenAccount.data.tokenUrl + " not found");
-            }
-        }
-        catch(error) {
-            setToken(null);
-            setTxs(null);
-            setError(error.message);
-        }
-    }
 
     const getTxs = async (params = pagination) => {
         setTableIsLoading(true);
@@ -296,7 +274,9 @@ const TokenAccount = props => {
     ];
 
     useEffect(() => {
-        getToken();
+        setPagination({...pagination, current: 1});
+        setTxs(null);
+        getToken(tokenAccount.data.tokenUrl, setToken, setError);
         getStakingInfo(tokenAccount.data.url);
         getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
