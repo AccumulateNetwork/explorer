@@ -215,7 +215,7 @@ const Staking = () => {
             <Card className="staking-card" style={{ marginBottom: 20 }}>
                 <Tabs defaultActiveKey="TabStaking">
                     <Tabs.TabPane tab={<span>ACME Staking
-                        {apr ?
+                        {apr && false ?
                             <Tag color="green" style={{marginLeft: 10, marginRight: 0}}>APR: {(apr*(10**2)).toFixed(2)}%</Tag>
                         : null}
                     </span>} key="TabStaking">
