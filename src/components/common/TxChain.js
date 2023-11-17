@@ -128,7 +128,17 @@ const TxChain = props => {
         try {
             let response;
             if (type === 'pending')
-                response = await RPC.request("query", { url: props.url + `#${type}` });
+                response = await RPC.request("query", {
+                    "scope": props.url,
+                    "query": {
+                        "queryType": "pending",
+                        "range": {
+                            start,
+                            "count": params.pageSize,
+                            "expand": true,
+                        },
+                    },
+                }, 'v3');
             else
                 response = await RPC.request("query", {
                     "scope": props.url,
@@ -151,10 +161,7 @@ const TxChain = props => {
                 }
                 setTxChain(response.records.reverse());
                 setPagination({ ...pagination, current: params.current, pageSize: params.pageSize, total: response.total });
-                if (type === 'pending')
-                    setTotalEntries(response.items.length);
-                else
-                    setTotalEntries(response.total);
+                setTotalEntries(response.total);
             } else {
                 throw new Error("Chain not found");
             }
@@ -188,8 +195,8 @@ const TxChain = props => {
                             dataSource={txChain}
                             renderItem={item =>
                                 <List.Item>
-                                    <Link to={'/tx/' + item}>
-                                        <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{item}
+                                    <Link to={'/tx/' + item.id}>
+                                        <IconContext.Provider value={{ className: 'react-icons' }}><Icon /></IconContext.Provider>{item.id}
                                     </Link>
                                 </List.Item>
                             }
