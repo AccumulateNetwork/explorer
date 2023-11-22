@@ -67,7 +67,7 @@ const ADI = props => {
         }
     
         try {
-          const response = await RPC.request("query", { "scope": adi.data.url, query: { "queryType": 'directory', "range": {"start": start, "count": count} }}, 'v3');
+          const response = await RPC.request("query", { "scope": adi.account.url, query: { "queryType": 'directory', "range": {"start": start, "count": count} }}, 'v3');
           if (response && response.records) {
 
             // workaround API bug response
@@ -96,9 +96,9 @@ const ADI = props => {
         <div>
             <Descriptions bordered column={1} size="middle">
 
-                {adi.type ? (
+                {adi.recordType ? (
                     <Descriptions.Item label="Type">
-                        {adi.type}
+                        {adi.recordType}
                     </Descriptions.Item>
                 ) :
                     null
@@ -106,7 +106,7 @@ const ADI = props => {
 
             </Descriptions>
             
-            {adi.data ? (
+            {adi.account ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -116,24 +116,24 @@ const ADI = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {adi.data.url ? (
+                        {adi.account.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.adiUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
-                                {adi.data.url}
+                                {adi.account.url}
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {adi.type === "liteIdentity" &&
+                        {adi.recordType === "liteIdentity" &&
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                                {adi.data.creditBalance ? adi.data.creditBalance / 100 : 0} credits
+                                {adi.account.creditBalance ? adi.account.creditBalance / 100 : 0} credits
                             </Descriptions.Item>                
                         }
 
 
                     </Descriptions>
 
-                    <Authorities items={adi.data.authorities} />
+                    <Authorities items={adi.account.authorities} />
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -153,8 +153,8 @@ const ADI = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
-                    <TxChain url={adi.data.url} type='transaction' />
-                    <TxChain url={adi.data.url} type='signature' />
+                    <TxChain url={adi.account.url} type='transaction' />
+                    <TxChain url={adi.account.url} type='signature' />
 
                 </div>
             ) :

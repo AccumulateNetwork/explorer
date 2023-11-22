@@ -53,7 +53,6 @@ const Acc = ({ match, parentCallback }) => {
             url += location.hash;
         }
 
-        let v3;
         if (url.includes("@")) {
             setIsTx(true);
 
@@ -61,39 +60,30 @@ const Acc = ({ match, parentCallback }) => {
             // signatures from all network partitions
             url = url.replace(/@.*/, '@unknown');
 
-            // Query API v3
-            try {
-                let params = { scope: url };
-                v3 = await RPC.request("query", params, 'v3');
-                if (!v3) {
-                    throw new Error("acc://" + url + " not found"); 
-                }
-
-                // Only query API v2 if the message is a transaction
-                if (v3.message.type !== 'transaction') {
-                    setAcc({ v3 });
-                    return;
-                }
-            }
-            catch(error) {
-                setAcc(null);
-                setError(error.message);
-                return;
-            }
         }
-
+        // Query API v3
         try {
-            let params = {url: url};
-            const response = await RPC.request("query", params);
-            if (response && response.data) {
-                setAcc({ ...response, v3 });
-            } else {
+            let params = { scope: url };
+            const response = await RPC.request("query", params, 'v3');
+            if (!response) {
                 throw new Error("acc://" + url + " not found"); 
             }
+            setAcc({ ...response });
         }
         catch(error) {
             setAcc(null);
             setError(error.message);
+        }
+    }
+
+    function extractTxHash(txID) {
+        const regex = /acc:\/\/([^@]+)/;
+        const match = txID.match(regex);
+    
+        if (match && match[1]) {
+            return match[1];
+        } else {
+            return null; // or handle the case when the hash is not found
         }
     }
 
@@ -102,14 +92,15 @@ const Acc = ({ match, parentCallback }) => {
             setTimeout(() => sendToWeb3Module(props.data), 0);
             
             if (isTx) {
-                switch (props.data.v3.message.type) {
+                props.data.transactionHash = extractTxHash(props.data.id);
+                switch (props.data.message.type) {
                     case 'transaction':
                         return <GenericTx data={props.data} />;
                     default:
-                        return <GenericMsg data={props.data.v3} />;
+                        return <GenericMsg data={props.data} />;
                 }
             }
-            switch(props.data.type) {
+            switch(props.data.account.type) {
                 case 'liteTokenAccount':
                     props.data.lightIdentity = ParseADI(props.data.data.url);
                     return <TokenAccount data={props.data} />;
@@ -165,9 +156,9 @@ const Acc = ({ match, parentCallback }) => {
     if (isTx) {
         title = "Message"
     }
-    if (isTx && acc?.v3?.message) {
+    if (isTx && acc?.message) {
         /* eslint-disable default-case */
-        switch (acc.v3.message.type) {
+        switch (acc.message.type) {
             case 'transaction':
                 title = "Transaction";
                 break;
