@@ -24,12 +24,12 @@ const { Title, Paragraph, Text } = Typography;
 const KeyBook = props => {
 
     const keybook = props.data;
-    if (!keybook.data.pages && keybook.data.pageCount) {
+    if (!keybook.account.pages && keybook.account.pageCount) {
         var pages = [];
-        for (var i = 1; i <= keybook.data.pageCount; i++) {
-            pages.push(keybook.data.url+'/'+i);
+        for (var i = 1; i <= keybook.account.pageCount; i++) {
+            pages.push(keybook.account.url+'/'+i);
         }
-        keybook.data.pages = pages;
+        keybook.account.pages = pages;
     }
 
     return (
@@ -37,9 +37,9 @@ const KeyBook = props => {
 
             <Descriptions bordered column={1} size="middle">
 
-                {keybook.type ? (
+                {keybook.recordType ? (
                     <Descriptions.Item label="Type">
-                        {keybook.type}
+                        {keybook.recordType}
                     </Descriptions.Item>
                 ) :
                     null
@@ -47,7 +47,7 @@ const KeyBook = props => {
 
             </Descriptions>
             
-            {keybook.data ? (
+            {keybook.account ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -57,9 +57,9 @@ const KeyBook = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {keybook.data.url ? (
+                        {keybook.account.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBookUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book URL</nobr></span>}>
-                                {keybook.data.url}
+                                {keybook.account.url}
                             </Descriptions.Item>
                         ) :
                             null  
@@ -77,21 +77,21 @@ const KeyBook = props => {
 
                     </Descriptions>
 
-                    <Authorities items={keybook.data.authorities} />
+                    <Authorities items={keybook.account.authorities} />
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
                         <RiStackLine />
                         </IconContext.Provider>
                         Key Pages
-                        <Count count={keybook.data.pages && keybook.data.pages[0] ? keybook.data.pages.length : 0} />
+                        <Count count={keybook.account.pages && keybook.account.pages[0] ? keybook.account.pages.length : 0} />
                     </Title>
 
-                    {keybook.data.pages && keybook.data.pages[0] ? (
+                    {keybook.account.pages && keybook.account.pages[0] ? (
                         <List
                             size="small"
                             bordered
-                            dataSource={keybook.data.pages}
+                            dataSource={keybook.account.pages}
                             renderItem={item => <List.Item><Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiStackLine /></IconContext.Provider>{item}</Link></List.Item>}
                             style={{ marginBottom: "30px" }}
                         />
@@ -99,9 +99,9 @@ const KeyBook = props => {
                         <Paragraph><Text type="secondary">No pages</Text></Paragraph>
                     }
 
-                    <TxChain url={keybook.data.url} type='transaction' />
-                    <TxChain url={keybook.data.url} type='pending' />
-                    <TxChain url={keybook.data.url} type='signature' />
+                    <TxChain url={keybook.account.url} type='transaction' />
+                    <TxChain url={keybook.account.url} type='pending' />
+                    <TxChain url={keybook.account.url} type='signature' />
 
                 </div>
             ) :

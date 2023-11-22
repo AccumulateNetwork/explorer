@@ -102,10 +102,10 @@ const Acc = ({ match, parentCallback }) => {
             }
             switch(props.data.account.type) {
                 case 'liteTokenAccount':
-                    props.data.lightIdentity = ParseADI(props.data.data.url);
+                    props.data.lightIdentity = ParseADI(props.data.account.url);
                     return <TokenAccount data={props.data} />;
                 case 'tokenAccount':
-                    props.data.adi = ParseADI(props.data.data.url);
+                    props.data.adi = ParseADI(props.data.account.url);
                     return <TokenAccount data={props.data} />;
                 case 'token':
                     return <Token data={props.data} />;
@@ -116,13 +116,13 @@ const Acc = ({ match, parentCallback }) => {
                 case 'liteIdentity':
                     return <ADI data={props.data} type="Lite Identity" />;
                 case 'keyBook':
-                    props.data.adi = ParseADI(props.data.data.url);
+                    props.data.adi = ParseADI(props.data.account.url);
                     return <KeyBook data={props.data} />;
                 case 'keyPage':
-                    props.data.adi = ParseADI(props.data.data.url);
+                    props.data.adi = ParseADI(props.data.account.url);
                     return <KeyPage data={props.data} />;
                 case 'dataAccount':
-                    props.data.adi = ParseADI(props.data.data.url);
+                    props.data.adi = ParseADI(props.data.account.url);
                     return <DataAccount data={props.data} />;
                 case 'liteDataAccount':
                     return <DataAccount data={props.data} />;
