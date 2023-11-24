@@ -32,28 +32,28 @@ const TxUpdateAccountAuth = props => {
                 Transaction Data
             </Title>
 
-            {tx && tx.data ? (
+            {tx?.message?.transaction ? (
                 <Descriptions bordered column={1} size="middle">
 
                     <Descriptions.Item label={"Origin"}>
-                        {tx.origin ? (
-                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.origin}</Link>
+                        {tx.message.transaction?.header?.principal ? (
+                            <Link to={'/acc/' + tx.message.transaction.header.principal.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.principal}</Link>
                         ) :
                             <Skeleton active paragraph={false} />
                         }
                     </Descriptions.Item>
 
-                    {tx.data.type ? (
+                    {tx.message.transaction.body?.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Tag color="green">{tx.data.type}</Tag>
+                            <Tag color="green">{tx.message.transaction.body.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
-                    {tx.data.operations ? (
+                    {tx?.message?.transaction?.body?.operations ? (
                         <Descriptions.Item label={"Operations"} className={"align-top has-list"}>
-                            <TxOperations data={tx.data.operations} />
+                            <TxOperations data={tx.message.transaction.body.operations} />
                         </Descriptions.Item>
                     ) :
                         null

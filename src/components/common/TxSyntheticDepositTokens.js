@@ -26,7 +26,7 @@ const TxSyntheticDepositTokens = props => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        getToken(tx.data.token, setToken, setError);
+        getToken(tx.message.transaction.body.token, setToken, setError);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
@@ -39,7 +39,7 @@ const TxSyntheticDepositTokens = props => {
             Synthetic Deposit Transaction
         </Title>
 
-        {tx && tx.data ? (
+        {tx?.message?.transaction ? (
             <Descriptions bordered column={1} size="middle">
 
                 <Descriptions.Item label={"Token"}>
@@ -51,10 +51,10 @@ const TxSyntheticDepositTokens = props => {
                 </Descriptions.Item>
 
                 <Descriptions.Item label={"Amount"}>
-                    {token && tx.data.amount &&
+                    {token && tx.message.transaction.body.amount &&
                         <span>
-                            <Text>{tokenAmount(tx.data.amount, token.precision, token.symbol)}</Text>
-                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.data.amount, token.precision, token.symbol)}</Text>
+                            <Text>{tokenAmount(tx.message.transaction.body.amount, token.precision, token.symbol)}</Text>
+                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.message.transaction.body.amount, token.precision, token.symbol)}</Text>
                         </span>
                     }
                     {error &&
@@ -65,21 +65,21 @@ const TxSyntheticDepositTokens = props => {
                     }
                 </Descriptions.Item>
 
-                {tx.data.cause &&
+                {tx?.cause?.records?.length > 0 &&
                     <Descriptions.Item label={"Cause"}>
-                        <Link to={'/acc/' + tx.data.cause.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.data.cause}</Link>
+                        <Link to={'/acc/' + tx.cause.records[0].value.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.cause.records[0].value}</Link>
                     </Descriptions.Item>
                 }
 
-                {tx.data.source &&
+                {tx?.message?.transaction?.body?.source &&
                     <Descriptions.Item label={"Source"}>
-                        <Link to={'/acc/' + tx.data.source.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.source}</Link>
+                        <Link to={'/acc/' + tx.message.transaction.body.source.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.body.source}</Link>
                     </Descriptions.Item>
                 }
 
-                {tx.data.initiator &&
+                {tx.message.transaction.body.initiator &&
                     <Descriptions.Item label={"Initiator"}>
-                        <Link to={'/acc/' + tx.data.initiator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.initiator}</Link>
+                        <Link to={'/acc/' + tx.message.transaction.body.initiator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.body.initiator}</Link>
                     </Descriptions.Item>
                 }
 

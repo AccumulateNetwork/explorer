@@ -33,7 +33,7 @@ const { Text, Title, Paragraph } = Typography;
 const TokenAccount = props => {
 
     const tokenAccount = props.data;
-    if (tokenAccount.data && !tokenAccount.data.balance) tokenAccount.data.balance = 0;
+    if (!tokenAccount?.account?.balance) tokenAccount.account.balance = 0;
     const [token, setToken] = useState(null);
     const [txs, setTxs] = useState(null);
     const [stakingAccount, setStakingAccount] = useState(null);
@@ -52,7 +52,7 @@ const TokenAccount = props => {
         }
 
         try {
-            const response = await RPC.request("query", { "scope": tokenAccount.data.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3' );
+            const response = await RPC.request("query", { "scope": tokenAccount.account.url, "query": { "queryType": "chain", "name": "main", "range": { "fromEnd": true, "expand": true, "count": params.pageSize, start } } }, 'v3' );
             if (response?.records) {
 
                 // workaround API bug response
@@ -92,7 +92,7 @@ const TokenAccount = props => {
         const data = props.tx;
         const items = data.map((item, index) =>
           <Paragraph key={{index}}>
-                {item.url === tokenAccount.data.url ? (
+                {item.url === tokenAccount.account.url ? (
                     <Text type="secondary">{item.url}</Text>
                 ) :
                     <nobr>
@@ -147,7 +147,7 @@ const TokenAccount = props => {
             render: (entry) => {
                 if (entry) {
                     return (
-                        <Link to={'/acc/' + entry + '@' + tokenAccount.data.url.replace("acc://", "")}>
+                        <Link to={'/acc/' + entry + '@' + tokenAccount.account.url.replace("acc://", "")}>
                             <IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{entry}
                         </Link>
                     )
@@ -190,7 +190,7 @@ const TokenAccount = props => {
                     return (
                         <Text disabled>N/A</Text>
                     )
-                } else if (from === tokenAccount.data.url) {
+                } else if (from === tokenAccount.account.url) {
                     return (
                         <Text type="secondary">{from}</Text>
                     )
@@ -214,7 +214,7 @@ const TokenAccount = props => {
                         )
                     }
                     if (recipient) {
-                        if (recipient === tokenAccount.data.url) {
+                        if (recipient === tokenAccount.account.url) {
                             return (
                                 <Text type="secondary">{recipient}</Text>
                             )
@@ -276,8 +276,8 @@ const TokenAccount = props => {
     useEffect(() => {
         setPagination({...pagination, current: 1});
         setTxs(null);
-        getToken(tokenAccount.data.tokenUrl, setToken, setError);
-        getStakingInfo(tokenAccount.data.url);
+        getToken(tokenAccount.account.tokenUrl, setToken, setError);
+        getStakingInfo(tokenAccount.account.url);
         getTxs();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -286,9 +286,9 @@ const TokenAccount = props => {
 
             <Descriptions bordered column={1} size="middle">
 
-                {tokenAccount.type ? (
+                {tokenAccount.recordType ? (
                     <Descriptions.Item label="Type">
-                        {tokenAccount.type}
+                        {tokenAccount.recordType}
                     </Descriptions.Item>
                 ) :
                     null
@@ -296,7 +296,7 @@ const TokenAccount = props => {
 
             </Descriptions>
 
-            {tokenAccount.data && token ? (
+            {tokenAccount.account && token ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -307,10 +307,10 @@ const TokenAccount = props => {
 
                     <Descriptions bordered column={1} size="middle">
 
-                        {tokenAccount.data.url ? (
+                        {tokenAccount.account.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenAcctUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>URL</nobr></span>}>
-                                {tokenAccount.data.url}
-                                {tokenAccount.data.url === FaucetAddress ? (
+                                {tokenAccount.account.url}
+                                {tokenAccount.account.url === FaucetAddress ? (
                                     <Paragraph className="inline-tip">Faucet address</Paragraph>
                                 ) :
                                     null
@@ -340,22 +340,22 @@ const TokenAccount = props => {
                             null
                         }
 
-                        {(tokenAccount.data.token && token.symbol) ? (
+                        {(tokenAccount.account.token && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.token}><RiQuestionLine /></Tooltip></IconContext.Provider>Token</nobr></span>}>
                                 {token.symbol}
                                 <br />
-                                <Link to={'/acc/' + tokenAccount.data.token.replace("acc://", "")}>
-                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.data.token}
+                                <Link to={'/acc/' + tokenAccount.account.token.replace("acc://", "")}>
+                                    <IconContext.Provider value={{ className: 'react-icons' }}><RiCoinLine /></IconContext.Provider>{tokenAccount.account.token}
                                 </Link>
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {((tokenAccount.data.balance || tokenAccount.data.balance === 0) && token.symbol) ? (
+                        {((tokenAccount.account.balance || tokenAccount.account.balance === 0) && token.symbol) ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.balance}><RiQuestionLine /></Tooltip></IconContext.Provider>Balance</nobr></span>}>
-                                {tokenAmount(tokenAccount.data.balance, token.precision, token.symbol)}
-                                <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tokenAccount.data.balance, token.precision, token.symbol)}</Text>
+                                {tokenAmount(tokenAccount.account.balance, token.precision, token.symbol)}
+                                <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tokenAccount.account.balance, token.precision, token.symbol)}</Text>
                             </Descriptions.Item>
                         ) :
                             null
@@ -388,7 +388,7 @@ const TokenAccount = props => {
 
                     </Descriptions>
 
-                    <Authorities items={tokenAccount.data.authorities} />
+                    <Authorities items={tokenAccount.account.authorities} />
 
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -408,10 +408,10 @@ const TokenAccount = props => {
                         scroll={{ x: 'max-content' }}
                     />
 
-                    {tokenAccount.type !== "liteTokenAccount" ? (
-                        <TxChain url={tokenAccount.data.url} type='pending' />
+                    {tokenAccount.recordType !== "liteTokenAccount" ? (
+                        <TxChain url={tokenAccount.account.url} type='pending' />
                     ) : null }
-                    <TxChain url={tokenAccount.data.url} type='signature' />
+                    <TxChain url={tokenAccount.account.url} type='signature' />
 
                 </div>
             ) :

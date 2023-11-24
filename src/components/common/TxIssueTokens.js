@@ -53,8 +53,8 @@ const TxIssueTokens = props => {
                 <Descriptions bordered column={1} size="middle">
 
                     <Descriptions.Item label={"Origin"}>
-                        {tx.message.transaction?.header?.iniciator ? (
-                            <Link to={'/acc/' + tx.message.transaction.header.iniciator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.iniciator}</Link>
+                        {tx.message.transaction?.header?.principal ? (
+                            <Link to={'/acc/' + tx.message.transaction.header.principal.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.principal}</Link>
                         ) :
                             <Skeleton active paragraph={false} />
                         }
@@ -69,9 +69,9 @@ const TxIssueTokens = props => {
                         null
                     }
 
-                    {tx?.data?.message?.transaction?.body?.type ? (
+                    {tx.message.transaction?.body?.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Tag color="green">{tx.data.message.transaction.body.type}</Tag>
+                            <Tag color="green">{tx.message.transaction.body.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null

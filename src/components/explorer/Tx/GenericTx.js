@@ -41,11 +41,11 @@ const GenericTx = props => {
 
     const tx = props.data;
     var content = [];
-    if (tx && tx.data && tx.data.entry && tx.data.entry.data) {
-        if (Array.isArray(tx.data.entry.data)) {
-            content = Array.from(tx.data.entry.data, item => item || "")        
+    if (tx?.message?.transaction?.body?.entry?.data) {
+        if (Array.isArray(tx.message.transaction.body.entry.data)) {
+            content = Array.from(tx.message.transaction.body.entry.data, item => item || "")        
         } else {
-            content.push(tx.data.entry.data);
+            content.push(tx.message.transaction.body.entry.data);
         }
     }
 
