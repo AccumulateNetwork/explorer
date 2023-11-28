@@ -31,9 +31,9 @@ const KeyPage = props => {
 
             <Descriptions bordered column={1} size="middle">
 
-                {keypage.type ? (
+                {keypage.recordType ? (
                     <Descriptions.Item label="Type">
-                        {keypage.type}
+                        {keypage.recordType}
                     </Descriptions.Item>
                 ) :
                     null
@@ -41,7 +41,7 @@ const KeyPage = props => {
 
             </Descriptions>
             
-            {keypage.data ? (
+            {keypage.account ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -51,9 +51,9 @@ const KeyPage = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {keypage.data.url ? (
+                        {keypage.account.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyPageUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Page URL</nobr></span>}>
-                                {keypage.data.url}
+                                {keypage.account.url}
                             </Descriptions.Item>
                         ) :
                             null  
@@ -69,24 +69,24 @@ const KeyPage = props => {
                             null
                         }
 
-                        {keypage.data.keyBook ? (
+                        {keypage.account.keyBook ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.keyBook}><RiQuestionLine /></Tooltip></IconContext.Provider>Key Book</nobr></span>}>
-                                <Link to={'/acc/' + keypage.data.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{keypage.data.keyBook}</Link>
+                                <Link to={'/acc/' + keypage.account.keyBook.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountBoxLine /></IconContext.Provider>{keypage.account.keyBook}</Link>
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
-                        {keypage.data.threshold ? (
+                        {keypage.account.threshold ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.threshold}><RiQuestionLine /></Tooltip></IconContext.Provider>Threshold</nobr></span>}>
-                                {keypage.data.threshold}
+                                {keypage.account.threshold}
                             </Descriptions.Item>
                         ) :
                             null
                         }
 
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.creditBalance}><RiQuestionLine /></Tooltip></IconContext.Provider>Credit Balance</nobr></span>}>
-                            {keypage.data.creditBalance ? keypage.data.creditBalance / 100 : 0} credits
+                            {keypage.account.creditBalance ? keypage.account.creditBalance / 100 : 0} credits
                         </Descriptions.Item>
 
                     </Descriptions>
@@ -96,14 +96,14 @@ const KeyPage = props => {
                         <RiKey2Line />
                         </IconContext.Provider>
                         Keys
-                        <Count count={keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? keypage.data.keys.length : 0} />
+                        <Count count={keypage.account.keys && (keypage.account.keys[0].publicKey || keypage.account.keys[0].delegate) ? keypage.account.keys.length : 0} />
                     </Title>
 
-                    {keypage.data.keys && (keypage.data.keys[0].publicKey || keypage.data.keys[0].delegate) ? (
+                    {keypage.account.keys && (keypage.account.keys[0].publicKey || keypage.account.keys[0].delegate) ? (
                         <List
                             size="small"
                             bordered
-                            dataSource={keypage.data.keys}
+                            dataSource={keypage.account.keys}
                             renderItem={item =>
                                 <List.Item>
                                     <span>
@@ -124,14 +124,14 @@ const KeyPage = props => {
                         <RiCloseCircleLine />
                         </IconContext.Provider>
                         Transaction Blacklist
-                        <Count count={keypage.data.transactionBlacklist ? keypage.data.transactionBlacklist.length : 0} />
+                        <Count count={keypage.account.transactionBlacklist ? keypage.account.transactionBlacklist.length : 0} />
                     </Title>
 
-                    {keypage.data.transactionBlacklist && keypage.data.transactionBlacklist[0] ? (
+                    {keypage.account.transactionBlacklist && keypage.account.transactionBlacklist[0] ? (
                         <List
                             size="small"
                             bordered
-                            dataSource={keypage.data.transactionBlacklist}
+                            dataSource={keypage.account.transactionBlacklist}
                             renderItem={item =>
                                 <List.Item>
                                     <Tag color="volcano">{item}</Tag>
@@ -143,9 +143,9 @@ const KeyPage = props => {
                         <Paragraph><Text type="secondary">No transaction blacklist</Text></Paragraph>
                     }
 
-                    <TxChain url={keypage.data.url} type='transaction' />
-                    <TxChain url={keypage.data.url} type='pending' />
-                    <TxChain url={keypage.data.url} type='signature' />
+                    <TxChain url={keypage.account.url} type='transaction' />
+                    <TxChain url={keypage.account.url} type='pending' />
+                    <TxChain url={keypage.account.url} type='signature' />
 
                 </div>
             ) :

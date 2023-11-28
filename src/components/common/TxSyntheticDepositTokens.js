@@ -65,19 +65,19 @@ const TxSyntheticDepositTokens = props => {
                     }
                 </Descriptions.Item>
 
-                {tx?.cause?.records?.length > 0 &&
+                {tx.message.transaction.body?.cause &&
                     <Descriptions.Item label={"Cause"}>
-                        <Link to={'/acc/' + tx.cause.records[0].value.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.cause.records[0].value}</Link>
+                        <Link to={'/acc/' + tx.message.transaction.body.cause.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{tx.message.transaction.body.cause}</Link>
                     </Descriptions.Item>
                 }
 
-                {tx?.message?.transaction?.body?.source &&
+                {tx.message.transaction.body?.source &&
                     <Descriptions.Item label={"Source"}>
                         <Link to={'/acc/' + tx.message.transaction.body.source.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.body.source}</Link>
                     </Descriptions.Item>
                 }
 
-                {tx.message.transaction.body.initiator &&
+                {tx.message.transaction.body?.initiator &&
                     <Descriptions.Item label={"Initiator"}>
                         <Link to={'/acc/' + tx.message.transaction.body.initiator.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.body.initiator}</Link>
                     </Descriptions.Item>
