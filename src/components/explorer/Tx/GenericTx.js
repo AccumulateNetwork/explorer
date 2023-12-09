@@ -43,7 +43,7 @@ const GenericTx = props => {
     var content = [];
     if (tx?.message?.transaction?.body?.entry?.data) {
         if (Array.isArray(tx.message.transaction.body.entry.data)) {
-            content = Array.from(tx.message.transaction.body.entry.data, item => item || "")        
+            content = Array.from(tx.message.transaction.body.entry.data, item => item || "")
         } else {
             content.push(tx.message.transaction.body.entry.data);
         }
@@ -76,10 +76,10 @@ const GenericTx = props => {
             </Title>
             <Descriptions bordered column={1} size="middle">
 
-            {tx.recordType ? (
+            {tx?.message?.transaction?.body?.type ? (
                 <Descriptions.Item label="Type">
-                    {tx.recordType}
-                    {tx.data && tx.data.isRefund &&
+                    {tx.message.transaction.body.type}
+                    {tx.message.transaction.body.isRefund &&
                         <Tag color="orange" style={{marginLeft: 10, textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag>
                     }
                 </Descriptions.Item>
@@ -88,7 +88,7 @@ const GenericTx = props => {
             }
 
             </Descriptions>
-            
+
             {tx ? (
                 <div>
                 <Title level={4}>
@@ -190,7 +190,7 @@ const GenericTx = props => {
                             null
                         }
                     </Descriptions>
-                
+
                 ) :
                     <Paragraph><Text type="secondary">No metadata</Text></Paragraph>
                 }
@@ -220,7 +220,7 @@ const GenericTx = props => {
                 }
 
                 {(tx.signatures?.records?.length > 0 && tx.message?.transaction) &&
-                    <Signatures transaction={tx.message.transaction} data={tx.signatures.records} />            
+                    <Signatures transaction={tx.message.transaction} data={tx.signatures.records} />
                 }
 
                 <Title level={4}>
@@ -235,7 +235,7 @@ const GenericTx = props => {
                     <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
                         <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
                     </div>
-                ) : 
+                ) :
                     <Alert message="No tx data" type="warning" showIcon />
                 }
 
