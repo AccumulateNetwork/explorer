@@ -39,9 +39,9 @@ const Tokens = () => {
         }
 
         try {
-            if (!process.env.REACT_APP_METRICS_API_PATH)
+            if (!import.meta.env.VITE_APP_METRICS_API_PATH)
                 throw new Error();
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/tokens?start=" + start + "&count=" + count);
+            const response = await axios.get(import.meta.env.VITE_APP_METRICS_API_PATH + "/tokens?start=" + start + "&count=" + count);
             if (response && response.data) {
 
                 /* workaround API bug response

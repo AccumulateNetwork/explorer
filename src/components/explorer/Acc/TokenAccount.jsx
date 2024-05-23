@@ -74,10 +74,10 @@ const TokenAccount = props => {
     }
 
     const getStakingInfo = async (url) => {
-        if (!process.env.REACT_APP_METRICS_API_PATH) return
+        if (!import.meta.env.VITE_APP_METRICS_API_PATH) return
 
         try {
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers/" + url);
+            const response = await axios.get(import.meta.env.VITE_APP_METRICS_API_PATH + "/staking/stakers/" + url);
             if (response && response.data && !response.data.error) {
                 setStakingAccount(response.data);
             }

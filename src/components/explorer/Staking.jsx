@@ -165,9 +165,9 @@ const Staking = () => {
         }
 
         try {
-            if (!process.env.REACT_APP_METRICS_API_PATH)
+            if (!import.meta.env.VITE_APP_METRICS_API_PATH)
                 throw new Error();
-            const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
+            const response = await axios.get(import.meta.env.VITE_APP_METRICS_API_PATH + "/staking/stakers?start=" + start + "&count=" + count + "&sort=" + field + "&order=" + sort);
             if (response && response.data) {
 
                 // workaround API bug response
@@ -234,7 +234,7 @@ const Staking = () => {
                 </Tabs>
             </Card>
 
-            {process.env.REACT_APP_METRICS_API_PATH &&
+            {import.meta.env.VITE_APP_METRICS_API_PATH &&
                 <>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

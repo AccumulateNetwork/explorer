@@ -44,7 +44,7 @@ const Token = props => {
 
             </Descriptions>
             
-            {(token?.account?.symbol === "ACME" && process.env.REACT_APP_METRICS_API_PATH) && 
+            {(token?.account?.symbol === "ACME" && import.meta.env.VITE_APP_METRICS_API_PATH) && 
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>

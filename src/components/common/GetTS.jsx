@@ -8,7 +8,7 @@ export default async function getTs(hash, setTs, setBlock, predicate) {
     setBlock(null);
 
     try {
-        const response = await axios.get(`${process.env.REACT_APP_API_PATH}/timestamp/${hash}@unknown`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_API_PATH}/timestamp/${hash}@unknown`);
         if (response?.data) {
             // Filter entries
             let entries = response.data.chains || [];

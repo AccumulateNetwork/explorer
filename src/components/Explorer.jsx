@@ -81,8 +81,8 @@ const Explorer = props => {
 
   useEffect(() => {
 
-    if (process.env.REACT_APP_API_PATH) {
-        const matchedNetwork = networks.find(network => network.api.includes(process.env.REACT_APP_API_PATH));
+    if (import.meta.env.VITE_APP_API_PATH) {
+        const matchedNetwork = networks.find(network => network.api.includes(import.meta.env.VITE_APP_API_PATH));
       
         setCurrentNetwork(matchedNetwork?.name || 'Unknown');
         setIsMainnet(matchedNetwork?.mainnet || false);
@@ -239,8 +239,8 @@ const Explorer = props => {
                 null
             }
           <p><Version /></p>
-          {process.env.REACT_APP_API_PATH ? (
-              <p><Text type="secondary">API URL: {process.env.REACT_APP_API_PATH}</Text></p>
+          {import.meta.env.VITE_APP_API_PATH ? (
+              <p><Text type="secondary">API URL: {import.meta.env.VITE_APP_API_PATH}</Text></p>
           ) : null
           }
           <p><a href="mailto:support@defidevs.io">support@defidevs.io</a></p>

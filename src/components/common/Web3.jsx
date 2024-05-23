@@ -1,6 +1,5 @@
-import { createHash } from "crypto";
-
 import { message } from "antd";
+import { Buffer, sha256 } from "accumulate.js/lib/common";
 
 /* global BigInt */
 
@@ -13,13 +12,13 @@ export const truncateAddress = (address) => {
     return `${match[1]}…${match[2]}`;
 };
 
-export const ethToAccumulate = (address, type = "liteIdentity") => {
+export const ethToAccumulate = async (address, type = "liteIdentity") => {
     if (!address) return "No Account";
     let pubKey = address.substring(2).toLowerCase();
     if (type === "publicKey") {
         return pubKey;
     }
-    let checkSum = createHash('sha256').update(pubKey).digest("hex");
+    let checkSum = Buffer.from(await sha256(pubKey)).toString('hex');
     let accumulate = "acc://" + pubKey + checkSum.substring(56);
     if (type === "liteTokenAccount") {
         accumulate += "/ACME";
@@ -37,16 +36,16 @@ export const txHash = async (tx) => {
     try {
 
         let headerBuffer = joinBuffers([
-            Buffer.from([1], 'hex'),
-            Buffer.from([tx.header.principal.length], 'hex'),
+            Buffer.from([1]),
+            Buffer.from([tx.header.principal.length]),
             Buffer.from(tx.header.principal),
-            Buffer.from([2], 'hex'),
+            Buffer.from([2]),
             Buffer.from(tx.header.initiator, 'hex'),
         ]);
 
         console.log("Tx.Header Bytes:", Buffer.from(headerBuffer).toString('hex'));
 
-        let headerHash = await createHash('sha256').update(headerBuffer).digest('');
+        let headerHash = Buffer.from(await sha256(headerBuffer));
         console.log("Tx.Header Hash:", headerHash.toString('hex'));
 
         let amount = Number.parseInt(tx.body.amount);
@@ -54,26 +53,26 @@ export const txHash = async (tx) => {
         console.log("Tx amount:", amount);
         let amountBytes = numberToBytes(amount);
         console.log("Tx amount (hex):", Buffer.from(amountBytes).toString('hex'));
-        console.log("Bytes length:", amountBytes.byteLength);
+        console.log("Bytes length:", amountBytes.length);
         
         let txCodes = {
             "addCredits": 14,
         };
 
-        let bodyBuffer = Buffer.from([1], 'hex');
+        let bodyBuffer = Buffer.from([1]);
 
         switch (tx.body.type) {
             case "addCredits":
             bodyBuffer = joinBuffers([
                 bodyBuffer,
-                Buffer.from([txCodes[tx.body.type]], 'hex'),
-                Buffer.from([2], 'hex'),
-                Buffer.from([tx.body.recipient.length], 'hex'),
+                Buffer.from([txCodes[tx.body.type]]),
+                Buffer.from([2]),
+                Buffer.from([tx.body.recipient.length]),
                 Buffer.from(tx.body.recipient),
-                Buffer.from([3], 'hex'),
-                Buffer.from([amountBytes.byteLength], 'hex'),
+                Buffer.from([3]),
+                Buffer.from([amountBytes.byteLength]),
                 Buffer.from(amountBytes),
-                Buffer.from([4], 'hex'),
+                Buffer.from([4]),
                 Buffer.from(uvarintMarshalBinary(tx.body.oracle)),
             ]);
             break;
@@ -83,7 +82,7 @@ export const txHash = async (tx) => {
 
         console.log("Tx.Body Bytes:", Buffer.from(bodyBuffer).toString('hex'));
 
-        let bodyHash = await createHash('sha256').update(bodyBuffer).digest('');
+        let bodyHash = Buffer.from(await sha256(bodyBuffer));
         console.log("Tx.Body Hash:", bodyHash.toString('hex'));
 
         let concatenatedHash = joinBuffers([
@@ -93,7 +92,7 @@ export const txHash = async (tx) => {
 
         console.log("Tx.HeaderHash+Tx.BodyHash:", Buffer.from(concatenatedHash).toString('hex'));
         
-        let txHash = await createHash('sha256').update(concatenatedHash).digest('');
+        let txHash = Buffer.from(await sha256(concatenatedHash));
 
         /*
         // tx struct, not needed
@@ -111,7 +110,7 @@ export const txHash = async (tx) => {
 
     }
     catch (error) {
-        message.error(error.message);
+        message.error(`${error}`);
     }
 
 }
@@ -121,29 +120,29 @@ export const sigMdHash = async (sig) => {
     try {
 
         let sigBuffer = joinBuffers([
-            Buffer.from([1], 'hex'),
-            Buffer.from([10], 'hex'),
-            Buffer.from([2], 'hex'),
-            Buffer.from([Buffer.from(sig.publicKey, 'hex').length], 'hex'),
+            Buffer.from([1]),
+            Buffer.from([10]),
+            Buffer.from([2]),
+            Buffer.from([Buffer.from(sig.publicKey, 'hex').length]),
             Buffer.from(sig.publicKey, 'hex'),
-            Buffer.from([4], 'hex'),
-            Buffer.from([sig.signer.length], 'hex'),
+            Buffer.from([4]),
+            Buffer.from([sig.signer.length]),
             Buffer.from(sig.signer),
-            Buffer.from([5], 'hex'),
-            Buffer.from([1], 'hex'),
-            Buffer.from([6], 'hex'),
+            Buffer.from([5]),
+            Buffer.from([1]),
+            Buffer.from([6]),
             Buffer.from(uvarintMarshalBinary(sig.timestamp)),
         ]);
 
         console.log("Sig bytes:", Buffer.from(sigBuffer).toString('hex'));
 
-        let sigMdHash = await createHash('sha256').update(sigBuffer).digest('');
+        let sigMdHash = Buffer.from(await sha256(sigBuffer));
 
         return sigMdHash;
 
     }
     catch (error) {
-        message.error(error.message);
+        message.error(`${error}`);
     }
 
 }
@@ -168,7 +167,7 @@ export const rsvSigToDER = async (sig) => {
 
     }
     catch (error) {
-        message.error(error.message);
+        message.error(`${error}`);
     }
 
 }
@@ -196,7 +195,7 @@ export const uvarintMarshalBinary = (val, field) => {
     }
   
     buffer[i] = Number(x & 0xffn);
-    const data = Uint8Array.from(buffer);
+    const data = Buffer.from(buffer);
   
     return field ? fieldMarshalBinary(field, data) : data;
   }
@@ -214,7 +213,7 @@ export const numberToBytes = (number) => {
     }
   
     const size = number === 0 ? 0 : byteLength(number);
-    const bytes = new Uint8ClampedArray(size);
+    const bytes = new Uint8Array(size);
     let x = number;
     for (let i = (size - 1); i >= 0; i--) {
       const rightByte = x & 0xff;
@@ -222,7 +221,7 @@ export const numberToBytes = (number) => {
       x = Math.floor(x / 0x100);
     }
   
-    return bytes.buffer;
+    return Buffer.from(bytes);
 }
 
 export const bitLength = (number) => {

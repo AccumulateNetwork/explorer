@@ -1,6 +1,7 @@
 /* eslint-disable no-ex-assign */
 import React, { useState, useEffect } from 'react';
 import { Envelope } from 'accumulate.js/lib/messaging';
+import { Buffer, sha256 } from "accumulate.js/lib/common";
 
 import { Link } from 'react-router-dom';
 
@@ -39,8 +40,7 @@ import {
 
 import RPC from '../common/RPC';
 import { ethToAccumulate, truncateAddress, txHash, sigMdHash, joinBuffers, rsvSigToDER } from "../common/Web3";
-
-import { createHash } from "crypto";
+import { AddCredits, SignatureArgs } from 'accumulate.js/lib/core';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -73,6 +73,8 @@ const Web3Module = props => {
   const [web3, setWeb3] = useState(null);
   const [signWeb3Error, setSignWeb3Error] = useState(null);
 
+  const [accAccount, setAccAccount] = useState(null);
+
   const {
     account,
     activate,
@@ -81,14 +83,14 @@ const Web3Module = props => {
 
   const toggleDashboard = () => {
     if (!isDashboardOpen) {
-      localStorage.setItem("isDashboardOpen", true);
+      localStorage.setItem("isDashboardOpen", "true");
     } else {
       localStorage.removeItem("isDashboardOpen");
     }
     setIsDashboardOpen(!isDashboardOpen);
   }
 
-  const injected = new InjectedConnector();
+  const injected = new InjectedConnector({});
 
   const connectWeb3 = async () => {
     if (window.ethereum) {
@@ -105,7 +107,7 @@ const Web3Module = props => {
   }
 
   const disconnect = async () => {
-    localStorage.removeItem(account);
+    localStorage.removeItem(`${account}`);
     localStorage.removeItem("connected");
     deactivate();
   }
@@ -124,7 +126,7 @@ const Web3Module = props => {
     }
     catch(error) {
       setResult(null);
-      setError(error.message);
+      setError(`${error}`);
     }
   }
 
@@ -142,7 +144,7 @@ const Web3Module = props => {
     }
     catch(error) {
       setNetworkStatus(null);
-      setNetworkStatusError(error.message);
+      setNetworkStatusError(`${error}`);
     }
   }
 
@@ -169,7 +171,7 @@ const Web3Module = props => {
   // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
   const recoverPublicKey = async () => {
 
-    localStorage.removeItem(account);
+    localStorage.removeItem(`${account}`);
 
     let message = web3.utils.padRight(account, 64);
     let signature = await signWeb3(message);
@@ -228,7 +230,7 @@ const Web3Module = props => {
     let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
     console.log("SigMdHash+TxHash:", Buffer.from(message).toString('hex'));
 
-    let messageHash = await createHash('sha256').update(message).digest('');
+    let messageHash = Buffer.from(await sha256(message));
 
     console.log("Hash(SigMdHash+TxHash):", messageHash.toString('hex'));
 
@@ -251,7 +253,10 @@ const Web3Module = props => {
           sig
         ],
         transaction: [
-          tx
+          {
+            header: tx.header,
+            body: new AddCredits(tx.body),
+          }
         ]
       })
 
@@ -273,16 +278,17 @@ const Web3Module = props => {
     }
     catch(error) {
       // Extract the Ledger error
-      if (error.message.startsWith('Ledger device: ')) {
-        const i = error.message.indexOf('\n')
+      const message = `${error}`
+      if (message.startsWith('Ledger device: ')) {
+        const i = message.indexOf('\n')
         try {
-          const { originalError } = JSON.parse(error.message.substring(i+1));
+          const { originalError } = JSON.parse(message.substring(i+1));
           if (originalError) error = originalError;
         } catch (_) {}
       }
       
       // Parse the status code
-      if ('statusCode' in error) {
+      if (error && typeof error === 'object' && 'statusCode' in error) {
         // eslint-disable-next-line default-case
         switch (error.statusCode) {
           case 0x6d02:
@@ -297,13 +303,13 @@ const Web3Module = props => {
         }
       }
 
-      notification.error({ message: error.message });
-      setSignWeb3Error(error.message);
+      notification.error({ message });
+      setSignWeb3Error(message);
       return;
     }
   };
 
-  useEffect(() => {
+  useEffect(async () => {
     if (account) {
       setFormAddCreditsLiteTA(null);
       setFormAddCreditsDestination(null);
@@ -311,9 +317,10 @@ const Web3Module = props => {
       setLiteTokenAccountError(null);
       setPublicKey(null);
 
-      let liteIdentity = ethToAccumulate(account);
+      let liteIdentity = await ethToAccumulate(account);
       query(liteIdentity, setLiteIdentity, setLiteIdentityError);
       loadPublicKey(account);
+      setAccAccount(liteIdentity);
     }
   }, [account]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -387,12 +394,12 @@ const Web3Module = props => {
                     </Title>
                     <Paragraph>
                       {liteIdentity ? (
-                        <Link to={'/acc/' + ethToAccumulate(account).replace("acc://", "")}>
-                          {ethToAccumulate(account)}
+                        <Link to={'/acc/' + accAccount.replace("acc://", "")}>
+                          {accAccount}
                         </Link>
                       ) : 
                         <Text>
-                          {ethToAccumulate(account)}
+                          {accAccount}
                         </Text>                      
                       }
                     </Paragraph>
@@ -401,7 +408,7 @@ const Web3Module = props => {
                       <Alert type="warning" message={
                         <Text>
                           <strong>Lite Identity does not exist yet</strong><br />
-                          To create a lite identity send ACME to <Text copyable={{text: ethToAccumulate(account, "liteTokenAccount")}}><Text mark>{ethToAccumulate(account, "liteTokenAccount")}</Text></Text><br />
+                          To create a lite identity send ACME to <Text copyable={{text: `${accAccount}/ACME`}}><Text mark>{`${accAccount}/ACME`}</Text></Text><br />
                           You can also <a href="https://bridge.accumulatenetwork.io/release" target="_blank" rel="noreferrer"><strong>bridge WACME<IconContext.Provider value={{ className: 'react-icons react-icons-end' }}><RiExternalLinkLine /></IconContext.Provider></strong></a> from Ethereum or Arbitrum, using the above address as the destination.
                         </Text>
                       } />
@@ -430,7 +437,7 @@ const Web3Module = props => {
                     </Title>
                     <Paragraph>
                       <Text copyable className="code">
-                        {ethToAccumulate(account, "publicKey")}
+                        {account.substring(2).toLowerCase()}
                       </Text>
                     </Paragraph>
                     <Title level={5}>
@@ -508,7 +515,7 @@ const Web3Module = props => {
           </Form.Item>
           <Form.Item label="ACME Token Account">
             <Select value={formAddCreditsLiteTA} placeholder="Choose token account" onChange={e => { setFormAddCreditsLiteTA(e); query(e, setLiteTokenAccount, setLiteTokenAccountError); }}>
-              <Select.Option value={ethToAccumulate(account, "liteTokenAccount")}>{ethToAccumulate(account, "liteTokenAccount")}</Select.Option>
+              <Select.Option value={`${accAccount}/ACME`}>{`${accAccount}/ACME`}</Select.Option>
             </Select>
             {!ACMEError && ACME?.data?.precision && liteTokenAccount?.data?.balance &&
               <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
@@ -524,7 +531,7 @@ const Web3Module = props => {
           </Form.Item>
           <Form.Item label="Credits Destination">
             <Select value={formAddCreditsDestination} placeholder="Choose credits destination" onChange={setFormAddCreditsDestination}>
-              <Select.Option value={ethToAccumulate(account)}>{ethToAccumulate(account)}</Select.Option>
+              <Select.Option value={accAccount}>{accAccount}</Select.Option>
             </Select>
           </Form.Item>
           <Form.Item label="Amount">
