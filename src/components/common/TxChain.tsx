@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-import { Link } from 'react-router-dom';
-
 import { Typography, Skeleton, Table, Tag, List } from 'antd';
 
 import { IconContext } from 'react-icons';
@@ -9,7 +7,7 @@ import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 
 import Count from './Count';
 import RPC from './RPC';
-import AccLink from './AccLink';
+import Link from './Link';
 
 const { Title, Text } = Typography;
 
@@ -35,6 +33,7 @@ const TxChain = (props) => {
     showSizeChanger: true,
     pageSizeOptions: ['10', '20', '50', '100'],
     current: 1,
+    total: null,
   });
   const [totalEntries, setTotalEntries] = useState(-1);
 
@@ -61,12 +60,12 @@ const TxChain = (props) => {
         if (row?.value?.id) {
           return (
             <div>
-              <AccLink to={row.value.id}>
+              <Link to={row.value.id}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                   <Icon />
                 </IconContext.Provider>
                 {row.entry}
-              </AccLink>
+              </Link>
             </div>
           );
         } else {
@@ -195,11 +194,11 @@ const TxChain = (props) => {
               dataSource={txChain}
               renderItem={(item) => (
                 <List.Item>
-                  <Link to={'/tx/' + item.id}>
+                  <Link to={(item as any).id}>
                     <IconContext.Provider value={{ className: 'react-icons' }}>
                       <Icon />
                     </IconContext.Provider>
-                    {item.id}
+                    {(item as any).id}
                   </Link>
                 </List.Item>
               )}
