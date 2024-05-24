@@ -1,30 +1,25 @@
-import React, { useState, useEffect } from 'react';
-
-import { Typography, Skeleton, Alert, Rate } from 'antd';
-
+import { Alert, Rate, Skeleton, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import RPC from './../common/RPC';
-
-import TokenAccount from './Acc/TokenAccount';
-import Token from './Acc/Token';
-import ADI from './Acc/ADI';
 import {
-  isFavourite,
   addFavourite,
+  isFavourite,
   removeFavourite,
 } from '../common/Favourites';
-import KeyBook from './Acc/KeyBook';
-import KeyPage from './Acc/KeyPage';
-import DataAccount from './Acc/DataAccount';
-import DataEntry from './Acc/DataEntry';
-
-import GenericAcc from './Acc/GenericAcc';
-import GenericTx from './Tx/GenericTx';
-
 import ParseADI from '../common/ParseADI';
 import ParseDataAccount from '../common/ParseDataAccount';
+import RPC from './../common/RPC';
+import ADI from './Acc/ADI';
+import DataAccount from './Acc/DataAccount';
+import DataEntry from './Acc/DataEntry';
+import GenericAcc from './Acc/GenericAcc';
+import KeyBook from './Acc/KeyBook';
+import KeyPage from './Acc/KeyPage';
+import Token from './Acc/Token';
+import TokenAccount from './Acc/TokenAccount';
 import GenericMsg from './Tx/GenericMsg';
+import GenericTx from './Tx/GenericTx';
 
 const { Title } = Typography;
 

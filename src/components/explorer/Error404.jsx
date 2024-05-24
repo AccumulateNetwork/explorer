@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
-
-import { Result, Button, Typography } from 'antd';
-
 import { CloseCircleTwoTone } from '@ant-design/icons';
+import { Button, Result, Typography } from 'antd';
+import React, { useEffect } from 'react';
 
 const { Title } = Typography;
 

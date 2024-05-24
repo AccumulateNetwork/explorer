@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Descriptions, Tooltip, Table, Tag, List } from 'antd';
-
+import { Descriptions, List, Table, Tag, Tooltip, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
-  RiQuestionLine,
   RiAccountCircleLine,
   RiFileList2Line,
+  RiInformationLine,
   RiKeynoteLine,
+  RiQuestionLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
-import RPC from '../../common/RPC';
-import Data from '../../common/Data';
-import tooltipDescs from '../../common/TooltipDescriptions';
-import ExtId from '../../common/ExtId';
-import Count from '../../common/Count';
-import TxChain from '../../common/TxChain';
 import Authorities from '../../common/Authorities';
+import Count from '../../common/Count';
+import Data from '../../common/Data';
+import ExtId from '../../common/ExtId';
+import RPC from '../../common/RPC';
+import tooltipDescs from '../../common/TooltipDescriptions';
+import TxChain from '../../common/TxChain';
 
 const { Title, Paragraph, Text } = Typography;
 

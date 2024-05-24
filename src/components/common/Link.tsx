@@ -1,6 +1,6 @@
 import { URL, URLArgs } from 'accumulate.js';
-import { Link } from 'react-router-dom';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface Props {
   to: URLArgs;

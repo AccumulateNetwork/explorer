@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
-
-import { Typography, Table, Tag, Tabs, Alert, Select } from 'antd';
-
 import { CloseCircleFilled } from '@ant-design/icons';
+import { Alert, Select, Table, Tabs, Tag, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import RPC, { RPCError } from './../common/RPC';
 

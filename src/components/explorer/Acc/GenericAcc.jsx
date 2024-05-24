@@ -1,10 +1,7 @@
+import { Alert, Descriptions, Switch, Tooltip, Typography } from 'antd';
 import React, { useState } from 'react';
-
-import { Typography, Descriptions, Tooltip, Alert, Switch } from 'antd';
-
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
-
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 

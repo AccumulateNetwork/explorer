@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-
-import { Typography, Alert, Skeleton } from 'antd';
+import { Alert, Skeleton, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import RPC from './../common/RPC';
 import GenericTx from './Tx/GenericTx';

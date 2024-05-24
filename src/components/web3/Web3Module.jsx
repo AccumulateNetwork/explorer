@@ -1,63 +1,57 @@
 /* eslint-disable no-ex-assign */
-import React, { useState, useEffect } from 'react';
-import { Envelope } from 'accumulate.js/lib/messaging';
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
-
-import { Link } from 'react-router-dom';
-
-import {
-  Button,
-  Modal,
-  List,
-  message,
-  Typography,
-  Badge,
-  Row,
-  Col,
-  Tag,
-  Tabs,
-  Tooltip,
-  Alert,
-  Skeleton,
-  Divider,
-  Form,
-  Select,
-  InputNumber,
-  notification,
-} from 'antd';
-
-import Web3 from 'web3';
-
-import EthCrypto from 'eth-crypto';
-
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
-
+import { Buffer, sha256 } from 'accumulate.js/lib/common';
+import { AddCredits, SignatureArgs } from 'accumulate.js/lib/core';
+import { Envelope } from 'accumulate.js/lib/messaging';
+import {
+  Alert,
+  Badge,
+  Button,
+  Col,
+  Divider,
+  Form,
+  InputNumber,
+  List,
+  Modal,
+  Row,
+  Select,
+  Skeleton,
+  Tabs,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+  notification,
+} from 'antd';
+import EthCrypto from 'eth-crypto';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
   RiAccountCircleLine,
-  RiShutDownLine,
-  RiQuestionLine,
-  RiUserLine,
-  RiKey2Line,
-  RiListCheck,
-  RiStackLine,
   RiAddCircleFill,
   RiExternalLinkLine,
+  RiInformationLine,
+  RiKey2Line,
+  RiListCheck,
   RiPenNibLine,
+  RiQuestionLine,
+  RiShutDownLine,
+  RiStackLine,
+  RiUserLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
+import Web3 from 'web3';
 
 import RPC from '../common/RPC';
 import {
   ethToAccumulate,
-  truncateAddress,
-  txHash,
-  sigMdHash,
   joinBuffers,
   rsvSigToDER,
+  sigMdHash,
+  truncateAddress,
+  txHash,
 } from '../common/Web3';
-import { AddCredits, SignatureArgs } from 'accumulate.js/lib/core';
 
 const { Title, Paragraph, Text } = Typography;
 

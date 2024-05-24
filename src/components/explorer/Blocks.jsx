@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-
-import { Typography, Row, Col, Card, Tag, Skeleton, message } from 'antd';
+import { Card, Col, Row, Skeleton, Tag, Typography, message } from 'antd';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiHandCoinLine,
   RiCoinLine,
-  RiUserSmileLine,
-  RiTwitterFill,
-  RiRedditFill,
   RiDiscordFill,
-  RiTelegramFill,
+  RiHandCoinLine,
   RiMoneyDollarCircleLine,
+  RiRedditFill,
   RiStarLine,
+  RiTelegramFill,
+  RiTwitterFill,
+  RiUserSmileLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
-import Stats from './../common/Stats';
 import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
-import axios from 'axios';
+import Stats from './../common/Stats';
 
 const { Title, Text } = Typography;
 

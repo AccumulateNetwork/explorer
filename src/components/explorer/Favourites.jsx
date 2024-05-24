@@ -1,16 +1,13 @@
+import { List, Rate, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, List, Rate } from 'antd';
-
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
 import {
-  isFavourite,
   addFavourite,
+  isFavourite,
   removeFavourite,
 } from '../common/Favourites';
 

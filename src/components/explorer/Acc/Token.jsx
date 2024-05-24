@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react';
-
-import { Typography, Descriptions, Tooltip, Skeleton, Progress } from 'antd';
-
+import { Descriptions, Progress, Skeleton, Tooltip, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
+import Authorities from '../../common/Authorities';
+import getSupply from '../../common/GetSupply';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
-import getSupply from '../../common/GetSupply';
-import Authorities from '../../common/Authorities';
 
 const { Title, Text } = Typography;
 

@@ -1,5 +1,5 @@
-import { message } from 'antd';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
+import { message } from 'antd';
 
 /* global BigInt */
 

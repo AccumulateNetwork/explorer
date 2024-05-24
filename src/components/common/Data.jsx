@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Select, Input, Typography } from 'antd';
+import { Input, Select, Typography } from 'antd';
 import { Base64 } from 'js-base64';
+import React, { useState } from 'react';
+
 import wrapLinksInHtml from '../common/LinksRenderer';
 
 const { Option } = Select;

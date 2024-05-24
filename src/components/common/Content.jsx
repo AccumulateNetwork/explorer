@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Tabs, Radio } from 'antd';
+import { Radio, Tabs, Typography } from 'antd';
 import { Base64 } from 'js-base64';
+import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
 const { Text } = Typography;

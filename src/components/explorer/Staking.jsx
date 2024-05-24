@@ -1,31 +1,28 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
 import {
-  Typography,
-  Skeleton,
-  Descriptions,
-  Table,
-  Tag,
-  Tabs,
   Card,
+  Descriptions,
   Progress,
+  Skeleton,
+  Table,
+  Tabs,
+  Tag,
+  Typography,
   message,
 } from 'antd';
-
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
-  RiFileList2Line,
-  RiExternalLinkLine,
   RiAccountCircleLine,
+  RiExternalLinkLine,
+  RiFileList2Line,
+  RiInformationLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
-import { tokenAmountToLocaleString } from '../common/TokenAmount';
-import axios from 'axios';
 import getSupply from '../common/GetSupply';
+import { tokenAmountToLocaleString } from '../common/TokenAmount';
 
 const { Title, Text } = Typography;
 

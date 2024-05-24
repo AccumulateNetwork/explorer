@@ -1,19 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import moment from 'moment-timezone';
-
-import { Link } from 'react-router-dom';
 import {
-  Typography,
-  Descriptions,
-  Tooltip,
   Alert,
+  Button,
+  Descriptions,
+  List,
+  Skeleton,
   Switch,
   Tag,
-  List,
-  Button,
-  Skeleton,
+  Tooltip,
+  Typography,
 } from 'antd';
-
+import moment from 'moment-timezone';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -21,16 +18,16 @@ import {
   RiInformationLine,
   RiQuestionLine,
 } from 'react-icons/ri';
-
+import { Link } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
+import Data from '../../common/Data';
+import getTs from '../../common/GetTS';
+import Key from '../../common/Key';
 import wrapLinksInHtml from '../../common/LinksRenderer';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxStatus from '../../common/TxStatus';
-import Key from '../../common/Key';
-import getTs from '../../common/GetTS';
-import Data from '../../common/Data';
 
 const { Title, Text } = Typography;
 

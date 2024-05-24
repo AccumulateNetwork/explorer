@@ -1,44 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
-
-import { Layout, Menu, Dropdown, Button, Badge, Typography } from 'antd';
-
 import { DownOutlined, MoreOutlined } from '@ant-design/icons';
-
-import networks from './common/Networks.json';
+import { Badge, Button, Dropdown, Layout, Menu, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiDashboardLine,
-  RiWalletLine,
-  RiCoinLine,
-  RiShieldCheckLine,
   RiArrowLeftRightLine,
-  RiPercentLine,
+  RiCoinLine,
+  RiDashboardLine,
   RiDropLine,
-  RiStarLine,
+  RiPercentLine,
   RiSettingsLine,
+  RiShieldCheckLine,
+  RiStarLine,
+  RiWalletLine,
 } from 'react-icons/ri';
-
-import Web3Module from './web3/Web3Module';
+import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import Logo from './common/Logo';
-import Version from './common/Version';
+import MinorBlocks from './common/MinorBlocks';
+import networks from './common/Networks.json';
 import ScrollToTop from './common/ScrollToTop';
 import SearchForm from './common/SearchForm';
-
-import Blocks from './explorer/Blocks';
-import Staking from './explorer/Staking';
-import MinorBlocks from './common/MinorBlocks';
-import Favourites from './explorer/Favourites';
+import Version from './common/Version';
 import Acc from './explorer/Acc';
-import Tx from './explorer/Tx';
+import Block from './explorer/Block';
+import Blocks from './explorer/Blocks';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
-import Validators from './explorer/Validators';
-import Tokens from './explorer/Tokens';
-import Block from './explorer/Block';
+import Favourites from './explorer/Favourites';
 import Network from './explorer/Network';
 import page from './explorer/Settings';
+import Staking from './explorer/Staking';
+import Tokens from './explorer/Tokens';
+import Tx from './explorer/Tx';
+import Validators from './explorer/Validators';
+import Web3Module from './web3/Web3Module';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;

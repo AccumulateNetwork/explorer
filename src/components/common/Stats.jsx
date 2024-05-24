@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Skeleton, Typography } from 'antd';
-
-import RPC from './RPC';
-
+import { Card, Col, Row, Skeleton, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiLineChartFill } from 'react-icons/ri';
+
+import RPC from './RPC';
 
 const { Title } = Typography;
 

@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
-
+import { Form, Input, message } from 'antd';
+import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
-
-import { Form, message, Input } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import RPC from './RPC';
 

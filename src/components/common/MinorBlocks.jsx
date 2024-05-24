@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { Skeleton, Table, Tooltip, Typography } from 'antd';
 import moment from 'moment-timezone';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Skeleton, Table, Tooltip } from 'antd';
-
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Count from './Count';
-import RPC from './RPC';
 import getBlockEntries from './GetBlockEntries';
+import RPC from './RPC';
 
 const { Title, Text } = Typography;
 

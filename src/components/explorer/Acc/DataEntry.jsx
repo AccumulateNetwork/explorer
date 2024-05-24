@@ -1,22 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { Alert, Descriptions, List, Skeleton, Tooltip, Typography } from 'antd';
 import moment from 'moment-timezone';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Descriptions, Tooltip, Alert, Skeleton, List } from 'antd';
-
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
-  RiQuestionLine,
-  RiFileList2Line,
   RiAccountCircleLine,
   RiExchangeLine,
+  RiFileList2Line,
+  RiInformationLine,
+  RiQuestionLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Data from '../../common/Data';
-import tooltipDescs from '../../common/TooltipDescriptions';
 import getTs from '../../common/GetTS';
+import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Text } = Typography;
 

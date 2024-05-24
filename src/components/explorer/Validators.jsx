@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
 import {
-  Typography,
+  Card,
+  Progress,
   Table,
+  Tabs,
   Tag,
   Tooltip,
+  Typography,
   message,
-  Card,
-  Tabs,
-  Progress,
 } from 'antd';
-
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -20,11 +17,11 @@ import {
   RiShieldCheckLine,
   RiTrophyLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
-import { tokenAmountToLocaleString } from '../common/TokenAmount';
 import getSupply from '../common/GetSupply';
-import axios from 'axios';
+import { tokenAmountToLocaleString } from '../common/TokenAmount';
 
 const { Title, Text } = Typography;
 

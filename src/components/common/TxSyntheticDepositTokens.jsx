@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Skeleton, Descriptions, Alert } from 'antd';
-
+import { Alert, Descriptions, Skeleton, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
   RiAccountCircleLine,
   RiCoinLine,
   RiExchangeLine,
+  RiInformationLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import getToken from './GetToken';
 import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';

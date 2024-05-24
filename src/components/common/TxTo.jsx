@@ -1,9 +1,8 @@
+import { Button, Typography } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine } from 'react-icons/ri';
-
-import { Typography, Button } from 'antd';
+import { Link } from 'react-router-dom';
 
 import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
 

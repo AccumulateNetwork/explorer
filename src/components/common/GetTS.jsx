@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { message } from 'antd';
+import axios from 'axios';
 
 export default async function getTs(hash, setTs, setBlock, predicate) {
   setTs(null);

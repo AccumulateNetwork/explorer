@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
-
+import { Alert, Descriptions, Skeleton, Tag, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { IconContext } from 'react-icons';
+import { RiAccountCircleLine, RiInformationLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { Typography, Skeleton, Descriptions, Alert, Tag } from 'antd';
-
-import { IconContext } from 'react-icons';
-import { RiInformationLine, RiAccountCircleLine } from 'react-icons/ri';
-
 import getToken from './GetToken';
-import TxTo from './TxTo';
 import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
+import TxTo from './TxTo';
 
 const { Title, Text } = Typography;
 

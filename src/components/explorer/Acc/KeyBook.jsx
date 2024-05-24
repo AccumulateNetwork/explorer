@@ -1,21 +1,18 @@
+import { Descriptions, List, Tooltip, Typography } from 'antd';
 import React from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Descriptions, Tooltip, List } from 'antd';
-
 import { IconContext } from 'react-icons';
 import {
+  RiAccountCircleLine,
   RiInformationLine,
   RiQuestionLine,
   RiStackLine,
-  RiAccountCircleLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
+import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
-import Authorities from '../../common/Authorities';
 
 const { Title, Paragraph, Text } = Typography;
 

@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Skeleton, Descriptions, Alert } from 'antd';
-
+import { Alert, Descriptions, Skeleton, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiInformationLine,
   RiAccountCircleLine,
   RiCoinLine,
+  RiInformationLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import RPC from '../common/RPC';
-import TxTo from './TxTo';
 import getToken from './GetToken';
+import TxTo from './TxTo';
 
 const { Title } = Typography;
 

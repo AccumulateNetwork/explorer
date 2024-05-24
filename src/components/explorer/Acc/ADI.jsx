@@ -1,23 +1,20 @@
-import React, { useState, useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Descriptions, Tooltip, Skeleton, Table } from 'antd';
-
+import { Descriptions, Skeleton, Table, Tooltip, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
+  RiExchangeLine,
+  RiFolder2Line,
   RiInformationLine,
   RiQuestionLine,
-  RiFolder2Line,
   RiShieldCheckLine,
-  RiExchangeLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
+import Authorities from '../../common/Authorities';
+import Count from '../../common/Count';
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import Count from '../../common/Count';
 import TxChain from '../../common/TxChain';
-import Authorities from '../../common/Authorities';
 
 const { Title, Text } = Typography;
 

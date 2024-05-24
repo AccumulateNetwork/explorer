@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import { Spin } from 'antd';
-import Explorer from './components/Explorer';
+import React, { useEffect, useState } from 'react';
+
 import './App.css';
+import Explorer from './components/Explorer';
 
 const App = () => {
   const [loaded, setLoaded] = useState(false);

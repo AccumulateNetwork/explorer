@@ -1,11 +1,8 @@
+import { Descriptions, Skeleton, Typography } from 'antd';
 import React from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, Skeleton, Descriptions } from 'antd';
-
 import { IconContext } from 'react-icons';
-import { RiInformationLine, RiAccountCircleLine } from 'react-icons/ri';
+import { RiAccountCircleLine, RiInformationLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 

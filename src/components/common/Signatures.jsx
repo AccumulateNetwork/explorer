@@ -1,10 +1,8 @@
+import { List, Table, Tag, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-
-import { Tag, Typography, List, Table } from 'antd';
-
 import { IconContext } from 'react-icons';
-import { RiPenNibLine, RiAccountCircleLine } from 'react-icons/ri';
+import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import RPC from './../common/RPC';
 

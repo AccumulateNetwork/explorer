@@ -1,45 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import moment from 'moment-timezone';
-
-import { Link } from 'react-router-dom';
-
 import {
-  Typography,
-  Descriptions,
-  Tooltip,
   Alert,
-  Switch,
-  Tag,
+  Descriptions,
   List,
   Skeleton,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
 } from 'antd';
-
-import wrapLinksInHtml from '../../common/LinksRenderer';
+import { Button } from 'antd';
+import moment from 'moment-timezone';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
+  RiAccountCircleLine,
+  RiExchangeLine,
+  RiFileList2Line,
   RiInformationLine,
   RiQuestionLine,
-  RiAccountCircleLine,
   RiRefund2Fill,
-  RiFileList2Line,
-  RiExchangeLine,
 } from 'react-icons/ri';
-
+import { Link } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import tooltipDescs from '../../common/TooltipDescriptions';
 import Data from '../../common/Data';
-import TxStatus from '../../common/TxStatus';
-import TxSendTokens from '../../common/TxSendTokens';
-import TxIssueTokens from '../../common/TxIssueTokens';
-import TxUpdateKeyPage from '../../common/TxUpdateKeyPage';
-import TxUpdateAccountAuth from '../../common/TxUpdateAccountAuth';
-import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
-import TxAddCredits from '../../common/TxAddCredits';
-import Signatures from '../../common/Signatures';
 import getTs from '../../common/GetTS';
-import { Button } from 'antd';
+import wrapLinksInHtml from '../../common/LinksRenderer';
+import Signatures from '../../common/Signatures';
+import tooltipDescs from '../../common/TooltipDescriptions';
+import TxAddCredits from '../../common/TxAddCredits';
+import TxIssueTokens from '../../common/TxIssueTokens';
+import TxSendTokens from '../../common/TxSendTokens';
+import TxStatus from '../../common/TxStatus';
+import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
+import TxUpdateAccountAuth from '../../common/TxUpdateAccountAuth';
+import TxUpdateKeyPage from '../../common/TxUpdateKeyPage';
+
 const { Title, Text, Paragraph } = Typography;
 
 const GenericTx = (props) => {

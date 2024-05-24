@@ -1,39 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
-import { Link } from 'react-router-dom';
-
 import {
-  Typography,
-  Descriptions,
-  Tooltip,
-  Tag,
-  Table,
   Alert,
+  Descriptions,
   Skeleton,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
   message,
 } from 'antd';
-
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
+  RiAccountCircleLine,
+  RiCoinLine,
+  RiExchangeLine,
   RiInformationLine,
   RiQuestionLine,
-  RiAccountCircleLine,
-  RiExchangeLine,
-  RiCoinLine,
 } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
-import RPC from '../../common/RPC';
-import getToken from '../../common/GetToken';
-import tooltipDescs from '../../common/TooltipDescriptions';
-import FaucetAddress from '../../common/Faucet';
+import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
+import FaucetAddress from '../../common/Faucet';
+import getToken from '../../common/GetToken';
+import RPC from '../../common/RPC';
 import {
   tokenAmount,
   tokenAmountToLocaleString,
 } from '../../common/TokenAmount';
+import tooltipDescs from '../../common/TooltipDescriptions';
 import TxChain from '../../common/TxChain';
-import Authorities from '../../common/Authorities';
 
 const { Text, Title, Paragraph } = Typography;
 

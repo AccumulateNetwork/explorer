@@ -25,6 +25,7 @@
     "web3": "^1.8.2"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react": "^18.3.3",
     "eslint-config-react-app": "^7.0.1",
     "prettier": "^3.2.5",
@@ -50,7 +51,16 @@
   },
   "prettier": {
     "semi": true,
-    "singleQuote": true
+    "singleQuote": true,
+    "importOrderSeparation": true,
+    "importOrderSortSpecifiers": true,
+    "importOrder": [
+      "<THIRD_PARTY_MODULES>",
+      "^[./]"
+    ],
+    "plugins": [
+      "@trivago/prettier-plugin-sort-imports"
+    ]
   },
   "browserslist": {
     "production": [

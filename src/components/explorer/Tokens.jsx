@@ -1,13 +1,10 @@
+import { Avatar, Table, Typography, message } from 'antd';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Table, Typography, Avatar, message } from 'antd';
-
 import { IconContext } from 'react-icons';
 import { RiEarthLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
-import axios from 'axios';
 import Count from '../common/Count';
 
 const { Title, Paragraph, Text } = Typography;

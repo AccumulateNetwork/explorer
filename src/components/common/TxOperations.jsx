@@ -1,9 +1,8 @@
+import { Button, List, Tag } from 'antd';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine } from 'react-icons/ri';
-
-import { Button, List, Tag } from 'antd';
+import { Link } from 'react-router-dom';
 
 export default function TxOperations(props) {
   const data = props.data; //Always an array

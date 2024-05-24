@@ -1,11 +1,8 @@
+import { List, Tag, Typography } from 'antd';
 import React, { useEffect } from 'react';
-
-import { Link } from 'react-router-dom';
-
-import { Typography, List, Tag } from 'antd';
-
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import Count from './Count';
 

@@ -1,9 +1,7 @@
-import React from 'react';
-
 import { Tag, Tooltip } from 'antd';
-
+import React from 'react';
 import { IconContext } from 'react-icons';
-import { RiCheckLine, RiLoader4Line, RiErrorWarningLine } from 'react-icons/ri';
+import { RiCheckLine, RiErrorWarningLine, RiLoader4Line } from 'react-icons/ri';
 
 const TxStatus = (props) => {
   const tx = props.data;
