@@ -34,9 +34,9 @@ const Token = props => {
 
             <Descriptions bordered column={1} size="middle">
 
-                {token.type ? (
+                {token.recordType ? (
                     <Descriptions.Item label="Type">
-                        {token.type}
+                        {token.recordType}
                     </Descriptions.Item>
                 ) :
                     null
@@ -44,7 +44,7 @@ const Token = props => {
 
             </Descriptions>
             
-            {(token?.data?.symbol === "ACME" && process.env.REACT_APP_METRICS_API_PATH) && 
+            {(token?.account?.symbol === "ACME" && import.meta.env.VITE_APP_METRICS_API_PATH) && 
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -77,7 +77,7 @@ const Token = props => {
                 </div>
             }
 
-            {token.data ? (
+            {token.account ? (
                 <div>
                     <Title level={4}>
                         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -87,25 +87,25 @@ const Token = props => {
                     </Title>
                     <Descriptions bordered column={1} size="middle">
 
-                        {token.data.url ? (
+                        {token.account.url ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenUrl}><RiQuestionLine /></Tooltip></IconContext.Provider>Token URL</nobr></span>}>
-                                {token.data.url}
+                                {token.account.url}
                             </Descriptions.Item>
                         ) :
                             null  
                         }
 
-                        {token.data.symbol ? (
+                        {token.account.symbol ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenSymbol}><RiQuestionLine /></Tooltip></IconContext.Provider>Symbol</nobr></span>}>
-                                {token.data.symbol}
+                                {token.account.symbol}
                             </Descriptions.Item>
                         ) :
                             null  
                         }
 
-                        {token.data.precision || token.data.precision === 0 ? (
+                        {token.account.precision || token.account.precision === 0 ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.tokenPrecision}><RiQuestionLine /></Tooltip></IconContext.Provider>Precision</nobr></span>}>
-                                {token.data.precision}
+                                {token.account.precision}
                             </Descriptions.Item>
                         ) :
                             null  
@@ -113,11 +113,11 @@ const Token = props => {
 
                     </Descriptions>
 
-                    <Authorities items={token.data.authorities} />
+                    <Authorities items={token.account.authorities} />
 
-                    <TxChain url={token.data.url} type='transaction' />
-                    <TxChain url={token.data.url} type='pending' />
-                    <TxChain url={token.data.url} type='signature' />
+                    <TxChain url={token.account.url} type='transaction' />
+                    <TxChain url={token.account.url} type='pending' />
+                    <TxChain url={token.account.url} type='signature' />
 
                 </div>
             ) :

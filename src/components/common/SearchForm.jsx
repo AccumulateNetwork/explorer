@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createHash } from "crypto";
 import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
+import { Buffer, sha256 } from "accumulate.js/lib/common";
 
 import moment from 'moment-timezone';
 
@@ -17,18 +17,14 @@ function SearchForm() {
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
-  function sha256(data) {
-    return createHash("sha256").update(data).digest();
-  }
-
-  function generateLiteIdentity(publicKeyHash) {
+  async function generateLiteIdentity(publicKeyHash) {
     const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
-    const checkSum = sha256(pkHash.toString("hex")).slice(28);
-    const authority = Buffer.concat([pkHash, checkSum]).toString("hex");
+    const checkSum = Buffer.from(await sha256(pkHash)).slice(28);
+    const authority = Buffer.from(Buffer.concat([pkHash, checkSum])).toString("hex");
     return authority;
   }
 
-  const handleSearch = (value) => {
+  const handleSearch = async (value) => {
     value = value.replaceAll(/\s/g, "");
     setSearchTs(moment());
     setSearchText(value);
@@ -42,7 +38,7 @@ function SearchForm() {
         searchTxhash(value);
     }
     else if (isValidPublicFctAddress(value)) {
-        const liteIdentityUrl = generateLiteIdentity(addressToRcdHash(value));
+        const liteIdentityUrl = await generateLiteIdentity(addressToRcdHash(value));
         setSearchIsLoading(false);
         redirect("/acc/"+liteIdentityUrl);
     }

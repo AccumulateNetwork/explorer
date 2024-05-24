@@ -3,10 +3,10 @@ import { message } from 'antd';
 
 export default async function getSupply(setSupply, setAPR) {
     setSupply(null);
-    if (!process.env.REACT_APP_METRICS_API_PATH) return
+    if (!import.meta.env.VITE_APP_METRICS_API_PATH) return
 
     try {
-        const response = await axios.get(process.env.REACT_APP_METRICS_API_PATH + "/supply");
+        const response = await axios.get(import.meta.env.VITE_APP_METRICS_API_PATH + "/supply");
         if (response?.data) {
             setSupply(response.data);
         } else {

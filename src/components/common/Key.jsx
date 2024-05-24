@@ -2,6 +2,7 @@ import { Address } from "accumulate.js";
 import { SignatureType } from "accumulate.js/lib/core";
 import { Alert, Input, Select, Skeleton, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
+import { Settings } from "../explorer/Settings";
 
 const { Text } = Typography;
 
@@ -62,12 +63,12 @@ const Key = props => {
             :
                 <Input.Group compact className={"key"}>
                     <Select defaultValue="unknown" size="small" className="key-type" onChange={handleChange}>
-                        <Select.Option value="unknown">Raw Key</Select.Option>
-                        <Select.Option value="ed25519">ED25519</Select.Option>
-                        <Select.Option value="hex">Hex</Select.Option>
-                        <Select.Option value="rcd1">RCD1</Select.Option>
-                        <Select.Option value="btc">BTC</Select.Option>
-                        <Select.Option value="eth">ETH</Select.Option>
+                        <Select.Option value="unknown">Address</Select.Option>
+                        <Select.Option value="hex">Hash</Select.Option>
+                        {Settings.enableDevMode && <Select.Option value="ed25519">ED25519</Select.Option>}
+                        {Settings.enableDevMode && <Select.Option value="rcd1">RCD1</Select.Option>}
+                        {Settings.enableDevMode && <Select.Option value="btc">BTC</Select.Option>}
+                        {Settings.enableDevMode && <Select.Option value="eth">ETH</Select.Option>}
                     </Select>
                     <Text className="key-text" copyable>{address}</Text>
                 </Input.Group>

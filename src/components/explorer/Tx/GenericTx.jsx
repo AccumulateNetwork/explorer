@@ -41,11 +41,11 @@ const GenericTx = props => {
 
     const tx = props.data;
     var content = [];
-    if (tx && tx.data && tx.data.entry && tx.data.entry.data) {
-        if (Array.isArray(tx.data.entry.data)) {
-            content = Array.from(tx.data.entry.data, item => item || "")        
+    if (tx?.message?.transaction?.body?.entry?.data) {
+        if (Array.isArray(tx.message.transaction.body.entry.data)) {
+            content = Array.from(tx.message.transaction.body.entry.data, item => item || "")
         } else {
-            content.push(tx.data.entry.data);
+            content.push(tx.message.transaction.body.entry.data);
         }
     }
 
@@ -61,12 +61,12 @@ const GenericTx = props => {
     };
 
     useEffect(() => {
-        getTs(props.data.transactionHash, setTs, setBlock, x => x.chain === 'main' || x.chain === 'scratch');
-    }, [props.data]); // eslint-disable-line react-hooks/exhaustive-deps
+        getTs(tx.transactionHash, setTs, setBlock, x => x.chain === 'main' || x.chain === 'scratch');
+    }, [tx]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div>
-            <TxStatus data={props.data.v3} />
+            <TxStatus data={tx} />
 
             <Title level={4}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -76,10 +76,10 @@ const GenericTx = props => {
             </Title>
             <Descriptions bordered column={1} size="middle">
 
-            {tx.type ? (
+            {tx?.message?.transaction?.body?.type ? (
                 <Descriptions.Item label="Type">
-                    {tx.type}
-                    {tx.data && tx.data.isRefund &&
+                    {tx.message.transaction.body.type}
+                    {tx.message.transaction.body.isRefund &&
                         <Tag color="orange" style={{marginLeft: 10, textTransform: "uppercase"}}><IconContext.Provider value={{ className: 'react-icons' }}><RiRefund2Fill/></IconContext.Provider>Refund</Tag>
                     }
                 </Descriptions.Item>
@@ -88,7 +88,7 @@ const GenericTx = props => {
             }
 
             </Descriptions>
-            
+
             {tx ? (
                 <div>
                 <Title level={4}>
@@ -107,9 +107,9 @@ const GenericTx = props => {
                         {block || block===0 ? <Text>{block ? ( <Link className="code" to={'/block/' + block}>{block}</Link> ) : <Text disabled>N/A</Text> }</Text> : <Skeleton className={"skeleton-singleline"} active title={true} paragraph={false} /> }
                     </Descriptions.Item>
 
-                    {tx.txid ? (
+                    {tx.id ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.txId}><RiQuestionLine /></Tooltip></IconContext.Provider>Txid</nobr></span>}>
-                            <Text copyable>{tx.txid}</Text>
+                            <Text copyable>{tx.id}</Text>
                         </Descriptions.Item>
                     ) :
                         null
@@ -122,23 +122,22 @@ const GenericTx = props => {
                     ) :
                         null
                     }
-
-                    {tx.sponsor ? (
+                   {tx.message.transaction.header.principal ? (
                         <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sponsor}><RiQuestionLine /></Tooltip></IconContext.Provider>Principal</nobr></span>}>
-                            <Link to={'/acc/' + tx.sponsor.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.sponsor}</Link>
+                            <Link to={'/acc/' + tx.message.transaction.header.principal.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.principal}</Link>
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
-                    {tx.produced?.length > 0 ? (
+                    {tx.produced?.records?.length > 0 ? (
                         <Descriptions.Item className={'align-top has-list'} label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
-                            {tx.produced.slice(0, showAllProduced ? tx.produced.length : 5).map((item, index) =>
+                            {tx.produced.records.slice(0, showAllProduced ? tx.produced.records.length : 5).map((item, index) =>
                                 <List.Item>
-                                    <Link to={'/acc/' + item.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{item}</Link>
+                                    <Link to={'/acc/' + item.value.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{item.value}</Link>
                                 </List.Item>)}
-                            {tx.produced.length > 5 && !showAllProduced && (
-                                <List.Item key={"more"}><Button onClick={e => setShowAllProduced(true) } >+{tx.produced.length - 5} more</Button></List.Item>
+                            {tx.produced.records.length > 5 && !showAllProduced && (
+                                <List.Item key={"more"}><Button onClick={e => setShowAllProduced(true) } >+{tx.produced.records.length - 5} more</Button></List.Item>
                             )}
                         </Descriptions.Item>
                     ) :
@@ -173,55 +172,55 @@ const GenericTx = props => {
                   Transaction Metadata
                 </Title>
 
-                {tx.transaction && tx.transaction.header && (tx.transaction.header.memo || tx.transaction.header.metadata) ? (
+                {tx.message.transaction && tx.message.transaction.header && (tx.message.transaction.header.memo || tx.message.transaction.header.metadata) ? (
 
                     <Descriptions bordered column={1} size="middle" layout="vertical">
-                        {tx.transaction && tx.transaction.header && tx.transaction.header.memo ? (
+                        {tx.message.transaction && tx.message.transaction.header && tx.message.transaction.header.memo ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.memo}><RiQuestionLine /></Tooltip></IconContext.Provider>Memo</nobr></span>}>
-                                <div className="span ant-typography" dangerouslySetInnerHTML={{ __html: wrapLinksInHtml(tx.transaction.header.memo) }} />
+                                <div className="span ant-typography" dangerouslySetInnerHTML={{ __html: wrapLinksInHtml(tx.message.transaction.header.memo) }} />
                             </Descriptions.Item>
                         ) :
                             null
                         }
-                        {tx.transaction && tx.transaction.header && tx.transaction.header.metadata ? (
+                        {tx.message.transaction && tx.message.transaction.header && tx.message.transaction.header.metadata ? (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.metadata}><RiQuestionLine /></Tooltip></IconContext.Provider>Metadata</nobr></span>}>
-                                <Data>{tx.transaction.header.metadata}</Data>
+                                <Data>{tx.message.transaction.header.metadata}</Data>
                             </Descriptions.Item>
                         ) :
                             null
                         }
                     </Descriptions>
-                
+
                 ) :
                     <Paragraph><Text type="secondary">No metadata</Text></Paragraph>
                 }
 
-                {(tx.type && tx.type === "sendTokens") &&
+                {(tx?.message?.transaction?.body?.type === "sendTokens") &&
                     <TxSendTokens data={tx} />
                 }
 
-                {(tx.type && tx.type === "issueTokens") &&
+                {(tx?.message?.transaction?.body?.type === "issueTokens") &&
                     <TxIssueTokens data={tx} />
                 }
 
-                {(tx.type && tx.type === "updateKeyPage") &&
+                {(tx?.message?.transaction?.body?.type === "updateKeyPage") &&
                     <TxUpdateKeyPage data={tx} />
                 }
 
-                {(tx.type && tx.type === "updateAccountAuth") &&
+                {(tx?.message?.transaction?.body?.type === "updateAccountAuth") &&
                     <TxUpdateAccountAuth data={tx} />
                 }
 
-                {(tx.type && tx.type === "syntheticDepositTokens") &&
+                {(tx?.message?.transaction?.body?.type === "syntheticDepositTokens") &&
                     <TxSyntheticDepositTokens data={tx} />
                 }
 
-                {(tx.type && tx.type === "addCredits") &&
+                {(tx?.message?.transaction?.body?.type === "addCredits") &&
                     <TxAddCredits data={tx} />
                 }
 
-                {(tx.signatures?.length > 0 && tx.v3?.message?.transaction) &&
-                    <Signatures transaction={tx.v3.message.transaction} data={tx.v3.signatures.records} />            
+                {(tx.signatures?.records?.length > 0 && tx.message?.transaction) &&
+                    <Signatures transaction={tx.message.transaction} data={tx.signatures.records} />
                 }
 
                 <Title level={4}>
@@ -236,7 +235,7 @@ const GenericTx = props => {
                     <div className="entry-content" style={{marginTop: 0, display: rawDataDisplay}}>
                         <SyntaxHighlighter style={colorBrewer} language="json">{JSON.stringify(tx, null, 4)}</SyntaxHighlighter>
                     </div>
-                ) : 
+                ) :
                     <Alert message="No tx data" type="warning" showIcon />
                 }
 

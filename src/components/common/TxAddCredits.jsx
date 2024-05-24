@@ -29,29 +29,29 @@ const TxAddCredits = props => {
             Credits Transaction
         </Title>
 
-        {tx && tx.data ? (
+        {tx?.message?.transaction ? (
             <Descriptions bordered column={1} size="middle">
 
-                {tx.data.recipient &&
+                {tx.message.transaction.body.recipient &&
                     <Descriptions.Item label={"Recipient"}>
-                        <Link to={'/acc/' + tx.data.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.recipient}</Link>
+                        <Link to={'/acc/' + tx.message.transaction.body.recipient.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.body.recipient}</Link>
                     </Descriptions.Item>
                 }
 
-                {(tx.data.amount && tx.data.oracle) &&
+                {(tx.message.transaction.body.amount && tx.message.transaction.body.oracle) &&
                     <>
                         <Descriptions.Item label={"Credits"}>
-                            <Text>{tx.data.amount * tx.data.oracle * 1e-10} credits</Text>
+                            <Text>{tx.message.transaction.body.amount * tx.message.transaction.body.oracle * 1e-10} credits</Text>
                         </Descriptions.Item>
                         <Descriptions.Item label={"ACME spent"}>
-                            <Text>{tx.data.amount / (10**8)} ACME</Text>
+                            <Text>{tx.message.transaction.body.amount / (10**8)} ACME</Text>
                         </Descriptions.Item>
                     </>
             }
 
-                {tx.data.oracle &&
+                {tx.message.transaction.body.oracle &&
                     <Descriptions.Item label={"Oracle"}>
-                        <Text className={"code"}>{tx.data.oracle}</Text>
+                        <Text className={"code"}>{tx.message.transaction.body.oracle}</Text>
                     </Descriptions.Item>
                 }
 

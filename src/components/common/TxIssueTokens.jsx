@@ -25,18 +25,18 @@ const TxIssueTokens = props => {
 
     const tx = props.data;
     if (tx.data && tx.data.amount && tx.data.recipient) {
-        if (!tx.data.to) tx.data.to = []
-        tx.data.to.push({ amount: tx.data.amount, url: tx.data.recipient });
+        if (tx?.message?.transaction?.body && !tx?.message?.transaction?.body?.to) tx.message.transaction.body.to = []
+        tx.message.transaction.body.to.push({ amount: tx.data.amount, url: tx.data.recipient });
         delete(tx.data.amount)
         delete(tx.data.recipient);
-    } else if (tx?.data?.to?.length > 0 && !tx.data.recipient) {
-        tx.data.amount = tx.data.to.reduce((accumulator, currentValue) => accumulator + Number(currentValue.amount), 0);
+    } else if (tx?.message?.transaction?.body?.to?.length > 0 && !tx?.data?.recipient) {
+        tx.amount = tx?.message?.transaction?.body?.to.reduce((accumulator, currentValue) => accumulator + Number(currentValue.amount), 0);
     }
     const [token, setToken] = useState(null);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        getToken(tx.origin, setToken, setError);
+        getToken(tx.message.transaction?.header?.principal, setToken, setError);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
@@ -49,38 +49,38 @@ const TxIssueTokens = props => {
                 Transaction Data
             </Title>
 
-            {tx && tx.data ? (
+            {tx?.message?.transaction ? (
                 <Descriptions bordered column={1} size="middle">
 
                     <Descriptions.Item label={"Origin"}>
-                        {tx.origin ? (
-                            <Link to={'/acc/' + tx.origin.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.origin}</Link>
+                        {tx.message.transaction?.header?.principal ? (
+                            <Link to={'/acc/' + tx.message.transaction.header.principal.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.principal}</Link>
                         ) :
                             <Skeleton active paragraph={false} />
                         }
                     </Descriptions.Item>
 
-                    {tx.data.amount > 0 && token ? (
+                    {tx.amount > 0 && token ? (
                         <Descriptions.Item label={"Amount"}>
-                            <Text>{tokenAmount(tx.data.amount, token.precision, token.symbol)}</Text>
-                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.data.amount, token.precision, token.symbol)}</Text>
+                            <Text>{tokenAmount(tx.amount, token.precision, token.symbol)}</Text>
+                            <br /><Text className="formatted-balance">{tokenAmountToLocaleString(tx.amount, token.precision, token.symbol)}</Text>
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
-                    {tx.data.type ? (
+                    {tx.message.transaction?.body?.type ? (
                         <Descriptions.Item label={"Type"}>
-                            <Tag color="green">{tx.data.type}</Tag>
+                            <Tag color="green">{tx.message.transaction.body.type}</Tag>
                         </Descriptions.Item>
                     ) :
                         null
                     }
 
-                    {tx.data.to ? (
+                    {tx?.message?.transaction?.body?.to ? (
                         <Descriptions.Item label={"To"} className={"align-top"}>
                             {token &&
-                                <TxTo data={tx.data.to} token={token} />
+                                <TxTo data={tx.message.transaction.body.to} token={token} />
                             }
                             {error &&
                                 <Alert message={error} type="error" showIcon />

@@ -5,8 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 import { Web3ReactProvider } from "@web3-react/core";
-
-const Web3 = require('web3');
+import { Web3 } from 'web3';
 
 const getLibrary = (provider) => {
   const library = new Web3(provider);

@@ -27,15 +27,15 @@ export class RPCError {
 }
 
 class RPC {
-  constructor(opts) {
+  currId = 1;
+  constructor(opts = {}) {
     this._opts = { ...opts };
-    this.currId = 1;
-    axios.defaults.baseURL = process.env.REACT_APP_API_PATH;
+    axios.defaults.baseURL = import.meta.env.VITE_APP_API_PATH;
     axios.defaults.headers.post['Content-Type'] = 'application/json';
   }
   
   request = (method, params = null, ver = 'v2') => {
-    const result = axios.post(process.env.REACT_APP_API_PATH + '/' + ver, {
+    const result = axios.post(import.meta.env.VITE_APP_API_PATH + '/' + ver, {
       jsonrpc: '2.0',
       id: ++this.currId,
       method,
@@ -50,7 +50,7 @@ class RPC {
       }
     })
     .catch(() => {
-      message.error('Accumulate API is unavailable');
+      message.error('Accumulate API is unavailable');
     });
     return result;
   }
@@ -59,7 +59,7 @@ class RPC {
     // JSON-RPC does not like empty batches
     if (!requests.length) return [];
 
-    const result = axios.post(process.env.REACT_APP_API_PATH + '/' + ver,
+    const result = axios.post(import.meta.env.VITE_APP_API_PATH + '/' + ver,
       requests.map(({ method, params }) => ({
         jsonrpc: '2.0',
         id: ++this.currId,
@@ -89,7 +89,7 @@ class RPC {
       message.error('Unexpected response received from Accumulate API');
     })
     .catch(() => {
-      message.error('Accumulate API is unavailable');
+      message.error('Accumulate API is unavailable');
     });
     return result;
   }
@@ -116,7 +116,7 @@ class RPC {
     }
 
     const result = axios
-    .post(process.env.REACT_APP_API_PATH + '/' + ver, request)
+    .post(import.meta.env.VITE_APP_API_PATH + '/' + ver, request)
     .then(function (response) {
       // Convert the response(s) into the result or an RPCError
       if (response.data instanceof Array) {
@@ -124,7 +124,7 @@ class RPC {
       }
       return response.data.error ? new RPCError(response.data.error) : response.data.result
     }, () => {
-      message.error('Accumulate API is unavailable');
+      message.error('Accumulate API is unavailable');
     })
     return result;
   }

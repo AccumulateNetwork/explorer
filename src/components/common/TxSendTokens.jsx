@@ -31,11 +31,11 @@ const TxSendTokens = props => {
         setTokenAccount(null);
         setError(null);
         try {
-            const response = await RPC.request("query", { "scope": tx.data.from }, 'v3');
+            const response = await RPC.request("query", { "scope": tx.message.transaction.header.principal }, 'v3');
             if (response && response.account) {
                 setTokenAccount(response.account);
             } else {
-                throw new Error("Token account " + tx.data.from + " not found"); 
+                throw new Error("Token account " + tx.message.transaction.header.principal + " not found"); 
             }
         }
         catch(error) {
@@ -63,7 +63,7 @@ const TxSendTokens = props => {
             Token Transaction
         </Title>
 
-        {tx && tx.data ? (
+        {tx?.message?.transaction ? (
             <Descriptions bordered column={1} size="middle">
 
                 <Descriptions.Item label={"Token"}>
@@ -74,18 +74,18 @@ const TxSendTokens = props => {
                     }
                 </Descriptions.Item>
 
-                {tx.data.from ? (
+                {tx.message.transaction.header.principal ? (
                     <Descriptions.Item label={"From"}>
-                        <Link to={'/acc/' + tx.data.from.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.data.from}</Link>
+                        <Link to={'/acc/' + tx.message.transaction.header.principal.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{tx.message.transaction.header.principal}</Link>
                     </Descriptions.Item>
                 ) :
                     null
                 }
 
-                {tx.data.to ? (
+                {tx.message.transaction.body?.to ? (
                     <Descriptions.Item label={"To"} className={"align-top"}>
                         {(tokenAccount && token) &&
-                            <TxTo data={tx.data.to} token={token} />
+                            <TxTo data={tx.message.transaction.body.to} token={token} />
                         }
                         {error &&
                             <Alert message={error} type="error" showIcon />  
