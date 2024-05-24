@@ -153,7 +153,7 @@ const GenericMsg = (props) => {
                         {delegators?.length && (
                             <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.sigDelegators}><RiQuestionLine /></Tooltip></IconContext.Provider>Delegators</nobr></span>}>
                                 {delegators.map(delegator => (
-                                    <div><Link to={'/acc/' + delegator.replace("acc://", "")} key={delegator}><IconContext.Provider value={{ className:'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{delegator}</Link></div>
+                                    <div key={delegator}><Link to={'/acc/' + delegator.replace("acc://", "")} key={delegator}><IconContext.Provider value={{ className:'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{delegator}</Link></div>
                                 ))}
                             </Descriptions.Item>
                         )}
@@ -179,7 +179,7 @@ const GenericMsg = (props) => {
                         {props.data.produced?.records?.length > 0 && (
                             <Descriptions.Item className={'align-top has-list'} label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
                                 {props.data.produced.records.slice(0, showAllProduced ? props.data.produced.records.length : 5).map(({value}) =>
-                                    <List.Item>
+                                    <List.Item key={value}>
                                         <Link to={'/acc/' + value.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{value}</Link>
                                     </List.Item>)}
                                 {props.data.produced.records.length > 5 && !showAllProduced && (

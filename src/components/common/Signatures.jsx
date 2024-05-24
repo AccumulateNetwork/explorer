@@ -115,7 +115,7 @@ const Signatures = props => {
         const level = props.level ? props.level : 0;
 
         const items = data.map((item) =>
-            <Signature level={level} data={item} />
+            <Signature key={item.signature} level={level} data={item} />
         );
         return (
             <div>{items}</div>

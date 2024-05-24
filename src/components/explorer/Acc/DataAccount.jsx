@@ -92,13 +92,13 @@ const DataAccount = props => {
               if (data?.length > 0) {
                 var items = [];
                 if (Array.isArray(data)) {
-                    items = data.slice(0,3).map((item) => <ExtId compact>{item ? item : ""}</ExtId>);
+                    items = data.slice(0,3).map((item, index) => <ExtId compact key={index}>{item ? item : ""}</ExtId>);
                     let extra = data.length-3;
                     if (extra > 0) {
-                      items.push(<Tag className="extid-tag">+{extra} more</Tag>);
+                      items.push(<Tag className="extid-tag" index="extra">+{extra} more</Tag>);
                     }    
                 } else {
-                    items.push(<ExtId compact>{data ? data : ""}</ExtId>)
+                    items.push(<ExtId compact key="data">{data ? data : ""}</ExtId>)
                 }
                 return <nobr>{items}</nobr>;
               } else {

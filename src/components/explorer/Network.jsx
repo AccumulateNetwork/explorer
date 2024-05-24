@@ -305,8 +305,8 @@ const Network = () => {
     const allNodesExpanded = (peer) => (
         <div>
             {peer.error && <pre>{peer.error.message}</pre>}
-            {peer.info && peer.data.services.map(service =>
-                <Tag color="blue">{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
+            {peer.info && peer.data.services.map((service, index) =>
+                <Tag color="blue" key={index}>{service.argument ? `${service.type}:${service.argument}` : service.type}</Tag>
             )}
         </div>
     );

@@ -137,15 +137,15 @@ const GenericTx = props => {
                     )}
 
                     {tx.message.transaction.header.authorities?.map(authority =>
-                        <Descriptions.Item label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.additionalAuthority}><RiQuestionLine /></Tooltip></IconContext.Provider>Required signer</nobr></span>}>
+                        <Descriptions.Item key={authority} label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.additionalAuthority}><RiQuestionLine /></Tooltip></IconContext.Provider>Required signer</nobr></span>}>
                             <Link to={'/acc/' + authority.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiAccountCircleLine /></IconContext.Provider>{authority}</Link>
                         </Descriptions.Item>
                     )}
 
                     {tx.produced?.records?.length > 0 ? (
                         <Descriptions.Item className={'align-top has-list'} label={<span><nobr><IconContext.Provider value={{ className: 'react-icons' }}><Tooltip overlayClassName="explorer-tooltip" title={tooltipDescs.produced}><RiQuestionLine /></Tooltip></IconContext.Provider>Produced</nobr></span>}>
-                            {tx.produced.records.slice(0, showAllProduced ? tx.produced.records.length : 5).map((item, index) =>
-                                <List.Item>
+                            {tx.produced.records.slice(0, showAllProduced ? tx.produced.records.length : 5).map((item) =>
+                                <List.Item key={item.value}>
                                     <Link to={'/acc/' + item.value.replace("acc://", "")}><IconContext.Provider value={{ className: 'react-icons' }}><RiExchangeLine /></IconContext.Provider>{item.value}</Link>
                                 </List.Item>)}
                             {tx.produced.records.length > 5 && !showAllProduced && (

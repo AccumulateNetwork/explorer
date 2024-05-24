@@ -124,20 +124,20 @@ const MinorBlocks = props => {
         if (!props?.data?.records) return (<Text disabled>Empty block</Text>);
         const items = props.data.records.map((item) =>
           <span key={item.entry}>
-          <Tooltip overlayClassName="explorer-tooltip" title={
-            item.name === 'main'            ? 'transaction' :
-            item.name === 'anchor-sequence' ? 'anchor'      :
-            item.name                       ? item.name     :
-                                              'unknown'
-          }>
-          <Link to={'/tx/' + item.entry}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiExchangeLine />
-            </IconContext.Provider>
-            {item.entry}
-          </Link>
-          </Tooltip>
-          <br />
+            <Tooltip overlayClassName="explorer-tooltip" title={
+                item.name === 'main'            ? 'transaction' :
+                item.name === 'anchor-sequence' ? 'anchor'      :
+                item.name                       ? item.name     :
+                                                'unknown'
+            }>
+            <Link to={'/tx/' + item.entry}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiExchangeLine />
+                </IconContext.Provider>
+                {item.entry}
+            </Link>
+            </Tooltip>
+            <br />
           </span>
         );
         return (
