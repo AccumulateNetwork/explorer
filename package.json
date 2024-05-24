@@ -5,11 +5,6 @@
   "type": "module",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
-    "@apollo/client": "^3.5.10",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/react": "^18.3.3",
     "@vitejs/plugin-react": "^4.3.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
@@ -18,25 +13,22 @@
     "axios": "^0.21.4",
     "eth-crypto": "^2.6.0",
     "factom": "^1.4.3",
-    "graphql": "^16.3.0",
-    "graphql-tag": "^2.12.6",
     "history": "^5.0.1",
     "js-base64": "^3.7.2",
-    "moment": "^2.29.3",
     "moment-timezone": "^0.5.34",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",
-    "react-moment": "^1.1.1",
     "react-router-dom": "^5.3.0",
     "react-syntax-highlighter": "^15.5.0",
-    "realm-web": "^1.7.0",
-    "rxjs": "^7.8.1",
+    "web3": "^1.8.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "eslint-config-react-app": "^7.0.1",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
-    "vite-tsconfig-paths": "^4.3.2",
-    "web-vitals": "^1.0.1",
-    "web3": "^1.8.2"
+    "vite-tsconfig-paths": "^4.3.2"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9"
