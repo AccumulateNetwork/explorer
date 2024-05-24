@@ -1,9 +1,10 @@
 import { Descriptions, Switch, Typography } from "antd";
+import React from 'react';
 
 const { Title } = Typography;
 
 export const Settings = new class Settings {
-  get enableDevMode() { return this.#get('enable-dev-mode'); }
+  get enableDevMode() { return this.#get('enable-dev-mode', false); }
   set enableDevMode(v) { this.#set('enable-dev-mode', v); }
 
   #get(name, def) {
