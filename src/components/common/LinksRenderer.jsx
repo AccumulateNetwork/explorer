@@ -7,7 +7,7 @@ export default function wrapLinksInHtml(text) {
     if (match.startsWith('http') || match.startsWith('https')) {
       return `<a href="${match}" target="_blank" rel="noopener noreferrer">${match}</a>`;
     } else if (match.startsWith('acc://')) {
-      let url = '/acc/' + match.replace("acc://", "")
+      let url = '/acc/' + match.replace('acc://', '');
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${match}</a>`;
     }
     return match; // Return the original match if not http(s) or acc://

@@ -26,6 +26,7 @@
   "devDependencies": {
     "@types/react": "^18.3.3",
     "eslint-config-react-app": "^7.0.1",
+    "prettier": "^3.2.5",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vite-tsconfig-paths": "^4.3.2"
@@ -43,6 +44,10 @@
       "react-app",
       "react-app/jest"
     ]
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true
   },
   "browserslist": {
     "production": [
