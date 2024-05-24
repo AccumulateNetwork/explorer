@@ -10,7 +10,7 @@ import {
 import networks from "./common/Networks.json";
 import { IconContext } from "react-icons";
 import {
-  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine, RiStarLine
+  RiDashboardLine, RiWalletLine, RiCoinLine, RiShieldCheckLine, RiArrowLeftRightLine, RiPercentLine, RiDropLine, RiStarLine, RiSettingsLine
 } from 'react-icons/ri';
 
 import Web3Module from './web3/Web3Module';
@@ -32,6 +32,7 @@ import Validators from './explorer/Validators';
 import Tokens from './explorer/Tokens';
 import Block from './explorer/Block';
 import Network from './explorer/Network';
+import page from './explorer/Settings';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -177,6 +178,12 @@ const Explorer = props => {
                                 <span className="nav-text">Mobile Wallet</span>
                             </a>
                         </Menu.Item>
+                        <Menu.Item key="settings">
+                            <Link to="/settings">
+                                <IconContext.Provider value={{ className: 'react-icons' }}><RiSettingsLine /></IconContext.Provider>
+                                <span className="nav-text">Settings</span>
+                            </Link>
+                        </Menu.Item>
                 </Menu.SubMenu>
 
             </Menu>
@@ -218,6 +225,7 @@ const Explorer = props => {
                 <Route path="/favourites" component={Favourites} />
                 <Route path="/blocks" component={MinorBlocks} />
                 <Route path="/network" component={Network} />
+                <Route path="/settings" component={page} />
 
                 <Route component={Error404} />
             </Switch>
