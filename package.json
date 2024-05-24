@@ -21,6 +21,7 @@
     "react-icons": "^4.2.0",
     "react-router-dom": "^5.3.0",
     "react-syntax-highlighter": "^15.5.0",
+    "rxjs": "^7.8.1",
     "web3": "^1.8.2"
   },
   "devDependencies": {
@@ -37,7 +38,9 @@
   "scripts": {
     "start": "VITE_APP_API_PATH='https://mainnet.accumulatenetwork.io' VITE_APP_ID='explorer-wespx' vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier -w src",
+    "check:format": "prettier src"
   },
   "eslintConfig": {
     "extends": [
