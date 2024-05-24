@@ -36,6 +36,8 @@ const tooltipDescs = {
     keyType: "The type of Key defined as the hash of the public key for a signature",
     nonce: "number added to a hashed or encrypted—block in a blockchain",
     sponsor: "The URL of the principal",
+    expireAtTime: "The deadline after which the transaction expires if it is still pending",
+    additionalAuthority: "An additional authority required to sign the transaction",
     recipient: "the account that is receiving a transaction",
     threshold: "the required m of n to execute a transaction",
     maxSupply: "The maximum number of ACME coded to exist in the lifetime of the cryptocurrency.",

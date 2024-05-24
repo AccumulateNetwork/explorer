@@ -51,9 +51,9 @@ const TxUpdateKeyPage = props => {
                         null
                     }
 
-                    {tx.data.operation ? (
+                    {tx.message.transaction.body?.operation ? (
                         <Descriptions.Item label={"Operations"} className={"align-top has-list"}>
-                            <TxOperations data={tx.data.operation} showAll={true}/>
+                            <TxOperations data={tx.message.transaction.body.operation} showAll={true}/>
                         </Descriptions.Item>
                     ) :
                         null

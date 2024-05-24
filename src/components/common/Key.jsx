@@ -1,4 +1,4 @@
-import { Address } from "accumulate.js";
+import { Address, sha256 } from "accumulate.js";
 import { SignatureType } from "accumulate.js/lib/core";
 import { Alert, Input, Select, Skeleton, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
@@ -11,12 +11,12 @@ const Key = props => {
     const [address, setAddress] = useState(null);
     const [error, setError] = useState(null);
 
-    const getAddress = async (type) => {
+    const getAddress = async (type = null) => {
         try {
             let hash;
             if (props.publicKey) {
                 const keyRaw = Buffer.from(props.publicKey, 'hex');
-                hash = Buffer.from(await crypto.subtle.digest('SHA-256', keyRaw));
+                hash = await sha256(keyRaw);
             } else {
                 hash = Buffer.from(props.keyHash, 'hex');
             }
@@ -26,7 +26,7 @@ const Key = props => {
                 return;
             }
 
-            if (type)
+            if (type !== null)
                 ; // Ok
             else if (props.type)
                 type = SignatureType.byName(props.type);
@@ -59,7 +59,17 @@ const Key = props => {
             : !address ?
                 <Skeleton active title={true} paragraph={false} />
             : props.type ?
-                <span><Tag color="blue" style={{textTransform: "uppercase"}}>{props.type}</Tag><Text className="code" copyable>{address}</Text></span>
+                <Input.Group compact className={"key"}>
+                    <Select defaultValue={props.type} size="small" className="key-type" onChange={handleChange}>
+                        {props.type === 'ed25519' && <Select.Option value="ed25519">ED25519</Select.Option>}
+                        {props.type === 'rcd1' && <Select.Option value="rcd1">RCD1</Select.Option>}
+                        {props.type === 'btc' && <Select.Option value="btc">BTC</Select.Option>}
+                        {props.type === 'eth' && <Select.Option value="eth">ETH</Select.Option>}
+                        <Select.Option value="unknown">Generic</Select.Option>
+                        <Select.Option value="hex">Hash</Select.Option>
+                    </Select>
+                    <Text className="key-text" copyable>{address}</Text>
+                </Input.Group>
             :
                 <Input.Group compact className={"key"}>
                     <Select defaultValue="unknown" size="small" className="key-type" onChange={handleChange}>

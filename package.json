@@ -40,7 +40,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
-    "start": "VITE_APP_API_PATH='https://api-gateway.accumulate.defidevs.io' VITE_APP_ID='explorer-wespx' vite",
+    "start": "VITE_APP_API_PATH='https://mainnet.accumulatenetwork.io' VITE_APP_ID='explorer-wespx' vite",
     "build": "vite build",
     "preview": "vite preview"
   },

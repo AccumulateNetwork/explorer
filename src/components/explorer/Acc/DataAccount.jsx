@@ -29,6 +29,8 @@ const { Title, Paragraph, Text } = Typography;
 const DataAccount = props => {
 
     const account = props.data;
+    account.type = account.account.type;
+    account.data = account.account;
 
     const [entries, setEntries] = useState(null);
     const [tableIsLoading, setTableIsLoading] = useState(true);
