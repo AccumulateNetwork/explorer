@@ -1,28 +1,26 @@
 [
-    {
-      "name": "Mainnet",
-      "mainnet": true,
-      "url": "https://explorer.accumulatenetwork.io",
-      "api": [
-        "https://api-gateway.accumulate.defidevs.io",
-        "https://mainnet.accumulatenetwork.io"
-      ]
-    },
-    {
-      "name": "Kermit Testnet",
-      "mainnet": false,
-      "url": "https://kermit.explorer.accumulatenetwork.io",
-      "api": [
-        "https://kermit.accumulatenetwork.io",
-        "https://testnet.accumulatenetwork.io"
-      ]
-    },
-    {
-      "name": "Fozzie Testnet",
-      "mainnet": false,
-      "url": "https://fozzie.explorer.accumulatenetwork.io",
-      "api": [
-        "https://fozzie.accumulatenetwork.io"
-      ]
-    }
-  ]
+  {
+    "name": "Mainnet",
+    "mainnet": true,
+    "url": "https://explorer.accumulatenetwork.io",
+    "api": [
+      "https://api-gateway.accumulate.defidevs.io",
+      "https://mainnet.accumulatenetwork.io"
+    ]
+  },
+  {
+    "name": "Kermit Testnet",
+    "mainnet": false,
+    "url": "https://kermit.explorer.accumulatenetwork.io",
+    "api": [
+      "https://kermit.accumulatenetwork.io",
+      "https://testnet.accumulatenetwork.io"
+    ]
+  },
+  {
+    "name": "Fozzie Testnet",
+    "mainnet": false,
+    "url": "https://fozzie.explorer.accumulatenetwork.io",
+    "api": ["https://fozzie.accumulatenetwork.io"]
+  }
+]

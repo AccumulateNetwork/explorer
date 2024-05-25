@@ -1,5 +1,5 @@
 const txDescs = {
-    internalGenesis: "Genesis transaction",
+  internalGenesis: 'Genesis transaction',
 };
 
 export default txDescs;

@@ -1,79 +1,76 @@
-import React, { useState, useEffect } from 'react';
-import { isValidPublicFctAddress, addressToRcdHash } from 'factom';
-import { Buffer, sha256 } from "accumulate.js/lib/common";
-
+import { Buffer, sha256 } from 'accumulate.js/lib/common';
+import { Form, Input, message } from 'antd';
+import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
-
-import { Form, message, Input } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import RPC from './RPC';
 
 const { Search } = Input;
 
 function SearchForm() {
-  
   const [searchTs, setSearchTs] = useState(null);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
   async function generateLiteIdentity(publicKeyHash) {
     const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
     const checkSum = Buffer.from(await sha256(pkHash)).slice(28);
-    const authority = Buffer.from(Buffer.concat([pkHash, checkSum])).toString("hex");
+    const authority = Buffer.from(Buffer.concat([pkHash, checkSum])).toString(
+      'hex',
+    );
     return authority;
   }
 
   const handleSearch = async (value) => {
-    value = value.replaceAll(/\s/g, "");
+    value = value.replaceAll(/\s/g, '');
     setSearchTs(moment());
     setSearchText(value);
     setSearchIsLoading(true);
     var ishash = /^[A-Fa-f0-9]{64}$/.test(value);
     var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
-        redirect('/block/'+value);
-    }
-    else if (ishash) {
-        searchTxhash(value);
-    }
-    else if (isValidPublicFctAddress(value)) {
-        const liteIdentityUrl = await generateLiteIdentity(addressToRcdHash(value));
-        setSearchIsLoading(false);
-        redirect("/acc/"+liteIdentityUrl);
-    }
-    else {
-        search(value.replace("acc://", ""));
+      redirect('/block/' + value);
+    } else if (ishash) {
+      searchTxhash(value);
+    } else if (isValidPublicFctAddress(value)) {
+      const liteIdentityUrl = await generateLiteIdentity(
+        addressToRcdHash(value),
+      );
+      setSearchIsLoading(false);
+      redirect('/acc/' + liteIdentityUrl);
+    } else {
+      search(value.replace('acc://', ''));
     }
   };
 
   const redirect = (url) => {
     window.location.href = url;
-  }
+  };
 
   const searchTxhash = async (txhash) => {
     try {
-        let params = {scope: `${txhash}@unknown`};
-        const response = await RPC.request("query", params, "v3");
-        setSearchIsLoading(false);
-        if (response && response.id) {
-          redirect('/acc/'+response.id.replace("acc://", ""));
-        } else {
-          redirect(`/acc/${txhash}@unknown`);
-        }
-    }
-    catch(error) {
+      let params = { scope: `${txhash}@unknown` };
+      const response = await RPC.request('query', params, 'v3');
+      setSearchIsLoading(false);
+      if (response && response.id) {
+        redirect('/acc/' + response.id.replace('acc://', ''));
+      } else {
+        redirect(`/acc/${txhash}@unknown`);
+      }
+    } catch (error) {
       setSearchIsLoading(false);
       message.info('Nothing was found');
     }
-  }
+  };
 
   const search = async (url) => {
     setSearchIsLoading(false);
-    redirect('/acc/'+url);
-  }
+    redirect('/acc/' + url);
+  };
 
-/*   function searchToken(name) {
+  /*   function searchToken(name) {
     console.log(name)
   } */
 
@@ -97,20 +94,28 @@ function SearchForm() {
   }, [searchTs, searchText, searchForm]);
 
   return (
-    <Form form={searchForm} initialValues={{ search: '' }} className="search-box">
-    <Form.Item name="search">
-    <Search
-        placeholder="Search by Accumulate URL, TXID or block number"
-        size="large"
-        enterButton
-        onSearch={(value) => { if (value!=='') { handleSearch(value); } }}
-        loading={searchIsLoading}
-        spellCheck={false}
-        autoComplete="off"
-        disabled={searchIsLoading}
-        allowClear={true}
-    />
-    </Form.Item>
+    <Form
+      form={searchForm}
+      initialValues={{ search: '' }}
+      className="search-box"
+    >
+      <Form.Item name="search">
+        <Search
+          placeholder="Search by Accumulate URL, TXID or block number"
+          size="large"
+          enterButton
+          onSearch={(value) => {
+            if (value !== '') {
+              handleSearch(value);
+            }
+          }}
+          loading={searchIsLoading}
+          spellCheck={false}
+          autoComplete="off"
+          disabled={searchIsLoading}
+          allowClear={true}
+        />
+      </Form.Item>
     </Form>
   );
 }
