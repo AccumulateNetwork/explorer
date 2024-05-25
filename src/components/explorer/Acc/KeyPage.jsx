@@ -11,10 +11,10 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { AccChains } from '../../common/AccChains';
 import Count from '../../common/Count';
 import Key from '../../common/Key';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -259,9 +259,7 @@ const KeyPage = (props) => {
             </Paragraph>
           )}
 
-          <TxChain url={keypage.account.url} type="transaction" />
-          <TxChain url={keypage.account.url} type="pending" />
-          <TxChain url={keypage.account.url} type="signature" />
+          <AccChains account={keypage.account.url} />
         </div>
       ) : null}
     </div>

@@ -22,9 +22,11 @@
     "react-router-dom": "^5.3.0",
     "react-syntax-highlighter": "^15.5.0",
     "rxjs": "^7.8.1",
+    "use-async-effect": "^2.2.7",
     "web3": "^1.8.2"
   },
   "devDependencies": {
+    "@ledgerhq/hw-transport": "^6.30.6",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react": "^18.3.3",
     "eslint-config-react-app": "^7.0.1",
@@ -37,7 +39,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
-    "start": "VITE_APP_API_PATH='https://mainnet.accumulatenetwork.io' VITE_APP_ID='explorer-wespx' vite",
+    "start": "VITE_APP_API_PATH='https://kermit.accumulatenetwork.io' VITE_APP_ID='explorer-wespx' vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format": "prettier -w src",

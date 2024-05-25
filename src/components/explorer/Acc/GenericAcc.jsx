@@ -65,6 +65,8 @@ const GenericAcc = (props) => {
             ) : null}
           </Descriptions>
 
+          <AccChains account={account.data.url} />
+
           <Title level={4}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
               <RiInformationLine />

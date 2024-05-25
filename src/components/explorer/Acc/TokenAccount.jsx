@@ -2,7 +2,6 @@ import {
   Alert,
   Descriptions,
   Skeleton,
-  Table,
   Tag,
   Tooltip,
   Typography,
@@ -20,17 +19,15 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
-import Count from '../../common/Count';
 import FaucetAddress from '../../common/Faucet';
 import getToken from '../../common/GetToken';
-import RPC from '../../common/RPC';
 import {
   tokenAmount,
   tokenAmountToLocaleString,
 } from '../../common/TokenAmount';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Text, Title, Paragraph } = Typography;
 
@@ -38,67 +35,8 @@ const TokenAccount = (props) => {
   const tokenAccount = props.data;
   if (!tokenAccount?.account?.balance) tokenAccount.account.balance = 0;
   const [token, setToken] = useState(null);
-  const [txs, setTxs] = useState(null);
   const [stakingAccount, setStakingAccount] = useState(null);
   const [error, setError] = useState(null);
-  const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    pageSize: 10,
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
-  });
-  const [totalTxs, setTotalTxs] = useState(-1);
-
-  const getTxs = async (params = pagination) => {
-    setTableIsLoading(true);
-
-    let start = 0;
-
-    if (params) {
-      start = (params.current - 1) * params.pageSize;
-    }
-
-    try {
-      const response = await RPC.request(
-        'query',
-        {
-          scope: tokenAccount.account.url,
-          query: {
-            queryType: 'chain',
-            name: 'main',
-            range: {
-              fromEnd: true,
-              expand: true,
-              count: params.pageSize,
-              start,
-            },
-          },
-        },
-        'v3',
-      );
-      if (response?.records) {
-        // workaround API bug response
-        if (response.start === null || response.start === undefined) {
-          response.start = 0;
-        }
-
-        setTxs(response.records.reverse());
-        setPagination({
-          ...pagination,
-          current: params.current,
-          pageSize: params.pageSize,
-          total: response.total,
-        });
-        setTotalTxs(response.total);
-      } else {
-        throw new Error('Token account not found');
-      }
-    } catch (error) {
-      // error is managed by RPC.js, no need to display anything
-    }
-    setTableIsLoading(false);
-  };
 
   const getStakingInfo = async (url) => {
     if (!import.meta.env.VITE_APP_METRICS_API_PATH) return;
@@ -116,213 +54,9 @@ const TokenAccount = (props) => {
     }
   };
 
-  function TxOutputs(props) {
-    const data = props.tx;
-    const items = data.map((item, index) => (
-      <Paragraph key={{ index }}>
-        {item.url === tokenAccount.account.url ? (
-          <Text type="secondary">{item.url}</Text>
-        ) : (
-          <nobr>
-            <Link to={'/acc/' + item.url.replace('acc://', '')}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiAccountCircleLine />
-              </IconContext.Provider>
-              {item.url}
-            </Link>
-          </nobr>
-        )}
-      </Paragraph>
-    ));
-    return <span className="break-all">{items}</span>;
-  }
-
-  function TxAmounts(props) {
-    const data = props.tx;
-    const items = data.map((item, index) => (
-      <Paragraph key={{ index }}>
-        <Tooltip
-          title={tokenAmountToLocaleString(
-            item.amount,
-            props.token.precision,
-            props.token.symbol,
-          )}
-        >
-          {tokenAmount(item.amount, props.token.precision, props.token.symbol)}
-        </Tooltip>
-      </Paragraph>
-    ));
-    return <span>{items}</span>;
-  }
-
-  const columns = [
-    {
-      title: '#',
-      className: 'align-top no-break',
-      render: (row) => {
-        if (row?.index >= 0) {
-          return (
-            <div>
-              <Text>{row.index}</Text>
-            </div>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Transaction ID',
-      dataIndex: 'entry',
-      className: 'align-top no-break',
-      render: (entry) => {
-        if (entry) {
-          return (
-            <Link
-              to={
-                '/acc/' +
-                entry +
-                '@' +
-                tokenAccount.account.url.replace('acc://', '')
-              }
-            >
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiExchangeLine />
-              </IconContext.Provider>
-              {entry}
-            </Link>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Type',
-      className: 'align-top no-break',
-      render: (tx) => {
-        const type = tx?.value?.message?.transaction?.body?.type;
-        if (type) {
-          return (
-            <div>
-              <Tag color="green">{type}</Tag>
-            </div>
-          );
-        } else {
-          return <Tag>N/A</Tag>;
-        }
-      },
-    },
-    {
-      title: 'From',
-      className: 'align-top no-break',
-      render: (tx) => {
-        const from =
-          tx?.value?.message?.transaction?.body?.source ||
-          tx?.value?.message?.transaction?.header?.principal;
-
-        if (from === undefined) {
-          return <Text disabled>N/A</Text>;
-        } else if (from === tokenAccount.account.url) {
-          return <Text type="secondary">{from}</Text>;
-        } else {
-          return (
-            <Link to={'/acc/' + from.replace('acc://', '')}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiAccountCircleLine />
-              </IconContext.Provider>
-              {from}
-            </Link>
-          );
-        }
-      },
-    },
-    {
-      title: 'To',
-      className: 'align-top no-break',
-      render: (tx) => {
-        const to = tx?.value?.message?.transaction?.body?.to;
-        const recipient =
-          tx?.value?.message?.transaction?.body?.recipient ||
-          tx?.value?.message?.transaction?.header?.principal;
-        if (to || recipient) {
-          if (to && Array.isArray(to) && to[0]) {
-            return <TxOutputs tx={to} token={token} />;
-          }
-          if (recipient) {
-            if (recipient === tokenAccount.account.url) {
-              return <Text type="secondary">{recipient}</Text>;
-            } else {
-              return (
-                <Link to={'/acc/' + recipient.replace('acc://', '')}>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <RiAccountCircleLine />
-                  </IconContext.Provider>
-                  {recipient}
-                </Link>
-              );
-            }
-          }
-          //special case for acmeFaucet tx type
-        } else if (tx.type === 'acmeFaucet' && tx.data.url) {
-          return (
-            <Link to={'/acc/' + tx.data.url.replace('acc://', '')}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiAccountCircleLine />
-              </IconContext.Provider>
-              {tx.data.url}
-            </Link>
-          );
-          //special case, with no TO or RECIPIENT address
-        } else if (
-          (tx.type === 'syntheticDepositTokens' ||
-            tx.type === 'syntheticDepositCredits') &&
-          tx.origin
-        ) {
-          return <Text type="secondary">{tx.origin}</Text>;
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Amount',
-      className: 'align-top no-break',
-      render: (tx) => {
-        const to = tx?.value?.message?.transaction?.body?.to;
-        const amount = tx?.value?.message?.transaction?.body?.amount;
-        if (to && Array.isArray(to) && to[0] && token) {
-          return <TxAmounts tx={to} token={token} />;
-        } else if (amount && token) {
-          return (
-            <Descriptions.Item>
-              <Tooltip
-                title={tokenAmountToLocaleString(
-                  amount,
-                  token.precision,
-                  token.symbol,
-                )}
-              >
-                {tokenAmount(amount, token.precision, token.symbol)}
-              </Tooltip>
-            </Descriptions.Item>
-          );
-        } else if (amount && tx.oracle) {
-          //if not a TOKEN, then it is a CREDIT - NOT WORKING
-          return <Text>{amount * tx.oracle * 1e-10} credits</Text>;
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-  ];
-
   useEffect(() => {
-    setPagination({ ...pagination, current: 1 });
-    setTxs(null);
     getToken(tokenAccount.account.tokenUrl, setToken, setError);
     getStakingInfo(tokenAccount.account.url);
-    getTxs();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -577,28 +311,7 @@ const TokenAccount = (props) => {
 
           <Authorities items={tokenAccount.account.authorities} />
 
-          <Title level={4}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiExchangeLine />
-            </IconContext.Provider>
-            Transactions
-            <Count count={totalTxs ? totalTxs : 0} />
-          </Title>
-
-          <Table
-            dataSource={txs}
-            columns={columns}
-            pagination={pagination}
-            rowKey="txid"
-            loading={tableIsLoading}
-            onChange={getTxs}
-            scroll={{ x: 'max-content' }}
-          />
-
-          {tokenAccount.recordType !== 'liteTokenAccount' ? (
-            <TxChain url={tokenAccount.account.url} type="pending" />
-          ) : null}
-          <TxChain url={tokenAccount.account.url} type="signature" />
+          <AccChains account={tokenAccount.account.url} />
         </div>
       ) : (
         <div>

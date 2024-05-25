@@ -10,11 +10,11 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title, Text } = Typography;
 
@@ -196,8 +196,7 @@ const ADI = (props) => {
             scroll={{ x: 'max-content' }}
           />
 
-          <TxChain url={adi.account.url} type="transaction" />
-          <TxChain url={adi.account.url} type="signature" />
+          <AccChains account={adi.account.url} />
         </div>
       ) : (
         <div>

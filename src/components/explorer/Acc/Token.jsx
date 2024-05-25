@@ -3,10 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
+import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import getSupply from '../../common/GetSupply';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title, Text } = Typography;
 
@@ -227,9 +227,7 @@ const Token = (props) => {
 
           <Authorities items={token.account.authorities} />
 
-          <TxChain url={token.account.url} type="transaction" />
-          <TxChain url={token.account.url} type="pending" />
-          <TxChain url={token.account.url} type="signature" />
+          <AccChains account={token.account.url} />
         </div>
       ) : null}
     </div>

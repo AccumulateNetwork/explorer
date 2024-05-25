@@ -10,13 +10,13 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import Data from '../../common/Data';
 import ExtId from '../../common/ExtId';
 import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -247,18 +247,14 @@ const DataAccount = (props) => {
           <Table
             dataSource={entries}
             columns={columns}
-            pagination={pagination}
+            pagination={totalEntries > pagination.pageSize && pagination}
             rowKey="entry"
             loading={tableIsLoading}
             onChange={getEntries}
             scroll={{ x: 'max-content' }}
           />
 
-          <TxChain url={account.data.url} type="transaction" />
-          {account.type !== 'liteDataAccount' ? (
-            <TxChain url={account.data.url} type="pending" />
-          ) : null}
-          <TxChain url={account.data.url} type="signature" />
+          <AccChains account={account.data.url} />
         </div>
       ) : null}
     </div>

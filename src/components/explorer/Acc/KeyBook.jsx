@@ -9,10 +9,10 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import TxChain from '../../common/TxChain';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -138,9 +138,7 @@ const KeyBook = (props) => {
             </Paragraph>
           )}
 
-          <TxChain url={keybook.account.url} type="transaction" />
-          <TxChain url={keybook.account.url} type="pending" />
-          <TxChain url={keybook.account.url} type="signature" />
+          <AccChains account={keybook.account.url} />
         </div>
       ) : null}
     </div>
