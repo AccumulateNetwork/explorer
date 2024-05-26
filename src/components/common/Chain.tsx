@@ -79,11 +79,9 @@ export function Chain(props: {
   });
   const [totalEntries, setTotalEntries] = useState(-1);
 
-  const x = RecordType.Account;
-
   useAsyncEffect(
     async (mounted) => {
-      if (props.type !== 'main') {
+      if (props.type !== 'main' && props.type !== 'scratch') {
         return;
       }
 
