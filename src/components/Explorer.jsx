@@ -48,6 +48,10 @@ const Explorer = (props) => {
 
   // TODO: Make this state that is configurable
   const api = new JsonRpcClient(`${import.meta.env.VITE_APP_API_PATH}/v3`);
+  const onApiError = (error) => {
+    console.error(error);
+    message.error('API call failed');
+  };
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
@@ -252,7 +256,7 @@ const Explorer = (props) => {
           ) : null}
         </Header>
 
-        <Shared.Provider value={{ api }}>
+        <Shared.Provider value={{ api, onApiError }}>
           <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
             {!isMainnet && <Web3Module data={web3ModuleData} />}
             <SearchForm />

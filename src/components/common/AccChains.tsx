@@ -1,30 +1,14 @@
 import { URLArgs } from 'accumulate.js';
-import { Typography } from 'antd';
-import React, { useState } from 'react';
+import { Spin, Typography } from 'antd';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 
 import { Chain } from './Chain';
 import Count from './Count';
-import RPC from './RPC';
-import { useAsyncEffect } from './useAsync';
+import { queryEffect } from './Shared';
 
-const { Title, Text } = Typography;
-
-function withQuery(scope, query, callback, deps) {
-  useAsyncEffect(async (mounted) => {
-    const r = await RPC.request(
-      'query',
-      {
-        scope: scope.toString(),
-        query,
-      },
-      'v3',
-    );
-    if (!mounted()) return;
-    callback(r);
-  }, deps);
-}
+const { Title } = Typography;
 
 export function AccChains({ account }: { account: URLArgs }) {
   const [pendingCount, setPendingCount] = useState(null);
@@ -34,41 +18,26 @@ export function AccChains({ account }: { account: URLArgs }) {
     signature: null,
   });
 
-  withQuery(
-    account,
-    {
-      queryType: 'pending',
+  queryEffect(account, {
+    queryType: 'pending',
+    range: { count: 0 },
+  }).then(({ total }) => {
+    setPendingCount(total);
+  });
 
-      // We only want the total number
-      range: {
-        count: 0,
-        expand: false,
-      },
-    },
-    (r) => {
-      setPendingCount(r.total);
-    },
-    [account],
-  );
-
-  withQuery(
-    account,
-    { queryType: 'chain' },
-    (r) => {
-      const counts = {
-        main: 0,
-        scratch: 0,
-        signature: 0,
-      };
-      for (const { name, count } of r.records) {
-        if (count) {
-          counts[name] = count;
-        }
+  queryEffect(account, { queryType: 'chain' }).then(({ records }) => {
+    const counts = {
+      main: 0,
+      scratch: 0,
+      signature: 0,
+    };
+    for (const { name, count } of records) {
+      if (count) {
+        counts[name] = count;
       }
-      setCount(counts);
-    },
-    [account],
-  );
+    }
+    setCount(counts);
+  });
 
   return (
     <div>

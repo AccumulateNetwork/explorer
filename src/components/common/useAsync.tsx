@@ -16,7 +16,7 @@ export function useAsyncEffect<V>(
         await effect(() => mounted);
         resolve();
       } catch (error) {
-        reject();
+        reject(error);
       }
     })();
 
