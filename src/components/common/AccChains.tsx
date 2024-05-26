@@ -1,14 +1,13 @@
 import { URLArgs } from 'accumulate.js';
-import { TokenAccount } from 'accumulate.js/lib/core';
-import { Skeleton, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Typography } from 'antd';
+import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
-import useAsyncEffect from 'use-async-effect';
 
 import { Chain } from './Chain';
 import Count from './Count';
 import RPC from './RPC';
+import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;
 

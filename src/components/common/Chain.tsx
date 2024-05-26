@@ -2,11 +2,13 @@ import { TxID, URL, URLArgs } from 'accumulate.js';
 import {
   AccountRecord,
   ChainEntryRecord,
+  ErrorRecord,
   JsonRpcClient,
   MessageRecord,
   RangeOptionsArgs,
   Record,
   RecordRange,
+  RecordType,
 } from 'accumulate.js/lib/api_v3';
 import {
   Account,
@@ -20,6 +22,7 @@ import {
   Transaction,
   TransactionType,
 } from 'accumulate.js/lib/core';
+import { Status } from 'accumulate.js/lib/errors';
 import {
   Message,
   MessageType,
@@ -35,7 +38,6 @@ import {
   RiShieldCheckLine,
   RiTimerLine,
 } from 'react-icons/ri';
-import useAsyncEffect from 'use-async-effect';
 
 import {
   CreditAmount,
@@ -45,11 +47,13 @@ import {
 } from './Amount';
 import { Link } from './Link';
 import TxTo from './TxTo';
+import { useAsyncEffect } from './useAsync';
 
-type PendingRecord = MessageRecord<TransactionMessage>;
-type ChainRecord = ChainEntryRecord<
-  MessageRecord<TransactionMessage | SignatureMessage>
->;
+type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
+type ChainRecord =
+  | ChainEntryRecord<MessageRecord<TransactionMessage>>
+  | ChainEntryRecord<MessageRecord<SignatureMessage>>
+  | ChainEntryRecord<ErrorRecord>;
 
 const { Text, Paragraph } = Typography;
 const client = new JsonRpcClient(`${import.meta.env.VITE_APP_API_PATH}/v3`);
@@ -75,6 +79,8 @@ export function Chain(props: {
     total: null,
   });
   const [totalEntries, setTotalEntries] = useState(-1);
+
+  const x = RecordType.Account;
 
   useAsyncEffect(
     async (mounted) => {
@@ -152,22 +158,30 @@ export function Chain(props: {
     {
       title: '#',
       className: 'no-break',
-      render(row: ChainRecord) {
-        return <Chain.Index entry={row} />;
+      render(r: ChainRecord) {
+        return <Chain.Index entry={r} />;
       },
     },
     {
       title: 'Transaction ID',
       className: 'no-break',
-      render(row: ChainRecord) {
-        return <Chain.ID entry={row} />;
+      render({ value, entry }: ChainRecord) {
+        if (value instanceof ErrorRecord) {
+          return (
+            <Text type="secondary">{Buffer.from(entry).toString('hex')}</Text>
+          );
+        }
+        return <Chain.ID record={value} entry={entry} />;
       },
     },
     {
       title: 'Type',
       className: 'no-break',
-      render(tx: ChainRecord) {
-        return <Chain.Type entry={tx} />;
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) {
+          return <Tag color="red">{Status.getName(value.value.code)}</Tag>;
+        }
+        return <Chain.Type message={value.message} />;
       },
     },
   ];
@@ -176,8 +190,12 @@ export function Chain(props: {
     columns.push({
       title: 'From',
       className: 'no-break',
-      render(tx: ChainRecord) {
-        return <Chain.TxnFrom account={account} entry={tx} />;
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnFrom account={account} txn={value.message.transaction} />
+        );
       },
     });
   }
@@ -186,8 +204,12 @@ export function Chain(props: {
     columns.push({
       title: 'To',
       className: 'no-break',
-      render(r: ChainRecord) {
-        return <Chain.TxnTo entry={r} account={account} />;
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnTo account={account} txn={value.message.transaction} />
+        );
       },
     });
   }
@@ -197,8 +219,16 @@ export function Chain(props: {
       title: 'Amount',
       className: 'no-break',
       align: 'right',
-      render(r: ChainRecord) {
-        return <Chain.TxnAmount entry={r} account={account} issuer={issuer} />;
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnAmount
+            account={account}
+            issuer={issuer}
+            txn={value.message.transaction}
+          />
+        );
       },
     });
   }
@@ -228,16 +258,21 @@ export function Chain(props: {
         size="small"
         bordered
         dataSource={txChain as PendingRecord[]}
-        renderItem={(item) => (
-          <List.Item>
-            <Link to={item.id}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <Icon />
-              </IconContext.Provider>
-              {item.id.toString()}
-            </Link>
-          </List.Item>
-        )}
+        renderItem={(item) => {
+          if (item instanceof ErrorRecord) {
+            return <Text style={{ color: 'red' }}>{item.value.message}</Text>;
+          }
+          return (
+            <List.Item>
+              <Link to={item.id}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                  <Icon />
+                </IconContext.Provider>
+                {item.id.toString()}
+              </Link>
+            </List.Item>
+          );
+        }}
         style={{ marginBottom: '30px' }}
       />
     );
@@ -252,27 +287,29 @@ export function Chain(props: {
       loading={tableIsLoading}
       scroll={{ x: 'max-content' }}
       expandable={{
-        expandedRowRender: (r) => {
-          if (r.value.message.type !== MessageType.Transaction) return null;
-          const data = recipientsOfTx(r.value.message.transaction).map((x) =>
+        expandedRowRender: ({ value }) => {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          const data = recipientsOfTx(value.message.transaction).map((x) =>
             x.asObject(),
           );
           return <TxTo data={data} token={issuer} />;
         },
-        rowExpandable: (r) =>
-          r.value.message.type === MessageType.Transaction &&
-          recipientsOfTx(r.value.message.transaction).length > 1,
+        rowExpandable: ({ value }) => {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            value.message.type === MessageType.Transaction &&
+            recipientsOfTx(value.message.transaction)?.length > 1
+          );
+        },
         expandRowByClick: true,
       }}
     />
   );
 }
 
-Chain.Index = function <R extends Record>({
-  entry,
-}: {
-  entry: ChainEntryRecord<R>;
-}) {
+Chain.Index = function ({ entry }: { entry: ChainEntryRecord<Record> }) {
   return (
     <div>
       <Text>{entry.index}</Text>
@@ -280,33 +317,35 @@ Chain.Index = function <R extends Record>({
   );
 };
 
-Chain.ID = function <M extends Message>({
+Chain.ID = function ({
+  record,
   entry,
 }: {
-  entry: ChainEntryRecord<MessageRecord<M>>;
+  record: MessageRecord;
+  entry: Uint8Array;
 }) {
+  const Icon =
+    record.message.type === MessageType.Signature
+      ? RiShieldCheckLine
+      : RiExchangeLine;
   return (
-    <Link to={entry.value.id}>
+    <Link to={record.id}>
       <IconContext.Provider value={{ className: 'react-icons' }}>
-        {entry.name == 'signature' ? <RiShieldCheckLine /> : <RiExchangeLine />}
+        <Icon />
       </IconContext.Provider>
-      {Buffer.from(entry.entry).toString('hex')}
+      {Buffer.from(entry).toString('hex')}
     </Link>
   );
 };
 
-Chain.Type = function <M extends Message>({
-  entry,
-}: {
-  entry: ChainEntryRecord<MessageRecord<M>>;
-}) {
+Chain.Type = function ({ message }: { message: Message }) {
   let type: string;
-  switch (entry.value.message.type) {
+  switch (message.type) {
     case MessageType.Transaction:
-      type = TransactionType.getName(entry.value.message.transaction.body.type);
+      type = TransactionType.getName(message.transaction.body.type);
       break;
     case MessageType.Signature:
-      type = SignatureType.getName(entry.value.message.signature.type);
+      type = SignatureType.getName(message.signature.type);
       break;
     default:
       return null;
@@ -314,18 +353,15 @@ Chain.Type = function <M extends Message>({
   return <Tag color="green">{type}</Tag>;
 };
 
-Chain.TxnFrom = function <M extends Message>({
-  entry,
+Chain.TxnFrom = function ({
+  txn,
   account,
 }: {
-  entry: ChainEntryRecord<MessageRecord<M>>;
+  txn: Transaction;
   account: Account;
 }) {
-  if (entry.value.message.type !== MessageType.Transaction) return null;
-
-  const tx = entry.value.message.transaction;
-  let from: URL | TxID = tx.header.principal;
-  switch (tx.body.type) {
+  let from: URL | TxID = txn.header.principal;
+  switch (txn.body.type) {
     case TransactionType.SendTokens:
     case TransactionType.IssueTokens:
     case TransactionType.BurnTokens:
@@ -335,15 +371,15 @@ Chain.TxnFrom = function <M extends Message>({
 
     case TransactionType.SyntheticDepositTokens:
     case TransactionType.SyntheticDepositCredits:
-      if (tx.body.isRefund) {
+      if (txn.body.isRefund) {
         return (
           <div>
             <Tag color="orange">refund</Tag>
-            <Link to={tx.body.cause}>
+            <Link to={txn.body.cause}>
               <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiExchangeLine />
               </IconContext.Provider>
-              {Buffer.from(tx.body.cause.hash).toString('hex')}
+              {Buffer.from(txn.body.cause.hash).toString('hex')}
             </Link>
           </div>
         );
@@ -351,7 +387,7 @@ Chain.TxnFrom = function <M extends Message>({
 
     // fallthrough
     case TransactionType.SyntheticBurnTokens:
-      from = tx.body.source;
+      from = txn.body.source;
       break;
 
     default:
@@ -372,17 +408,14 @@ Chain.TxnFrom = function <M extends Message>({
   );
 };
 
-Chain.TxnTo = function <M extends Message>({
-  entry,
+Chain.TxnTo = function ({
+  txn,
   account,
 }: {
-  entry: ChainEntryRecord<MessageRecord<M>>;
+  txn: Transaction;
   account: Account;
 }) {
-  if (entry.value.message.type !== MessageType.Transaction) return null;
-
-  const tx = entry.value.message.transaction;
-  const to = recipientsOfTx(tx);
+  const to = recipientsOfTx(txn);
   if (!to) return null;
 
   if (to.length !== 1) {
@@ -403,43 +436,40 @@ Chain.TxnTo = function <M extends Message>({
   );
 };
 
-Chain.TxnAmount = function <M extends Message>({
-  entry,
+Chain.TxnAmount = function ({
+  txn,
   account,
   issuer,
 }: {
-  entry: ChainEntryRecord<MessageRecord<M>>;
+  txn: Transaction;
   account: Account;
   issuer?: TokenIssuer;
 }) {
-  if (entry.value.message.type !== MessageType.Transaction) return null;
-
-  const tx = entry.value.message.transaction;
-  switch (tx.body.type) {
+  switch (txn.body.type) {
     case TransactionType.SendTokens:
     case TransactionType.IssueTokens: {
-      return <TokenAmount issuer={issuer} {...amountFor(account, tx)} />;
+      return <TokenAmount issuer={issuer} {...amountFor(account, txn)} />;
     }
 
     case TransactionType.BurnTokens:
     case TransactionType.AddCredits:
-      return <TokenAmount issuer={issuer} amount={tx.body.amount} debit />;
+      return <TokenAmount issuer={issuer} amount={txn.body.amount} debit />;
 
     case TransactionType.BurnCredits:
-      return <CreditAmount amount={tx.body.amount} debit />;
+      return <CreditAmount amount={txn.body.amount} debit />;
 
     case TransactionType.TransferCredits:
-      return <CreditAmount {...amountFor(account, tx)} />;
+      return <CreditAmount {...amountFor(account, txn)} />;
 
     case TransactionType.SyntheticDepositTokens:
     case TransactionType.SyntheticBurnTokens:
-      return <TokenAmount issuer={issuer} amount={tx.body.amount} />;
+      return <TokenAmount issuer={issuer} amount={txn.body.amount} />;
 
     case TransactionType.SyntheticDepositCredits:
-      return <CreditAmount amount={tx.body.amount} />;
+      return <CreditAmount amount={txn.body.amount} />;
 
     case TransactionType.BlockValidatorAnchor:
-      return <TokenAmount issuer={issuer} amount={tx.body.acmeBurnt} />;
+      return <TokenAmount issuer={issuer} amount={txn.body.acmeBurnt} />;
 
     default:
       return null;
