@@ -3,12 +3,10 @@ import {
   AccountRecord,
   ChainEntryRecord,
   ErrorRecord,
-  JsonRpcClient,
   MessageRecord,
   RangeOptionsArgs,
   Record,
   RecordRange,
-  RecordType,
 } from 'accumulate.js/lib/api_v3';
 import {
   Account,
@@ -26,11 +24,10 @@ import { Status } from 'accumulate.js/lib/errors';
 import {
   Message,
   MessageType,
-  SignatureMessage,
   TransactionMessage,
 } from 'accumulate.js/lib/messaging';
-import { List, Skeleton, Table, TableProps, Tag, Typography } from 'antd';
-import React, { useState } from 'react';
+import { List, Skeleton, Spin, Table, TableProps, Tag, Typography } from 'antd';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -46,6 +43,7 @@ import {
   totalAmount,
 } from './Amount';
 import { Link } from './Link';
+import { Shared } from './Shared';
 import TxTo from './TxTo';
 import { useAsyncEffect } from './useAsync';
 
@@ -54,8 +52,7 @@ type ChainRecord =
   | ChainEntryRecord<MessageRecord>
   | ChainEntryRecord<ErrorRecord>;
 
-const { Text, Paragraph } = Typography;
-const client = new JsonRpcClient(`${import.meta.env.VITE_APP_API_PATH}/v3`);
+const { Text } = Typography;
 
 export function Chain(props: {
   url: URLArgs;
@@ -63,6 +60,9 @@ export function Chain(props: {
 }) {
   const { type } = props;
   const url = URL.parse(props.url);
+
+  const { api } = useContext(Shared);
+  if (!api) return <Spin />;
 
   const [txChain, setTxChain] = useState<PendingRecord[] | ChainRecord[]>(null);
   const [account, setAccount] = useState<
@@ -85,7 +85,7 @@ export function Chain(props: {
         return;
       }
 
-      const r = (await client.query(url)) as AccountRecord;
+      const r = (await api.query(url)) as AccountRecord;
       if (!mounted()) return;
       switch (r.account.type) {
         case AccountType.TokenAccount:
@@ -104,7 +104,7 @@ export function Chain(props: {
           return;
       }
 
-      const r2 = (await client.query(r.account.tokenUrl)) as AccountRecord;
+      const r2 = (await api.query(r.account.tokenUrl)) as AccountRecord;
       if (!mounted()) return;
       if (r2.account.type === AccountType.TokenIssuer) {
         setIssuer(r2.account);
@@ -124,11 +124,11 @@ export function Chain(props: {
         };
         const response =
           type === 'pending'
-            ? await client.query(url, {
+            ? await api.query(url, {
                 queryType: 'pending',
                 range,
               })
-            : ((await client.query(url, {
+            : ((await api.query(url, {
                 queryType: 'chain',
                 name: type,
                 range: { ...range, fromEnd: true },
