@@ -4,7 +4,7 @@ import { IconContext } from 'react-icons';
 import { RiAccountCircleLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
+import { tokenAmount, tokenAmountToLocaleString } from './Amount';
 
 const { Text, Paragraph } = Typography;
 

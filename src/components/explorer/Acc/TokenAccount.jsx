@@ -20,13 +20,10 @@ import {
 import { Link } from 'react-router-dom';
 
 import { AccChains } from '../../common/AccChains';
+import { tokenAmount, tokenAmountToLocaleString } from '../../common/Amount';
 import Authorities from '../../common/Authorities';
 import FaucetAddress from '../../common/Faucet';
 import getToken from '../../common/GetToken';
-import {
-  tokenAmount,
-  tokenAmountToLocaleString,
-} from '../../common/TokenAmount';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Text, Title, Paragraph } = Typography;

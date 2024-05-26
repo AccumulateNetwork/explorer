@@ -167,8 +167,8 @@ const KeyPage = (props) => {
             >
               {keypage.account.creditBalance
                 ? keypage.account.creditBalance / 100
-                : 0}
-               credits
+                : 0}{' '}
+              credits
             </Descriptions.Item>
           </Descriptions>
 
