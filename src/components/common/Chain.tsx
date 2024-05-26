@@ -26,7 +26,16 @@ import {
   MessageType,
   TransactionMessage,
 } from 'accumulate.js/lib/messaging';
-import { List, Skeleton, Spin, Table, TableProps, Tag, Typography } from 'antd';
+import {
+  List,
+  Skeleton,
+  Spin,
+  Table,
+  TablePaginationConfig,
+  TableProps,
+  Tag,
+  Typography,
+} from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -70,12 +79,12 @@ export function Chain(props: {
   >(null);
   const [issuer, setIssuer] = useState<TokenIssuer>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
     pageSize: 10,
     showSizeChanger: true,
+    hideOnSinglePage: true,
     pageSizeOptions: ['10', '20', '50', '100'],
     current: 1,
-    total: null,
   });
   const [totalEntries, setTotalEntries] = useState(-1);
 
@@ -280,7 +289,8 @@ export function Chain(props: {
     <Table
       dataSource={txChain as ChainRecord[]}
       columns={columns}
-      pagination={totalEntries > pagination.pageSize && pagination}
+      pagination={pagination}
+      onChange={(p) => setPagination(p)}
       rowKey="index"
       loading={tableIsLoading}
       scroll={{ x: 'max-content' }}
