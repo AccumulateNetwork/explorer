@@ -161,7 +161,7 @@ export function Chain(props: {
       },
     },
     {
-      title: 'Transaction ID',
+      title: 'ID',
       className: 'no-break',
       render({ value, entry }: ChainRecord) {
         if (value instanceof ErrorRecord) {
