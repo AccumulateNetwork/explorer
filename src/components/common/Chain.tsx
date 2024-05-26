@@ -44,6 +44,7 @@ import {
   totalAmount,
 } from './Amount';
 import { Link } from './Link';
+import TxTo from './TxTo';
 
 type PendingRecord = MessageRecord<TransactionMessage>;
 type ChainRecord = ChainEntryRecord<
@@ -250,6 +251,19 @@ export function Chain(props: {
       rowKey="index"
       loading={tableIsLoading}
       scroll={{ x: 'max-content' }}
+      expandable={{
+        expandedRowRender: (r) => {
+          if (r.value.message.type !== MessageType.Transaction) return null;
+          const data = recipientsOfTx(r.value.message.transaction).map((x) =>
+            x.asObject(),
+          );
+          return <TxTo data={data} token={issuer} />;
+        },
+        rowExpandable: (r) =>
+          r.value.message.type === MessageType.Transaction &&
+          recipientsOfTx(r.value.message.transaction).length > 1,
+        expandRowByClick: true,
+      }}
     />
   );
 }
@@ -372,8 +386,7 @@ Chain.TxnTo = function <M extends Message>({
   if (!to) return null;
 
   if (to.length !== 1) {
-    // TODO make the row expandable
-    return <Link to={entry.value.id}>{to.length} recipients</Link>;
+    return <Text type="secondary">{to.length} recipients</Text>;
   }
 
   if (to[0].url.equals(account.url)) {
