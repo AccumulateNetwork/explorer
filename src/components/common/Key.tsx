@@ -2,54 +2,43 @@ import { Address, sha256 } from 'accumulate.js';
 import { SignatureType } from 'accumulate.js/lib/core';
 import { Alert, Input, Select, Skeleton, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Settings } from '../explorer/Settings';
+import { useAsyncEffect } from './useAsync';
 
 const { Text } = Typography;
 
-const Key = (props) => {
+export default function (props: {
+  publicKey?: string;
+  keyHash?: string;
+  type?: string;
+}) {
+  const { publicKey, keyHash } = props;
+  const [type, setType] = useState(props.type);
   const [address, setAddress] = useState(null);
   const [error, setError] = useState(null);
 
-  const getAddress = async (type = null) => {
-    try {
-      let hash;
-      if (props.publicKey) {
-        const keyRaw = Buffer.from(props.publicKey, 'hex');
-        hash = await sha256(keyRaw);
-      } else {
-        hash = Buffer.from(props.keyHash, 'hex');
-      }
+  useAsyncEffect(
+    async (mounted) => {
+      const hash = keyHash
+        ? Buffer.from(keyHash, 'hex')
+        : await sha256(Buffer.from(publicKey, 'hex'));
+      if (!mounted()) return;
 
       if (type === 'hex') {
         setAddress(hash.toString('hex'));
         return;
       }
 
-      if (type !== null);
-      else if (props.type)
-        // Ok
-        type = SignatureType.byName(props.type);
-      else type = SignatureType.Unknown;
-
-      const addr = await Address.fromKeyHash(type, hash);
-      setAddress(await addr.format());
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const handleChange = async (event) => {
-    try {
-      getAddress(event === 'hex' ? event : SignatureType.byName(event));
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  useEffect(() => {
-    getAddress();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+      const sigType = type ? SignatureType.byName(type) : SignatureType.Unknown;
+      const addr = await Address.fromKeyHash(sigType, hash);
+      const s = await addr.format();
+      if (!mounted()) return;
+      setAddress(s);
+    },
+    [keyHash, publicKey, type],
+  ).catch((error) => setError(`${error}`));
 
   return (
     <div>
@@ -63,7 +52,7 @@ const Key = (props) => {
             defaultValue={props.type}
             size="small"
             className="key-type"
-            onChange={handleChange}
+            onChange={setType}
           >
             {props.type === 'ed25519' && (
               <Select.Option value="ed25519">ED25519</Select.Option>
@@ -90,7 +79,7 @@ const Key = (props) => {
             defaultValue="unknown"
             size="small"
             className="key-type"
-            onChange={handleChange}
+            onChange={setType}
           >
             <Select.Option value="unknown">Address</Select.Option>
             <Select.Option value="hex">Hash</Select.Option>
@@ -114,6 +103,4 @@ const Key = (props) => {
       )}
     </div>
   );
-};
-
-export default Key;
+}

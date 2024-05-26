@@ -51,8 +51,7 @@ import { useAsyncEffect } from './useAsync';
 
 type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
 type ChainRecord =
-  | ChainEntryRecord<MessageRecord<TransactionMessage>>
-  | ChainEntryRecord<MessageRecord<SignatureMessage>>
+  | ChainEntryRecord<MessageRecord>
   | ChainEntryRecord<ErrorRecord>;
 
 const { Text, Paragraph } = Typography;
@@ -148,6 +147,7 @@ export function Chain(props: {
         });
         setTotalEntries(response.total);
       } finally {
+        if (!mounted()) return;
         setTableIsLoading(false);
       }
     },
@@ -348,7 +348,8 @@ Chain.Type = function ({ message }: { message: Message }) {
       type = SignatureType.getName(message.signature.type);
       break;
     default:
-      return null;
+      type = MessageType.getName(message.type);
+      break;
   }
   return <Tag color="green">{type}</Tag>;
 };

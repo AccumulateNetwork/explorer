@@ -4,16 +4,26 @@ export function useAsyncEffect<V>(
   effect: (isMounted: () => boolean) => V | Promise<V>,
   inputs?: any[],
 ) {
-  React.useEffect(function () {
-    var mounted = true;
-    var maybePromise = effect(function () {
-      return mounted;
-    });
+  let resolve: () => void;
+  let reject: (_?: any) => void;
+  let promise = new Promise<void>((r, j) => ((resolve = r), (reject = j)));
 
-    Promise.resolve(maybePromise).catch((error) => console.error(error));
+  React.useEffect(function () {
+    let mounted = true;
+
+    (async () => {
+      try {
+        await effect(() => mounted);
+        resolve();
+      } catch (error) {
+        reject();
+      }
+    })();
 
     return function () {
       mounted = false;
     };
   }, inputs);
+
+  return promise;
 }
