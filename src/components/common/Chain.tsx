@@ -156,7 +156,7 @@ export function Chain(props: {
         setTableIsLoading(false);
       }
     },
-    [props.url, pagination.current],
+    [props.url, JSON.stringify(pagination)],
   );
 
   const columns: TableProps<ChainRecord>['columns'] = [
