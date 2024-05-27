@@ -74,7 +74,9 @@ export default function Authorities(
 ) {
   if (!('account' in props)) {
     return (
-      <Render authorities={props.items.map((x) => new AuthorityEntry(x))} />
+      <Render
+        authorities={(props.items || []).map((x) => new AuthorityEntry(x))}
+      />
     );
   }
   const { account } = props;

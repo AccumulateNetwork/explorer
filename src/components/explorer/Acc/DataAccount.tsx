@@ -1,5 +1,14 @@
-import { Descriptions, List, Table, Tag, Tooltip, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import {
+  Descriptions,
+  List,
+  Spin,
+  Table,
+  TablePaginationConfig,
+  Tag,
+  Tooltip,
+  Typography,
+} from 'antd';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -8,100 +17,101 @@ import {
   RiKeynoteLine,
   RiQuestionLine,
 } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
+import { Link as DomLink } from 'react-router-dom';
 
+import { URL } from 'accumulate.js';
+import { ChainEntryRecord, MessageRecord } from 'accumulate.js/lib/api_v3';
+import { FactomDataEntry, TransactionType } from 'accumulate.js/lib/core';
+import { TransactionMessage } from 'accumulate.js/lib/messaging';
+
+import { DataChain, DataTxn } from '../../../utils/DataChain';
 import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import Data from '../../common/Data';
 import ExtId from '../../common/ExtId';
-import RPC from '../../common/RPC';
+import { Link } from '../../common/Link';
+import { Nobr } from '../../common/Nobr';
+import { Shared } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import { useAsyncEffect } from '../../common/useAsync';
 
 const { Title, Paragraph, Text } = Typography;
+
+type TxnEntry = ChainEntryRecord<MessageRecord<TransactionMessage>>;
 
 const DataAccount = (props) => {
   const account = props.data;
   account.type = account.account.type;
   account.data = account.account;
 
-  const [entries, setEntries] = useState(null);
+  const { api } = useContext(Shared);
+  if (!api) return <Spin />;
+
+  const [dataChain] = useState(new DataChain(URL.parse(account.data.url), api));
+  const [entries, setEntries] = useState<TxnEntry[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
     pageSize: 10,
     showSizeChanger: true,
     pageSizeOptions: ['2', '10', '20', '50', '100'],
     current: 1,
+    hideOnSinglePage: true,
+
+    showTotal(_, range) {
+      const { total } = dataChain;
+      if (typeof total !== 'number') {
+        return;
+      }
+      return `${range[0]}-${range[1]} of ${total}`;
+    },
   });
   const [totalEntries, setTotalEntries] = useState(-1);
 
-  const getEntries = async (params = pagination) => {
-    setTableIsLoading(true);
+  useAsyncEffect(
+    async (mounted) => {
+      setTableIsLoading(true);
+      const r = await dataChain.getRange({
+        start: (pagination.current - 1) * pagination.pageSize,
+        count: pagination.pageSize,
+      });
+      if (!mounted()) return;
 
-    let start = 0;
-    let showTotalStart = 1;
-    let showTotalFinish = 10;
-
-    if (params) {
-      start = (params.current - 1) * params.pageSize;
-      showTotalStart = (params.current - 1) * params.pageSize + 1;
-      showTotalFinish = params.current * params.pageSize;
-    }
-
-    try {
-      const response = await RPC.request(
-        'query',
-        {
-          scope: account.data.url,
-          query: {
-            queryType: 'data',
-            range: { count: params.pageSize, start },
-          },
-        },
-        'v3',
-      );
-      if (response?.records) {
-        // workaround API bug response
-        if (response.start === null || response.start === undefined) {
-          response.start = 0;
-        }
-        setEntries(response.records);
-        setPagination({
-          ...pagination,
-          current: response.start / response.records.length + 1,
-          pageSize: response.records.length,
-          total: response.total,
-          showTotal: (total, range) =>
-            `${showTotalStart}-${Math.min(response.total, showTotalFinish)} of ${response.total}`,
-        });
-        setTotalEntries(response.total);
-      } else {
-        throw new Error('Data set not found');
+      let total = r.total;
+      if (typeof total !== 'number') {
+        // Pretend that we have another page to make pagination work
+        total = (pagination.current + 1) * pagination.pageSize;
       }
-    } catch (error) {
-      // error is managed by RPC.js, no need to display anything
-    }
-    setTableIsLoading(false);
-  };
+
+      setEntries(r.records);
+      setPagination({ ...pagination, total });
+      setTotalEntries(r.total);
+      setTableIsLoading(false);
+    },
+    [account.data.url, JSON.stringify(pagination)],
+  );
 
   const columns = [
     {
-      title: 'Entry Hash',
-      dataIndex: 'entry',
+      title: 'ID',
       className: 'code',
-      render: (entry) => (
-        <Link to={'#data/' + entry}>
+      render: (entry: TxnEntry) => (
+        <Link to={entry.value.id}>
           <IconContext.Provider value={{ className: 'react-icons' }}>
             <RiFileList2Line />
           </IconContext.Provider>
-          {entry}
+          {Buffer.from(entry.entry).toString('hex')}
         </Link>
       ),
     },
     {
       title: 'Entry Data',
-      render: (entry) => {
-        const data = entry?.value?.message?.transaction?.body?.entry?.data;
+      render: (entry: TxnEntry) => {
+        const body = entry.value.message.transaction.body as DataTxn;
+        const data =
+          body.entry instanceof FactomDataEntry
+            ? [body.entry.data, ...body.entry.extIds]
+            : body.entry.data;
         if (data?.length > 0) {
           var items = [];
           if (Array.isArray(data)) {
@@ -113,7 +123,7 @@ const DataAccount = (props) => {
             let extra = data.length - 3;
             if (extra > 0) {
               items.push(
-                <Tag className="extid-tag" index="extra">
+                <Tag className="extid-tag" key="extra">
                   +{extra} more
                 </Tag>,
               );
@@ -125,17 +135,13 @@ const DataAccount = (props) => {
               </ExtId>,
             );
           }
-          return <nobr>{items}</nobr>;
+          return <Nobr>{items}</Nobr>;
         } else {
           return null;
         }
       },
     },
   ];
-
-  useEffect(() => {
-    getEntries();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -159,7 +165,7 @@ const DataAccount = (props) => {
               <Descriptions.Item
                 label={
                   <span>
-                    <nobr>
+                    <Nobr>
                       <IconContext.Provider
                         value={{ className: 'react-icons' }}
                       >
@@ -171,7 +177,7 @@ const DataAccount = (props) => {
                         </Tooltip>
                       </IconContext.Provider>
                       Data Account URL
-                    </nobr>
+                    </Nobr>
                   </span>
                 }
               >
@@ -183,7 +189,7 @@ const DataAccount = (props) => {
               <Descriptions.Item
                 label={
                   <span>
-                    <nobr>
+                    <Nobr>
                       <IconContext.Provider
                         value={{ className: 'react-icons' }}
                       >
@@ -195,16 +201,16 @@ const DataAccount = (props) => {
                         </Tooltip>
                       </IconContext.Provider>
                       ADI
-                    </nobr>
+                    </Nobr>
                   </span>
                 }
               >
-                <Link to={'/acc/' + account.adi.replace('acc://', '')}>
+                <DomLink to={'/acc/' + account.adi.replace('acc://', '')}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiAccountCircleLine />
                   </IconContext.Provider>
                   {account.adi}
-                </Link>
+                </DomLink>
               </Descriptions.Item>
             ) : null}
           </Descriptions>
@@ -241,16 +247,18 @@ const DataAccount = (props) => {
               <RiFileList2Line />
             </IconContext.Provider>
             Data Entries
-            <Count count={totalEntries ? totalEntries : 0} />
+            {(totalEntries || totalEntries == 0) && (
+              <Count count={totalEntries} />
+            )}
           </Title>
 
           <Table
             dataSource={entries}
             columns={columns}
-            pagination={totalEntries > pagination.pageSize && pagination}
+            pagination={pagination}
             rowKey="entry"
             loading={tableIsLoading}
-            onChange={getEntries}
+            onChange={(p) => setPagination(p)}
             scroll={{ x: 'max-content' }}
           />
 

@@ -148,8 +148,6 @@ export function Chain(props: {
         setTxChain((response.records || []).reverse());
         setPagination({
           ...pagination,
-          current: pagination.current,
-          pageSize: pagination.pageSize,
           total: response.total,
         });
       } finally {
