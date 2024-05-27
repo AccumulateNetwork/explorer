@@ -1,7 +1,7 @@
 import { Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import RPC from './RPC';
+import RPC from '../../utils/RPC';
 
 const { Text } = Typography;
 

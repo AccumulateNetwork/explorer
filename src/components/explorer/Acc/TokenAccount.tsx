@@ -24,6 +24,7 @@ import {
   TokenIssuer,
 } from 'accumulate.js/lib/core';
 
+import { getParentUrl } from '../../../utils/url';
 import { AccChains } from '../../common/AccChains';
 import { TokenAmount } from '../../common/Amount';
 import Authorities from '../../common/Authorities';
@@ -32,7 +33,6 @@ import { Link } from '../../common/Link';
 import { Nobr } from '../../common/Nobr';
 import { queryEffect } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
-import { getParentUrl } from '../../common/Url';
 
 const { Title } = Typography;
 

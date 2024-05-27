@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
-import RPC from './RPC';
+import RPC from '../../utils/RPC';
 
 const { Search } = Input;
 

@@ -5,14 +5,14 @@ import { useLocation } from 'react-router-dom';
 import { Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import ParseADI from '../../utils/ParseADI';
+import ParseDataAccount from '../../utils/ParseDataAccount';
+import RPC from '../../utils/RPC';
 import {
   addFavourite,
   isFavourite,
   removeFavourite,
 } from '../common/Favourites';
-import ParseADI from '../common/ParseADI';
-import ParseDataAccount from '../common/ParseDataAccount';
-import RPC from '../common/RPC';
 import { queryEffect } from '../common/Shared';
 import ADI from './Acc/ADI';
 import DataAccount from './Acc/DataAccount';

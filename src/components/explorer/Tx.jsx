@@ -1,7 +1,7 @@
 import { Alert, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import RPC from './../common/RPC';
+import RPC from '../../utils/RPC';
 import GenericTx from './Tx/GenericTx';
 
 const { Title } = Typography;

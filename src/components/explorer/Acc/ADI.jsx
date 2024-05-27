@@ -10,10 +10,10 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import RPC from '../../../utils/RPC';
 import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
-import RPC from '../../common/RPC';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Text } = Typography;

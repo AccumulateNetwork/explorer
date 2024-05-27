@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
+import getSupply from '../../../utils/getSupply';
 import { AccChains } from '../../common/AccChains';
 import Authorities from '../../common/Authorities';
-import getSupply from '../../common/GetSupply';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Text } = Typography;

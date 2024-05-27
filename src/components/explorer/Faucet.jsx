@@ -2,8 +2,8 @@ import { Alert, Form, Input, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import RPC from '../../utils/RPC';
 import FaucetAddress from './../common/Faucet';
-import RPC from './../common/RPC';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;

@@ -44,7 +44,7 @@ import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { AddCredits } from 'accumulate.js/lib/core';
 import { Envelope } from 'accumulate.js/lib/messaging';
 
-import RPC from '../common/RPC';
+import RPC from '../../utils/RPC';
 import {
   ethToAccumulate,
   joinBuffers,

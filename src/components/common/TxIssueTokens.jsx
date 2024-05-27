@@ -4,8 +4,8 @@ import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiInformationLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import getToken from '../../utils/getToken';
 import { tokenAmount, tokenAmountToLocaleString } from './Amount';
-import getToken from './GetToken';
 import TxTo from './TxTo';
 
 const { Title, Text } = Typography;

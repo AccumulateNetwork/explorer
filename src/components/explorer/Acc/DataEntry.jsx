@@ -11,8 +11,8 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import getTs from '../../../utils/getTS';
 import Data from '../../common/Data';
-import getTs from '../../common/GetTS';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 const { Title, Text } = Typography;

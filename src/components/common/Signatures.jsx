@@ -4,7 +4,7 @@ import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import RPC from './../common/RPC';
+import RPC from '../../utils/RPC';
 
 const { Title, Text, Paragraph } = Typography;
 
