@@ -20,25 +20,21 @@ import {
 import { Link as DomLink } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
-import { ChainEntryRecord, MessageRecord } from 'accumulate.js/lib/api_v3';
-import { FactomDataEntry, TransactionType } from 'accumulate.js/lib/core';
-import { TransactionMessage } from 'accumulate.js/lib/messaging';
+import { DataEntry, FactomDataEntryWrapper } from 'accumulate.js/lib/core';
 
-import { DataChain, DataTxn } from '../../../utils/DataChain';
-import { AccChains } from '../../common/AccChains';
-import Authorities from '../../common/Authorities';
+import { DataChain } from '../../../utils/DataChain';
+import { DataTxnEntry, TxnEntry, dataEntryParts } from '../../../utils/data';
 import Count from '../../common/Count';
-import Data from '../../common/Data';
 import ExtId from '../../common/ExtId';
 import { Link } from '../../common/Link';
 import { Nobr } from '../../common/Nobr';
 import { Shared } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import { useAsyncEffect } from '../../common/useAsync';
+import { AccChains } from './AccChains';
+import Authorities from './Authorities';
 
 const { Title, Paragraph, Text } = Typography;
-
-type TxnEntry = ChainEntryRecord<MessageRecord<TransactionMessage>>;
 
 const DataAccount = (props) => {
   const account = props.data;
@@ -95,8 +91,8 @@ const DataAccount = (props) => {
     {
       title: 'ID',
       className: 'code',
-      render: (entry: TxnEntry) => (
-        <Link to={entry.value.id}>
+      render: (entry: DataTxnEntry) => (
+        <Link to={entry.value.id} dataEntry>
           <IconContext.Provider value={{ className: 'react-icons' }}>
             <RiFileList2Line />
           </IconContext.Provider>
@@ -106,12 +102,8 @@ const DataAccount = (props) => {
     },
     {
       title: 'Entry Data',
-      render: (entry: TxnEntry) => {
-        const body = entry.value.message.transaction.body as DataTxn;
-        const data =
-          body.entry instanceof FactomDataEntry
-            ? [body.entry.data, ...body.entry.extIds]
-            : body.entry.data;
+      render: (entry: DataTxnEntry) => {
+        const data = dataEntryParts(entry.value.message.transaction.body.entry);
         if (data?.length > 0) {
           var items = [];
           if (Array.isArray(data)) {
@@ -224,14 +216,14 @@ const DataAccount = (props) => {
             Data Account State
           </Title>
 
-          {account.data.entry && account.data.entry.data ? (
+          {account.data.entry ? (
             <List
               size="small"
               bordered
-              dataSource={account.data.entry.data}
+              dataSource={dataEntryParts(account.data.entry)}
               renderItem={(item) => (
                 <List.Item>
-                  <Data>{item}</Data>
+                  <ExtId>{item}</ExtId>
                 </List.Item>
               )}
               style={{ marginBottom: '30px' }}

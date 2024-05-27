@@ -9,10 +9,10 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { AccChains } from '../../common/AccChains';
-import Authorities from '../../common/Authorities';
 import Count from '../../common/Count';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import { AccChains } from './AccChains';
+import Authorities from './Authorities';
 
 const { Title, Paragraph, Text } = Typography;
 

@@ -2,29 +2,13 @@ import { URL } from 'accumulate.js';
 import {
   ChainEntryRecord,
   JsonRpcClient,
-  MessageRecord,
   RangeOptions,
   RangeOptionsArgs,
   RecordRange,
-  RecordType,
 } from 'accumulate.js/lib/api_v3';
-import {
-  SyntheticWriteData,
-  SystemWriteData,
-  TransactionType,
-  WriteData,
-  WriteDataTo,
-} from 'accumulate.js/lib/core';
-import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
 import { ChainFilter } from './ChainFilter';
-
-export type TxnRecord = MessageRecord<TransactionMessage>;
-export type DataTxn =
-  | WriteData
-  | WriteDataTo
-  | SyntheticWriteData
-  | SystemWriteData;
+import { TxnRecord, isData } from './data';
 
 export class DataChain {
   readonly #main: ChainFilter<TxnRecord>;
@@ -36,9 +20,9 @@ export class DataChain {
 
   constructor(scope: URL, api: JsonRpcClient) {
     this.#main = new ChainFilter(api, scope, 'main', {}, (r) => isData(r));
-    this.#scratch = new ChainFilter(api, scope, 'scratch', {}, (r) =>
-      isData(r),
-    );
+    this.#scratch = new ChainFilter(api, scope, 'scratch', {}, (r) => {
+      return isData(r);
+    });
   }
 
   get total() {
@@ -102,19 +86,4 @@ export class DataChain {
       return b.value.received - a.value.received;
     });
   }
-}
-
-function isData(r: ChainEntryRecord<TxnRecord>) {
-  if (r.value.recordType !== RecordType.Message) {
-    return false;
-  }
-
-  switch (r.value.message.transaction.body.type) {
-    case TransactionType.WriteData:
-    case TransactionType.WriteDataTo:
-    case TransactionType.SyntheticWriteData:
-    case TransactionType.SystemWriteData:
-      return true;
-  }
-  return false;
 }

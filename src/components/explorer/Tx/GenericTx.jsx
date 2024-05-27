@@ -25,7 +25,7 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getTs from '../../../utils/getTS';
-import Data from '../../common/Data';
+import Data from '../../common/ExtId';
 import wrapLinksInHtml from '../../common/LinksRenderer';
 import Signatures from '../../common/Signatures';
 import tooltipDescs from '../../common/TooltipDescriptions';

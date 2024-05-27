@@ -6,7 +6,6 @@ import { Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import ParseADI from '../../utils/ParseADI';
-import ParseDataAccount from '../../utils/ParseDataAccount';
 import RPC from '../../utils/RPC';
 import {
   addFavourite,
@@ -16,7 +15,6 @@ import {
 import { queryEffect } from '../common/Shared';
 import ADI from './Acc/ADI';
 import DataAccount from './Acc/DataAccount';
-import DataEntry from './Acc/DataEntry';
 import GenericAcc from './Acc/GenericAcc';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
@@ -116,9 +114,6 @@ const Acc = ({ match, parentCallback }) => {
           return <DataAccount data={props.data} />;
         case 'liteDataAccount':
           return <DataAccount data={props.data} />;
-        case 'dataEntry':
-          props.data.account = ParseDataAccount(props.data.data.txId);
-          return <DataEntry data={props.data} />;
         default:
           return <GenericAcc data={props.data} />;
       }

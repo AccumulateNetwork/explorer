@@ -12,10 +12,10 @@ import {
   AuthorityEntryArgs,
 } from 'accumulate.js/lib/core';
 
-import { getParentUrl } from '../../utils/url';
-import Count from './Count';
-import { Link } from './Link';
-import { queryEffect } from './Shared';
+import { getParentUrl } from '../../../utils/url';
+import Count from '../../common/Count';
+import { Link } from '../../common/Link';
+import { queryEffect } from '../../common/Shared';
 
 const { Title } = Typography;
 

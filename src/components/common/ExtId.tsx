@@ -1,6 +1,8 @@
 import { Input, Select, Typography } from 'antd';
 import { Base64 } from 'js-base64';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+
+import wrapLinksInHtml from './LinksRenderer';
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -27,10 +29,13 @@ function isPrintable(x: number) {
   return isWhitespace(x);
 }
 
-const ExtId = (props) => {
-  const bytes = Buffer.from(props.children, 'hex');
-  const textHex = props.children;
-  const textRaw = bytes.toString('utf8');
+const ExtId = (props: { children: string | Uint8Array; compact?: boolean }) => {
+  const bytes =
+    props.children instanceof Uint8Array
+      ? props.children
+      : Buffer.from(props.children, 'hex');
+  const textHex = bytes.toString('hex');
+  const textRaw = wrapLinksInHtml(bytes.toString('utf8'));
   const textBase64 = Base64.fromUint8Array(bytes);
 
   // TODO: check for valid utf-8 strings
@@ -43,16 +48,11 @@ const ExtId = (props) => {
 
   const defaultType = human ? 'ASCII' : 'Hex';
   const [type, setType] = useState(defaultType);
-  const [current, setCurrent] = useState(human ? textRaw : textHex);
-  const [currentShort, setCurrentShort] = useState(
-    current.length > 32 ? current.substring(0, 32) + '…' : current,
-  );
+  const [current, setCurrent] = useState('');
+  const [currentShort, setCurrentShort] = useState('');
 
-  let cssClass = props.compact ? 'extid-compact' : '';
-
-  const handleChange = (event) => {
-    setType(event);
-    switch (event) {
+  useEffect(() => {
+    switch (type) {
       case 'Base64':
         setCurrent(textBase64);
         break;
@@ -65,29 +65,33 @@ const ExtId = (props) => {
       default:
         break;
     }
+  }, [type]);
+
+  const shortLimit = 32;
+  useEffect(() => {
+    setCurrentShort(
+      current.length > shortLimit
+        ? current.substring(0, shortLimit) + '…'
+        : current,
+    );
+  }, [current]);
+
+  let cssClass = props.compact ? 'extid-compact' : '';
+
+  const handleChange = (event) => {
+    setType(event);
   };
 
   const handleClick = (type) => {
     switch (type) {
       case 'ASCII':
         setType('Base64');
-        setCurrentShort(
-          textBase64.length > 32
-            ? textBase64.substring(0, 32) + '…'
-            : textBase64,
-        );
         break;
       case 'Base64':
         setType('Hex');
-        setCurrentShort(
-          textHex.length > 32 ? textHex.substring(0, 32) + '…' : textHex,
-        );
         break;
       case 'Hex':
         setType('ASCII');
-        setCurrentShort(
-          textRaw.length > 32 ? textRaw.substring(0, 32) + '…' : textRaw,
-        );
         break;
       default:
         break;

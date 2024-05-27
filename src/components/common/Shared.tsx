@@ -19,17 +19,17 @@ export function queryEffect(
   scope: URLArgs | TxID,
   query?: api_v3.DefaultQueryArgsWithType,
   dependencies?: any[],
-): Promise<api_v3.AccountRecord | api_v3.MessageRecord>;
+): Promise<api_v3.AccountRecord | api_v3.MessageRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.ChainQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.ChainRecord>>;
+): Promise<api_v3.RecordRange<api_v3.ChainRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.ChainQueryArgsWithType, 'queryType' | 'name'>,
   dependencies?: any[],
-): Promise<api_v3.ChainRecord>;
+): Promise<api_v3.ChainRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -37,7 +37,7 @@ export function queryEffect(
     'queryType' | 'name' | 'index' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.ChainEntryRecord>;
+): Promise<api_v3.ChainEntryRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -45,7 +45,7 @@ export function queryEffect(
     'queryType' | 'name' | 'entry' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.ChainEntryRecord>;
+): Promise<api_v3.ChainEntryRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -53,36 +53,42 @@ export function queryEffect(
     'queryType' | 'name' | 'range' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.ChainEntryRecord>>;
+): Promise<api_v3.RecordRange<api_v3.ChainEntryRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DataQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
 ): Promise<
-  api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'index'>,
   dependencies?: any[],
 ): Promise<
-  api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'entry'>,
   dependencies?: any[],
 ): Promise<
-  api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'range'>,
   dependencies?: any[],
 ): Promise<
-  api_v3.RecordRange<
-    api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
-  >
+  | api_v3.RecordRange<
+      api_v3.ChainEntryRecord<
+        api_v3.MessageRecord<messaging.TransactionMessage>
+      >
+    >
+  | api_v3.ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
@@ -90,21 +96,21 @@ export function queryEffect(
     range: { expand?: false };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.UrlRecord>>;
+): Promise<api_v3.RecordRange<api_v3.UrlRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.AccountRecord>>;
+): Promise<api_v3.RecordRange<api_v3.AccountRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.TxIDRecord>>;
+): Promise<api_v3.RecordRange<api_v3.TxIDRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.PendingQueryArgsWithType, 'queryType' | 'range'> & {
@@ -112,7 +118,8 @@ export function queryEffect(
   },
   dependencies?: any[],
 ): Promise<
-  api_v3.RecordRange<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.RecordRange<api_v3.MessageRecord<messaging.TransactionMessage>>
+  | api_v3.ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
@@ -121,7 +128,7 @@ export function queryEffect(
     'queryType' | 'minor' | 'entryRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.MinorBlockRecord>;
+): Promise<api_v3.MinorBlockRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -129,7 +136,7 @@ export function queryEffect(
     'queryType' | 'major' | 'minorRange' | 'entryRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.MajorBlockRecord>;
+): Promise<api_v3.MajorBlockRecord | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -137,7 +144,7 @@ export function queryEffect(
     'queryType' | 'minorRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MinorBlockRecord>>;
+): Promise<api_v3.RecordRange<api_v3.MinorBlockRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -145,7 +152,7 @@ export function queryEffect(
     'queryType' | 'majorRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MajorBlockRecord>>;
+): Promise<api_v3.RecordRange<api_v3.MajorBlockRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -153,7 +160,9 @@ export function queryEffect(
     'queryType' | 'anchor' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.ChainEntryRecord<never>>>;
+): Promise<
+  api_v3.RecordRange<api_v3.ChainEntryRecord<never>> | api_v3.ErrorRecord
+>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -161,7 +170,7 @@ export function queryEffect(
     'queryType' | 'publicKey' | 'type'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord>>;
+): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
@@ -169,17 +178,17 @@ export function queryEffect(
     'queryType' | 'publicKeyHash'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord>>;
+): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.DelegateSearchQueryArgsWithType, 'queryType' | 'delegate'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord>>;
+): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<api_v3.MessageHashSearchQueryArgsWithType, 'queryType' | 'hash'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MessageRecord>>;
+): Promise<api_v3.RecordRange<api_v3.MessageRecord> | api_v3.ErrorRecord>;
 
 export function queryEffect(
   scope: URLArgs | TxID,
@@ -194,7 +203,7 @@ export function queryEffect(
 
       useAsyncEffect(
         async (mounted) => {
-          if (!api) {
+          if (!scope || !api) {
             return;
           }
 
@@ -205,7 +214,7 @@ export function queryEffect(
 
           resolve(await effect(r));
         },
-        [scope.toString(), JSON.stringify(query), ...(dependencies || [])],
+        [`${scope}`, JSON.stringify(query), ...(dependencies || [])],
       ).catch(onApiError);
 
       return promise;

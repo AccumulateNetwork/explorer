@@ -25,14 +25,14 @@ import {
 } from 'accumulate.js/lib/core';
 
 import { getParentUrl } from '../../../utils/url';
-import { AccChains } from '../../common/AccChains';
 import { TokenAmount } from '../../common/Amount';
-import Authorities from '../../common/Authorities';
 import { EnumValue } from '../../common/EnumValue';
 import { Link } from '../../common/Link';
 import { Nobr } from '../../common/Nobr';
 import { queryEffect } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
+import { AccChains } from './AccChains';
+import Authorities from './Authorities';
 
 const { Title } = Typography;
 
