@@ -204,7 +204,7 @@ export function queryEffect(
 
           resolve(await effect(r));
         },
-        [scope.toString(), query, ...(dependencies || [])],
+        [scope.toString(), JSON.stringify(query), ...(dependencies || [])],
       ).catch(onApiError);
 
       return promise;

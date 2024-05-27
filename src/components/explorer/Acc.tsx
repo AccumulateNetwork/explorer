@@ -1,3 +1,5 @@
+import { Record, RecordType } from 'accumulate.js/lib/api_v3';
+import { AccountType } from 'accumulate.js/lib/core';
 import { Alert, Rate, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -9,7 +11,8 @@ import {
 } from '../common/Favourites';
 import ParseADI from '../common/ParseADI';
 import ParseDataAccount from '../common/ParseDataAccount';
-import RPC from './../common/RPC';
+import RPC from '../common/RPC';
+import { queryEffect } from '../common/Shared';
 import ADI from './Acc/ADI';
 import DataAccount from './Acc/DataAccount';
 import DataEntry from './Acc/DataEntry';
@@ -27,6 +30,7 @@ const Acc = ({ match, parentCallback }) => {
   const location = useLocation();
 
   const [acc, setAcc] = useState(null);
+  const [acc2, setAcc2] = useState<Record>(null);
   const [error, setError] = useState(null);
   const [isTx, setIsTx] = useState(false);
   const [isFav, setIsFav] = useState(-1);
@@ -92,12 +96,6 @@ const Acc = ({ match, parentCallback }) => {
         }
       }
       switch (props.data.account.type) {
-        case 'liteTokenAccount':
-          props.data.lightIdentity = ParseADI(props.data.account.url);
-          return <TokenAccount data={props.data} />;
-        case 'tokenAccount':
-          props.data.adi = ParseADI(props.data.account.url);
-          return <TokenAccount data={props.data} />;
         case 'token':
           return <Token data={props.data} />;
         case 'tokenIssuer':
@@ -137,6 +135,8 @@ const Acc = ({ match, parentCallback }) => {
   let accountURL =
     'acc://' + match.params.url + (location.hash !== '' ? location.hash : '');
 
+  queryEffect(accountURL, { queryType: 'default' }).then((r) => setAcc2(r));
+
   const handleFavChange = (e) => {
     if (e === 0) {
       removeFavourite(accountURL);
@@ -168,33 +168,70 @@ const Acc = ({ match, parentCallback }) => {
     /* eslint-enable default-case */
   }
 
+  const titleEl = [
+    <Title level={2} className="break-all" key="main">
+      {title}
+    </Title>,
+    <Title
+      level={4}
+      key="sub"
+      type="secondary"
+      style={{ marginTop: '-10px' }}
+      className="break-all"
+      copyable={{ text: accountURL }}
+    >
+      {!isTx && acc && isFav !== -1 ? (
+        <Rate
+          className={'acc-fav'}
+          count={1}
+          defaultValue={isFav}
+          onChange={(e) => {
+            handleFavChange(e);
+          }}
+        />
+      ) : null}
+
+      {accountURL}
+    </Title>,
+  ];
+
+  if (!acc) {
+    return (
+      <div>
+        {title}
+        <div>
+          {error ? (
+            <div className="skeleton-holder">
+              <Alert message={error} type="error" showIcon />
+            </div>
+          ) : (
+            <div className="skeleton-holder">
+              <Skeleton active />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (acc2?.recordType === RecordType.Account) {
+    switch (acc2.account.type) {
+      case AccountType.TokenAccount:
+      case AccountType.LiteTokenAccount:
+        return (
+          <div>
+            {titleEl}
+            <TokenAccount record={acc2} />
+          </div>
+        );
+    }
+  }
+
   return (
     <div>
-      <Title level={2} className="break-all">
-        {title}
-      </Title>
-      <Title
-        level={4}
-        type="secondary"
-        style={{ marginTop: '-10px' }}
-        className="break-all"
-        copyable={{ text: accountURL }}
-      >
-        {!isTx && acc && isFav !== -1 ? (
-          <Rate
-            className={'acc-fav'}
-            count={1}
-            defaultValue={isFav}
-            onChange={(e) => {
-              handleFavChange(e);
-            }}
-          />
-        ) : null}
-
-        {accountURL}
-      </Title>
+      {titleEl}
       {acc ? (
-        <Render data={acc} />
+        <Render data={acc} data2={acc2} />
       ) : (
         <div>
           {error ? (

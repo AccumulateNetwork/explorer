@@ -853,3 +853,7 @@ h4.ant-typography .count {
 .node-details .node-error-icon {
   color: #ff4d4f;
 }
+
+.info-table .ant-descriptions-item-label {
+  width: 20em;
+}

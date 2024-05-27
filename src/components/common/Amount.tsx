@@ -14,44 +14,36 @@ const { Text } = Typography;
 export function TokenAmount({
   amount,
   issuer,
-  debit = false,
-  digits = {},
+  ...rest
 }: {
   amount: number | bigint;
   issuer: TokenIssuer;
-  debit?: boolean;
-  digits?: Parameters<typeof Amount>[0]['digits'];
-}) {
+} & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
   if (!issuer) return <Spin />;
-  // if (!('max' in digits)) digits.max = issuer.precision;
+  if (!('digits' in rest)) rest.digits = {};
+  if (!('max' in rest.digits)) rest.digits.max = issuer.precision;
 
   const v = Number(amount) / 10 ** issuer.precision;
-  return (
-    <Amount amount={v} debit={debit} digits={digits} label={issuer.symbol} />
-  );
+  return <Amount amount={v} {...rest} label={issuer.symbol} />;
 }
 
 export function CreditAmount({
   amount,
-  debit = false,
-  digits = {},
+  ...rest
 }: {
   amount: number | bigint;
-  debit?: boolean;
-  digits?: Parameters<typeof Amount>[0]['digits'];
-}) {
+} & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
   if (typeof amount === 'bigint') {
     amount = Number(amount);
   }
   return (
     <Amount
       amount={amount / 100}
-      debit={debit}
-      digits={digits}
       label={{
         singular: 'credit',
         plural: 'credits',
       }}
+      {...rest}
     />
   );
 }
@@ -59,11 +51,13 @@ export function CreditAmount({
 export function Amount({
   amount,
   label,
+  className,
   debit = false,
   digits = {},
 }: {
   amount: number;
   label?: string | { singular: string; plural: string };
+  className?: string;
   debit?: boolean;
   digits?: {
     group?: boolean;
@@ -89,8 +83,12 @@ export function Amount({
   if (debit) {
     s = '(' + s + ')';
   }
-  const color = debit ? 'hsl(0, 75%, 50%)' : 'black';
-  return <Text style={{ color }}>{s}</Text>;
+  const color = debit ? 'hsl(0, 75%, 50%)' : null;
+  return (
+    <Text className={className} style={{ color }}>
+      {s}
+    </Text>
+  );
 }
 
 function tokenAmount(amount, precision, symbol) {

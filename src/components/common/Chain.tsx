@@ -86,7 +86,6 @@ export function Chain(props: {
     pageSizeOptions: ['10', '20', '50', '100'],
     current: 1,
   });
-  const [totalEntries, setTotalEntries] = useState(-1);
 
   useAsyncEffect(
     async (mounted) => {
@@ -119,7 +118,7 @@ export function Chain(props: {
         setIssuer(r2.account);
       }
     },
-    [props.url],
+    [props.url.toString()],
   );
 
   useAsyncEffect(
@@ -152,7 +151,6 @@ export function Chain(props: {
           pageSize: pagination.pageSize,
           total: response.total,
         });
-        setTotalEntries(response.total);
       } finally {
         if (!mounted()) return;
         setTableIsLoading(false);

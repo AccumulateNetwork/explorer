@@ -1,6 +1,14 @@
 import { DownOutlined, MoreOutlined } from '@ant-design/icons';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
-import { Badge, Button, Dropdown, Layout, Menu, Typography } from 'antd';
+import {
+  Badge,
+  Button,
+  Dropdown,
+  Layout,
+  Menu,
+  Typography,
+  message,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
