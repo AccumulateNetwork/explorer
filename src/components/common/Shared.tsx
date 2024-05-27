@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 
-import { TxID, TxIDArgs, URLArgs, api_v3, messaging } from 'accumulate.js';
+import { TxID, URLArgs, api_v3, errors, messaging } from 'accumulate.js';
+import { ErrorRecord } from 'accumulate.js/lib/api_v3';
 
 import { useAsyncEffect } from './useAsync';
 
@@ -207,15 +208,27 @@ export function queryEffect(
             return;
           }
 
-          const r = await api.query(scope, query as any);
-          if (!mounted()) {
+          const r = await api.query(scope, query as any).catch((err) => {
+            try {
+              if (
+                typeof err === 'object' &&
+                'data' in err &&
+                typeof err.data === 'object'
+              ) {
+                return new ErrorRecord({ value: new errors.Error(err.data) });
+              }
+            } catch (_) {}
+            onApiError(err);
+            return null;
+          });
+          if (!r || !mounted()) {
             return;
           }
 
           resolve(await effect(r));
         },
         [`${scope}`, JSON.stringify(query), ...(dependencies || [])],
-      ).catch(onApiError);
+      );
 
       return promise;
     },
