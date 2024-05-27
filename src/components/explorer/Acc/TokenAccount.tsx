@@ -1,10 +1,3 @@
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
-import {
-  AccountType,
-  TokenAccount as AdiTokenAccount,
-  LiteTokenAccount,
-  TokenIssuer,
-} from 'accumulate.js/lib/core';
 import {
   Descriptions,
   Skeleton,
@@ -22,6 +15,14 @@ import {
   RiInformationLine,
   RiQuestionLine,
 } from 'react-icons/ri';
+
+import { AccountRecord } from 'accumulate.js/lib/api_v3';
+import {
+  AccountType,
+  TokenAccount as AdiTokenAccount,
+  LiteTokenAccount,
+  TokenIssuer,
+} from 'accumulate.js/lib/core';
 
 import { AccChains } from '../../common/AccChains';
 import { TokenAmount } from '../../common/Amount';

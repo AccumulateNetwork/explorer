@@ -1,8 +1,9 @@
+import { Alert, Input, Select, Skeleton, Typography } from 'antd';
+import { useState } from 'react';
+import React from 'react';
+
 import { Address, sha256 } from 'accumulate.js';
 import { SignatureType } from 'accumulate.js/lib/core';
-import { Alert, Input, Select, Skeleton, Tag, Typography } from 'antd';
-import { useEffect, useState } from 'react';
-import React from 'react';
 
 import { Settings } from '../explorer/Settings';
 import { useAsyncEffect } from './useAsync';

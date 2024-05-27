@@ -1,8 +1,9 @@
-import { Record, RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType } from 'accumulate.js/lib/core';
 import { Alert, Rate, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+
+import { Record, RecordType } from 'accumulate.js/lib/api_v3';
+import { AccountType } from 'accumulate.js/lib/core';
 
 import {
   addFavourite,

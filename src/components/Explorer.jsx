@@ -1,5 +1,4 @@
 import { DownOutlined, MoreOutlined } from '@ant-design/icons';
-import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 import {
   Badge,
   Button,
@@ -23,6 +22,8 @@ import {
   RiWalletLine,
 } from 'react-icons/ri';
 import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+
+import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
 import Logo from './common/Logo';
 import MinorBlocks from './common/MinorBlocks';

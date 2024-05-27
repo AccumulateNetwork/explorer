@@ -1,3 +1,6 @@
+import { Spin, Typography } from 'antd';
+import React from 'react';
+
 import { URL } from 'accumulate.js';
 import {
   CreditRecipient,
@@ -6,8 +9,6 @@ import {
   Transaction,
   TransactionType,
 } from 'accumulate.js/lib/core';
-import { Spin, Typography } from 'antd';
-import React from 'react';
 
 const { Text } = Typography;
 

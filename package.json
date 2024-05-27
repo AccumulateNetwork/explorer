@@ -58,6 +58,7 @@
     "importOrderSortSpecifiers": true,
     "importOrder": [
       "<THIRD_PARTY_MODULES>",
+      "^accumulate.js",
       "^[./]"
     ],
     "plugins": [
