@@ -89,6 +89,17 @@ const DataAccount = (props) => {
 
   const columns = [
     {
+      title: '#',
+      render: (entry: DataTxnEntry) => (
+        <div>
+          <Tag color={entry.name === 'scratch' ? 'gray' : 'green'}>
+            {entry.name}
+          </Tag>
+          {entry.index}
+        </div>
+      ),
+    },
+    {
       title: 'ID',
       className: 'code',
       render: (entry: DataTxnEntry) => (
