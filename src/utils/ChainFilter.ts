@@ -72,7 +72,7 @@ export class ChainFilter<R extends Record> {
   async #getNext() {
     const maxCount = 50;
     if (this.#results.records.length == 0) {
-      const { records } = (await this.#api.query(this.#scope, {
+      const r = (await this.#api.query(this.#scope, {
         queryType: 'chain',
         name: this.#chain,
         range: {
@@ -82,13 +82,16 @@ export class ChainFilter<R extends Record> {
           expand: true,
         },
       })) as RecordRange<ChainEntryRecord<R>>;
+      if (!r.records) {
+        r.records = [];
+      }
 
-      for (const r of records.reverse()) {
-        if (this.#filter(r)) {
-          this.#results.records.push(r);
+      for (const entry of r.records.reverse()) {
+        if (this.#filter(entry)) {
+          this.#results.records.push(entry);
         }
       }
-      if (records.length < maxCount) {
+      if (r.records.length < maxCount) {
         this.#results.total = this.#results.records.length;
       }
       return;
