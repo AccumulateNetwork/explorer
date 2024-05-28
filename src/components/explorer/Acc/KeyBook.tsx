@@ -7,6 +7,7 @@ import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { AccTitle } from '../../common/AccTitle';
 import Count from '../../common/Count';
 import { EnumValue } from '../../common/EnumValue';
 import { Link } from '../../common/Link';
@@ -44,6 +45,8 @@ export function KeyBook({ record }: { record: AccountRecord }) {
   );
   return (
     <div>
+      <AccTitle title="Account" url={account.url} />
+
       {/* Account type */}
       <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Type">

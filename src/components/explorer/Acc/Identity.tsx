@@ -1,27 +1,17 @@
-import {
-  Descriptions,
-  Skeleton,
-  Table,
-  TablePaginationConfig,
-  Tooltip,
-  Typography,
-} from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Descriptions, Tooltip, Typography } from 'antd';
+import React from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiExchangeLine,
   RiFolder2Line,
   RiInformationLine,
   RiQuestionLine,
-  RiShieldCheckLine,
 } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
 
 import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import RPC from '../../../utils/RPC';
+import { AccTitle } from '../../common/AccTitle';
 import { CreditAmount } from '../../common/Amount';
 import Count from '../../common/Count';
 import { EnumValue } from '../../common/EnumValue';
@@ -81,6 +71,8 @@ export function Identity({ record }: { record: AccountRecord }) {
   );
   return (
     <div>
+      <AccTitle title="Account" url={account.url} />
+
       {/* Account type */}
       <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Type">{typeStr}</Descriptions.Item>

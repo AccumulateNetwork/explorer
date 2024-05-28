@@ -12,6 +12,7 @@ import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import { dataEntryParts } from '../../../utils/data';
+import { AccTitle } from '../../common/AccTitle';
 import { EnumValue } from '../../common/EnumValue';
 import ExtId from '../../common/ExtId';
 import { Nobr } from '../../common/Nobr';
@@ -49,6 +50,8 @@ export function DataAccount({ record }: { record: AccountRecord }) {
 
   return (
     <div>
+      <AccTitle title="Account" url={account.url} />
+
       {/* Account type */}
       <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Type">

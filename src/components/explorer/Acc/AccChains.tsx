@@ -4,6 +4,7 @@ import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 
 import { URLArgs } from 'accumulate.js';
+import { RecordType } from 'accumulate.js/lib/api_v3';
 
 import Count from '../../common/Count';
 import { queryEffect } from '../../common/Shared';
@@ -22,17 +23,24 @@ export function AccChains({ account }: { account: URLArgs }) {
   queryEffect(account, {
     queryType: 'pending',
     range: { count: 0 },
-  }).then(({ total }) => {
-    setPendingCount(total);
+  }).then((r) => {
+    if (r.recordType !== RecordType.Range) {
+      return;
+    }
+    setPendingCount(r.total);
   });
 
-  queryEffect(account, { queryType: 'chain' }).then(({ records }) => {
+  queryEffect(account, { queryType: 'chain' }).then((r) => {
+    if (r.recordType !== RecordType.Range) {
+      return;
+    }
+
     const counts = {
       main: 0,
       scratch: 0,
       signature: 0,
     };
-    for (const { name, count } of records) {
+    for (const { name, count } of r.records || []) {
       if (count) {
         counts[name] = count;
       }

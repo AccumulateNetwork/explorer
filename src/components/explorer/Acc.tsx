@@ -2,16 +2,19 @@ import { Alert, Rate, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { AccountRecord, Record, RecordType } from 'accumulate.js/lib/api_v3';
+import { URL } from 'accumulate.js';
+import { Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import RPC from '../../utils/RPC';
+import { AccTitle } from '../common/AccTitle';
 import {
   addFavourite,
   isFavourite,
   removeFavourite,
 } from '../common/Favourites';
 import { queryEffect } from '../common/Shared';
+import { Account } from './Acc/Account';
 import { DataAccount } from './Acc/DataAccount';
 import { Identity } from './Acc/Identity';
 import { KeyBook } from './Acc/KeyBook';
@@ -139,37 +142,10 @@ const Acc = ({ match, parentCallback }) => {
     /* eslint-enable default-case */
   }
 
-  const titleEl = [
-    <Title level={2} className="break-all" key="main">
-      {title}
-    </Title>,
-    <Title
-      level={4}
-      key="sub"
-      type="secondary"
-      style={{ marginTop: '-10px' }}
-      className="break-all"
-      copyable={{ text: accountURL }}
-    >
-      {!isTx && acc && isFav !== -1 ? (
-        <Rate
-          className={'acc-fav'}
-          count={1}
-          defaultValue={isFav}
-          onChange={(e) => {
-            handleFavChange(e);
-          }}
-        />
-      ) : null}
-
-      {accountURL}
-    </Title>,
-  ];
-
   if (!acc) {
     return (
       <div>
-        {titleEl}
+        <AccTitle title={title} url={URL.parse(accountURL)} />
         <div>
           {error ? (
             <div className="skeleton-holder">
@@ -186,49 +162,12 @@ const Acc = ({ match, parentCallback }) => {
   }
 
   if (acc2?.recordType === RecordType.Account) {
-    let Account: (_: { record: AccountRecord }) => React.ReactNode | undefined;
-
-    switch (acc2.account.type) {
-      case AccountType.LiteIdentity:
-      case AccountType.Identity:
-        Account = Identity;
-        break;
-
-      case AccountType.LiteTokenAccount:
-      case AccountType.TokenAccount:
-        Account = TokenAccount;
-        break;
-
-      case AccountType.LiteDataAccount:
-      case AccountType.DataAccount:
-        Account = DataAccount;
-        break;
-
-      case AccountType.TokenIssuer:
-        Account = TokenIssuer;
-        break;
-
-      case AccountType.KeyPage:
-        Account = KeyPage;
-        break;
-
-      case AccountType.KeyBook:
-        Account = KeyBook;
-        break;
-    }
-    if (Account) {
-      return (
-        <div>
-          {titleEl}
-          <Account record={acc2} />
-        </div>
-      );
-    }
+    return <Account record={acc2} />;
   }
 
   return (
     <div>
-      {titleEl}
+      <AccTitle title={title} url={URL.parse(accountURL)} />
       <Render data={acc} data2={acc2} />
     </div>
   );
