@@ -1,39 +1,37 @@
-import { Alert, Rate, Skeleton, Typography } from 'antd';
+import { Alert, Skeleton } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
-import { Record, RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType } from 'accumulate.js/lib/core';
+import {
+  AccountRecord,
+  MessageRecord,
+  RecordType,
+} from 'accumulate.js/lib/api_v3';
+import { MessageType } from 'accumulate.js/lib/messaging';
 
 import RPC from '../../utils/RPC';
 import { Account } from '../account/Account';
-import { DataAccount } from '../account/DataAccount';
-import { Identity } from '../account/Identity';
-import { KeyBook } from '../account/KeyBook';
-import { KeyPage } from '../account/KeyPage';
-import { TokenAccount } from '../account/TokenAccount';
-import { TokenIssuer } from '../account/TokenIssuer';
 import { AccTitle } from '../common/AccTitle';
-import {
-  addFavourite,
-  isFavourite,
-  removeFavourite,
-} from '../common/Favourites';
 import { queryEffect } from '../common/Shared';
 import GenericMsg from '../message/GenericMsg';
 import GenericTx from '../message/GenericTx';
-
-const { Title } = Typography;
 
 const Acc = ({ match, parentCallback }) => {
   const location = useLocation();
 
   const [acc, setAcc] = useState(null);
-  const [acc2, setAcc2] = useState<Record>(null);
+  const [acc2, setAcc2] = useState<AccountRecord | MessageRecord>(null);
   const [error, setError] = useState(null);
   const [isTx, setIsTx] = useState(false);
-  const [isFav, setIsFav] = useState(-1);
+
+  queryEffect(match.params.url, { queryType: 'default' }).then((r) => {
+    if (r.recordType === RecordType.Error) {
+      setError(r.value);
+      return;
+    }
+    setAcc2(r);
+  });
 
   const sendToWeb3Module = (e) => {
     parentCallback(e);
@@ -100,24 +98,11 @@ const Acc = ({ match, parentCallback }) => {
   }
 
   useEffect(() => {
-    let url =
-      'acc://' + match.params.url + (location.hash !== '' ? location.hash : '');
-    isFavourite(url) ? setIsFav(1) : setIsFav(0);
     getAcc(match.params.url);
   }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
 
   let accountURL =
     'acc://' + match.params.url + (location.hash !== '' ? location.hash : '');
-
-  queryEffect(accountURL, { queryType: 'default' }).then((r) => setAcc2(r));
-
-  const handleFavChange = (e) => {
-    if (e === 0) {
-      removeFavourite(accountURL);
-    } else {
-      addFavourite(accountURL);
-    }
-  };
 
   let title = 'Account';
   if (isTx) {
@@ -142,7 +127,7 @@ const Acc = ({ match, parentCallback }) => {
     /* eslint-enable default-case */
   }
 
-  if (!acc) {
+  if (!acc || !acc2) {
     return (
       <div>
         <AccTitle title={title} url={URL.parse(accountURL)} />
@@ -161,8 +146,13 @@ const Acc = ({ match, parentCallback }) => {
     );
   }
 
-  if (acc2?.recordType === RecordType.Account) {
-    return <Account record={acc2} />;
+  switch (acc2?.recordType) {
+    case RecordType.Account:
+      return <Account record={acc2} />;
+    case RecordType.Message:
+      switch (acc2.message.type) {
+        case MessageType.Transaction:
+      }
   }
 
   return (
