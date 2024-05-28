@@ -7,12 +7,12 @@ import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import getSupply from '../../../utils/getSupply';
-import { AccTitle } from '../../common/AccTitle';
-import { TokenAmount } from '../../common/Amount';
-import { EnumValue } from '../../common/EnumValue';
-import { Nobr } from '../../common/Nobr';
-import tooltipDescs from '../../common/TooltipDescriptions';
+import getSupply from '../../utils/getSupply';
+import { AccTitle } from '../common/AccTitle';
+import { TokenAmount } from '../common/Amount';
+import { EnumValue } from '../common/EnumValue';
+import { Nobr } from '../common/Nobr';
+import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { describeParent } from './parent';

@@ -7,6 +7,13 @@ import { Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import RPC from '../../utils/RPC';
+import { Account } from '../account/Account';
+import { DataAccount } from '../account/DataAccount';
+import { Identity } from '../account/Identity';
+import { KeyBook } from '../account/KeyBook';
+import { KeyPage } from '../account/KeyPage';
+import { TokenAccount } from '../account/TokenAccount';
+import { TokenIssuer } from '../account/TokenIssuer';
 import { AccTitle } from '../common/AccTitle';
 import {
   addFavourite,
@@ -14,15 +21,8 @@ import {
   removeFavourite,
 } from '../common/Favourites';
 import { queryEffect } from '../common/Shared';
-import { Account } from './Acc/Account';
-import { DataAccount } from './Acc/DataAccount';
-import { Identity } from './Acc/Identity';
-import { KeyBook } from './Acc/KeyBook';
-import { KeyPage } from './Acc/KeyPage';
-import { TokenAccount } from './Acc/TokenAccount';
-import { TokenIssuer } from './Acc/TokenIssuer';
-import GenericMsg from './Tx/GenericMsg';
-import GenericTx from './Tx/GenericTx';
+import GenericMsg from '../message/GenericMsg';
+import GenericTx from '../message/GenericTx';
 
 const { Title } = Typography;
 

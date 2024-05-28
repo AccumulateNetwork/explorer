@@ -11,12 +11,12 @@ import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import { AccTitle } from '../../common/AccTitle';
-import { CreditAmount } from '../../common/Amount';
-import Count from '../../common/Count';
-import { EnumValue } from '../../common/EnumValue';
-import { Nobr } from '../../common/Nobr';
-import tooltipDescs from '../../common/TooltipDescriptions';
+import { AccTitle } from '../common/AccTitle';
+import { CreditAmount } from '../common/Amount';
+import Count from '../common/Count';
+import { EnumValue } from '../common/EnumValue';
+import { Nobr } from '../common/Nobr';
+import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory } from './Directory';

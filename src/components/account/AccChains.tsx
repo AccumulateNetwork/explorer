@@ -6,8 +6,8 @@ import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 
-import Count from '../../common/Count';
-import { queryEffect } from '../../common/Shared';
+import Count from '../common/Count';
+import { queryEffect } from '../common/Shared';
 import { Chain } from './Chain';
 
 const { Title } = Typography;

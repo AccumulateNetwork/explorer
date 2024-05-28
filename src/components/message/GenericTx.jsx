@@ -24,18 +24,18 @@ import { Link } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import getTs from '../../../utils/getTS';
-import Data from '../../common/ExtId';
-import wrapLinksInHtml from '../../common/LinksRenderer';
-import Signatures from '../../common/Signatures';
-import tooltipDescs from '../../common/TooltipDescriptions';
-import TxAddCredits from '../../common/TxAddCredits';
-import TxIssueTokens from '../../common/TxIssueTokens';
-import TxSendTokens from '../../common/TxSendTokens';
-import TxStatus from '../../common/TxStatus';
-import TxSyntheticDepositTokens from '../../common/TxSyntheticDepositTokens';
-import TxUpdateAccountAuth from '../../common/TxUpdateAccountAuth';
-import TxUpdateKeyPage from '../../common/TxUpdateKeyPage';
+import getTs from '../../utils/getTS';
+import Data from '../common/ExtId';
+import wrapLinksInHtml from '../common/LinksRenderer';
+import Signatures from '../common/Signatures';
+import tooltipDescs from '../common/TooltipDescriptions';
+import TxAddCredits from '../common/TxAddCredits';
+import TxIssueTokens from '../common/TxIssueTokens';
+import TxSendTokens from '../common/TxSendTokens';
+import TxStatus from '../common/TxStatus';
+import TxSyntheticDepositTokens from '../common/TxSyntheticDepositTokens';
+import TxUpdateAccountAuth from '../common/TxUpdateAccountAuth';
+import TxUpdateKeyPage from '../common/TxUpdateKeyPage';
 
 const { Title, Text, Paragraph } = Typography;
 

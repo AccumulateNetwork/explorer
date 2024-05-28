@@ -6,10 +6,10 @@ import { RiAccountCircleLine, RiQuestionLine } from 'react-icons/ri';
 import { URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';
 
-import { getParentUrl } from '../../../utils/url';
-import { Link } from '../../common/Link';
-import { Nobr } from '../../common/Nobr';
-import tooltipDescs from '../../common/TooltipDescriptions';
+import { getParentUrl } from '../../utils/url';
+import { Link } from '../common/Link';
+import { Nobr } from '../common/Nobr';
+import tooltipDescs from '../common/TooltipDescriptions';
 
 export function describeParent(account: Account) {
   let lite = false,

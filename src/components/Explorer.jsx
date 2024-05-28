@@ -43,8 +43,8 @@ import page from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Tx from './explorer/Tx';
-import { DataEntry } from './explorer/Tx/DataEntry';
 import Validators from './explorer/Validators';
+import { DataEntry } from './message/DataEntry';
 import Web3Module from './web3/Web3Module';
 
 const { Header, Content } = Layout;

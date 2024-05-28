@@ -14,15 +14,15 @@ import { Link as DomLink } from 'react-router-dom';
 import { URL } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
 
-import { DataTxnRecord, dataEntryParts, isData } from '../../../utils/data';
-import getTs from '../../../utils/getTS';
-import { EnumValue } from '../../common/EnumValue';
-import Data from '../../common/ExtId';
-import { Link } from '../../common/Link';
-import { Nobr } from '../../common/Nobr';
-import { queryEffect } from '../../common/Shared';
-import tooltipDescs from '../../common/TooltipDescriptions';
-import Error404 from '../Error404';
+import { DataTxnRecord, dataEntryParts, isData } from '../../utils/data';
+import getTs from '../../utils/getTS';
+import { EnumValue } from '../common/EnumValue';
+import Data from '../common/ExtId';
+import { Link } from '../common/Link';
+import { Nobr } from '../common/Nobr';
+import { queryEffect } from '../common/Shared';
+import tooltipDescs from '../common/TooltipDescriptions';
+import Error404 from '../explorer/Error404';
 
 const { Text, Title } = Typography;
 

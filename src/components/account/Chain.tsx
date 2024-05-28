@@ -51,11 +51,11 @@ import {
   TokenAmount,
   recipientsOfTx,
   totalAmount,
-} from '../../common/Amount';
-import { Link } from '../../common/Link';
-import { Shared } from '../../common/Shared';
-import TxTo from '../../common/TxTo';
-import { useAsyncEffect } from '../../common/useAsync';
+} from '../common/Amount';
+import { Link } from '../common/Link';
+import { Shared } from '../common/Shared';
+import TxTo from '../common/TxTo';
+import { useAsyncEffect } from '../common/useAsync';
 
 type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
 type ChainRecord =
