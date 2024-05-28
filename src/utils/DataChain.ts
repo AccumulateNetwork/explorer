@@ -50,7 +50,7 @@ export class DataChain {
     return new RecordRange<ChainEntryRecord<TxnRecord>>({
       start: range.start,
       records,
-      total: this.#results.total,
+      total: this.total,
     });
   }
 

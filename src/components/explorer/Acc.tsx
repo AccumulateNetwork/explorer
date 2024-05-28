@@ -109,11 +109,6 @@ const Acc = ({ match, parentCallback }) => {
         case 'keyPage':
           props.data.adi = ParseADI(props.data.account.url);
           return <KeyPage data={props.data} />;
-        case 'dataAccount':
-          props.data.adi = ParseADI(props.data.account.url);
-          return <DataAccount data={props.data} />;
-        case 'liteDataAccount':
-          return <DataAccount data={props.data} />;
         default:
           return <GenericAcc data={props.data} />;
       }
@@ -194,7 +189,7 @@ const Acc = ({ match, parentCallback }) => {
   if (!acc) {
     return (
       <div>
-        {title}
+        {titleEl}
         <div>
           {error ? (
             <div className="skeleton-holder">
@@ -212,12 +207,21 @@ const Acc = ({ match, parentCallback }) => {
 
   if (acc2?.recordType === RecordType.Account) {
     switch (acc2.account.type) {
-      case AccountType.TokenAccount:
       case AccountType.LiteTokenAccount:
+      case AccountType.TokenAccount:
         return (
           <div>
             {titleEl}
             <TokenAccount record={acc2} />
+          </div>
+        );
+
+      case AccountType.LiteDataAccount:
+      case AccountType.DataAccount:
+        return (
+          <div>
+            {titleEl}
+            <DataAccount record={acc2} />
           </div>
         );
     }
@@ -226,21 +230,7 @@ const Acc = ({ match, parentCallback }) => {
   return (
     <div>
       {titleEl}
-      {acc ? (
-        <Render data={acc} data2={acc2} />
-      ) : (
-        <div>
-          {error ? (
-            <div className="skeleton-holder">
-              <Alert message={error} type="error" showIcon />
-            </div>
-          ) : (
-            <div className="skeleton-holder">
-              <Skeleton active />
-            </div>
-          )}
-        </div>
-      )}
+      <Render data={acc} data2={acc2} />
     </div>
   );
 };

@@ -33,12 +33,12 @@ import { queryEffect } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
+import { ParentDesc } from './ParentDesc';
 
 const { Title } = Typography;
 
 const TokenAccount = ({ record }: { record: AccountRecord }) => {
   const account = record.account as AdiTokenAccount | LiteTokenAccount;
-  const parentUrl = getParentUrl(account.url);
 
   const [issuer, setIssuer] = useState<TokenIssuer>();
   const [stakingAccount, setStakingAccount] = useState(null);
@@ -108,36 +108,7 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
           {account.url.toString()}
         </Descriptions.Item>
 
-        {parentUrl && (
-          <Descriptions.Item
-            label={
-              <span>
-                <Nobr>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <Tooltip
-                      overlayClassName="explorer-tooltip"
-                      title={
-                        account instanceof AdiTokenAccount
-                          ? tooltipDescs.adiUrl
-                          : tooltipDescs.lightIdentityUrl
-                      }
-                    >
-                      <RiQuestionLine />
-                    </Tooltip>
-                  </IconContext.Provider>
-                  {account instanceof AdiTokenAccount ? 'ADI' : 'Identity'}
-                </Nobr>
-              </span>
-            }
-          >
-            <Link to={parentUrl}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiAccountCircleLine />
-              </IconContext.Provider>
-              {parentUrl.toString()}
-            </Link>
-          </Descriptions.Item>
-        )}
+        <ParentDesc account={account} />
 
         <Descriptions.Item
           label={
