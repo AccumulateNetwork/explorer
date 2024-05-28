@@ -400,6 +400,10 @@ Chain.TxnFrom = function ({
       return null;
   }
 
+  if (!from) {
+    return null;
+  }
+
   if (from.equals(account.url)) {
     return <Text type="secondary">{from.toString()}</Text>;
   }

@@ -9,7 +9,7 @@ export function getParentUrl(url: URL) {
     scheme: 'acc',
     hostname: url.authority,
     username: url.username,
-    pathname: i < 0 ? '' : path.substring(0, i),
+    pathname: i < 0 ? '' : '/' + path.substring(0, i),
     search: '',
     hash: '',
   });

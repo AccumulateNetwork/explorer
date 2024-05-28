@@ -10,7 +10,7 @@ import { Link } from '../../common/Link';
 import { Nobr } from '../../common/Nobr';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
-export function ParentDesc({ account }: { account: Account }) {
+export function describeParent(account: Account) {
   let lite = false;
   switch (account.type) {
     case AccountType.LiteIdentity:

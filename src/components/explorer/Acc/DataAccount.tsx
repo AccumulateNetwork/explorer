@@ -19,64 +19,73 @@ import tooltipDescs from '../../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { DataLedger } from './DataLedger';
-import { ParentDesc } from './ParentDesc';
+import { describeParent } from './parent';
 
 const { Title, Paragraph, Text } = Typography;
 
 export function DataAccount({ record }: { record: AccountRecord }) {
-  const account = record.account as core.DataAccount | core.LiteDataAccount;
+  if (
+    !(record.account instanceof core.DataAccount) &&
+    !(record.account instanceof core.LiteDataAccount)
+  )
+    throw new Error('Wrong account type for component');
+  const { account } = record;
+
+  const labelURL = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.dataAccountUrl}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Data Account URL
+      </Nobr>
+    </span>
+  );
 
   return (
     <div>
+      {/* Account type */}
       <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
       </Descriptions>
 
-      <div>
-        <Title level={4}>
-          <IconContext.Provider value={{ className: 'react-icons' }}>
-            <RiInformationLine />
-          </IconContext.Provider>
-          Data Account Info
-        </Title>
+      {/* General info like the URL and ADI */}
+      <Title level={4}>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <RiInformationLine />
+        </IconContext.Provider>
+        Data Account Info
+      </Title>
 
-        <Descriptions bordered column={1} size="middle" className="info-table">
-          <Descriptions.Item
-            label={
-              <span>
-                <Nobr>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <Tooltip
-                      overlayClassName="explorer-tooltip"
-                      title={tooltipDescs.dataAccountUrl}
-                    >
-                      <RiQuestionLine />
-                    </Tooltip>
-                  </IconContext.Provider>
-                  Data Account URL
-                </Nobr>
-              </span>
-            }
-          >
-            {account.url.toString()}
-          </Descriptions.Item>
+      <Descriptions bordered column={1} size="middle" className="info-table">
+        <Descriptions.Item label={labelURL}>
+          {account.url.toString()}
+        </Descriptions.Item>
 
-          <ParentDesc account={account} />
-        </Descriptions>
+        {describeParent(account)}
+      </Descriptions>
 
-        <Authorities account={account} />
+      {/* Authorities (may be inherited) */}
+      <Authorities account={account} />
 
-        <Title level={4} style={{ marginTop: 30 }}>
-          <IconContext.Provider value={{ className: 'react-icons' }}>
-            <RiKeynoteLine />
-          </IconContext.Provider>
-          Data Account State
-        </Title>
+      {/* Account state data entry (ADI data account only) */}
+      {account.type === AccountType.DataAccount && (
+        <div>
+          <Title level={4} style={{ marginTop: 30 }}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiKeynoteLine />
+            </IconContext.Provider>
+            Data Account State
+          </Title>
 
-        {account.type === AccountType.DataAccount &&
-          (account.entry ? (
+          {account.entry ? (
             <List
               size="small"
               bordered
@@ -92,14 +101,15 @@ export function DataAccount({ record }: { record: AccountRecord }) {
             <Paragraph>
               <Text type="secondary">Empty state</Text>
             </Paragraph>
-          ))}
+          )}
+        </div>
+      )}
 
-        <DataLedger scope={account.url} />
+      {/* Data entries */}
+      <DataLedger scope={account.url} />
 
-        <AccChains account={account.url} />
-      </div>
+      {/* Chains and pending transactions */}
+      <AccChains account={account.url} />
     </div>
   );
 }
-
-export default DataAccount;

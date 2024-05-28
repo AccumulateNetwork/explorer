@@ -2,7 +2,7 @@ import { Alert, Rate, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import { Record, RecordType } from 'accumulate.js/lib/api_v3';
+import { AccountRecord, Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import ParseADI from '../../utils/ParseADI';
@@ -14,12 +14,12 @@ import {
 } from '../common/Favourites';
 import { queryEffect } from '../common/Shared';
 import ADI from './Acc/ADI';
-import DataAccount from './Acc/DataAccount';
+import { DataAccount } from './Acc/DataAccount';
 import GenericAcc from './Acc/GenericAcc';
 import KeyBook from './Acc/KeyBook';
 import KeyPage from './Acc/KeyPage';
-import Token from './Acc/Token';
-import TokenAccount from './Acc/TokenAccount';
+import { TokenAccount } from './Acc/TokenAccount';
+import { TokenIssuer } from './Acc/TokenIssuer';
 import GenericMsg from './Tx/GenericMsg';
 import GenericTx from './Tx/GenericTx';
 
@@ -95,10 +95,6 @@ const Acc = ({ match, parentCallback }) => {
         }
       }
       switch (props.data.account.type) {
-        case 'token':
-          return <Token data={props.data} />;
-        case 'tokenIssuer':
-          return <Token data={props.data} />;
         case 'identity':
           return <ADI data={props.data} />;
         case 'liteIdentity':
@@ -206,24 +202,30 @@ const Acc = ({ match, parentCallback }) => {
   }
 
   if (acc2?.recordType === RecordType.Account) {
+    let Account: (_: { record: AccountRecord }) => React.ReactNode | undefined;
+
     switch (acc2.account.type) {
       case AccountType.LiteTokenAccount:
       case AccountType.TokenAccount:
-        return (
-          <div>
-            {titleEl}
-            <TokenAccount record={acc2} />
-          </div>
-        );
+        Account = TokenAccount;
+        break;
 
       case AccountType.LiteDataAccount:
       case AccountType.DataAccount:
-        return (
-          <div>
-            {titleEl}
-            <DataAccount record={acc2} />
-          </div>
-        );
+        Account = DataAccount;
+        break;
+
+      case AccountType.TokenIssuer:
+        Account = TokenIssuer;
+        break;
+    }
+    if (Account) {
+      return (
+        <div>
+          {titleEl}
+          <Account record={acc2} />
+        </div>
+      );
     }
   }
 

@@ -16,15 +16,10 @@ import {
   RiQuestionLine,
 } from 'react-icons/ri';
 
+import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
-import {
-  AccountType,
-  TokenAccount as AdiTokenAccount,
-  LiteTokenAccount,
-  TokenIssuer,
-} from 'accumulate.js/lib/core';
+import { AccountType } from 'accumulate.js/lib/core';
 
-import { getParentUrl } from '../../../utils/url';
 import { TokenAmount } from '../../common/Amount';
 import { EnumValue } from '../../common/EnumValue';
 import { Link } from '../../common/Link';
@@ -33,14 +28,19 @@ import { queryEffect } from '../../common/Shared';
 import tooltipDescs from '../../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
-import { ParentDesc } from './ParentDesc';
+import { describeParent } from './parent';
 
 const { Title } = Typography;
 
-const TokenAccount = ({ record }: { record: AccountRecord }) => {
-  const account = record.account as AdiTokenAccount | LiteTokenAccount;
+export function TokenAccount({ record }: { record: AccountRecord }) {
+  if (
+    !(record.account instanceof core.TokenAccount) &&
+    !(record.account instanceof core.LiteTokenAccount)
+  )
+    throw new Error('Wrong account type for component');
+  const { account } = record;
 
-  const [issuer, setIssuer] = useState<TokenIssuer>();
+  const [issuer, setIssuer] = useState<core.TokenIssuer>();
   const [stakingAccount, setStakingAccount] = useState(null);
 
   (
@@ -72,14 +72,96 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
     getStakingInfo(account.url);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const labelURL = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.tokenAcctUrl}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Token Account URL
+      </Nobr>
+    </span>
+  );
+
+  const labelIssuer = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.token}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Token
+      </Nobr>
+    </span>
+  );
+
+  const labelBalance = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.balance}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Balance
+      </Nobr>
+    </span>
+  );
+
+  const labelStakingAccount = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.stakingType}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Staking Type
+      </Nobr>
+    </span>
+  );
+
+  const labelStakingRewards = (
+    <span>
+      <Nobr>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <Tooltip
+            overlayClassName="explorer-tooltip"
+            title={tooltipDescs.stakingRewards}
+          >
+            <RiQuestionLine />
+          </Tooltip>
+        </IconContext.Provider>
+        Staking Rewards
+      </Nobr>
+    </span>
+  );
+
   return (
     <div>
+      {/* Account type */}
       <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
       </Descriptions>
 
+      {/* General info like the URL and ADI plus staking account info */}
       <Title level={4}>
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <RiInformationLine />
@@ -88,45 +170,13 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
       </Title>
 
       <Descriptions bordered column={1} size="middle" className="info-table">
-        <Descriptions.Item
-          label={
-            <span>
-              <Nobr>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <Tooltip
-                    overlayClassName="explorer-tooltip"
-                    title={tooltipDescs.tokenAcctUrl}
-                  >
-                    <RiQuestionLine />
-                  </Tooltip>
-                </IconContext.Provider>
-                URL
-              </Nobr>
-            </span>
-          }
-        >
+        <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
 
-        <ParentDesc account={account} />
+        {describeParent(account)}
 
-        <Descriptions.Item
-          label={
-            <span>
-              <Nobr>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <Tooltip
-                    overlayClassName="explorer-tooltip"
-                    title={tooltipDescs.token}
-                  >
-                    <RiQuestionLine />
-                  </Tooltip>
-                </IconContext.Provider>
-                Token
-              </Nobr>
-            </span>
-          }
-        >
+        <Descriptions.Item label={labelIssuer}>
           {issuer?.symbol && <div>{issuer.symbol}</div>}
 
           {issuer ? (
@@ -141,23 +191,7 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
           )}
         </Descriptions.Item>
 
-        <Descriptions.Item
-          label={
-            <span>
-              <Nobr>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <Tooltip
-                    overlayClassName="explorer-tooltip"
-                    title={tooltipDescs.balance}
-                  >
-                    <RiQuestionLine />
-                  </Tooltip>
-                </IconContext.Provider>
-                Balance
-              </Nobr>
-            </span>
-          }
-        >
+        <Descriptions.Item label={labelBalance}>
           <TokenAmount amount={account.balance} issuer={issuer} />
           <br />
           <TokenAmount
@@ -169,23 +203,7 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
         </Descriptions.Item>
 
         {stakingAccount && stakingAccount.type ? (
-          <Descriptions.Item
-            label={
-              <span>
-                <Nobr>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <Tooltip
-                      overlayClassName="explorer-tooltip"
-                      title={tooltipDescs.stakingType}
-                    >
-                      <RiQuestionLine />
-                    </Tooltip>
-                  </IconContext.Provider>
-                  Staking Type
-                </Nobr>
-              </span>
-            }
-          >
+          <Descriptions.Item label={labelStakingAccount}>
             <Tag color={stakingAccount.type ? 'green' : 'cyan'}>
               {stakingAccount.type}
             </Tag>
@@ -201,23 +219,7 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
         ) : null}
 
         {stakingAccount && stakingAccount.rewards ? (
-          <Descriptions.Item
-            label={
-              <span>
-                <Nobr>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <Tooltip
-                      overlayClassName="explorer-tooltip"
-                      title={tooltipDescs.stakingRewards}
-                    >
-                      <RiQuestionLine />
-                    </Tooltip>
-                  </IconContext.Provider>
-                  Staking Rewards
-                </Nobr>
-              </span>
-            }
-          >
+          <Descriptions.Item label={labelStakingRewards}>
             <Link to={stakingAccount.rewards}>
               <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiAccountCircleLine />
@@ -228,11 +230,11 @@ const TokenAccount = ({ record }: { record: AccountRecord }) => {
         ) : null}
       </Descriptions>
 
+      {/* Authorities (may be inherited) */}
       <Authorities account={account} />
 
+      {/* Chains and pending transactions */}
       <AccChains account={account.url} />
     </div>
   );
-};
-
-export default TokenAccount;
+}
