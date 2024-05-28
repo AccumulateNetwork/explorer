@@ -5,7 +5,6 @@ import { useLocation } from 'react-router-dom';
 import { AccountRecord, Record, RecordType } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import ParseADI from '../../utils/ParseADI';
 import RPC from '../../utils/RPC';
 import {
   addFavourite,
@@ -13,11 +12,10 @@ import {
   removeFavourite,
 } from '../common/Favourites';
 import { queryEffect } from '../common/Shared';
-import ADI from './Acc/ADI';
 import { DataAccount } from './Acc/DataAccount';
-import GenericAcc from './Acc/GenericAcc';
-import KeyBook from './Acc/KeyBook';
-import KeyPage from './Acc/KeyPage';
+import { Identity } from './Acc/Identity';
+import { KeyBook } from './Acc/KeyBook';
+import { KeyPage } from './Acc/KeyPage';
 import { TokenAccount } from './Acc/TokenAccount';
 import { TokenIssuer } from './Acc/TokenIssuer';
 import GenericMsg from './Tx/GenericMsg';
@@ -93,20 +91,6 @@ const Acc = ({ match, parentCallback }) => {
           default:
             return <GenericMsg data={props.data} />;
         }
-      }
-      switch (props.data.account.type) {
-        case 'identity':
-          return <ADI data={props.data} />;
-        case 'liteIdentity':
-          return <ADI data={props.data} type="Lite Identity" />;
-        case 'keyBook':
-          props.data.adi = ParseADI(props.data.account.url);
-          return <KeyBook data={props.data} />;
-        case 'keyPage':
-          props.data.adi = ParseADI(props.data.account.url);
-          return <KeyPage data={props.data} />;
-        default:
-          return <GenericAcc data={props.data} />;
       }
     }
     return <Alert message="Chain does not exist" type="error" showIcon />;
@@ -205,6 +189,11 @@ const Acc = ({ match, parentCallback }) => {
     let Account: (_: { record: AccountRecord }) => React.ReactNode | undefined;
 
     switch (acc2.account.type) {
+      case AccountType.LiteIdentity:
+      case AccountType.Identity:
+        Account = Identity;
+        break;
+
       case AccountType.LiteTokenAccount:
       case AccountType.TokenAccount:
         Account = TokenAccount;
@@ -217,6 +206,14 @@ const Acc = ({ match, parentCallback }) => {
 
       case AccountType.TokenIssuer:
         Account = TokenIssuer;
+        break;
+
+      case AccountType.KeyPage:
+        Account = KeyPage;
+        break;
+
+      case AccountType.KeyBook:
+        Account = KeyBook;
         break;
     }
     if (Account) {

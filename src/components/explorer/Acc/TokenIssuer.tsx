@@ -109,7 +109,7 @@ export function TokenIssuer({ record }: { record: AccountRecord }) {
       </Descriptions>
 
       {/* Authorities (may be inherited) */}
-      <Authorities items={account.authorities} />
+      <Authorities account={account} />
 
       {/* Chains and pending transactions */}
       <AccChains account={account.url} />

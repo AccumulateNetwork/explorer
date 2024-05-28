@@ -12,7 +12,7 @@ const { Text } = Typography;
 
 export default function (props: {
   publicKey?: string;
-  keyHash?: string;
+  keyHash?: string | Uint8Array;
   type?: string;
 }) {
   const { publicKey, keyHash } = props;
@@ -22,9 +22,11 @@ export default function (props: {
 
   useAsyncEffect(
     async (mounted) => {
-      const hash = keyHash
-        ? Buffer.from(keyHash, 'hex')
-        : await sha256(Buffer.from(publicKey, 'hex'));
+      const hash = !keyHash
+        ? await sha256(Buffer.from(publicKey, 'hex'))
+        : keyHash instanceof Uint8Array
+          ? keyHash
+          : Buffer.from(keyHash, 'hex');
       if (!mounted()) return;
 
       if (type === 'hex') {

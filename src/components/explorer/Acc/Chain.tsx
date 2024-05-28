@@ -191,50 +191,46 @@ export function Chain(props: {
   ];
 
   if (account) {
-    columns.push({
-      title: 'From',
-      className: 'no-break',
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnFrom account={account} txn={value.message.transaction} />
-        );
+    columns.push(
+      {
+        title: 'From',
+        className: 'no-break',
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnFrom account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    });
-  }
-
-  if (issuer) {
-    columns.push({
-      title: 'To',
-      className: 'no-break',
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnTo account={account} txn={value.message.transaction} />
-        );
+      {
+        title: 'To',
+        className: 'no-break',
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnTo account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    });
-  }
-
-  if (account) {
-    columns.push({
-      title: 'Amount',
-      className: 'no-break',
-      align: 'right',
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnAmount
-            account={account}
-            issuer={issuer}
-            txn={value.message.transaction}
-          />
-        );
+      {
+        title: 'Amount',
+        className: 'no-break',
+        align: 'right',
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnAmount
+              account={account}
+              issuer={issuer}
+              txn={value.message.transaction}
+            />
+          );
+        },
       },
-    });
+    );
   }
 
   function Icon() {
@@ -425,6 +421,11 @@ Chain.TxnTo = function ({
   txn: Transaction;
   account: Account;
 }) {
+  switch (txn.body.type) {
+    case TransactionType.SyntheticDepositCredits:
+      return null;
+  }
+
   const to = recipientsOfTx(txn);
   if (!to) return null;
 

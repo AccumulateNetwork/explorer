@@ -3,6 +3,7 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiQuestionLine } from 'react-icons/ri';
 
+import { URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';
 
 import { getParentUrl } from '../../../utils/url';
@@ -11,7 +12,8 @@ import { Nobr } from '../../common/Nobr';
 import tooltipDescs from '../../common/TooltipDescriptions';
 
 export function describeParent(account: Account) {
-  let lite = false;
+  let lite = false,
+    page = false;
   switch (account.type) {
     case AccountType.LiteIdentity:
     case AccountType.LiteDataAccount:
@@ -19,6 +21,8 @@ export function describeParent(account: Account) {
 
     case AccountType.LiteTokenAccount:
       lite = true;
+    case AccountType.KeyPage:
+      page = true;
   }
 
   const parentUrl = lite
@@ -27,7 +31,7 @@ export function describeParent(account: Account) {
   if (!parentUrl) return null;
 
   const tooltip = lite ? tooltipDescs.lightIdentityUrl : tooltipDescs.adiUrl;
-  const labelTxt = lite ? 'Identity' : 'ADI';
+  const labelTxt = lite ? 'Identity' : page ? 'Key Book' : 'ADI';
   const label = (
     <span>
       <Nobr>
