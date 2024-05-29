@@ -8,7 +8,7 @@ import {
 } from 'accumulate.js/lib/api_v3';
 
 import { ChainFilter } from './ChainFilter';
-import { TxnRecord, isData } from './data';
+import { TxnRecord, isData } from './types';
 
 export class DataChain {
   readonly #main: ChainFilter<TxnRecord>;

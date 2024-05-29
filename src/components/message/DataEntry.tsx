@@ -14,8 +14,8 @@ import { Link as DomLink } from 'react-router-dom';
 import { URL } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
 
-import { DataTxnRecord, dataEntryParts, isData } from '../../utils/data';
 import getTs from '../../utils/getTS';
+import { DataTxnRecord, dataEntryParts, isData } from '../../utils/types';
 import { EnumValue } from '../common/EnumValue';
 import Data from '../common/ExtId';
 import { Link } from '../common/Link';

@@ -8,9 +8,10 @@ import {
   MessageRecord,
   RecordType,
 } from 'accumulate.js/lib/api_v3';
-import { MessageType } from 'accumulate.js/lib/messaging';
+import { TransactionType } from 'accumulate.js/lib/core';
 
 import RPC from '../../utils/RPC';
+import { isRecordOfTxn } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { queryEffect } from '../common/Shared';
@@ -150,8 +151,8 @@ const Acc = ({ match, parentCallback }) => {
     case RecordType.Account:
       return <Account record={acc2} />;
     case RecordType.Message:
-      switch (acc2.message.type) {
-        case MessageType.Transaction:
+      if (isRecordOfTxn(acc2, TransactionType.AddCredits)) {
+        // return <AddCredits record={acc2} />;
       }
   }
 

@@ -20,6 +20,7 @@ import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { AccountRecordOf, isRecordOfAccount } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
@@ -33,24 +34,22 @@ import { describeParent } from './parent';
 
 const { Title } = Typography;
 
-export function TokenAccount({ record }: { record: AccountRecord }) {
-  if (
-    !(record.account instanceof core.TokenAccount) &&
-    !(record.account instanceof core.LiteTokenAccount)
-  )
-    throw new Error('Wrong account type for component');
+export function TokenAccount({
+  record,
+}: {
+  record: AccountRecordOf<core.TokenAccount | core.LiteTokenAccount>;
+}) {
   const { account } = record;
 
   const [issuer, setIssuer] = useState<core.TokenIssuer>();
   const [stakingAccount, setStakingAccount] = useState(null);
 
-  (
-    queryEffect(account.tokenUrl, {
-      queryType: 'default',
-    }) as Promise<AccountRecord>
-  ).then(({ account }) => {
-    if (account.type !== AccountType.TokenIssuer) return;
-    setIssuer(account);
+  queryEffect(account.tokenUrl, {
+    queryType: 'default',
+  }).then((r) => {
+    if (isRecordOfAccount(r, AccountType.TokenIssuer)) {
+      setIssuer(r.account);
+    }
   });
 
   const getStakingInfo = async (url) => {

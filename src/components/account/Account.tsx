@@ -8,6 +8,7 @@ import { TxID, URL } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { isRecordOfAccount } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
 import { Link } from '../common/Link';
@@ -58,31 +59,34 @@ export function Account({ record }: { record: AccountRecord }) {
 }
 
 function Show({ record }: { record: AccountRecord }) {
-  switch (record.account.type) {
-    case AccountType.LiteIdentity:
-    case AccountType.Identity:
-      return <Identity record={record} />;
-
-    case AccountType.LiteTokenAccount:
-    case AccountType.TokenAccount:
-      return <TokenAccount record={record} />;
-
-    case AccountType.LiteDataAccount:
-    case AccountType.DataAccount:
-      return <DataAccount record={record} />;
-
-    case AccountType.TokenIssuer:
-      return <TokenIssuer record={record} />;
-
-    case AccountType.KeyPage:
-      return <KeyPage record={record} />;
-
-    case AccountType.KeyBook:
-      return <KeyBook record={record} />;
-
-    default:
-      return <Account.Generic record={record} />;
+  if (isRecordOfAccount(record, AccountType.LiteIdentity)) {
+    return <Identity record={record} />;
   }
+  if (isRecordOfAccount(record, AccountType.Identity)) {
+    return <Identity record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.LiteTokenAccount)) {
+    return <TokenAccount record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.TokenAccount)) {
+    return <TokenAccount record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.LiteDataAccount)) {
+    return <DataAccount record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.DataAccount)) {
+    return <DataAccount record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.TokenIssuer)) {
+    return <TokenIssuer record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.KeyPage)) {
+    return <KeyPage record={record} />;
+  }
+  if (isRecordOfAccount(record, AccountType.KeyBook)) {
+    return <KeyBook record={record} />;
+  }
+  return <Account.Generic record={record} />;
 }
 
 Account.Generic = function ({ record }: { record: AccountRecord }) {

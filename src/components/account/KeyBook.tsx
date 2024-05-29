@@ -4,9 +4,9 @@ import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine, RiStackLine } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
@@ -19,9 +19,7 @@ import { describeParent } from './parent';
 
 const { Title, Paragraph, Text } = Typography;
 
-export function KeyBook({ record }: { record: AccountRecord }) {
-  if (!(record.account instanceof core.KeyBook))
-    throw new Error('Wrong account type for component');
+export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
   const { account } = record;
 
   const pages = [...Array(account.pageCount).keys()].map((x) =>

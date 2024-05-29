@@ -4,10 +4,10 @@ import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import getSupply from '../../utils/getSupply';
+import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
@@ -19,9 +19,11 @@ import { describeParent } from './parent';
 
 const { Title, Text } = Typography;
 
-export function TokenIssuer({ record }: { record: AccountRecord }) {
-  if (!(record.account instanceof core.TokenIssuer))
-    throw new Error('Wrong account type for component');
+export function TokenIssuer({
+  record,
+}: {
+  record: AccountRecordOf<core.TokenIssuer>;
+}) {
   const { account } = record;
 
   const labelURL = (

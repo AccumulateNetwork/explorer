@@ -3,7 +3,6 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountBoxLine,
-  RiAccountCircleLine,
   RiCloseCircleLine,
   RiInformationLine,
   RiKey2Line,
@@ -11,9 +10,9 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
@@ -26,9 +25,7 @@ import { describeParent } from './parent';
 
 const { Title, Paragraph, Text } = Typography;
 
-export function KeyPage({ record }: { record: AccountRecord }) {
-  if (!(record.account instanceof core.KeyPage))
-    throw new Error('Wrong account type for component');
+export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
   const { account } = record;
 
   const labelURL = (

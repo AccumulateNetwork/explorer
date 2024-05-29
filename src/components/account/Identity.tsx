@@ -8,9 +8,9 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { CreditAmount } from '../common/Amount';
 import Count from '../common/Count';
@@ -23,12 +23,11 @@ import { Directory } from './Directory';
 
 const { Title, Text } = Typography;
 
-export function Identity({ record }: { record: AccountRecord }) {
-  if (
-    !(record.account instanceof core.ADI) &&
-    !(record.account instanceof core.LiteIdentity)
-  )
-    throw new Error('Wrong account type for component');
+export function Identity({
+  record,
+}: {
+  record: AccountRecordOf<core.ADI | core.LiteIdentity>;
+}) {
   const { account } = record;
 
   const typeStr =

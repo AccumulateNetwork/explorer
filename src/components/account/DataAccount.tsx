@@ -8,10 +8,9 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import { dataEntryParts } from '../../utils/data';
+import { AccountRecordOf, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
 import ExtId from '../common/ExtId';
@@ -24,12 +23,11 @@ import { describeParent } from './parent';
 
 const { Title, Paragraph, Text } = Typography;
 
-export function DataAccount({ record }: { record: AccountRecord }) {
-  if (
-    !(record.account instanceof core.DataAccount) &&
-    !(record.account instanceof core.LiteDataAccount)
-  )
-    throw new Error('Wrong account type for component');
+export function DataAccount({
+  record,
+}: {
+  record: AccountRecordOf<core.DataAccount | core.LiteDataAccount>;
+}) {
   const { account } = record;
 
   const labelURL = (
