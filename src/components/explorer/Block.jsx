@@ -15,9 +15,9 @@ import { Link } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
+import RPC from '../../utils/RPC';
+import getBlockEntries from '../../utils/getBlockEntries';
 import Count from '../common/Count';
-import getBlockEntries from '../common/GetBlockEntries';
-import RPC from '../common/RPC';
 
 const { Title, Text } = Typography;
 

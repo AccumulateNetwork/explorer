@@ -19,9 +19,9 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import getSupply from '../../utils/getSupply';
+import { tokenAmountToLocaleString } from '../common/Amount';
 import Count from '../common/Count';
-import getSupply from '../common/GetSupply';
-import { tokenAmountToLocaleString } from '../common/TokenAmount';
 
 const { Title, Text } = Typography;
 

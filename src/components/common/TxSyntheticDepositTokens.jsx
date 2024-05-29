@@ -9,8 +9,8 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import getToken from './GetToken';
-import { tokenAmount, tokenAmountToLocaleString } from './TokenAmount';
+import getToken from '../../utils/getToken';
+import { tokenAmount, tokenAmountToLocaleString } from './Amount';
 
 const { Title, Text } = Typography;
 

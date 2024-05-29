@@ -1,19 +1,44 @@
-import { TxID, TxIDArgs, URL, URLArgs } from 'accumulate.js';
+import { Alert } from 'antd';
 import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
-interface Props {
+import { TxID, TxIDArgs, URL } from 'accumulate.js';
+
+export function Link({
+  to,
+  children,
+  dataEntry,
+  className,
+}: {
   to: TxIDArgs;
   children: React.ReactNode;
-}
-
-export function Link(props: Props) {
-  const { to, children } = props;
+  dataEntry?: boolean;
+  className?: string;
+}) {
+  const route = dataEntry ? 'data' : 'acc';
   if (typeof to === 'string' && /^[a-z]{64}$/i.test(to)) {
-    return <RouterLink to={`/acc/${to}@unknown`} children={children} />;
+    return (
+      <RouterLink
+        to={`/${route}/${to}@unknown`}
+        className={className}
+        children={children}
+      />
+    );
   }
 
-  const url = to instanceof TxID ? to.asUrl() : URL.parse(to);
+  let url: URL;
+  try {
+    url = to instanceof TxID ? to.asUrl() : URL.parse(to);
+  } catch (error) {
+    return <Alert type="error" message={`${error}`} />;
+  }
+
   const s = url.toString().replace(/^acc:\/\//, '');
-  return <RouterLink to={`/acc/${s}`} children={children} />;
+  return (
+    <RouterLink
+      to={`/${route}/${s}`}
+      className={className}
+      children={children}
+    />
+  );
 }

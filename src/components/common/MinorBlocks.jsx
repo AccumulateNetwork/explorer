@@ -5,9 +5,9 @@ import { IconContext } from 'react-icons';
 import { RiExchangeLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import RPC from '../../utils/RPC';
+import getBlockEntries from '../../utils/getBlockEntries';
 import Count from './Count';
-import getBlockEntries from './GetBlockEntries';
-import RPC from './RPC';
 
 const { Title, Text } = Typography;
 

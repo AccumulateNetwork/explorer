@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiLineChartFill } from 'react-icons/ri';
 
-import RPC from './RPC';
+import RPC from '../../utils/RPC';
 
 const { Title } = Typography;
 

@@ -1,1 +1,4 @@
-tab_width = 2
+root = true
+
+[*]
+indent_size = 2

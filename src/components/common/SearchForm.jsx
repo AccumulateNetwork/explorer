@@ -1,10 +1,11 @@
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { Form, Input, message } from 'antd';
 import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
 import React, { useEffect, useState } from 'react';
 
-import RPC from './RPC';
+import { Buffer, sha256 } from 'accumulate.js/lib/common';
+
+import RPC from '../../utils/RPC';
 
 const { Search } = Input;
 

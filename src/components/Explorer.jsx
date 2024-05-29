@@ -1,5 +1,13 @@
 import { DownOutlined, MoreOutlined } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Layout, Menu, Typography } from 'antd';
+import {
+  Badge,
+  Button,
+  Dropdown,
+  Layout,
+  Menu,
+  Typography,
+  message,
+} from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -15,11 +23,14 @@ import {
 } from 'react-icons/ri';
 import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
+import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
+
 import Logo from './common/Logo';
 import MinorBlocks from './common/MinorBlocks';
 import networks from './common/Networks.json';
 import ScrollToTop from './common/ScrollToTop';
 import SearchForm from './common/SearchForm';
+import { Shared } from './common/Shared';
 import Version from './common/Version';
 import Acc from './explorer/Acc';
 import Block from './explorer/Block';
@@ -33,6 +44,7 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Tx from './explorer/Tx';
 import Validators from './explorer/Validators';
+import { DataEntry } from './message/DataEntry';
 import Web3Module from './web3/Web3Module';
 
 const { Header, Content } = Layout;
@@ -43,6 +55,13 @@ const Explorer = (props) => {
   const [currentMenu, setCurrentMenu] = useState([window.location.pathname]);
   const [isMainnet, setIsMainnet] = useState(false);
   const [web3ModuleData, setWeb3ModuleData] = useState(null);
+
+  // TODO: Make this state that is configurable
+  const api = new JsonRpcClient(`${import.meta.env.VITE_APP_API_PATH}/v3`);
+  const onApiError = (error) => {
+    console.error(error);
+    message.error('API call failed');
+  };
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
@@ -247,37 +266,44 @@ const Explorer = (props) => {
           ) : null}
         </Header>
 
-        <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
-          {!isMainnet && <Web3Module data={web3ModuleData} />}
-          <SearchForm />
-          <Switch>
-            <Route exact path="/" component={Blocks} />
+        <Shared.Provider value={{ api, onApiError }}>
+          <Content style={{ padding: '25px 20px 30px 20px', margin: 0 }}>
+            {!isMainnet && <Web3Module data={web3ModuleData} />}
+            <SearchForm />
+            <Switch>
+              <Route exact path="/" component={Blocks} />
 
-            {currentNetwork !== 'Mainnet' && (
-              <Route exact path="/faucet" component={Faucet} />
-            )}
-
-            <Route
-              path="/acc/:url+"
-              render={(match) => (
-                <Acc {...match} parentCallback={handleWeb3ModuleData} />
+              {currentNetwork !== 'Mainnet' && (
+                <Route exact path="/faucet" component={Faucet} />
               )}
-            />
 
-            <Route path="/tx/:hash" component={Tx} />
-            <Route path="/block/:index" component={Block} />
+              <Route
+                path="/acc/:url+"
+                render={(match) => (
+                  <Acc {...match} parentCallback={handleWeb3ModuleData} />
+                )}
+              />
 
-            <Route path="/validators" component={Validators} />
-            <Route path="/tokens" component={Tokens} />
-            <Route path="/staking" component={Staking} />
-            <Route path="/favourites" component={Favourites} />
-            <Route path="/blocks" component={MinorBlocks} />
-            <Route path="/network" component={Network} />
-            <Route path="/settings" component={page} />
+              <Route
+                path="/data/:url+"
+                render={(x) => <DataEntry url={x.match.params.url} />}
+              />
 
-            <Route component={Error404} />
-          </Switch>
-        </Content>
+              <Route path="/tx/:hash" component={Tx} />
+              <Route path="/block/:index" component={Block} />
+
+              <Route path="/validators" component={Validators} />
+              <Route path="/tokens" component={Tokens} />
+              <Route path="/staking" component={Staking} />
+              <Route path="/favourites" component={Favourites} />
+              <Route path="/blocks" component={MinorBlocks} />
+              <Route path="/network" component={Network} />
+              <Route path="/settings" component={page} />
+
+              <Route component={Error404} />
+            </Switch>
+          </Content>
+        </Shared.Provider>
       </Layout>
       <div
         align="center"
