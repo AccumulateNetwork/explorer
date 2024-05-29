@@ -13,7 +13,6 @@ import { DataTxnRecord, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Data from '../common/ExtId';
 import { Link } from '../common/Link';
-import Signatures from '../common/Signatures';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
 import { TxnMetadata } from './TxnMetadata';
@@ -83,13 +82,6 @@ export function WriteData({ record }: { record: DataTxnRecord }) {
         )}
         style={{ marginBottom: '30px' }}
       />
-
-      {record.signatures?.records?.length && (
-        <Signatures
-          transaction={txn.asObject()}
-          data={record.signatures.asObject().records}
-        />
-      )}
     </>
   );
 }

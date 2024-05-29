@@ -29,8 +29,6 @@ import Data from '../common/ExtId';
 import wrapLinksInHtml from '../common/LinksRenderer';
 import Signatures from '../common/Signatures';
 import tooltipDescs from '../common/TooltipDescriptions';
-import TxIssueTokens from '../common/TxIssueTokens';
-import TxSendTokens from '../common/TxSendTokens';
 import TxStatus from '../common/TxStatus';
 import TxSyntheticDepositTokens from '../common/TxSyntheticDepositTokens';
 import TxUpdateAccountAuth from '../common/TxUpdateAccountAuth';
@@ -476,14 +474,6 @@ const GenericTx = (props) => {
             </Paragraph>
           )}
 
-          {tx?.message?.transaction?.body?.type === 'sendTokens' && (
-            <TxSendTokens data={tx} />
-          )}
-
-          {tx?.message?.transaction?.body?.type === 'issueTokens' && (
-            <TxIssueTokens data={tx} />
-          )}
-
           {tx?.message?.transaction?.body?.type === 'updateKeyPage' && (
             <TxUpdateKeyPage data={tx} />
           )}
@@ -494,13 +484,6 @@ const GenericTx = (props) => {
 
           {tx?.message?.transaction?.body?.type ===
             'syntheticDepositTokens' && <TxSyntheticDepositTokens data={tx} />}
-
-          {tx.signatures?.records?.length > 0 && tx.message?.transaction && (
-            <Signatures
-              transaction={tx.message.transaction}
-              data={tx.signatures.records}
-            />
-          )}
 
           <Title level={4}>
             <IconContext.Provider value={{ className: 'react-icons' }}>

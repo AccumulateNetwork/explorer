@@ -156,6 +156,8 @@ const Acc = ({ match, parentCallback }) => {
       if (acc2.message.type === MessageType.Transaction) {
         switch (acc2.message.transaction.body.type) {
           case TransactionType.AddCredits:
+          case TransactionType.SendTokens:
+          case TransactionType.IssueTokens:
 
           case TransactionType.WriteData:
           case TransactionType.WriteDataTo:

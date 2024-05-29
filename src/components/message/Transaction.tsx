@@ -11,6 +11,7 @@ import Signatures from '../common/Signatures';
 import { describeProperty } from '../common/properties';
 import { Settings } from '../explorer/Settings';
 import { AddCredits } from './AddCredits';
+import { SendTokens } from './SendTokens';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
 import { TxnMetadata } from './TxnMetadata';
@@ -21,9 +22,17 @@ const { Title } = Typography;
 export function Transaction({ record }: { record: TxnRecord }) {
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
 
+  const txn = record.message.transaction;
   return (
     <div>
       <Show record={record} />
+
+      {record.signatures?.records?.length && (
+        <Signatures
+          transaction={txn.asObject()}
+          data={record.signatures.asObject().records}
+        />
+      )}
 
       {Settings.enableDevMode && (
         <div>
@@ -54,6 +63,12 @@ function Show({ record }: { record: TxnRecord }) {
   }
   if (isRecordOfTxn(record, TransactionType.AddCredits)) {
     return <AddCredits record={record} />;
+  }
+  if (isRecordOfTxn(record, TransactionType.SendTokens)) {
+    return <SendTokens record={record} />;
+  }
+  if (isRecordOfTxn(record, TransactionType.IssueTokens)) {
+    return <SendTokens record={record} />;
   }
 
   return <Transaction.Generic record={record} />;

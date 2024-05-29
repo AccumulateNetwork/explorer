@@ -13,7 +13,6 @@ import {
   TokenAmount,
 } from '../common/Amount';
 import { Link } from '../common/Link';
-import Signatures from '../common/Signatures';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
 import { TxnMetadata } from './TxnMetadata';
@@ -66,13 +65,6 @@ export function AddCredits({ record }: { record: TxnRecord<core.AddCredits> }) {
           </Text>
         </Descriptions.Item>
       </Descriptions>
-
-      {record.signatures?.records?.length && (
-        <Signatures
-          transaction={txn.asObject()}
-          data={record.signatures.asObject().records}
-        />
-      )}
     </>
   );
 }
