@@ -10,12 +10,15 @@ const { Text } = Typography;
 export function EntryHash({ entry }: { entry: DataEntry }) {
   const [hash, setHash] = useState<Uint8Array>(null);
 
-  useAsyncEffect(async (mounted) => {
-    const hash = await entry.hash();
-    if (mounted()) {
-      setHash(hash);
-    }
-  });
+  useAsyncEffect(
+    async (mounted) => {
+      const hash = await entry.hash();
+      if (mounted()) {
+        setHash(hash);
+      }
+    },
+    [JSON.stringify(entry.asObject())],
+  );
 
   if (!hash) {
     return null;

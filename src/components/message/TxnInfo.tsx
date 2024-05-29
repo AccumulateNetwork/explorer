@@ -90,8 +90,6 @@ export function TxnInfo({
     </span>
   );
 
-  const txn = record.message.transaction;
-  const entry = 'entry' in txn.body && txn.body.entry;
   const labelEntryHash = (
     <span>
       <Nobr>
@@ -107,6 +105,9 @@ export function TxnInfo({
       </Nobr>
     </span>
   );
+
+  const txn = record.message.transaction;
+  const entry = 'entry' in txn.body && txn.body.entry;
   return (
     <>
       <Title level={4}>

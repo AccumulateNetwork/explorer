@@ -102,7 +102,7 @@ const Acc = ({ match, parentCallback }) => {
 
   useEffect(() => {
     getAcc(match.params.url);
-  }, [location]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [`${match.params.url}`]); // eslint-disable-line react-hooks/exhaustive-deps
 
   let accountURL =
     'acc://' + match.params.url + (location.hash !== '' ? location.hash : '');
