@@ -96,7 +96,7 @@ export function SendTokens({
         Token Transaction
       </Title>
 
-      <Descriptions bordered column={1} size="middle">
+      <Descriptions bordered column={1} size="middle" className="info-table">
         <Descriptions.Item label="Token">
           {issuer ? (
             <Link to={issuer.url}>
