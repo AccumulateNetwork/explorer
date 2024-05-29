@@ -9,14 +9,16 @@ import {
   RecordType,
 } from 'accumulate.js/lib/api_v3';
 import { TransactionType } from 'accumulate.js/lib/core';
+import { MessageType } from 'accumulate.js/lib/messaging';
 
 import RPC from '../../utils/RPC';
-import { isRecordOfTxn } from '../../utils/types';
+import { TxnRecord } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { queryEffect } from '../common/Shared';
 import GenericMsg from '../message/GenericMsg';
 import GenericTx from '../message/GenericTx';
+import { Transaction } from '../message/Transaction';
 
 const Acc = ({ match, parentCallback }) => {
   const location = useLocation();
@@ -151,8 +153,16 @@ const Acc = ({ match, parentCallback }) => {
     case RecordType.Account:
       return <Account record={acc2} />;
     case RecordType.Message:
-      if (isRecordOfTxn(acc2, TransactionType.AddCredits)) {
-        // return <AddCredits record={acc2} />;
+      if (acc2.message.type === MessageType.Transaction) {
+        switch (acc2.message.transaction.body.type) {
+          case TransactionType.AddCredits:
+
+          case TransactionType.WriteData:
+          case TransactionType.WriteDataTo:
+          case TransactionType.SyntheticWriteData:
+          case TransactionType.SystemWriteData:
+            return <Transaction record={acc2 as TxnRecord} />;
+        }
       }
   }
 

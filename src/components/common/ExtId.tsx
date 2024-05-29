@@ -98,6 +98,16 @@ const ExtId = (props: { children: string | Uint8Array; compact?: boolean }) => {
     }
   };
 
+  if (!props.children.length) {
+    return (
+      <Input.Group compact className={'extid extid-' + type + ' ' + cssClass}>
+        <Text className="extid-text extid-empty" disabled>
+          Empty
+        </Text>
+      </Input.Group>
+    );
+  }
+
   return (
     <Input.Group compact className={'extid extid-' + type + ' ' + cssClass}>
       {!props.compact ? (
@@ -115,15 +125,9 @@ const ExtId = (props: { children: string | Uint8Array; compact?: boolean }) => {
           {type}
         </Text>
       )}
-      {props.children.length > 0 ? (
-        <Text className="extid-text" copyable={!props.compact}>
-          {!props.compact ? current : currentShort}
-        </Text>
-      ) : (
-        <Text className="extid-text extid-empty" disabled>
-          Empty
-        </Text>
-      )}
+      <Text className="extid-text" copyable={!props.compact}>
+        {!props.compact ? current : currentShort}
+      </Text>
     </Input.Group>
   );
 };

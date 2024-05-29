@@ -4,17 +4,26 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { TxID, TxIDArgs, URL } from 'accumulate.js';
 
-interface Props {
+export function Link({
+  to,
+  children,
+  dataEntry,
+  className,
+}: {
   to: TxIDArgs;
   children: React.ReactNode;
   dataEntry?: boolean;
-}
-
-export function Link(props: Props) {
-  const route = props.dataEntry ? 'data' : 'acc';
-  const { to, children } = props;
+  className?: string;
+}) {
+  const route = dataEntry ? 'data' : 'acc';
   if (typeof to === 'string' && /^[a-z]{64}$/i.test(to)) {
-    return <RouterLink to={`/${route}/${to}@unknown`} children={children} />;
+    return (
+      <RouterLink
+        to={`/${route}/${to}@unknown`}
+        className={className}
+        children={children}
+      />
+    );
   }
 
   let url: URL;
@@ -25,5 +34,11 @@ export function Link(props: Props) {
   }
 
   const s = url.toString().replace(/^acc:\/\//, '');
-  return <RouterLink to={`/${route}/${s}`} children={children} />;
+  return (
+    <RouterLink
+      to={`/${route}/${s}`}
+      className={className}
+      children={children}
+    />
+  );
 }

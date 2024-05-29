@@ -17,7 +17,6 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import { AccountRecordOf, isRecordOfAccount } from '../../utils/types';
@@ -189,7 +188,12 @@ export function TokenAccount({
               {issuer.url.toString()}
             </Link>
           ) : (
-            <Skeleton active title={false} paragraph={{ rows: 1 }} />
+            <Skeleton
+              className={'skeleton-singleline'}
+              active
+              title={true}
+              paragraph={false}
+            />
           )}
         </Descriptions.Item>
 

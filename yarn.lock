@@ -2486,10 +2486,10 @@ accepts@~1.3.8:
     mime-types "~2.1.34"
     negotiator "0.6.3"
 
-accumulate.js@^0.10.6:
-  version "0.10.6"
-  resolved "https://registry.yarnpkg.com/accumulate.js/-/accumulate.js-0.10.6.tgz#33c508e1a39c5e235b90a0f4e490b176afd71b04"
-  integrity sha512-WSQqLS/vXYrHANXymjgN7OIiZ5X35FzAXZwCvkrEBzRWxEWgntpVZIKRipY59NuivZVFm7/OgvaXQlK2ACj/vQ==
+accumulate.js@^0.10.8:
+  version "0.10.8"
+  resolved "https://registry.yarnpkg.com/accumulate.js/-/accumulate.js-0.10.8.tgz#864a0dac0aff71ab585deaf08f7a8cf701b84979"
+  integrity sha512-onYX33SyTHLupP3Hy8DKRTKNO6VdNb2va0FEQJll8oOlxvxy+W+i9sS6ZjQD3N/fl2gDfHktRdIWo3/Mven7cw==
   dependencies:
     "@ledgerhq/logs" "^6.10.1"
     "@types/bip32" "^2.0.0"

@@ -18,9 +18,17 @@ export function TokenAmount({
   ...rest
 }: {
   amount: number | bigint;
-  issuer: TokenIssuer;
+  issuer: TokenIssuer | 'ACME';
 } & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
   if (!issuer) return <Spin />;
+
+  if (issuer === 'ACME') {
+    issuer = new TokenIssuer({
+      precision: 8,
+      symbol: 'ACME',
+    });
+  }
+
   if (!('digits' in rest)) rest.digits = {};
   if (!('max' in rest.digits)) rest.digits.max = issuer.precision;
 
@@ -47,6 +55,26 @@ export function CreditAmount({
       {...rest}
     />
   );
+}
+
+export function CreditAmountFromACME({
+  amount,
+  oracle,
+  ...rest
+}: {
+  amount: number | bigint;
+  oracle: number;
+} & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
+  amount = (BigInt(amount) * BigInt(oracle)) / 10n ** 10n;
+  return <CreditAmount amount={amount} {...rest} />;
+}
+
+export function OracleValue({
+  value,
+  ...rest
+}: { value: number } & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
+  value /= 10 ** 4;
+  return <Amount amount={value} label="credits/ACME" {...rest} />;
 }
 
 export function Amount({

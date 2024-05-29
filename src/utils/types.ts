@@ -86,7 +86,9 @@ type DataTxnBody =
 export type DataTxnRecord = TxnRecord<DataTxnBody>;
 export type DataTxnEntry = TxnEntry<DataTxnBody>;
 
-export function isData(r: Record): r is DataTxnRecord | DataTxnEntry {
+export function isRecordOfDataTxn(
+  r: Record,
+): r is DataTxnRecord | DataTxnEntry {
   if (r.recordType === RecordType.ChainEntry) {
     r = r.value;
   }
@@ -109,7 +111,7 @@ export function isData(r: Record): r is DataTxnRecord | DataTxnEntry {
 
 export function dataEntryParts(entry: DataEntry): Uint8Array[] {
   if (!(entry instanceof FactomDataEntryWrapper)) {
-    return entry.data;
+    return entry.data.map((x) => x || new Uint8Array());
   }
-  return [entry.data, ...entry.extIds];
+  return [entry.data, ...entry.extIds].map((x) => x || new Uint8Array());
 }

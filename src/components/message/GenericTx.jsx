@@ -29,7 +29,6 @@ import Data from '../common/ExtId';
 import wrapLinksInHtml from '../common/LinksRenderer';
 import Signatures from '../common/Signatures';
 import tooltipDescs from '../common/TooltipDescriptions';
-import TxAddCredits from '../common/TxAddCredits';
 import TxIssueTokens from '../common/TxIssueTokens';
 import TxSendTokens from '../common/TxSendTokens';
 import TxStatus from '../common/TxStatus';
@@ -495,10 +494,6 @@ const GenericTx = (props) => {
 
           {tx?.message?.transaction?.body?.type ===
             'syntheticDepositTokens' && <TxSyntheticDepositTokens data={tx} />}
-
-          {tx?.message?.transaction?.body?.type === 'addCredits' && (
-            <TxAddCredits data={tx} />
-          )}
 
           {tx.signatures?.records?.length > 0 && tx.message?.transaction && (
             <Signatures

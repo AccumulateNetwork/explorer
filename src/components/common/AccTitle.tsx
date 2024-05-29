@@ -1,13 +1,17 @@
 import { Rate, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 
-import { URL } from 'accumulate.js';
+import { TxID, URL } from 'accumulate.js';
 
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';
 
 const { Title } = Typography;
 
-export function AccTitle({ title, url }: { title: string; url: URL }) {
+export function AccTitle({ title, url }: { title: string; url: URL | TxID }) {
+  if (url instanceof TxID) {
+    url = url.asUrl();
+  }
+
   const [isFav, setIsFav] = useState<number | null>(null);
 
   useEffect(() => {
