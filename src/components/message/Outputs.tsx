@@ -7,25 +7,16 @@ import { RiAccountCircleLine } from 'react-icons/ri';
 import { URLArgs } from 'accumulate.js';
 import { TokenIssuer } from 'accumulate.js/lib/core';
 
-import {
-  CreditAmount,
-  TokenAmount,
-  Amount as UnknownAmount,
-} from '../common/Amount';
+import { Amount, CreditAmount, TokenAmount } from '../common/Amount';
 import { Link } from '../common/Link';
 
-const { Text, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 interface Output {
   url?: URLArgs;
   amount?: number | bigint;
 }
 
-export function Outputs(props: {
-  outputs: Output[];
-  issuer: TokenIssuer | null;
-});
-export function Outputs(props: { outputs: Output[]; credits: true });
 export function Outputs({
   outputs,
   issuer,
@@ -35,20 +26,7 @@ export function Outputs({
   issuer?: TokenIssuer;
   credits?: boolean;
 }) {
-  if (credits && issuer) {
-    throw new Error('invalid call');
-  }
-
   const [showAll, setShowAll] = useState(false);
-
-  const Amount = ({ amount, ...props }: Parameters<typeof CreditAmount>[0]) =>
-    credits ? (
-      <CreditAmount amount={amount} {...props} />
-    ) : issuer ? (
-      <TokenAmount amount={amount} issuer={issuer} {...props} />
-    ) : (
-      <UnknownAmount label="(unknown)" amount={Number(amount)} {...props} />
-    );
 
   const items = outputs.map(({ url, amount = 0 }, index) => (
     <Paragraph key={`${index}`}>
@@ -59,9 +37,9 @@ export function Outputs({
         {url.toString()}
       </Link>
       <br />
-      <Amount amount={amount} />
+      <Outputs.Amount amount={amount} />
       <br />
-      <Amount
+      <Outputs.Amount
         amount={amount}
         digits={{ min: 2, max: 2, group: true }}
         className="formatted-balance"
@@ -85,3 +63,19 @@ export function Outputs({
     </span>
   );
 }
+
+Outputs.Amount = function ({
+  amount,
+  issuer,
+  credits,
+  ...props
+}: Parameters<typeof CreditAmount>[0] &
+  Omit<Parameters<typeof Outputs>[0], 'outputs'>) {
+  if (credits) {
+    return <CreditAmount amount={amount} {...props} />;
+  }
+  if (issuer) {
+    return <TokenAmount amount={amount} issuer={issuer} {...props} />;
+  }
+  return <Amount label="(unknown)" amount={Number(amount)} {...props} />;
+};

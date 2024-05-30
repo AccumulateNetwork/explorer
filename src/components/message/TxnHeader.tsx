@@ -15,8 +15,10 @@ const { Title } = Typography;
 
 export function TxnHeader({
   record,
+  tags,
 }: {
   record: MessageRecord<TransactionMessage>;
+  tags?: React.ReactNode;
 }) {
   let sigCount = 0;
   for (const set of record.signatures?.records || []) {
@@ -51,6 +53,8 @@ export function TxnHeader({
             Signatures: <strong>{sigCount}</strong>
           </Tag>
         )}
+
+        {tags}
       </div>
 
       <Title level={4}>

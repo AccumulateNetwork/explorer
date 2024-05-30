@@ -1,32 +1,20 @@
-import { Descriptions, List, Skeleton, Tag, Typography } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import { Descriptions, Skeleton, Typography } from 'antd';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
   RiCoinLine,
-  RiFileList2Line,
   RiInformationLine,
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import {
-  AccountType,
-  TokenRecipient,
-  TransactionType,
-} from 'accumulate.js/lib/core';
+import { AccountType, TokenRecipient } from 'accumulate.js/lib/core';
 
-import {
-  DataTxnRecord,
-  TxnRecord,
-  dataEntryParts,
-  isRecordOfAccount,
-} from '../../utils/types';
+import { TxnRecord, isRecordOfAccount } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
-import Data from '../common/ExtId';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Shared';
-import Signatures from '../common/Signatures';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from './Outputs';
 import { TxnHeader } from './TxnHeader';

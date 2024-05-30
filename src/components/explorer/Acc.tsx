@@ -163,6 +163,10 @@ const Acc = ({ match, parentCallback }) => {
           case TransactionType.WriteDataTo:
           case TransactionType.SyntheticWriteData:
           case TransactionType.SystemWriteData:
+
+          case TransactionType.SyntheticDepositTokens:
+          case TransactionType.SyntheticDepositCredits:
+          case TransactionType.SyntheticBurnTokens:
             return <Transaction record={acc2 as TxnRecord} />;
         }
       }

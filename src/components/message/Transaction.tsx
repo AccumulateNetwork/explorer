@@ -11,6 +11,7 @@ import Signatures from '../common/Signatures';
 import { describeProperty } from '../common/properties';
 import { Settings } from '../explorer/Settings';
 import { AddCredits } from './AddCredits';
+import { Deposit } from './Deposit';
 import { SendTokens } from './SendTokens';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
@@ -69,6 +70,15 @@ function Show({ record }: { record: TxnRecord }) {
   }
   if (isRecordOfTxn(record, TransactionType.IssueTokens)) {
     return <SendTokens record={record} />;
+  }
+  if (isRecordOfTxn(record, TransactionType.SyntheticDepositTokens)) {
+    return <Deposit record={record} />;
+  }
+  if (isRecordOfTxn(record, TransactionType.SyntheticDepositCredits)) {
+    return <Deposit record={record} />;
+  }
+  if (isRecordOfTxn(record, TransactionType.SyntheticBurnTokens)) {
+    return <Deposit record={record} />;
   }
 
   return <Transaction.Generic record={record} />;

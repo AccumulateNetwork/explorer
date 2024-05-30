@@ -88,10 +88,10 @@ const Signatures = (props) => {
       set.account.url.toLowerCase() ===
       transaction.header.principal.toLowerCase()
     ) {
-      principalSigs = set.signatures.records;
+      principalSigs = set.signatures?.records || [];
     }
 
-    for (const sig of set.signatures.records) {
+    for (const sig of set.signatures?.records || []) {
       if (sig.message.type !== 'signature') continue;
       if (sig.message.signature.type === 'authority') continue;
       signatures.push(sig.message.signature);
