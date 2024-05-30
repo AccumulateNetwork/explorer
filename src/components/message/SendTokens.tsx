@@ -8,9 +8,9 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountType, TokenRecipient } from 'accumulate.js/lib/core';
+import { TokenRecipient } from 'accumulate.js/lib/core';
 
-import { TxnRecord, isRecordOfAccount } from '../../utils/types';
+import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { Link } from '../common/Link';
@@ -38,20 +38,20 @@ export function SendTokens({
       if (!mounted()) {
         return;
       }
-      if (isRecordOfAccount(r, AccountType.TokenIssuer)) {
+      if (isRecordOf(r, core.TokenIssuer)) {
         setIssuer(r.account);
         return;
       }
 
       if (
-        !isRecordOfAccount(r, AccountType.TokenAccount) &&
-        !isRecordOfAccount(r, AccountType.LiteTokenAccount)
+        !isRecordOf(r, core.TokenAccount) &&
+        !isRecordOf(r, core.LiteTokenAccount)
       ) {
         return;
       }
 
       r = await api.query(r.account.tokenUrl);
-      if (mounted() && isRecordOfAccount(r, AccountType.TokenIssuer)) {
+      if (mounted() && isRecordOf(r, core.TokenIssuer)) {
         setIssuer(r.account);
       }
     },

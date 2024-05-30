@@ -19,7 +19,7 @@ import {
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import { AccountRecordOf, isRecordOfAccount } from '../../utils/types';
+import { AccountRecordOf, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
@@ -46,7 +46,7 @@ export function TokenAccount({
   queryEffect(account.tokenUrl, {
     queryType: 'default',
   }).then((r) => {
-    if (isRecordOfAccount(r, AccountType.TokenIssuer)) {
+    if (isRecordOf(r, core.TokenIssuer)) {
       setIssuer(r.account);
     }
   });

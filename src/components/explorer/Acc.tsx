@@ -30,7 +30,7 @@ const Acc = ({ match, parentCallback }) => {
 
   queryEffect(match.params.url, { queryType: 'default' }).then((r) => {
     if (r.recordType === RecordType.Error) {
-      setError(r.value);
+      setError(r.value.message);
       return;
     }
     setAcc2(r);

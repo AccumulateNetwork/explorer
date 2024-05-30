@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
 
+import { core } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
 
-import { TxnRecord, isRecordOfDataTxn, isRecordOfTxn } from '../../utils/types';
+import { TxnRecord, isRecordOf, isRecordOfDataTxn } from '../../utils/types';
 import { RawData } from '../common/RawData';
 import Signatures from '../common/Signatures';
 import { describeProperty } from '../common/properties';
@@ -62,22 +63,20 @@ function Show({ record }: { record: TxnRecord }) {
   if (isRecordOfDataTxn(record)) {
     return <WriteData record={record} />;
   }
-  if (isRecordOfTxn(record, TransactionType.AddCredits)) {
+  if (isRecordOf(record, core.AddCredits)) {
     return <AddCredits record={record} />;
   }
-  if (isRecordOfTxn(record, TransactionType.SendTokens)) {
+  if (isRecordOf(record, core.SendTokens, core.IssueTokens)) {
     return <SendTokens record={record} />;
   }
-  if (isRecordOfTxn(record, TransactionType.IssueTokens)) {
-    return <SendTokens record={record} />;
-  }
-  if (isRecordOfTxn(record, TransactionType.SyntheticDepositTokens)) {
-    return <Deposit record={record} />;
-  }
-  if (isRecordOfTxn(record, TransactionType.SyntheticDepositCredits)) {
-    return <Deposit record={record} />;
-  }
-  if (isRecordOfTxn(record, TransactionType.SyntheticBurnTokens)) {
+  if (
+    isRecordOf(
+      record,
+      core.SyntheticDepositTokens,
+      core.SyntheticDepositCredits,
+      core.SyntheticBurnTokens,
+    )
+  ) {
     return <Deposit record={record} />;
   }
 

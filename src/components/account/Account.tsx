@@ -1,17 +1,15 @@
 import { Descriptions, Tooltip, Typography } from 'antd';
-import moment from 'moment';
 import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
-import { TxID, URL } from 'accumulate.js';
+import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import { isRecordOfAccount } from '../../utils/types';
+import { isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
-import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import { RawData } from '../common/RawData';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -60,31 +58,22 @@ export function Account({ record }: { record: AccountRecord }) {
 }
 
 function Show({ record }: { record: AccountRecord }) {
-  if (isRecordOfAccount(record, AccountType.LiteIdentity)) {
+  if (isRecordOf(record, core.LiteIdentity, core.ADI)) {
     return <Identity record={record} />;
   }
-  if (isRecordOfAccount(record, AccountType.Identity)) {
-    return <Identity record={record} />;
-  }
-  if (isRecordOfAccount(record, AccountType.LiteTokenAccount)) {
+  if (isRecordOf(record, core.LiteTokenAccount, core.TokenAccount)) {
     return <TokenAccount record={record} />;
   }
-  if (isRecordOfAccount(record, AccountType.TokenAccount)) {
-    return <TokenAccount record={record} />;
-  }
-  if (isRecordOfAccount(record, AccountType.LiteDataAccount)) {
+  if (isRecordOf(record, core.LiteDataAccount, core.DataAccount)) {
     return <DataAccount record={record} />;
   }
-  if (isRecordOfAccount(record, AccountType.DataAccount)) {
-    return <DataAccount record={record} />;
-  }
-  if (isRecordOfAccount(record, AccountType.TokenIssuer)) {
+  if (isRecordOf(record, core.TokenIssuer)) {
     return <TokenIssuer record={record} />;
   }
-  if (isRecordOfAccount(record, AccountType.KeyPage)) {
+  if (isRecordOf(record, core.KeyPage)) {
     return <KeyPage record={record} />;
   }
-  if (isRecordOfAccount(record, AccountType.KeyBook)) {
+  if (isRecordOf(record, core.KeyBook)) {
     return <KeyBook record={record} />;
   }
   return <Account.Generic record={record} />;

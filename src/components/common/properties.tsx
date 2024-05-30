@@ -17,7 +17,7 @@ export function describeProperty({
   value: any;
   obj: any;
 }) {
-  obj = obj[key];
+  obj = obj?.[key];
   if (value === null || value === undefined) {
     return null;
   }

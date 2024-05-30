@@ -9,7 +9,6 @@ import {
 } from 'react-icons/ri';
 
 import {
-  AccountType,
   SyntheticBurnTokens,
   SyntheticDepositCredits,
   SyntheticDepositTokens,
@@ -17,7 +16,7 @@ import {
   TransactionType,
 } from 'accumulate.js/lib/core';
 
-import { TxnRecord, isRecordOfAccount } from '../../utils/types';
+import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { Link } from '../common/Link';
 import { queryEffect } from '../common/Shared';
@@ -42,7 +41,7 @@ export function Deposit({
   queryEffect('token' in txn.body ? txn.body.token : txn.header.principal, {
     queryType: 'default',
   }).then((r) => {
-    if (isRecordOfAccount(r, AccountType.TokenIssuer)) {
+    if (isRecordOf(r, TokenIssuer)) {
       setIssuer(r.account);
     }
   });
