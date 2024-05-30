@@ -262,7 +262,11 @@ const Signatures = (props) => {
                 .map((x) => x.message)
                 .filter((x) => x.type === 'signature')
                 .map((x) => x.signature)
-                .filter((x) => x.authority.toLowerCase() == authority)
+                .filter(
+                  (x) =>
+                    x.type === 'authority' &&
+                    x.authority.toLowerCase() == authority,
+                )
                 .map((x) => x.vote || 'accept'),
             ),
           );

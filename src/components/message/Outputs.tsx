@@ -28,23 +28,13 @@ export function Outputs({
 }) {
   const [showAll, setShowAll] = useState(false);
 
-  const items = outputs.map(({ url, amount = 0 }, index) => (
-    <Paragraph key={`${index}`}>
-      <Link to={url}>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <RiAccountCircleLine />
-        </IconContext.Provider>
-        {url.toString()}
-      </Link>
-      <br />
-      <Outputs.Amount amount={amount} />
-      <br />
-      <Outputs.Amount
-        amount={amount}
-        digits={{ min: 2, max: 2, group: true }}
-        className="formatted-balance"
-      />
-    </Paragraph>
+  const items = outputs.map((item, index) => (
+    <Outputs.Output
+      key={`${index}`}
+      {...item}
+      issuer={issuer}
+      credits={credits}
+    />
   ));
 
   const limit = 5;
@@ -64,13 +54,44 @@ export function Outputs({
   );
 }
 
+Outputs.Output = function ({
+  url,
+  ...rest
+}: {
+  url?: URLArgs;
+  amount?: number | bigint;
+  issuer?: TokenIssuer;
+  credits?: boolean;
+}) {
+  return (
+    <Paragraph>
+      <Link to={url}>
+        <IconContext.Provider value={{ className: 'react-icons' }}>
+          <RiAccountCircleLine />
+        </IconContext.Provider>
+        {url.toString()}
+      </Link>
+      <br />
+      <Outputs.Amount {...rest} />
+      <br />
+      <Outputs.Amount
+        {...rest}
+        digits={{ min: 2, max: 2, group: true }}
+        className="formatted-balance"
+      />
+    </Paragraph>
+  );
+};
+
 Outputs.Amount = function ({
-  amount,
+  amount = 0,
   issuer,
   credits,
   ...props
-}: Parameters<typeof CreditAmount>[0] &
-  Omit<Parameters<typeof Outputs>[0], 'outputs'>) {
+}: Omit<Parameters<typeof CreditAmount>[0], 'amount'> &
+  Omit<Parameters<typeof Outputs>[0], 'outputs'> & {
+    amount?: number | bigint;
+  }) {
   if (credits) {
     return <CreditAmount amount={amount} {...props} />;
   }

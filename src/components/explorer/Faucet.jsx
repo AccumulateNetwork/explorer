@@ -1,9 +1,7 @@
 import { Alert, Form, Input, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import RPC from '../../utils/RPC';
-import FaucetAddress from './../common/Faucet';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;
@@ -37,11 +35,6 @@ const Faucet = () => {
   return (
     <div>
       <Title level={2}>Faucet</Title>
-      <Paragraph style={{ marginTop: -10 }}>
-        <Link to={'/acc/' + FaucetAddress.replace('acc://', '')}>
-          {FaucetAddress}
-        </Link>
-      </Paragraph>
       <Paragraph>
         <Alert message="This is the testnet faucet" type="info" showIcon />
       </Paragraph>

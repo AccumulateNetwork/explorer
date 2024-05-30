@@ -54,8 +54,8 @@ import {
 } from '../common/Amount';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Shared';
-import TxTo from '../common/TxTo';
 import { useAsyncEffect } from '../common/useAsync';
+import { Outputs } from '../message/Outputs';
 
 type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
 type ChainRecord =
@@ -291,10 +291,8 @@ export function Chain(props: {
         expandedRowRender: ({ value }) => {
           if (value instanceof ErrorRecord) return null;
           if (value.message.type !== MessageType.Transaction) return null;
-          const data = recipientsOfTx(value.message.transaction).map((x) =>
-            x.asObject(),
-          );
-          return <TxTo data={data} token={issuer} />;
+          const data = recipientsOfTx(value.message.transaction);
+          return <Outputs outputs={data} issuer={issuer} credits={!issuer} />;
         },
         rowExpandable: ({ value }) => {
           if (value instanceof ErrorRecord) return null;

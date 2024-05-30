@@ -1,13 +1,18 @@
-import { Descriptions } from 'antd';
+import { Descriptions, Typography } from 'antd';
 import moment from 'moment';
 import React from 'react';
 
-import { TxID } from 'accumulate.js';
+import { TxID, URL } from 'accumulate.js';
+import { CreditRecipient, TokenRecipient } from 'accumulate.js/lib/core';
 
+import { Outputs } from '../message/Outputs';
+import { CreditAmount } from './Amount';
 import { Link } from './Link';
 
+const { Text } = Typography;
+
 export function describeProperty({
-  label,
+  label = '',
   key,
   value,
   obj,
@@ -40,6 +45,22 @@ export function describeProperty({
 
   if (value instanceof URL || value instanceof TxID) {
     return describe(label, key, <Link to={value}>{value.toString()}</Link>);
+  }
+
+  if (value instanceof Uint8Array) {
+    return describe(
+      label,
+      key,
+      <Text>{Buffer.from(value).toString('hex')}</Text>,
+    );
+  }
+
+  if (value instanceof CreditRecipient) {
+    return describe(label, key, <Outputs.Output {...value} credits />);
+  }
+
+  if (value instanceof TokenRecipient) {
+    return describe(label, key, <Outputs.Output {...value} />);
   }
 
   if (value instanceof Array) {

@@ -107,20 +107,13 @@ Transaction.Generic = function ({ record }: { record: TxnRecord }) {
         Properties
       </Title>
       <Descriptions bordered column={1} size="middle" className="info-table">
-        {Object.entries(txn).map(([key, value]) => {
-          if (key === 'type' || key === 'url') {
+        {Object.entries(txn.body).map(([key, value]) => {
+          if (key === 'type') {
             return null;
           }
-          return describeProperty({ key, value, obj: txnObj });
+          return describeProperty({ key, value, obj: txnObj.body });
         })}
       </Descriptions>
-
-      {record.signatures?.records?.length && (
-        <Signatures
-          transaction={txn.asObject()}
-          data={record.signatures.asObject().records}
-        />
-      )}
     </>
   );
 };
