@@ -857,3 +857,7 @@ h4.ant-typography .count {
 .info-table .ant-descriptions-item-label {
   width: 20em;
 }
+
+.compact-list .ant-list-item {
+  padding: 0px !important;
+}

@@ -1,47 +1,42 @@
-import { Button, Descriptions, List, Tooltip, Typography } from 'antd';
-import React, { useState } from 'react';
+import { Descriptions, List, Tooltip, Typography } from 'antd';
+import React from 'react';
 import { IconContext } from 'react-icons';
 import {
-  RiAccountCircleLine,
   RiExchangeLine,
   RiInformationLine,
   RiQuestionLine,
 } from 'react-icons/ri';
 
 import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
-import { TransactionMessage } from 'accumulate.js/lib/messaging';
+import { MessageType } from 'accumulate.js/lib/messaging';
 
 import { CompactList } from '../common/CompactList';
-import { EntryHash } from '../common/EntryHash';
+import { EnumValue } from '../common/EnumValue';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { describeTimestamp } from './timestamp';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
-export function TxnInfo({
-  record,
-}: {
-  record: MessageRecord<TransactionMessage>;
-}) {
+export function MsgInfo({ record }: { record: MessageRecord }) {
   const labelID = (
     <span>
       <Nobr>
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <Tooltip
             overlayClassName="explorer-tooltip"
-            title={tooltipDescs.txId}
+            title={tooltipDescs.msgId}
           >
             <RiQuestionLine />
           </Tooltip>
         </IconContext.Provider>
-        Txid
+        ID
       </Nobr>
     </span>
   );
 
-  const labelHash = (
+  const labelTxn = (
     <span>
       <Nobr>
         <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -52,39 +47,7 @@ export function TxnInfo({
             <RiQuestionLine />
           </Tooltip>
         </IconContext.Provider>
-        TxHash
-      </Nobr>
-    </span>
-  );
-
-  const labelEntryHash = (
-    <span>
-      <Nobr>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <Tooltip
-            overlayClassName="explorer-tooltip"
-            title={tooltipDescs.entryHash}
-          >
-            <RiQuestionLine />
-          </Tooltip>
-        </IconContext.Provider>
-        Entry Hash
-      </Nobr>
-    </span>
-  );
-
-  const labelPrincipal = (
-    <span>
-      <Nobr>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <Tooltip
-            overlayClassName="explorer-tooltip"
-            title={tooltipDescs.sponsor}
-          >
-            <RiQuestionLine />
-          </Tooltip>
-        </IconContext.Provider>
-        Principal
+        Transaction
       </Nobr>
     </span>
   );
@@ -121,46 +84,35 @@ export function TxnInfo({
     </span>
   );
 
-  const txn = record.message.transaction;
-  const entry = 'entry' in txn.body && txn.body.entry;
   const cause = record.cause?.records || [];
   const produced = record.produced?.records || [];
+
   return (
     <>
       <Title level={4}>
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <RiInformationLine />
         </IconContext.Provider>
-        Transaction Info
+        Message Info
       </Title>
 
       <Descriptions bordered column={1} size="middle" className="info-table">
         {describeTimestamp(record.id)}
 
-        <Descriptions.Item label={labelID}>
-          <Text copyable>{record.id.toString()}</Text>
+        <Descriptions.Item key="id" label={labelID}>
+          {record.id.toString()}
         </Descriptions.Item>
 
-        <Descriptions.Item label={labelHash}>
-          <Text copyable className={'code'}>
-            {Buffer.from(record.id.hash).toString('hex')}
-          </Text>
-        </Descriptions.Item>
-
-        {entry && (
-          <Descriptions.Item label={labelEntryHash}>
-            <EntryHash entry={entry} />
+        {'txID' in record.message && (
+          <Descriptions.Item label={labelTxn}>
+            <Link to={record.message.txID}>
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiExchangeLine />
+              </IconContext.Provider>
+              {record.message.txID.toString()}
+            </Link>
           </Descriptions.Item>
         )}
-
-        <Descriptions.Item label={labelPrincipal}>
-          <Link to={txn.header.principal}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiAccountCircleLine />
-            </IconContext.Provider>
-            {txn.header.principal.toString()}
-          </Link>
-        </Descriptions.Item>
 
         {cause.length && (
           <Descriptions.Item label={labelCause}>
@@ -169,7 +121,7 @@ export function TxnInfo({
               limit={5}
               renderItem={(item) => (
                 <List.Item>
-                  <TxnInfo.Related record={item} />
+                  <MsgInfo.Related record={item} />
                 </List.Item>
               )}
             />
@@ -177,15 +129,13 @@ export function TxnInfo({
         )}
 
         {produced.length && (
-          <Descriptions.Item
-            className={'align-top has-list'}
-            label={labelProduced}
-          >
+          <Descriptions.Item label={labelProduced}>
             <CompactList
               dataSource={produced}
+              limit={5}
               renderItem={(item) => (
                 <List.Item>
-                  <TxnInfo.Related record={item} />
+                  <MsgInfo.Related record={item} />
                 </List.Item>
               )}
             />
@@ -196,7 +146,7 @@ export function TxnInfo({
   );
 }
 
-TxnInfo.Related = function ({ record }: { record: TxIDRecord }) {
+MsgInfo.Related = function ({ record }: { record: TxIDRecord }) {
   return (
     <Link to={record.value}>
       <IconContext.Provider value={{ className: 'react-icons' }}>

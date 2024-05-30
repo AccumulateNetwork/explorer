@@ -1,6 +1,7 @@
-import { Alert, Skeleton } from 'antd';
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Alert, Skeleton, Typography } from 'antd';
+import React, { useState } from 'react';
+import { IconContext } from 'react-icons';
+import { RiInformationLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import {
@@ -8,103 +9,41 @@ import {
   MessageRecord,
   RecordType,
 } from 'accumulate.js/lib/api_v3';
-import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
-import RPC from '../../utils/RPC';
-import { isRecordOf } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
+import { RawData } from '../common/RawData';
 import { queryEffect } from '../common/Shared';
-import { useAsyncEffect } from '../common/useAsync';
-import GenericMsg from '../message/GenericMsg';
-import { Transaction } from '../message/Transaction';
+import { Message } from '../message/Message';
+import { Settings } from './Settings';
 
-const Acc = ({ match, parentCallback }) => {
-  const location = useLocation();
+const { Title } = Typography;
 
-  const [acc, setAcc] = useState(null);
-  const [acc2, setAcc2] = useState<AccountRecord | MessageRecord>(null);
+export function Acc({ match, parentCallback }) {
+  const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
+  const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
-  const [isTx, setIsTx] = useState(false);
 
-  let url = match.params.hash
-    ? `${match.params.hash}@unknown`
-    : `${match.params.url}`;
+  const url = URL.parse(
+    match.params.hash ? `${match.params.hash}@unknown` : `${match.params.url}`,
+  );
 
   queryEffect(url, { queryType: 'default' }).then((r) => {
     if (r.recordType === RecordType.Error) {
       setError(r.value.message);
       return;
     }
-    setAcc2(r);
+    setRecord(r);
+    parentCallback(r.asObject());
   });
 
-  useAsyncEffect(
-    async (mounted) => {
-      document.title = url + ' | Accumulate Explorer';
-      setAcc(null);
-      setError(null);
-      setIsTx(false);
-
-      // if hash params found, parse them
-      if (location.hash !== '') {
-        url += location.hash;
-      }
-
-      if (url.includes('@')) {
-        setIsTx(true);
-      }
-
-      // Query API v3
-      try {
-        let params = { scope: url };
-        const response = await RPC.request('query', params, 'v3');
-        if (!mounted()) return;
-        if (!response) {
-          throw new Error('acc://' + url + ' not found');
-        }
-        setAcc({ ...response });
-        parentCallback?.({ ...response });
-      } catch (error) {
-        if (!mounted()) return;
-        setAcc(null);
-        setError(error.message);
-      }
-    },
-    [url],
-  ); // eslint-disable-line react-hooks/exhaustive-deps
-
-  let accountURL = match.params.hash
-    ? `acc://${match.params.hash}@unknown`
-    : `acc://${match.params.url}${location.hash !== '' ? location.hash : ''}`;
-
-  let title = 'Account';
-  if (isTx) {
-    title = 'Message';
-  }
-  if (isTx && acc?.message) {
-    /* eslint-disable default-case */
-    switch (acc.message.type) {
-      case 'transaction':
-        title = 'Transaction';
-        break;
-      case 'signature':
-        title = 'Signature';
-        break;
-      case 'creditPayment':
-        title = 'Credit Payment';
-        break;
-      case 'signatureRequest':
-        title = 'Signature Request';
-        break;
-    }
-    /* eslint-enable default-case */
-  }
-
-  if (!acc || !acc2) {
+  if (!record) {
     return (
       <div>
-        <AccTitle title={title} url={URL.parse(accountURL)} />
+        <AccTitle
+          title={url.username ? 'Transaction' : 'Account'}
+          url={URL.parse(url)}
+        />
         <div>
           {error ? (
             <div className="skeleton-holder">
@@ -120,19 +59,33 @@ const Acc = ({ match, parentCallback }) => {
     );
   }
 
-  if (acc2?.recordType === RecordType.Account) {
-    return <Account record={acc2} />;
-  }
-  if (acc2 && isRecordOf(acc2, TransactionMessage)) {
-    return <Transaction record={acc2} />;
-  }
-
   return (
-    <div>
-      <AccTitle title={title} url={URL.parse(accountURL)} />
-      <GenericMsg data={acc} />
-    </div>
-  );
-};
+    <>
+      {record instanceof AccountRecord ? (
+        <Account record={record} />
+      ) : (
+        <Message record={record} />
+      )}
 
-export default Acc;
+      {Settings.enableDevMode && (
+        <div>
+          <Title level={4} style={{ marginTop: 30 }}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiInformationLine />
+            </IconContext.Provider>
+            Raw Data
+            <RawData.Toggle
+              value={rawDataDisplay}
+              onChange={setRawDataDisplay}
+            />
+          </Title>
+
+          <RawData
+            data={record.asObject()}
+            style={{ marginTop: 0, display: rawDataDisplay ? 'block' : 'none' }}
+          />
+        </div>
+      )}
+    </>
+  );
+}

@@ -10,23 +10,38 @@ import { useAsyncEffect } from './useAsync';
 
 const { Text } = Typography;
 
-export default function (props: {
-  publicKey?: string;
+export default function ({
+  publicKey,
+  keyHash,
+  ...props
+}: {
+  publicKey?: string | Uint8Array;
   keyHash?: string | Uint8Array;
-  type?: string;
+  type?: string | SignatureType;
 }) {
-  const { publicKey, keyHash } = props;
-  const [type, setType] = useState(props.type);
+  const initialType =
+    typeof props.type === 'number'
+      ? props.type
+      : typeof props.type === 'string'
+        ? SignatureType.byName(props.type)
+        : props.type === 'hex'
+          ? 'hex'
+          : SignatureType.Unknown;
+
+  const [type, setType] = useState<SignatureType | 'hex'>(initialType);
   const [address, setAddress] = useState(null);
   const [error, setError] = useState(null);
 
+  if (typeof keyHash === 'string') {
+    keyHash = Buffer.from(keyHash, 'hex');
+  }
+  if (typeof publicKey === 'string') {
+    publicKey = Buffer.from(publicKey, 'hex');
+  }
+
   useAsyncEffect(
     async (mounted) => {
-      const hash = !keyHash
-        ? await sha256(Buffer.from(publicKey, 'hex'))
-        : keyHash instanceof Uint8Array
-          ? keyHash
-          : Buffer.from(keyHash, 'hex');
+      const hash = keyHash || (await sha256(publicKey));
       if (!mounted()) return;
 
       if (type === 'hex') {
@@ -34,8 +49,7 @@ export default function (props: {
         return;
       }
 
-      const sigType = type ? SignatureType.byName(type) : SignatureType.Unknown;
-      const addr = await Address.fromKeyHash(sigType, hash);
+      const addr = await Address.fromKeyHash(type, hash);
       const s = await addr.format();
       if (!mounted()) return;
       setAddress(s);
@@ -49,27 +63,29 @@ export default function (props: {
         <Alert message={error} type="error" showIcon />
       ) : !address ? (
         <Skeleton active title={true} paragraph={false} />
-      ) : props.type ? (
+      ) : initialType !== SignatureType.Unknown ? (
         <Input.Group compact className={'key'}>
           <Select
-            defaultValue={props.type}
+            defaultValue={initialType}
             size="small"
             className="key-type"
-            onChange={setType}
+            onChange={setType as any}
           >
-            {props.type === 'ed25519' && (
-              <Select.Option value="ed25519">ED25519</Select.Option>
+            {initialType === SignatureType.ED25519 && (
+              <Select.Option value={SignatureType.ED25519}>
+                ED25519
+              </Select.Option>
             )}
-            {props.type === 'rcd1' && (
-              <Select.Option value="rcd1">RCD1</Select.Option>
+            {initialType === SignatureType.RCD1 && (
+              <Select.Option value={SignatureType.RCD1}>RCD1</Select.Option>
             )}
-            {props.type === 'btc' && (
-              <Select.Option value="btc">BTC</Select.Option>
+            {initialType === SignatureType.BTC && (
+              <Select.Option value={SignatureType.BTC}>BTC</Select.Option>
             )}
-            {props.type === 'eth' && (
-              <Select.Option value="eth">ETH</Select.Option>
+            {initialType === SignatureType.ETH && (
+              <Select.Option value={SignatureType.ETH}>ETH</Select.Option>
             )}
-            <Select.Option value="unknown">Generic</Select.Option>
+            <Select.Option value={SignatureType.Unknown}>Generic</Select.Option>
             <Select.Option value="hex">Hash</Select.Option>
           </Select>
           <Text className="key-text" copyable>
@@ -79,24 +95,26 @@ export default function (props: {
       ) : (
         <Input.Group compact className={'key'}>
           <Select
-            defaultValue="unknown"
+            defaultValue={initialType}
             size="small"
             className="key-type"
             onChange={setType}
           >
-            <Select.Option value="unknown">Address</Select.Option>
+            <Select.Option value={SignatureType.Unknown}>Address</Select.Option>
             <Select.Option value="hex">Hash</Select.Option>
             {Settings.enableDevMode && (
-              <Select.Option value="ed25519">ED25519</Select.Option>
+              <Select.Option value={SignatureType.ED25519}>
+                ED25519
+              </Select.Option>
             )}
             {Settings.enableDevMode && (
-              <Select.Option value="rcd1">RCD1</Select.Option>
+              <Select.Option value={SignatureType.RCD1}>RCD1</Select.Option>
             )}
             {Settings.enableDevMode && (
-              <Select.Option value="btc">BTC</Select.Option>
+              <Select.Option value={SignatureType.BTC}>BTC</Select.Option>
             )}
             {Settings.enableDevMode && (
-              <Select.Option value="eth">ETH</Select.Option>
+              <Select.Option value={SignatureType.ETH}>ETH</Select.Option>
             )}
           </Select>
           <Text className="key-text" copyable>

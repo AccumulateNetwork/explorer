@@ -28,36 +28,6 @@ import { describeParent } from './parent';
 const { Title } = Typography;
 
 export function Account({ record }: { record: AccountRecord }) {
-  const [rawDataDisplay, setRawDataDisplay] = useState(false);
-
-  return (
-    <div>
-      <Show record={record} />
-
-      {Settings.enableDevMode && (
-        <div>
-          <Title level={4} style={{ marginTop: 30 }}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiInformationLine />
-            </IconContext.Provider>
-            Raw Data
-            <RawData.Toggle
-              value={rawDataDisplay}
-              onChange={setRawDataDisplay}
-            />
-          </Title>
-
-          <RawData
-            data={record.asObject()}
-            style={{ marginTop: 0, display: rawDataDisplay ? 'block' : 'none' }}
-          />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Show({ record }: { record: AccountRecord }) {
   if (isRecordOf(record, core.LiteIdentity, core.ADI)) {
     return <Identity record={record} />;
   }

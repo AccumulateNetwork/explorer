@@ -32,7 +32,7 @@ import ScrollToTop from './common/ScrollToTop';
 import SearchForm from './common/SearchForm';
 import { Shared } from './common/Shared';
 import Version from './common/Version';
-import Acc from './explorer/Acc';
+import { Acc } from './explorer/Acc';
 import Block from './explorer/Block';
 import Blocks from './explorer/Blocks';
 import Error404 from './explorer/Error404';

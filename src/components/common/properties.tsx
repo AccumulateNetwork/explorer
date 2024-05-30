@@ -1,4 +1,4 @@
-import { Descriptions, Typography } from 'antd';
+import { Descriptions, Tag, Typography } from 'antd';
 import moment from 'moment';
 import React from 'react';
 
@@ -27,12 +27,16 @@ export function describeProperty({
     return null;
   }
 
-  if (typeof value === 'number') {
-    if (typeof obj === 'string') {
-      return describe(label, key, humanName(obj));
-    }
+  if (typeof value === 'number' && typeof obj === 'string') {
+    return describe(label, key, humanName(obj));
+  }
 
-    return describe(label, key, value);
+  if (typeof value === 'boolean') {
+    return describe(
+      label,
+      key,
+      value ? <Tag color="blue">True</Tag> : <Tag color="default">False</Tag>,
+    );
   }
 
   if (typeof value !== 'object') {
