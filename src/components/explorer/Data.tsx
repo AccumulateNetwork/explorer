@@ -6,21 +6,20 @@ import { RiFileList2Line } from 'react-icons/ri';
 import { URL } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
 
-import getTs from '../../utils/getTS';
 import {
   DataTxnRecord,
   dataEntryParts,
   isRecordOfDataTxn,
 } from '../../utils/types';
 import { EnumValue } from '../common/EnumValue';
-import Data from '../common/ExtId';
+import ShowData from '../common/ExtId';
 import { queryEffect } from '../common/query';
-import Error404 from '../explorer/Error404';
-import { TxnInfo } from './TxnInfo';
+import { TxnInfo } from '../message/TxnInfo';
+import Error404 from './Error404';
 
 const { Title } = Typography;
 
-export function DataEntry(props: { url: string }) {
+export function Data(props: { url: string }) {
   // Return 404 if url is not a valid URL or transaction hash
   const [url, setUrl] = useState<URL>();
   const [notFound, setNotFound] = useState(false);
@@ -51,20 +50,6 @@ export function DataEntry(props: { url: string }) {
     setUrl(r.id.asUrl());
   });
 
-  const [ts, setTs] = useState(null);
-  const [block, setBlock] = useState(null);
-
-  useEffect(() => {
-    if (!url) return;
-    let txId = url.toString().replace(/^acc:\/\/|@.*$/g, '');
-    getTs(
-      txId,
-      setTs,
-      setBlock,
-      (x) => x.chain === 'main' || x.chain === 'scratch',
-    );
-  }, [`${url}`]);
-
   if (notFound) {
     return <Error404 />;
   }
@@ -85,24 +70,12 @@ export function DataEntry(props: { url: string }) {
         {url?.toString()}
       </Title>
 
-      {record ? (
-        <ShowDataEntry record={record} ts={ts} block={block} />
-      ) : (
-        <Skeleton active />
-      )}
+      {record ? <ShowDataEntry record={record} /> : <Skeleton active />}
     </div>
   );
 }
 
-function ShowDataEntry({
-  record,
-  block,
-  ts,
-}: {
-  record: DataTxnRecord;
-  block;
-  ts;
-}) {
+function ShowDataEntry({ record }: { record: DataTxnRecord }) {
   return (
     <div>
       <Descriptions bordered column={1} size="middle" className="info-table">
@@ -129,7 +102,7 @@ function ShowDataEntry({
         dataSource={dataEntryParts(record.message.transaction.body.entry)}
         renderItem={(item) => (
           <List.Item>
-            <Data>{item}</Data>
+            <ShowData>{item}</ShowData>
           </List.Item>
         )}
         style={{ marginBottom: '30px' }}

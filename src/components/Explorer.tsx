@@ -35,6 +35,7 @@ import { Version } from './common/Version';
 import { Acc } from './explorer/Acc';
 import Block from './explorer/Block';
 import Blocks from './explorer/Blocks';
+import { Data } from './explorer/Data';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
@@ -43,7 +44,6 @@ import page from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import { DataEntry } from './message/DataEntry';
 import Web3Module from './web3/Web3Module';
 
 const { Header, Content, Footer } = Layout;
@@ -286,7 +286,7 @@ export default function Explorer() {
 
               <Route
                 path="/data/:url+"
-                render={(x) => <DataEntry url={x.match.params.url} />}
+                render={(x) => <Data url={x.match.params.url} />}
               />
 
               <Route path="/tx/:hash" component={Acc} />

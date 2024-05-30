@@ -1,24 +1,68 @@
-import { Descriptions, Skeleton, Tooltip, Typography } from 'antd';
+import { Descriptions, Skeleton, Tooltip, Typography, message } from 'antd';
+import axios from 'axios';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiQuestionLine } from 'react-icons/ri';
 
 import { TxID, URL } from 'accumulate.js';
 
-import getTs from '../../utils/getTS';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Shared } from '../common/Shared';
 import tooltipDescs from '../common/TooltipDescriptions';
+import { useAsyncEffect } from '../common/useAsync';
 
 const { Text } = Typography;
 
 export function describeTimestamp(txid: string | URL | TxID) {
   const utcOffset = moment().utcOffset() / 60;
+  const { network } = useContext(Shared);
 
   const [ts, setTs] = useState(null);
   const [block, setBlock] = useState(null);
+
+  useAsyncEffect(
+    async (mounted) => {
+      setTs(null);
+      setBlock(null);
+
+      let txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
+      const response = await axios
+        .get(`${network.api[0]}/timestamp/${txId}@unknown`)
+        .catch((error) => {
+          setTs(0);
+          setBlock(0);
+          message.error(`${error}`);
+          return null;
+        });
+      if (!mounted()) {
+        return;
+      }
+      if (!response?.data) {
+        setTs(0);
+        setBlock(0);
+        return;
+      }
+
+      const entries = (response.data.chains || [])
+        // Filter by chain
+        .filter((x) => x.chain === 'main' || x.chain === 'scratch')
+        // Sort by age ascending
+        .sort((a, b) => b.block - a.block);
+
+      // Use the youngest entry
+      if (entries.length && entries[0].block && entries[0].time) {
+        setTs(entries[0].time);
+        setBlock(entries[0].block);
+      } else {
+        setTs(0);
+        setBlock(0);
+      }
+    },
+    [`${txid}`],
+  );
 
   const labelTimestamp = (
     <span>
@@ -52,16 +96,6 @@ export function describeTimestamp(txid: string | URL | TxID) {
       </Nobr>
     </span>
   );
-
-  useEffect(() => {
-    let txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
-    getTs(
-      txId,
-      setTs,
-      setBlock,
-      (x) => x.chain === 'main' || x.chain === 'scratch',
-    );
-  }, [`${txid}`]);
 
   return [
     <Descriptions.Item key="timestamp" label={labelTimestamp}>
