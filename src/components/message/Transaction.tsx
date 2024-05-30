@@ -17,6 +17,8 @@ import { SendTokens } from './SendTokens';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
 import { TxnMetadata } from './TxnMetadata';
+import { UpdateAccountAuth } from './UpdateAccountAuth';
+import { UpdateKeyPage } from './UpdateKeyPage';
 import { WriteData } from './WriteData';
 
 const { Title } = Typography;
@@ -78,6 +80,12 @@ function Show({ record }: { record: TxnRecord }) {
     )
   ) {
     return <Deposit record={record} />;
+  }
+  if (isRecordOf(record, core.UpdateAccountAuth)) {
+    return <UpdateAccountAuth record={record} />;
+  }
+  if (isRecordOf(record, core.UpdateKeyPage)) {
+    return <UpdateKeyPage record={record} />;
   }
 
   return <Transaction.Generic record={record} />;

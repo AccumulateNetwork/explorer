@@ -42,7 +42,6 @@ import Network from './explorer/Network';
 import page from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
-import Tx from './explorer/Tx';
 import Validators from './explorer/Validators';
 import { DataEntry } from './message/DataEntry';
 import Web3Module from './web3/Web3Module';
@@ -289,7 +288,7 @@ const Explorer = (props) => {
                 render={(x) => <DataEntry url={x.match.params.url} />}
               />
 
-              <Route path="/tx/:hash" component={Tx} />
+              <Route path="/tx/:hash" component={Acc} />
               <Route path="/block/:index" component={Block} />
 
               <Route path="/validators" component={Validators} />

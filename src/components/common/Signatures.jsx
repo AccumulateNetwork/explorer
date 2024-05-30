@@ -241,19 +241,48 @@ const Signatures = (props) => {
           if (authority === 'other') {
             return;
           }
-          const status =
-            authority === 'credits'
-              ? creditPayments.length > 0
-              : principalSigs.some(
-                  (x) =>
-                    x.message.type === 'signature' &&
-                    x.message.signature.type === 'authority' &&
-                    x.message.signature.authority.toLowerCase() ===
-                      authority.toLowerCase(),
-                );
+          if (authority === 'credits') {
+            if (creditPayments.length > 0) {
+              return <Tag color="green">Received</Tag>;
+            }
+            return <Tag color="yellow">Pending</Tag>;
+          }
+          const status = principalSigs.some(
+            (x) =>
+              x.message.type === 'signature' &&
+              x.message.signature.type === 'authority' &&
+              x.message.signature.authority.toLowerCase() ===
+                authority.toLowerCase(),
+          );
 
-          if (status) return <Tag color="green">Received</Tag>;
-          return <Tag color="yellow">Pending</Tag>;
+          authority = authority.toLowerCase();
+          const votes = Array.from(
+            new Set(
+              principalSigs
+                .map((x) => x.message)
+                .filter((x) => x.type === 'signature')
+                .map((x) => x.signature)
+                .filter((x) => x.authority.toLowerCase() == authority)
+                .map((x) => x.vote || 'accept'),
+            ),
+          );
+
+          if (!votes.length) {
+            return <Tag color="yellow">Pending</Tag>;
+          }
+          if (votes.length > 1) {
+            return <Tag color="default">Unknown</Tag>;
+          }
+          switch (votes[0]) {
+            case 'accept':
+              return <Tag color="green">Received</Tag>;
+            case 'reject':
+              return <Tag color="red">Rejected</Tag>;
+            case 'abstain':
+              return <Tag color="orange">Abstained</Tag>;
+            default:
+              return <Tag color="default">Unknown</Tag>;
+          }
         },
       },
     ];
