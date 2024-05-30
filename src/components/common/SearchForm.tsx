@@ -1,15 +1,20 @@
-import { Form, Input, message } from 'antd';
+import { Form, Input } from 'antd';
 import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
 import React, { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
-import RPC from '../../utils/RPC';
-
 const { Search } = Input;
 
-function SearchForm() {
+export function SearchForm({
+  searching,
+}: {
+  searching?: (didLoad: (_: any) => void) => void;
+}) {
+  const history = useHistory();
+
   const [searchTs, setSearchTs] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [searchIsLoading, setSearchIsLoading] = useState(false);
@@ -24,51 +29,35 @@ function SearchForm() {
     return authority;
   }
 
+  const navigate = (value) => {
+    if (searching) {
+      setSearchIsLoading(true);
+      searching((_) => {
+        setSearchIsLoading(false);
+        setSearchText('');
+      });
+    }
+    history.push(value);
+  };
+
   const handleSearch = async (value) => {
     value = value.replaceAll(/\s/g, '');
     setSearchTs(moment());
     setSearchText(value);
-    setSearchIsLoading(true);
     var ishash = /^[A-Fa-f0-9]{64}$/.test(value);
     var isnum = /^\d+$/.test(value);
     if (isnum && Number.parseInt(value) >= 0) {
-      redirect('/block/' + value);
+      navigate('/block/' + value);
     } else if (ishash) {
-      searchTxhash(value);
+      navigate(`/tx/${value}`);
     } else if (isValidPublicFctAddress(value)) {
       const liteIdentityUrl = await generateLiteIdentity(
         addressToRcdHash(value),
       );
-      setSearchIsLoading(false);
-      redirect('/acc/' + liteIdentityUrl);
+      navigate('/acc/' + liteIdentityUrl);
     } else {
-      search(value.replace('acc://', ''));
+      navigate('/acc/' + value.replace('acc://', ''));
     }
-  };
-
-  const redirect = (url) => {
-    window.location.href = url;
-  };
-
-  const searchTxhash = async (txhash) => {
-    try {
-      let params = { scope: `${txhash}@unknown` };
-      const response = await RPC.request('query', params, 'v3');
-      setSearchIsLoading(false);
-      if (response && response.id) {
-        redirect('/acc/' + response.id.replace('acc://', ''));
-      } else {
-        redirect(`/acc/${txhash}@unknown`);
-      }
-    } catch (error) {
-      setSearchIsLoading(false);
-      message.info('Nothing was found');
-    }
-  };
-
-  const search = async (url) => {
-    setSearchIsLoading(false);
-    redirect('/acc/' + url);
   };
 
   /*   function searchToken(name) {
@@ -76,7 +65,7 @@ function SearchForm() {
   } */
 
   useEffect(() => {
-    setSearchIsLoading(false);
+    // setSearchIsLoading(false);
     /* if (searchForm.getFieldValue('search') !== "") {
       if (data.token && data.token.url) {
         redirect('/acc/'+data.token.url);
@@ -120,5 +109,3 @@ function SearchForm() {
     </Form>
   );
 }
-
-export default SearchForm;

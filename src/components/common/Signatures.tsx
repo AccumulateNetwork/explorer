@@ -1,10 +1,13 @@
 import { List, Table, Tag, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import RPC from '../../utils/RPC';
+import { AccountRecord } from 'accumulate.js/lib/api_v3';
+import { AccountType } from 'accumulate.js/lib/core';
+
+import { Shared } from './Shared';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -13,19 +16,30 @@ const Signatures = (props) => {
 
   const [authorities, setAuthorities] = useState(null);
 
+  const { api } = useContext(Shared);
   const getAuthorities = async (scope) => {
     while (true) {
-      const { account } = await RPC.request('query', { scope }, 'v3');
+      const { account } = (await api.query(scope, {
+        queryType: 'default',
+      })) as AccountRecord;
 
       switch (account.type) {
-        case 'keyPage':
-          scope = account.keyBook;
+        case AccountType.KeyPage:
+          scope = account.url.toString().replace(/\/\d+$/, '');
           continue;
-        case 'liteTokenAccount':
-          const [, id] = scope.match(/^(acc:\/\/\w+)\/.*/);
-          return [{ url: id }];
+        case AccountType.LiteIdentity:
+        case AccountType.LiteTokenAccount:
+          return [{ url: account.url.authority }];
+        case AccountType.Unknown:
+        case AccountType.UnknownSigner:
+        case AccountType.LiteDataAccount:
+        case AccountType.SystemLedger:
+        case AccountType.AnchorLedger:
+        case AccountType.SyntheticLedger:
+        case AccountType.BlockLedger:
+          return [];
         default:
-          return account.authorities || [];
+          return account.asObject().authorities || [];
       }
     }
   };

@@ -1,4 +1,7 @@
-export default function getBlockEntries(block) {
+import { MinorBlockRecord } from 'accumulate.js/lib/api_v3';
+import { ChainType } from 'accumulate.js/lib/merkle';
+
+export default function getBlockEntries(block: MinorBlockRecord) {
   if (!block.entries?.records) return [];
 
   // Aggregate DN entries and anchored BVN entries
@@ -9,5 +12,5 @@ export default function getBlockEntries(block) {
   ];
 
   // Filter out anything that's not a message
-  return entries.filter((x) => x.type === 'transaction');
+  return entries.filter((x) => x.type === ChainType.Transaction);
 }

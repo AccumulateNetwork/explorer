@@ -23,13 +23,11 @@ import {
 } from 'react-icons/ri';
 import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
-import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
-
 import Logo from './common/Logo';
 import MinorBlocks from './common/MinorBlocks';
 import networks from './common/Networks.json';
 import ScrollToTop from './common/ScrollToTop';
-import SearchForm from './common/SearchForm';
+import { SearchForm } from './common/SearchForm';
 import { Shared } from './common/Shared';
 import { Version } from './common/Version';
 import { Acc } from './explorer/Acc';
@@ -56,6 +54,8 @@ export default function Explorer() {
   ]);
   const [isMainnet, setIsMainnet] = useState(false);
   const [web3ModuleData, setWeb3ModuleData] = useState(null);
+
+  let searchDidLoad;
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
@@ -269,7 +269,7 @@ export default function Explorer() {
           )}
 
           <Content>
-            <SearchForm />
+            <SearchForm searching={(x) => (searchDidLoad = x)} />
             <Switch>
               <Route exact path="/" component={Blocks} />
 
@@ -280,7 +280,11 @@ export default function Explorer() {
               <Route
                 path="/acc/:url+"
                 render={(match) => (
-                  <Acc {...match} parentCallback={handleWeb3ModuleData} />
+                  <Acc
+                    {...match}
+                    didLoad={(x) => searchDidLoad?.(x)}
+                    parentCallback={handleWeb3ModuleData}
+                  />
                 )}
               />
 
@@ -289,7 +293,12 @@ export default function Explorer() {
                 render={(x) => <Data url={x.match.params.url} />}
               />
 
-              <Route path="/tx/:hash" component={Acc} />
+              <Route
+                path="/tx/:hash"
+                render={(match) => (
+                  <Acc {...match} didLoad={(x) => searchDidLoad?.(x)} />
+                )}
+              />
               <Route path="/block/:index" component={Block} />
 
               <Route path="/validators" component={Validators} />

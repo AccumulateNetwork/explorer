@@ -1,8 +1,11 @@
 import { CloseCircleFilled } from '@ant-design/icons';
 import { Alert, Select, Table, Tabs, Tag, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
-import RPC, { RPCError } from '../../utils/RPC';
+import { RpcError } from 'accumulate.js/lib/api_v3';
+
+import { Shared } from '../common/Shared';
+import { useAsyncEffect } from '../common/useAsync';
 
 const { Title, Text } = Typography;
 
@@ -16,96 +19,94 @@ const Network = () => {
       Loading...
     </Tabs.TabPane>,
   ]);
-  const [filter, setFilter] = useState(() => () => true);
+  const [filter, setFilter] = useState<(_: any) => boolean>(() => () => true);
+
+  const onError = (error) => {
+    console.error(error);
+    setError(`${error}`);
+  };
 
   // Fetch network global variables, such as partitions and validators. This
   // changes extremely infrequently so loading this once is sufficient.
   const [network, setNetwork] = useState(null);
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const { network } = await RPC.request('network-status', {}, 'v3');
+  const { api } = useContext(Shared);
+  useAsyncEffect(async (mounted) => {
+    const { network } = await api.networkStatus();
+    if (!mounted()) {
+      return;
+    }
 
-        // Add a lower case ID
-        for (const part of network.partitions) {
-          part.lcid = part.id.toLowerCase();
-        }
+    // Add a lower case ID
+    for (const part of network.partitions) {
+      (part as any).lcid = part.id.toLowerCase();
+    }
 
-        setNetwork(network);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-    load();
-  }, []);
+    setNetwork(network);
+  }, []).catch(onError);
 
   // Get the node info for all the nodes in the network
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setPeersAreLoading(true);
+  useAsyncEffect(async (mounted) => {
+    setPeersAreLoading(true);
 
-        // Figure out what network we're talking to
-        const { network } = await RPC.request('node-info', {}, 'v3');
+    // Figure out what network we're talking to
+    const { network } = await api.call('node-info', {});
 
-        // Find all the nodes
-        const peerIDs = await RPC.request('find-service', { network }, 'v3');
+    // Find all the nodes
+    const peerIDs = await api.call('find-service', { network });
 
-        // Get each node's info (with a batch request)
-        const peers = [];
-        const response = await RPC.rawRequest(
-          peerIDs.map(({ peerID }) => ({
-            method: 'node-info',
-            params: { peerID },
-          })),
-          'v3',
-        );
-        for (const i in response) {
-          const record = {
-            ...peerIDs[i],
-            data: {
-              partitions: {},
-              validator: {},
-              services: [],
-            },
-          };
-          peers.push(record);
+    // Get each node's info (with a batch request)
+    const peers = [];
+    const response = await api.call(
+      peerIDs.map(({ peerID }) => ({
+        method: 'node-info',
+        params: { peerID },
+      })),
+    );
+    for (const i in response) {
+      const record = {
+        ...peerIDs[i],
+        data: {
+          partitions: {},
+          validator: {},
+          services: [],
+        },
+      };
+      peers.push(record);
 
-          if (response[i] instanceof RPCError) {
-            record.error = response[i];
-            continue;
-          } else {
-            record.info = response[i];
-          }
-
-          for (const service of record.info.services) {
-            switch (service.type) {
-              case 'node':
-              case 'ServiceType:61441':
-                continue;
-              default:
-                record.data.services.push(service);
-            }
-          }
-
-          // List which consensus networks it participates in. A given
-          // node participates in zero or more consensus networks. An
-          // API or bootstrap node does not participate in any whereas
-          // most core nodes participate in the directory and a BVN.
-          for (const service of record.info.services) {
-            if (service.type === 'consensus') {
-              record.data.partitions[service.argument.toLowerCase()] = null;
-            }
-          }
-        }
-        setPeers(peers);
-        setPeersAreLoading(false);
-      } catch (error) {
-        setError(error.message);
+      if (response[i] instanceof RpcError) {
+        record.error = response[i];
+        continue;
+      } else {
+        record.info = response[i];
       }
-    };
-    load();
-  }, []);
+
+      for (const service of record.info.services) {
+        switch (service.type) {
+          case 'node':
+          case 'ServiceType:61441':
+            continue;
+          default:
+            record.data.services.push(service);
+        }
+      }
+
+      // List which consensus networks it participates in. A given
+      // node participates in zero or more consensus networks. An
+      // API or bootstrap node does not participate in any whereas
+      // most core nodes participate in the directory and a BVN.
+      for (const service of record.info.services) {
+        if (service.type === 'consensus') {
+          record.data.partitions[service.argument.toLowerCase()] = null;
+        }
+      }
+    }
+    if (mounted()) {
+      setPeers(peers);
+      setPeersAreLoading(false);
+    }
+  }, [])
+    .catch(onError)
+    .finally(() => setPeersAreLoading(false));
 
   // Show a table for each partition
   useEffect(() => {
@@ -189,7 +190,7 @@ const Network = () => {
           }),
         );
       } catch (error) {
-        setError(error.message);
+        onError(error);
       }
     };
     load();
@@ -224,10 +225,7 @@ const Network = () => {
         );
 
         // Send a batch request for all the nodes
-        const response = await RPC.batchRequest(
-          requests.map((x) => x.request),
-          'v3',
-        );
+        const response = await api.call(requests.map((x) => x.request) || []);
 
         // Unpack the responses
         const status = {};
@@ -256,7 +254,7 @@ const Network = () => {
         }
         setPeerStatus(status);
       } catch (error) {
-        setError(error.message);
+        onError(error);
       }
     };
 
@@ -273,7 +271,7 @@ const Network = () => {
         // Are we a validator on...
         const isVal = peer.part
           ? peer.data.validator[peer.part.lcid]?.active // The specified partition
-          : Object.values(peer.data.validator).some((x) => x.active); // Any partition
+          : Object.values(peer.data.validator).some((x: any) => x.active); // Any partition
 
         return (isVal && validators) || (!isVal && followers);
       });

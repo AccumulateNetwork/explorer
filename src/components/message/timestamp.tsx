@@ -27,14 +27,15 @@ export function describeTimestamp(txid: string | URL | TxID) {
     async (mounted) => {
       setTs(null);
       setBlock(null);
-
       let txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
       const response = await axios
         .get(`${network.api[0]}/timestamp/${txId}@unknown`)
         .catch((error) => {
           setTs(0);
           setBlock(0);
-          message.error(`${error}`);
+          if (!`${error}`.includes('404')) {
+            message.error(`${error}`);
+          }
           return null;
         });
       if (!mounted()) {

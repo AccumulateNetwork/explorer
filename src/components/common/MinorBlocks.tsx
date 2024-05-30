@@ -1,13 +1,28 @@
-import { Skeleton, Table, Tooltip, Typography } from 'antd';
+import {
+  Skeleton,
+  Table,
+  TablePaginationConfig,
+  Tooltip,
+  Typography,
+} from 'antd';
 import moment from 'moment-timezone';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import RPC from '../../utils/RPC';
+import {
+  ErrorRecord,
+  MinorBlockRecord,
+  RecordRange,
+  RecordType,
+} from 'accumulate.js/lib/api_v3';
+
 import getBlockEntries from '../../utils/getBlockEntries';
+import { CompactList } from './CompactList';
 import Count from './Count';
+import { Shared } from './Shared';
+import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;
 
@@ -17,7 +32,7 @@ const MinorBlocks = (props) => {
 
   const [minorBlocks, setMinorBlocks] = useState(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<TablePaginationConfig>({
     pageSize: 10,
     showSizeChanger: true,
     pageSizeOptions: ['10', '20', '50', '100'],
@@ -99,77 +114,70 @@ const MinorBlocks = (props) => {
 
   function BlockTxs(props) {
     if (!props?.data?.records) return <Text disabled>Empty block</Text>;
-    const items = props.data.records.map((item) => (
-      <span key={item.entry}>
-        <Tooltip
-          overlayClassName="explorer-tooltip"
-          title={
-            item.name === 'main'
-              ? 'transaction'
-              : item.name === 'anchor-sequence'
-                ? 'anchor'
-                : item.name
-                  ? item.name
-                  : 'unknown'
-          }
-        >
-          <Link to={'/tx/' + item.entry}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiExchangeLine />
-            </IconContext.Provider>
-            {item.entry}
-          </Link>
-        </Tooltip>
-        <br />
-      </span>
-    ));
-    return <span className="break-all">{items}</span>;
+    return (
+      <CompactList
+        dataSource={props.data.records}
+        limit={5}
+        renderItem={(item: any) => (
+          <span key={item.entry}>
+            <Tooltip
+              overlayClassName="explorer-tooltip"
+              title={
+                item.name === 'main'
+                  ? 'transaction'
+                  : item.name === 'anchor-sequence'
+                    ? 'anchor'
+                    : item.name
+                      ? item.name
+                      : 'unknown'
+              }
+            >
+              <Link to={'/tx/' + item.entry}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                  <RiExchangeLine />
+                </IconContext.Provider>
+                {item.entry}
+              </Link>
+            </Tooltip>
+            <br />
+          </span>
+        )}
+      />
+    );
   }
 
-  const getMinorBlocks = async (params = pagination) => {
-    setTableIsLoading(true);
+  const { api } = useContext(Shared);
+  useAsyncEffect(
+    async (mounted) => {
+      setTableIsLoading(true);
 
-    if (!params) return;
-    const start = (params.current - 1) * params.pageSize; // in `query-minor-blocks` API the first item has index 1, not 0
-
-    let response;
-    try {
-      response = await RPC.request(
-        'query',
-        {
-          scope: 'dn.acme',
-          query: {
-            queryType: 'block',
-            minorRange: { fromEnd: true, count: params.pageSize, start },
-          },
+      const r = await api.query('dn.acme', {
+        queryType: 'block',
+        minorRange: {
+          fromEnd: true,
+          count: pagination.pageSize,
+          start: (pagination.current - 1) * pagination.pageSize,
         },
-        'v3',
-      );
-    } catch (error) {
-      // error is managed by RPC.js, no need to display anything
-    }
-
-    if (response && response.recordType === 'range') {
-      for (const block of response.records) {
+      });
+      if (!mounted()) {
+        return;
+      }
+      const { records = [] } = r;
+      for (const block of records) {
         if (!block.entries?.records) continue;
         block.entries.records = getBlockEntries(block);
       }
-
-      setMinorBlocks(response.records.reverse());
+      records.reverse();
+      setMinorBlocks(records.map((r) => r.asObject()));
       setPagination({
         ...pagination,
-        current: params.current,
-        pageSize: params.pageSize,
-        total: response.total,
+        total: r.total,
       });
-      setTotalEntries(response.total);
-    }
-    setTableIsLoading(false);
-  };
-
-  useEffect(() => {
-    getMinorBlocks();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+      setTotalEntries(r.total);
+      setTableIsLoading(false);
+    },
+    [JSON.stringify(pagination)],
+  );
 
   return (
     <div>
@@ -182,11 +190,11 @@ const MinorBlocks = (props) => {
 
           <Table
             dataSource={minorBlocks}
-            columns={columns}
+            columns={columns as any}
             pagination={pagination}
             rowKey="index"
             loading={tableIsLoading}
-            onChange={getMinorBlocks}
+            onChange={(p) => setPagination(p)}
             scroll={{ x: 'max-content' }}
           />
         </div>

@@ -19,7 +19,15 @@ import { Settings } from './Settings';
 
 const { Title } = Typography;
 
-export function Acc({ match, parentCallback }) {
+export function Acc({
+  match,
+  parentCallback,
+  didLoad,
+}: {
+  match: any;
+  parentCallback?: any;
+  didLoad?: (_: any) => void;
+}) {
   const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
@@ -28,14 +36,17 @@ export function Acc({ match, parentCallback }) {
     match.params.hash ? `${match.params.hash}@unknown` : `${match.params.url}`,
   );
 
-  queryEffect(url, { queryType: 'default' }).then((r) => {
-    if (r.recordType === RecordType.Error) {
-      setError(r.value.message);
-      return;
-    }
-    setRecord(r);
-    parentCallback(r.asObject());
-  });
+  queryEffect(url, { queryType: 'default' })
+    .then((r) => {
+      if (r.recordType === RecordType.Error) {
+        setError(r.value.message);
+        return;
+      }
+      setRecord(r);
+      parentCallback?.(r.asObject());
+      return r;
+    })
+    .finally((x) => didLoad?.(x));
 
   if (!record) {
     return (

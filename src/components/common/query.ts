@@ -1,196 +1,204 @@
 import { useContext } from 'react';
 
-import { TxID, URLArgs, api_v3, errors, messaging } from 'accumulate.js';
-import { ErrorRecord } from 'accumulate.js/lib/api_v3';
+import { TxID, URLArgs, errors, messaging } from 'accumulate.js';
+import {
+  AccountRecord,
+  AnchorSearchQueryArgsWithType,
+  BlockQueryArgsWithType,
+  ChainEntryRecord,
+  ChainQueryArgsWithType,
+  ChainRecord,
+  DataQueryArgsWithType,
+  DefaultQueryArgsWithType,
+  DelegateSearchQueryArgsWithType,
+  DirectoryQueryArgsWithType,
+  ErrorRecord,
+  KeyRecord,
+  MajorBlockRecord,
+  MessageHashSearchQueryArgsWithType,
+  MessageRecord,
+  MinorBlockRecord,
+  PendingQueryArgsWithType,
+  PublicKeyHashSearchQueryArgsWithType,
+  PublicKeySearchQueryArgsWithType,
+  QueryArgs,
+  Record,
+  RecordRange,
+  TxIDRecord,
+  UrlRecord,
+} from 'accumulate.js/lib/api_v3';
 
 import { Shared } from './Shared';
 import { useAsyncEffect } from './useAsync';
 
 export function queryEffect(
   scope: URLArgs | TxID,
-  query?: api_v3.DefaultQueryArgsWithType,
+  query?: DefaultQueryArgsWithType,
   dependencies?: any[],
-): Promise<api_v3.AccountRecord | api_v3.MessageRecord | api_v3.ErrorRecord>;
+): QueryEffect<AccountRecord | MessageRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.ChainQueryArgsWithType, 'queryType'>,
+  query: Pick<ChainQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.ChainRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<ChainRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.ChainQueryArgsWithType, 'queryType' | 'name'>,
+  query: Pick<ChainQueryArgsWithType, 'queryType' | 'name'>,
   dependencies?: any[],
-): Promise<api_v3.ChainRecord | api_v3.ErrorRecord>;
+): QueryEffect<ChainRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.ChainQueryArgsWithType,
+    ChainQueryArgsWithType,
     'queryType' | 'name' | 'index' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.ChainEntryRecord | api_v3.ErrorRecord>;
+): QueryEffect<ChainEntryRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.ChainQueryArgsWithType,
+    ChainQueryArgsWithType,
     'queryType' | 'name' | 'entry' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.ChainEntryRecord | api_v3.ErrorRecord>;
+): QueryEffect<ChainEntryRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.ChainQueryArgsWithType,
+    ChainQueryArgsWithType,
     'queryType' | 'name' | 'range' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.ChainEntryRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<ChainEntryRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DataQueryArgsWithType, 'queryType'>,
+  query: Pick<DataQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
-): Promise<
-  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
-  | api_v3.ErrorRecord
+): QueryEffect<
+  ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'index'>,
+  query: Pick<DataQueryArgsWithType, 'queryType' | 'index'>,
   dependencies?: any[],
-): Promise<
-  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
-  | api_v3.ErrorRecord
+): QueryEffect<
+  ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'entry'>,
+  query: Pick<DataQueryArgsWithType, 'queryType' | 'entry'>,
   dependencies?: any[],
-): Promise<
-  | api_v3.ChainEntryRecord<api_v3.MessageRecord<messaging.TransactionMessage>>
-  | api_v3.ErrorRecord
+): QueryEffect<
+  ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DataQueryArgsWithType, 'queryType' | 'range'>,
+  query: Pick<DataQueryArgsWithType, 'queryType' | 'range'>,
   dependencies?: any[],
-): Promise<
-  | api_v3.RecordRange<
-      api_v3.ChainEntryRecord<
-        api_v3.MessageRecord<messaging.TransactionMessage>
-      >
-    >
-  | api_v3.ErrorRecord
+): QueryEffect<
+  | RecordRange<ChainEntryRecord<MessageRecord<messaging.TransactionMessage>>>
+  | ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
+  query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.UrlRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<UrlRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
+  query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.AccountRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<AccountRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.PendingQueryArgsWithType, 'queryType' | 'range'> & {
+  query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.TxIDRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<TxIDRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.PendingQueryArgsWithType, 'queryType' | 'range'> & {
+  query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
   dependencies?: any[],
-): Promise<
-  | api_v3.RecordRange<api_v3.MessageRecord<messaging.TransactionMessage>>
-  | api_v3.ErrorRecord
+): QueryEffect<
+  RecordRange<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.BlockQueryArgsWithType,
+    BlockQueryArgsWithType,
     'queryType' | 'minor' | 'entryRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.MinorBlockRecord | api_v3.ErrorRecord>;
+): QueryEffect<MinorBlockRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.BlockQueryArgsWithType,
+    BlockQueryArgsWithType,
     'queryType' | 'major' | 'minorRange' | 'entryRange' | 'omitEmpty'
   >,
   dependencies?: any[],
-): Promise<api_v3.MajorBlockRecord | api_v3.ErrorRecord>;
+): QueryEffect<MajorBlockRecord | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<
-    api_v3.BlockQueryArgsWithType,
-    'queryType' | 'minorRange' | 'omitEmpty'
-  >,
+  query: Pick<BlockQueryArgsWithType, 'queryType' | 'minorRange' | 'omitEmpty'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MinorBlockRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<MinorBlockRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<
-    api_v3.BlockQueryArgsWithType,
-    'queryType' | 'majorRange' | 'omitEmpty'
-  >,
+  query: Pick<BlockQueryArgsWithType, 'queryType' | 'majorRange' | 'omitEmpty'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MajorBlockRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<MajorBlockRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.AnchorSearchQueryArgsWithType,
+    AnchorSearchQueryArgsWithType,
     'queryType' | 'anchor' | 'includeReceipt'
   >,
   dependencies?: any[],
-): Promise<
-  api_v3.RecordRange<api_v3.ChainEntryRecord<never>> | api_v3.ErrorRecord
->;
+): QueryEffect<RecordRange<ChainEntryRecord<never>> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.PublicKeySearchQueryArgsWithType,
+    PublicKeySearchQueryArgsWithType,
     'queryType' | 'publicKey' | 'type'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
   query: Pick<
-    api_v3.PublicKeyHashSearchQueryArgsWithType,
+    PublicKeyHashSearchQueryArgsWithType,
     'queryType' | 'publicKeyHash'
   >,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.DelegateSearchQueryArgsWithType, 'queryType' | 'delegate'>,
+  query: Pick<DelegateSearchQueryArgsWithType, 'queryType' | 'delegate'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.KeyRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
   scope: URLArgs,
-  query: Pick<api_v3.MessageHashSearchQueryArgsWithType, 'queryType' | 'hash'>,
+  query: Pick<MessageHashSearchQueryArgsWithType, 'queryType' | 'hash'>,
   dependencies?: any[],
-): Promise<api_v3.RecordRange<api_v3.MessageRecord> | api_v3.ErrorRecord>;
+): QueryEffect<RecordRange<MessageRecord> | ErrorRecord>;
 
 export function queryEffect(
   scope: URLArgs | TxID,
-  query: api_v3.QueryArgs,
+  query: QueryArgs,
   dependencies?: any[],
-): PromiseLike<api_v3.Record> {
+): QueryEffect<Record> {
   const ctx = useContext(Shared);
   return {
-    then<T1>(effect?: (r: api_v3.Record) => T1 | PromiseLike<T1>) {
-      let resolve: (_: T1) => void;
-      let promise = new Promise<T1>((r) => (resolve = r));
+    then<T1>(effect?: Call<Record, T1>) {
+      const node = new CallNode(effect);
 
       useAsyncEffect(
         async (mounted) => {
@@ -215,7 +223,7 @@ export function queryEffect(
             return;
           }
 
-          resolve(await effect(r));
+          node.call(r);
         },
         [
           ctx.network,
@@ -225,7 +233,61 @@ export function queryEffect(
         ],
       );
 
-      return promise;
+      return node;
     },
   };
+}
+
+export type Call<In = void, Out = void> = (_: In) => Out | PromiseLike<Out>;
+
+export interface QueryEffect<T1 extends Record> {
+  then<T2>(effect: Call<T1, T2>): Thenable<T2>;
+}
+
+export interface Thenable<T1> {
+  then<T2>(onresolve: Call<T1, T2>);
+  catch<T2>(onreject: Call<any, T2>);
+  finally(onfinally: Call);
+}
+
+class CallNode<T1, T2> implements Thenable<T2> {
+  readonly #callback: Call<T1, T2>;
+  readonly #onresolve: Call<T2>[] = [];
+  readonly #onreject: Call<any>[] = [];
+
+  constructor(cb: Call<T1, T2>) {
+    this.#callback = cb;
+  }
+
+  call(v1: T1) {
+    const v2 = (async () => await this.#callback(v1))();
+
+    const onresolve = this.#onresolve.length
+      ? (x: T2) => Promise.all(this.#onresolve.map((fn) => fn(x)))
+      : null;
+    const onreject = this.#onreject.length
+      ? (x) => Promise.all(this.#onreject.map((fn) => fn(x)))
+      : null;
+
+    v2.then(onresolve, onreject);
+  }
+
+  then<T3>(onresolve: Call<T2, T3>) {
+    const node = new CallNode(onresolve);
+    this.#onresolve.push((x) => node.call(x));
+    return node;
+  }
+
+  catch<T3>(onreject: Call<any, T3>) {
+    const node = new CallNode(onreject);
+    this.#onreject.push((x) => node.call(x));
+    return node;
+  }
+
+  finally(onfinally: Call<any>) {
+    const node = new CallNode(onfinally);
+    this.#onresolve.push((x) => node.call(x));
+    this.#onreject.push((x) => node.call(x));
+    return node;
+  }
 }

@@ -1,6 +1,6 @@
 import { Card, Col, Row, Skeleton, Tag, Typography, message } from 'antd';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiCoinLine,
@@ -15,6 +15,7 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
+import { Shared } from '../common/Shared';
 import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
 
@@ -48,15 +49,10 @@ const Blocks = () => {
     }
   };
 
+  const { network } = useContext(Shared);
   useEffect(() => {
     document.title = 'Blocks | Accumulate Explorer';
-    if (
-      import.meta.env.VITE_APP_API_PATH &&
-      (import.meta.env.VITE_APP_API_PATH ===
-        'https://mainnet.accumulatenetwork.io' ||
-        import.meta.env.VITE_APP_API_PATH ===
-          'https://api-gateway.accumulate.defidevs.io')
-    ) {
+    if (network.mainnet) {
       setIsMainnet(true);
       getPrice();
     }

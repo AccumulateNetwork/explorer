@@ -1,7 +1,10 @@
 import { Alert, Form, Input, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
-import RPC from '../../utils/RPC';
+import { TxID } from 'accumulate.js';
+
+import { Link } from '../common/Link';
+import { Shared } from '../common/Shared';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;
@@ -9,18 +12,18 @@ const { Search } = Input;
 const Faucet = () => {
   const [faucetForm] = Form.useForm();
   const [faucetIsLoading, setFaucetIsLoading] = useState(false);
-  const [txid, setTxid] = useState(null);
+  const [txid, setTxid] = useState<TxID>(null);
   const [error, setError] = useState(null);
 
+  const { api } = useContext(Shared);
   const handleFaucet = async (url) => {
     setFaucetIsLoading(true);
     setTxid(null);
     setError(null);
 
-    let params = { account: url };
-    const response = await RPC.request('faucet', params, 'v3');
+    const response = await api.faucet(url);
     if (response && response?.status?.txID) {
-      setTxid('Txid: ' + response?.status?.txID);
+      setTxid(response.status.txID);
     } else {
       setError('Unable to fund ' + url);
     }
@@ -59,7 +62,11 @@ const Faucet = () => {
       </Paragraph>
       {txid ? (
         <div>
-          <Alert type="success" message={txid} showIcon />
+          <Alert
+            type="success"
+            message={<Link to={txid}>{txid.toString()}</Link>}
+            showIcon
+          />
         </div>
       ) : null}
       {error ? (

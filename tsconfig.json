@@ -1,16 +1,16 @@
 {
-    "compilerOptions": {
-        "lib": ["dom", "dom.iterable", "esnext"],
-        "target": "ESNext",
-        "types": ["vite/client"],
-        "isolatedModules": true,
-        "moduleResolution": "Node",
-        "module": "ESNext",
-        "jsx": "react",
-        "allowSyntheticDefaultImports": true,
-        "noEmit": true,
-        "allowJs": true,
-        "resolveJsonModule": true
-    },
-    "include": ["src"]
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "target": "ESNext",
+    "types": ["vite/client"],
+    "isolatedModules": true,
+    "moduleResolution": "Node",
+    "module": "ESNext",
+    "jsx": "react",
+    "allowSyntheticDefaultImports": true,
+    "noEmit": true,
+    "allowJs": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src"]
 }

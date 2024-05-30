@@ -8,16 +8,18 @@ import {
   Typography,
 } from 'antd';
 import moment from 'moment-timezone';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiInformationLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import RPC from '../../utils/RPC';
 import getBlockEntries from '../../utils/getBlockEntries';
 import Count from '../common/Count';
+import { Shared } from '../common/Shared';
+import { useAsyncEffect } from '../common/useAsync';
+import Error404 from './Error404';
 
 const { Title, Text } = Typography;
 
@@ -28,6 +30,7 @@ const Block = ({ match }) => {
     current: 1,
   };
   const [block, setBlock] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(null);
   const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
@@ -70,35 +73,35 @@ const Block = ({ match }) => {
     },
   ];
 
-  const getMinorBlock = async (index) => {
-    document.title = 'Minor block #' + index + ' | Accumulate Explorer';
-    setError(null);
-    try {
-      let params = {
-        scope: 'acc://dn.acme',
-        query: { queryType: 'block', minor: parseInt(index) },
-      };
-      const response = await RPC.request('query', params, 'v3');
-      if (response && response.entries) {
-        setBlock({
-          ...response,
-          messages: getBlockEntries(response),
-        });
-      } else {
-        throw new Error('Minor block #' + index + ' not found');
-      }
-    } catch (error) {
-      setError(error.message);
-    }
-  };
+  const { api } = useContext(Shared);
+  const { index } = match.params;
+  useAsyncEffect(
+    async (mounted) => {
+      document.title = 'Minor block #' + index + ' | Accumulate Explorer';
+      setError(null);
 
-  useEffect(() => {
-    getMinorBlock(match.params.index);
-  }, [match.params.index]);
+      const r = await api.query('dn.acme', {
+        queryType: 'block',
+        minor: parseInt(index),
+      });
+      if (!mounted()) {
+        return;
+      }
+      setBlock({
+        ...r.asObject(),
+        messages: getBlockEntries(r).map((e) => e.asObject()),
+      });
+    },
+    [index],
+  ).catch((error) => setError(`${error}`));
+
+  if (notFound) {
+    return <Error404 />;
+  }
 
   return (
     <div>
-      <Title level={2}>Minor Block #{match.params.index}</Title>
+      <Title level={2}>Minor Block #{index}</Title>
       {block ? (
         <div>
           <Descriptions bordered column={1} size="middle">
