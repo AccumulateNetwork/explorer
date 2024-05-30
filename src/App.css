@@ -15,6 +15,34 @@
   height: 42px;
 }
 
+section.ant-layout {
+  align-items: center;
+}
+
+header {
+  width: 100vw;
+  padding: 0;
+  margin: 0;
+}
+
+main {
+  padding: 25px 20px 30px 20px;
+  margin: 0;
+}
+
+@media screen and (min-width: 1600px) {
+  main {
+    width: 1600px;
+  }
+}
+
+@media (max-width: 1599px), not screen {
+  main {
+    width: 100vw;
+  }
+}
+
+
 .logo {
   height: 38px;
   margin-top: -2px;
@@ -311,8 +339,14 @@ h4.ant-typography .count {
   color: #52c41a;
 }
 
-.footer p {
+.ant-layout-footer p {
   margin-bottom: 4px;
+}
+
+.ant-layout-footer {
+  display: flex;
+  align-items: center;
+  flex-flow: column;
 }
 
 .extid {
@@ -685,13 +719,22 @@ h4.ant-typography .count {
   padding-bottom: 0 !important;
 }
 
+header.web3 {
+  padding: 0;
+  height: unset;
+  line-height: unset;
+}
+
 .web3-module {
-  margin-bottom: 20px;
-  margin-top: -25px;
-  margin-left: -20px;
-  margin-right: -20px;
   background: #d6e4ff;
-  padding: 10px 20px 0px 20px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+}
+
+.web3-module > .login {
+  max-width: 1600px;
 }
 
 .web3-module.connected {
@@ -719,10 +762,6 @@ h4.ant-typography .count {
 
 .web3-module .ant-typography {
   margin-bottom: 0 !important;
-}
-
-.web3-module .login .ant-col {
-  margin-bottom: 10px;
 }
 
 .web3-module .account .account-connected {

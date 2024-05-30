@@ -10,6 +10,7 @@
         "allowSyntheticDefaultImports": true,
         "noEmit": true,
         "allowJs": true,
+        "resolveJsonModule": true
     },
     "include": ["src"]
 }

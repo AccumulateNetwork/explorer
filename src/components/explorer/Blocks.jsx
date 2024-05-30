@@ -17,7 +17,6 @@ import { Link } from 'react-router-dom';
 
 import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
-import Stats from './../common/Stats';
 
 const { Title, Text } = Typography;
 
@@ -65,12 +64,6 @@ const Blocks = () => {
 
   return (
     <div>
-      {false ? (
-        <div className="stats">
-          <Stats />
-        </div>
-      ) : null}
-
       <Title level={2}>Accumulate Explorer</Title>
 
       <div className="stats" style={{ marginTop: 5, marginBottom: 20 }}>
