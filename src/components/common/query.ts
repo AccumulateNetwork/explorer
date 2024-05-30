@@ -186,7 +186,7 @@ export function queryEffect(
   query: api_v3.QueryArgs,
   dependencies?: any[],
 ): PromiseLike<api_v3.Record> {
-  const { api, onApiError } = useContext(Shared);
+  const ctx = useContext(Shared);
   return {
     then<T1>(effect?: (r: api_v3.Record) => T1 | PromiseLike<T1>) {
       let resolve: (_: T1) => void;
@@ -194,11 +194,11 @@ export function queryEffect(
 
       useAsyncEffect(
         async (mounted) => {
-          if (!scope || !api) {
+          if (!scope || !ctx.api) {
             return;
           }
 
-          const r = await api.query(scope, query as any).catch((err) => {
+          const r = await ctx.api.query(scope, query as any).catch((err) => {
             try {
               if (
                 typeof err === 'object' &&
@@ -208,7 +208,7 @@ export function queryEffect(
                 return new ErrorRecord({ value: new errors.Error(err.data) });
               }
             } catch (_) {}
-            onApiError(err);
+            ctx.onApiError(err);
             return null;
           });
           if (!r || !mounted()) {
@@ -217,7 +217,12 @@ export function queryEffect(
 
           resolve(await effect(r));
         },
-        [`${scope}`, JSON.stringify(query), ...(dependencies || [])],
+        [
+          ctx.network,
+          `${scope}`,
+          JSON.stringify(query),
+          ...(dependencies || []),
+        ],
       );
 
       return promise;

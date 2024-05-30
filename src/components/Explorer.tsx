@@ -49,20 +49,13 @@ import Web3Module from './web3/Web3Module';
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
-const Explorer = (props) => {
+export default function Explorer() {
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
   const [isMainnet, setIsMainnet] = useState(false);
   const [web3ModuleData, setWeb3ModuleData] = useState(null);
-
-  // TODO: Make this state that is configurable
-  const api = new JsonRpcClient(`${import.meta.env.VITE_APP_API_PATH}/v3`);
-  const onApiError = (error) => {
-    console.error(error);
-    message.error('API call failed');
-  };
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
@@ -120,8 +113,15 @@ const Explorer = (props) => {
     }
   }, []);
 
+  const sharedCtx = new Shared.Context({
+    network: import.meta.env.VITE_APP_API_PATH,
+    onApiError(error) {
+      console.error(error);
+      message.error('API call failed');
+    },
+  });
   return (
-    <Shared.Provider value={{ api, onApiError }}>
+    <Shared.Provider value={sharedCtx}>
       <Router>
         <ScrollToTop />
         <Layout>
@@ -309,13 +309,9 @@ const Explorer = (props) => {
             <p>
               <Version />
             </p>
-            {import.meta.env.VITE_APP_API_PATH ? (
-              <p>
-                <Text type="secondary">
-                  {import.meta.env.VITE_APP_API_PATH}
-                </Text>
-              </p>
-            ) : null}
+            <p>
+              <Text type="secondary">{sharedCtx.network.api[0]}</Text>
+            </p>
             <p>
               <a href="mailto:support@defidevs.io">support@defidevs.io</a>
             </p>
@@ -324,6 +320,4 @@ const Explorer = (props) => {
       </Router>
     </Shared.Provider>
   );
-};
-
-export default Explorer;
+}

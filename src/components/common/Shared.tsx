@@ -1,14 +1,48 @@
 import React from 'react';
 
-import { api_v3 } from 'accumulate.js';
+import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
-interface Context {
-  api?: api_v3.JsonRpcClient;
-  onApiError: (_: any) => void;
+import networks, { Network, getNetwork } from './networks';
+
+export class Context {
+  readonly onApiError: (_: any) => void;
+
+  #network?: Network;
+  #api?: JsonRpcClient;
+
+  constructor({
+    network,
+    onApiError = (e) => console.error(e),
+  }: {
+    network?: string;
+    onApiError?: (_: any) => void;
+  }) {
+    if (network) {
+      this.setNetwork(network);
+    }
+    this.onApiError = onApiError;
+  }
+
+  get network() {
+    return this.#network;
+  }
+
+  get api() {
+    return this.#api;
+  }
+
+  setNetwork(network: string) {
+    this.#network = getNetwork(network);
+    if (!this.#network) {
+      throw new Error(`unknown network ${network}`);
+    }
+    this.#api = new JsonRpcClient(`${this.#network.api[0]}/v3`);
+  }
 }
 
-export const Shared = React.createContext<Context>({
-  onApiError(error) {
-    console.error(error);
+export const Shared = Object.assign(
+  React.createContext<Context>(new Context({})),
+  {
+    Context,
   },
-});
+);
