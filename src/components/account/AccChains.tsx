@@ -7,7 +7,7 @@ import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 
 import Count from '../common/Count';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 import { Chain } from './Chain';
 
 const { Title } = Typography;

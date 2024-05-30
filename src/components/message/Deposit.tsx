@@ -19,7 +19,7 @@ import {
 import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 import { Outputs } from './Outputs';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';

@@ -14,7 +14,7 @@ import {
 } from '../../utils/types';
 import { EnumValue } from '../common/EnumValue';
 import Data from '../common/ExtId';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 import Error404 from '../explorer/Error404';
 import { TxnInfo } from './TxnInfo';
 

@@ -13,7 +13,7 @@ import {
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
 import { Settings } from './Settings';
 

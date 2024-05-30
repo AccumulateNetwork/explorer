@@ -8,7 +8,7 @@ import { RiFolder2Line } from 'react-icons/ri';
 import { AccountRecord, RecordType, UrlRecord } from 'accumulate.js/lib/api_v3';
 
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 
 export function Directory({ record }: { record: AccountRecord }) {
   const [directory, setDirectory] = useState<(UrlRecord | AccountRecord)[]>(

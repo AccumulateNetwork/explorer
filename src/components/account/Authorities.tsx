@@ -15,7 +15,7 @@ import {
 import { getParentUrl } from '../../utils/url';
 import Count from '../common/Count';
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/Shared';
+import { queryEffect } from '../common/query';
 
 const { Title } = Typography;
 
