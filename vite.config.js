@@ -20,4 +20,8 @@ export default defineConfig({
       useFsEvents: true,
     },
   },
+
+  // optimizeDeps: {
+  //   exclude: ['accumulate.js'],
+  // },
 });
