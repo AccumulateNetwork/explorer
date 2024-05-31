@@ -12,6 +12,7 @@ import { MessageType } from 'accumulate.js/lib/messaging';
 
 import { CompactList } from '../common/CompactList';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -96,7 +97,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
         Message Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {describeTimestamp(record.id)}
 
         <Descriptions.Item key="id" label={labelID}>
@@ -141,7 +142,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
             />
           </Descriptions.Item>
         )}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

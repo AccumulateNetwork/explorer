@@ -11,6 +11,7 @@ import {
 
 import { isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
+import { InfoTable } from '../common/InfoTable';
 import { describeProperty } from '../common/properties';
 import { MsgHeader } from './MsgHeader';
 import { MsgInfo } from './MsgInfo';
@@ -44,14 +45,14 @@ Message.Generic = function ({ record }: { record: MessageRecord }) {
         Properties
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {Object.entries(record.message).map(([key, value]) => {
           if (key === 'type') {
             return null;
           }
           return describeProperty({ key, value, obj: msgObj });
         })}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 };

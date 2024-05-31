@@ -23,6 +23,7 @@ import { AccountRecordOf, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import { Shared } from '../common/Shared';
@@ -158,11 +159,11 @@ export function TokenAccount({
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI plus staking account info */}
       <Title level={4}>
@@ -172,7 +173,7 @@ export function TokenAccount({
         Token Account Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
@@ -236,7 +237,7 @@ export function TokenAccount({
             </Link>
           </Descriptions.Item>
         ) : null}
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />

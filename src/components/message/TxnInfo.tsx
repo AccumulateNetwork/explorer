@@ -13,6 +13,7 @@ import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
 import { CompactList } from '../common/CompactList';
 import { EntryHash } from '../common/EntryHash';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -134,7 +135,7 @@ export function TxnInfo({
         Transaction Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {describeTimestamp(record.id)}
 
         <Descriptions.Item label={labelID}>
@@ -189,7 +190,7 @@ export function TxnInfo({
             />
           </Descriptions.Item>
         )}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

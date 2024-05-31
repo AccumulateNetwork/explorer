@@ -13,6 +13,7 @@ import { TokenRecipient } from 'accumulate.js/lib/core';
 import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Shared';
 import { useAsyncEffect } from '../common/useAsync';
@@ -84,7 +85,7 @@ export function SendTokens({
         Token Transaction
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Token">
           {issuer ? (
             <Link to={issuer.url}>
@@ -131,7 +132,7 @@ export function SendTokens({
         <Descriptions.Item label="To" className="align-top">
           <Outputs outputs={outputs} issuer={issuer} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

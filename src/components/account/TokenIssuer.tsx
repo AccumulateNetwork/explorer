@@ -11,6 +11,7 @@ import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import { Shared } from '../common/Shared';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -80,11 +81,11 @@ export function TokenIssuer({
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* Max, total, and circulating supply */}
       <TokenIssuer.Supply account={account} />
@@ -96,7 +97,7 @@ export function TokenIssuer({
         </IconContext.Provider>
         Token Info
       </Title>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
@@ -112,7 +113,7 @@ export function TokenIssuer({
         <Descriptions.Item label={labelPrecision}>
           {account.precision || 0}
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />
@@ -210,7 +211,7 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
   return (
     <div>
       {title}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {account.supplyLimit && (
           <Descriptions.Item label={labelMax}>
             <TokenAmount
@@ -262,7 +263,7 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
             </Text>
           </Descriptions.Item>
         )}
-      </Descriptions>
+      </InfoTable>
     </div>
   );
 };

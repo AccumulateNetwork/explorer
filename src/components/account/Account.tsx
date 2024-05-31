@@ -10,6 +10,7 @@ import { AccountType } from 'accumulate.js/lib/core';
 import { isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import { RawData } from '../common/RawData';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -85,11 +86,11 @@ Account.Generic = function ({ record }: { record: AccountRecord }) {
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
@@ -98,13 +99,13 @@ Account.Generic = function ({ record }: { record: AccountRecord }) {
         </IconContext.Provider>
         Account Info
       </Title>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
 
         {describeParent(account)}
-      </Descriptions>
+      </InfoTable>
 
       {/* Other properties */}
       <Title level={4}>
@@ -113,14 +114,14 @@ Account.Generic = function ({ record }: { record: AccountRecord }) {
         </IconContext.Provider>
         Properties
       </Title>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {Object.entries(account).map(([key, value]) => {
           if (key === 'type' || key === 'url') {
             return null;
           }
           return describeProperty({ key, value, obj: accountObj });
         })}
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />

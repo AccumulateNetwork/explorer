@@ -9,6 +9,7 @@ import { SignatureType, TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, TransactionMessage } from 'accumulate.js/lib/messaging';
 
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Status } from './Status';
 
 const { Title } = Typography;
@@ -64,7 +65,7 @@ export function TxnHeader({
         Transaction Type
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={TransactionType} value={txn.body.type} />
           {'isRefund' in txn.body && txn.body.isRefund && (
@@ -79,7 +80,7 @@ export function TxnHeader({
             </Tag>
           )}
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

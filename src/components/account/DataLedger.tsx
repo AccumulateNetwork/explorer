@@ -7,8 +7,8 @@ import { URL } from 'accumulate.js';
 
 import { DataChain } from '../../utils/DataChain';
 import { DataTxnEntry, TxnEntry, dataEntryParts } from '../../utils/types';
+import { Content } from '../common/Content';
 import Count from '../common/Count';
-import ExtId from '../common/ExtId';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import { Shared } from '../common/Shared';
@@ -127,9 +127,9 @@ DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
   if (data.length == 0) return null;
 
   const items = data.slice(0, 3).map((item, index) => (
-    <ExtId compact key={index}>
+    <Content compact key={index}>
       {item}
-    </ExtId>
+    </Content>
   ));
   let extra = data.length - 3;
   if (extra > 0) {

@@ -12,8 +12,9 @@ import {
   dataEntryParts,
   isRecordOfDataTxn,
 } from '../../utils/types';
+import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
-import ShowData from '../common/ExtId';
+import { InfoTable } from '../common/InfoTable';
 import { queryEffect } from '../common/query';
 import { TxnInfo } from '../message/TxnInfo';
 import Error404 from './Error404';
@@ -81,14 +82,14 @@ export function Data() {
 function ShowDataEntry({ record }: { record: DataTxnRecord }) {
   return (
     <div>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue
             type={TransactionType}
             value={record.message.transaction.body.type}
           />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       <TxnInfo record={record} />
 
@@ -105,7 +106,7 @@ function ShowDataEntry({ record }: { record: DataTxnRecord }) {
         dataSource={dataEntryParts(record.message.transaction.body.entry)}
         renderItem={(item) => (
           <List.Item>
-            <ShowData>{item}</ShowData>
+            <Content>{item}</Content>
           </List.Item>
         )}
         style={{ marginBottom: '30px' }}

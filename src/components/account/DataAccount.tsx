@@ -12,8 +12,9 @@ import { AccountType } from 'accumulate.js/lib/core';
 
 import { AccountRecordOf, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
+import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
-import ExtId from '../common/ExtId';
+import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
@@ -51,11 +52,11 @@ export function DataAccount({
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
@@ -65,13 +66,13 @@ export function DataAccount({
         Data Account Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
 
         {describeParent(account)}
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />
@@ -93,7 +94,7 @@ export function DataAccount({
               dataSource={dataEntryParts(account.entry)}
               renderItem={(item) => (
                 <List.Item>
-                  <ExtId>{item}</ExtId>
+                  <Content>{item}</Content>
                 </List.Item>
               )}
               style={{ marginBottom: '30px' }}

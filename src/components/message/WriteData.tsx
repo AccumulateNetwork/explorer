@@ -11,7 +11,8 @@ import { TransactionType } from 'accumulate.js/lib/core';
 
 import { DataTxnRecord, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
-import Data from '../common/ExtId';
+import { Content } from '../common/Content';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
@@ -39,12 +40,7 @@ export function WriteData({ record }: { record: DataTxnRecord }) {
             Write Data
           </Title>
 
-          <Descriptions
-            bordered
-            column={1}
-            size="middle"
-            className="info-table"
-          >
+          <InfoTable>
             <Descriptions.Item label="To">
               <Link to={txn.body.recipient}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -53,7 +49,7 @@ export function WriteData({ record }: { record: DataTxnRecord }) {
                 {txn.body.recipient.toString()}
               </Link>
             </Descriptions.Item>
-          </Descriptions>
+          </InfoTable>
         </>
       )}
 
@@ -77,7 +73,7 @@ export function WriteData({ record }: { record: DataTxnRecord }) {
         dataSource={dataEntryParts(txn.body.entry)}
         renderItem={(item) => (
           <List.Item>
-            <Data>{item}</Data>
+            <Content>{item}</Content>
           </List.Item>
         )}
         style={{ marginBottom: '30px' }}

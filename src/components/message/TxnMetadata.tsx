@@ -11,9 +11,9 @@ import {
 import { MessageRecord } from 'accumulate.js/lib/api_v3';
 import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
-import Data from '../common/ExtId';
+import { Content } from '../common/Content';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import wrapLinksInHtml from '../common/LinksRenderer';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
 
@@ -101,21 +101,16 @@ export function TxnMetadata({
         Transaction Metadata
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {memo && (
           <Descriptions.Item label={labelMemo}>
-            <div
-              className="span ant-typography"
-              dangerouslySetInnerHTML={{
-                __html: wrapLinksInHtml(memo),
-              }}
-            />
+            <Content type="ASCII">{memo}</Content>
           </Descriptions.Item>
         )}
 
         {metadata && (
           <Descriptions.Item label={labelMetadata}>
-            <Data>{metadata}</Data>
+            <Content>{metadata}</Content>
           </Descriptions.Item>
         )}
 
@@ -135,7 +130,7 @@ export function TxnMetadata({
             </Link>
           </Descriptions.Item>
         ))}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

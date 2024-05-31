@@ -16,6 +16,7 @@ import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
@@ -81,11 +82,11 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
@@ -94,7 +95,7 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
         </IconContext.Provider>
         Key Page Info
       </Title>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
@@ -110,7 +111,7 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
         <Descriptions.Item label={labelBalance}>
           {account.creditBalance ? account.creditBalance / 100 : 0} credits
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* Key page entries */}
       <Title level={4}>

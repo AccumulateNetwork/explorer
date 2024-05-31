@@ -8,6 +8,7 @@ import { SignatureType } from 'accumulate.js/lib/core';
 import { SignatureMessage } from 'accumulate.js/lib/messaging';
 
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Status } from './Status';
 
 const { Title } = Typography;
@@ -30,14 +31,14 @@ export function SigHeader({
         Signature Type
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue
             type={SignatureType}
             value={record.message.signature.type}
           />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

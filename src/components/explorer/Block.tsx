@@ -17,6 +17,7 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getBlockEntries from '../../utils/getBlockEntries';
 import Count from '../common/Count';
+import { InfoTable } from '../common/InfoTable';
 import { Shared } from '../common/Shared';
 import { useAsyncEffect } from '../common/useAsync';
 import Error404 from './Error404';
@@ -104,7 +105,7 @@ const Block = () => {
       <Title level={2}>Minor Block #{index}</Title>
       {block ? (
         <div>
-          <Descriptions bordered column={1} size="middle">
+          <InfoTable>
             <Descriptions.Item label={`Timestamp (UTC${utcOffsetString})`}>
               {block.time ? (
                 <Text className="code">
@@ -114,7 +115,7 @@ const Block = () => {
                 <Text disabled>Timestamp not recorded</Text>
               )}
             </Descriptions.Item>
-          </Descriptions>
+          </InfoTable>
 
           <Title level={4} style={{ marginTop: 30 }}>
             <IconContext.Provider value={{ className: 'react-icons' }}>

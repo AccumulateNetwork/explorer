@@ -14,11 +14,11 @@ import { VoteType } from 'accumulate.js/lib/core';
 import { SignatureMessage } from 'accumulate.js/lib/messaging';
 
 import { AccTitle } from '../common/AccTitle';
+import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
-import Data from '../common/ExtId';
+import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
-import wrapLinksInHtml from '../common/LinksRenderer';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { MsgInfo } from './MsgInfo';
@@ -160,7 +160,7 @@ export function Signature({
         Signature Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {signer && (
           <Descriptions.Item label={labelSigner}>
             <Signature.Type signature={signature} />
@@ -182,18 +182,13 @@ export function Signature({
 
         {'memo' in signature && signature.memo && (
           <Descriptions.Item label={labelMemo}>
-            <div
-              className="span ant-typography"
-              dangerouslySetInnerHTML={{
-                __html: wrapLinksInHtml(signature.memo),
-              }}
-            />
+            <Content type="ASCII">{signature.memo}</Content>
           </Descriptions.Item>
         )}
 
         {'data' in signature && signature.data && (
           <Descriptions.Item label={labelMetadata}>
-            <Data>{signature.data}</Data>
+            <Content>{signature.data}</Content>
           </Descriptions.Item>
         )}
 
@@ -222,7 +217,7 @@ export function Signature({
             </Link>
           </Descriptions.Item>
         )}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

@@ -23,6 +23,7 @@ import { Link } from 'react-router-dom';
 import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
+import { InfoTable } from '../common/InfoTable';
 import { Shared } from '../common/Shared';
 
 const { Title, Text } = Typography;
@@ -335,7 +336,7 @@ const Staking = () => {
           </Title>
 
           {supply ? (
-            <Descriptions bordered column={1} size="middle">
+            <InfoTable>
               <Descriptions.Item label="Max supply">
                 {supply.maxTokens.toLocaleString('en-US', {
                   maximumFractionDigits: 0,
@@ -397,7 +398,7 @@ const Staking = () => {
                   supply is staked
                 </Text>
               </Descriptions.Item>
-            </Descriptions>
+            </InfoTable>
           ) : (
             <div className="skeleton-holder">
               <Skeleton active />

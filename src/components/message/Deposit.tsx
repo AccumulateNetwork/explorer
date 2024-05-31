@@ -18,6 +18,7 @@ import {
 
 import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { queryEffect } from '../common/query';
 import { Outputs } from './Outputs';
@@ -76,7 +77,7 @@ export function Deposit({
         {title}
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         {!(txn.body instanceof SyntheticDepositCredits) && (
           <Descriptions.Item label="Token">
             {issuer ? (
@@ -134,7 +135,7 @@ export function Deposit({
             </Link>
           </Descriptions.Item>
         )} */}
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

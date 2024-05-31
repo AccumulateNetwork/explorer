@@ -10,6 +10,7 @@ import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -46,11 +47,11 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">
           <EnumValue type={AccountType} value={account.type} />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
@@ -60,13 +61,13 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
         Key Book Info
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
 
         {describeParent(account)}
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />

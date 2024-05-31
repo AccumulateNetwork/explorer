@@ -1,6 +1,8 @@
 import { Descriptions, Switch, Typography } from 'antd';
 import React from 'react';
 
+import { InfoTable } from '../common/InfoTable';
+
 const { Title } = Typography;
 
 export const Settings = new (class Settings {
@@ -39,14 +41,14 @@ export default function () {
     <div>
       <Title level={2}>Settings</Title>
 
-      <Descriptions bordered column={1} size="middle">
+      <InfoTable>
         <Descriptions.Item key="dev-mode" label="Developer mode">
           <Switch
             defaultChecked={Settings.enableDevMode}
             onChange={(v) => (Settings.enableDevMode = v)}
           />
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
     </div>
   );
 }

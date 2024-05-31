@@ -12,6 +12,7 @@ import {
   OracleValue,
   TokenAmount,
 } from '../common/Amount';
+import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
@@ -35,7 +36,7 @@ export function AddCredits({ record }: { record: TxnRecord<core.AddCredits> }) {
         Purchase Credits
       </Title>
 
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Recipient">
           <Link to={txn.body.recipient}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -64,7 +65,7 @@ export function AddCredits({ record }: { record: TxnRecord<core.AddCredits> }) {
             <OracleValue value={txn.body.oracle} />
           </Text>
         </Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
     </>
   );
 }

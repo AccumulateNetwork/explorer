@@ -15,6 +15,7 @@ import { AccTitle } from '../common/AccTitle';
 import { CreditAmount } from '../common/Amount';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
+import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
@@ -73,9 +74,9 @@ export function Identity({
       <AccTitle title="Account" url={account.url} />
 
       {/* Account type */}
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label="Type">{typeStr}</Descriptions.Item>
-      </Descriptions>
+      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
@@ -84,7 +85,7 @@ export function Identity({
         </IconContext.Provider>
         {typeStr} Info
       </Title>
-      <Descriptions bordered column={1} size="middle" className="info-table">
+      <InfoTable>
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>
@@ -94,7 +95,7 @@ export function Identity({
             <CreditAmount amount={account.creditBalance || 0} />
           </Descriptions.Item>
         )}
-      </Descriptions>
+      </InfoTable>
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />
