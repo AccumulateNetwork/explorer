@@ -85,7 +85,10 @@ export class DataChain {
       return true;
     });
     this.#results.records.sort((a, b) => {
-      return b.value.received - a.value.received;
+      if (a.name === b.name) {
+        return (b.index || 0) - (a.index || 0);
+      }
+      return (b.value.received || 0) - (a.value.received || 0);
     });
   }
 }

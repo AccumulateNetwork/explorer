@@ -177,12 +177,10 @@ export function TxnInfo({
         )}
 
         {produced.length && (
-          <Descriptions.Item
-            className={'align-top has-list'}
-            label={labelProduced}
-          >
+          <Descriptions.Item label={labelProduced}>
             <CompactList
               dataSource={produced}
+              limit={5}
               renderItem={(item) => (
                 <List.Item>
                   <TxnInfo.Related record={item} />

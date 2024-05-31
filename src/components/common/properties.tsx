@@ -6,7 +6,7 @@ import { TxID, URL } from 'accumulate.js';
 import { CreditRecipient, TokenRecipient } from 'accumulate.js/lib/core';
 
 import { Outputs } from '../message/Outputs';
-import { CreditAmount } from './Amount';
+import { Amount, CreditAmount } from './Amount';
 import { Link } from './Link';
 
 const { Text } = Typography;
@@ -37,6 +37,10 @@ export function describeProperty({
       key,
       value ? <Tag color="blue">True</Tag> : <Tag color="default">False</Tag>,
     );
+  }
+
+  if (typeof value === 'bigint') {
+    return describe(label, key, `${value}`);
   }
 
   if (typeof value !== 'object') {

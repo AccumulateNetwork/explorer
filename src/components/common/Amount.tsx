@@ -96,6 +96,9 @@ export function Amount({
     max?: number;
   };
 }) {
+  if (typeof amount === 'number' && isNaN(amount)) {
+    amount = 0;
+  }
   const { group = false, min = 0, max } = digits;
   let s = amount.toLocaleString('en-US', {
     useGrouping: group,

@@ -1,7 +1,6 @@
 import {
   List,
   Skeleton,
-  Spin,
   Table,
   TablePaginationConfig,
   TableProps,
@@ -23,6 +22,7 @@ import {
   ChainEntryRecord,
   ErrorRecord,
   MessageRecord,
+  QueryArgs,
   RangeOptionsArgs,
   Record,
   RecordRange,
@@ -46,6 +46,7 @@ import {
   TransactionMessage,
 } from 'accumulate.js/lib/messaging';
 
+import { ManagedRange } from '../../utils/ManagedRange';
 import {
   CreditAmount,
   TokenAmount,
@@ -72,6 +73,30 @@ export function Chain(props: {
   const url = URL.parse(props.url);
 
   const { api, network } = useContext(Shared);
+  const [managed] = useState(
+    props.type === 'pending'
+      ? new ManagedRange((range) =>
+          api.query(url, {
+            queryType: 'pending',
+            range: {
+              expand: true,
+              ...range,
+            } as RangeOptionsArgs & { expand: true },
+          }),
+        )
+      : new ManagedRange(
+          (range) =>
+            api.query(url, {
+              queryType: 'chain',
+              name: props.type,
+              range: {
+                expand: true,
+                ...range,
+              },
+            }) as Promise<RecordRange<ChainRecord>>,
+          true,
+        ),
+  );
 
   const [txChain, setTxChain] = useState<PendingRecord[] | ChainRecord[]>(null);
   const [account, setAccount] = useState<
@@ -130,17 +155,7 @@ export function Chain(props: {
           count: pagination.pageSize,
           expand: true,
         };
-        const response =
-          type === 'pending'
-            ? await api.query(url, {
-                queryType: 'pending',
-                range,
-              })
-            : ((await api.query(url, {
-                queryType: 'chain',
-                name: type,
-                range: { ...range, fromEnd: true },
-              })) as RecordRange<ChainRecord>);
+        const response = await managed.getPage(pagination);
 
         if (!mounted()) return;
 
@@ -301,7 +316,6 @@ export function Chain(props: {
             recipientsOfTx(value.message.transaction)?.length > 1
           );
         },
-        expandRowByClick: true,
       }}
     />
   );
@@ -487,6 +501,14 @@ Chain.TxnAmount = function ({
 function amountFor(account: Account, tx: Transaction) {
   const debit = account.url.equals(tx.header.principal);
   const to = recipientsOfTx(tx);
-  const amount = totalAmount(to, (x) => debit || x.url.equals(account.url));
+  const amount = totalAmount(to, (x) => {
+    if (!debit) {
+      return x.url.equals(account.url);
+    }
+    if (tx.body.type !== TransactionType.TransferCredits) {
+      return true;
+    }
+    return !x.url.equals(account.url);
+  });
   return { amount, debit };
 }

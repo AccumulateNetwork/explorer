@@ -38,6 +38,7 @@ export function Data() {
       if (!/[0-9a-f]{64}/i.test(url.username)) {
         setNotFound(true);
       }
+      document.title = `${url.username} | Accumulate Explorer`;
       setUrl(url);
     }
   }, [params.url]);

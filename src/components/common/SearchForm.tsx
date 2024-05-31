@@ -1,7 +1,7 @@
-import { Form, Input } from 'antd';
+import { Form, Input, InputRef } from 'antd';
 import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
@@ -29,12 +29,24 @@ export function SearchForm({
     return authority;
   }
 
+  const clear = () =>
+    setTimeout(() => {
+      if (searchRef.current?.input?.value) {
+        searchRef.current.input.value = '';
+      }
+    });
+
+  const searchRef = useRef<InputRef>(null);
   const navigate = (value) => {
+    if (history?.location?.pathname === value) {
+      clear();
+      return;
+    }
     if (searching) {
       setSearchIsLoading(true);
       searching((_) => {
         setSearchIsLoading(false);
-        setSearchText('');
+        clear();
       });
     }
     history.push(value);
@@ -91,6 +103,7 @@ export function SearchForm({
     >
       <Form.Item name="search">
         <Search
+          ref={searchRef}
           placeholder="Search by Accumulate URL, TXID or block number"
           size="large"
           enterButton
@@ -99,6 +112,7 @@ export function SearchForm({
               handleSearch(value);
             }
           }}
+          value={searchText}
           loading={searchIsLoading}
           spellCheck={false}
           autoComplete="off"

@@ -4,7 +4,7 @@ import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
 import { useParams } from 'react-router-dom';
 
-import { URL } from 'accumulate.js';
+import { URL, errors } from 'accumulate.js';
 import {
   AccountRecord,
   MessageRecord,
@@ -16,6 +16,7 @@ import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
+import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
@@ -35,18 +36,24 @@ export function Acc({
   const url = URL.parse(
     params.hash ? `${params.hash}@unknown` : `${params.url}`,
   );
+  document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
 
   queryEffect(url, { queryType: 'default' })
     .then((r) => {
       if (r.recordType === RecordType.Error) {
-        setError(r.value.message);
+        setError(r.value);
         return;
       }
+      setError(null);
       setRecord(r);
       parentCallback?.(r.asObject());
       return r;
     })
     .finally((x) => didLoad?.(x));
+
+  if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
+    return <Error404 />;
+  }
 
   if (!record) {
     return (
@@ -58,7 +65,7 @@ export function Acc({
         <div>
           {error ? (
             <div className="skeleton-holder">
-              <Alert message={error} type="error" showIcon />
+              <Alert message={`${error}`} type="error" showIcon />
             </div>
           ) : (
             <div className="skeleton-holder">

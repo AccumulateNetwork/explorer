@@ -274,7 +274,7 @@ export default function Explorer() {
                 <Route exact path="/faucet" children={<Faucet />} />
               )}
 
-              <Route path={['/acc/:url+', '/tx/:hash']}>
+              <Route path={['/acc/:url+', '/tx/:hash+']}>
                 <Acc didLoad={(x) => searchDidLoad?.(x)} />
               </Route>
 
