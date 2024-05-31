@@ -266,7 +266,7 @@ export default function Explorer() {
           <Content>
             <SearchForm searching={(x) => (searchDidLoad = x)} />
             <Switch>
-              <Route exact path="/" component={Blocks} />
+              <Route exact path="/" children={<Blocks />} />
               <Route path="/validators" children={<Validators />} />
               <Route path="/tokens" children={<Tokens />} />
               <Route path="/staking" children={<Staking />} />
@@ -276,7 +276,7 @@ export default function Explorer() {
               <Route path="/settings" children={<Settings />} />
 
               {!shared.network.mainnet && (
-                <Route exact path="/faucet" component={Faucet} />
+                <Route exact path="/faucet" children={<Faucet />} />
               )}
 
               <Route path="/acc/:url+">
