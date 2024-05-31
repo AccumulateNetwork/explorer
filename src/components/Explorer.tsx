@@ -8,7 +8,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiArrowLeftRightLine,
@@ -54,6 +54,16 @@ export default function Explorer() {
   };
   const [shared, setShared] = useState(new Shared.Context(onApiError));
 
+  // Run once
+  useEffect(() => {
+    Shared.Context.onBroadcast((message) => {
+      switch (message.type) {
+        case 'didChangeNetwork':
+          setShared(new Shared.Context(onApiError, message.networkID));
+      }
+    });
+  }, []);
+
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
@@ -76,6 +86,10 @@ export default function Explorer() {
             <a
               onClick={() => {
                 setShared(new Shared.Context(onApiError, item));
+                Shared.Context.postBroadcast({
+                  type: 'didChangeNetwork',
+                  networkID: item.id,
+                });
               }}
             >
               <Badge status="success" text={item.label} />

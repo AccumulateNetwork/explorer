@@ -3,17 +3,16 @@ import React from 'react';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
 import { Settings } from '../explorer/Settings';
-import { Mainnet, Network, getNetwork } from './networks';
+import { Network, getNetwork } from './networks';
 
-function defaultNetworkName(): string {
-  if (import.meta.env.VITE_APP_API_PATH) {
-    return import.meta.env.VITE_APP_API_PATH;
-  }
-  if (!Context.canChangeNetwork) {
-    return import.meta.env.VITE_NETWORK;
-  }
-  return Settings.networkName || 'mainnet';
+type BroadcastMessage = DidChangeNetwork;
+
+interface DidChangeNetwork {
+  type: 'didChangeNetwork';
+  networkID: string;
 }
+
+const broadcast = new BroadcastChannel('shared-broadcast');
 
 export class Context {
   static readonly canChangeNetwork =
@@ -55,6 +54,14 @@ export class Context {
   get onApiError() {
     return this.#onApiError || ((e) => console.error(e));
   }
+
+  static postBroadcast(message: BroadcastMessage) {
+    broadcast.postMessage(message);
+  }
+
+  static onBroadcast(fn: (message: BroadcastMessage) => void) {
+    broadcast.addEventListener('message', (msg) => fn(msg.data));
+  }
 }
 
 export const Shared = Object.assign(
@@ -63,3 +70,13 @@ export const Shared = Object.assign(
     Context,
   },
 );
+
+function defaultNetworkName(): string {
+  if (import.meta.env.VITE_APP_API_PATH) {
+    return import.meta.env.VITE_APP_API_PATH;
+  }
+  if (!Context.canChangeNetwork) {
+    return import.meta.env.VITE_NETWORK;
+  }
+  return Settings.networkName || 'mainnet';
+}
