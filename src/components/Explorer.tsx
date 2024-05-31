@@ -121,7 +121,7 @@ export default function Explorer() {
       <Router>
         <ScrollToTop />
         <Layout>
-          <Header>
+          <Header className={shared.network.mainnet ? '' : 'testnet'}>
             <Menu
               theme="dark"
               mode="horizontal"
@@ -244,6 +244,7 @@ export default function Explorer() {
                 </Menu.Item>
               </Menu.SubMenu>
             </Menu>
+
             <Dropdown
               overlay={ExplorerSelect}
               trigger={['click']}

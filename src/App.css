@@ -25,6 +25,10 @@ header {
   margin: 0;
 }
 
+header.testnet, header.testnet > .ant-menu {
+  background-color: #402152;
+}
+
 main {
   padding: 25px 20px 30px 20px;
   margin: 0;

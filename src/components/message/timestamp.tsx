@@ -5,10 +5,10 @@ import { useContext, useState } from 'react';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiQuestionLine } from 'react-icons/ri';
+import { Link } from 'react-router-dom';
 
 import { TxID, URL } from 'accumulate.js';
 
-import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
 import { Shared } from '../common/Shared';
 import tooltipDescs from '../common/TooltipDescriptions';
@@ -48,8 +48,8 @@ export function describeTimestamp(txid: string | URL | TxID) {
       }
 
       const entries = (response.data.chains || [])
-        // Filter by chain
-        .filter((x) => x.chain === 'main' || x.chain === 'scratch')
+        // // Filter by chain
+        // .filter((x) => x.chain === 'main' || x.chain === 'scratch')
         // Sort by age ascending
         .sort((a, b) => b.block - a.block);
 
