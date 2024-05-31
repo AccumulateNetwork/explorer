@@ -2,6 +2,7 @@ import { Alert, Skeleton, Typography } from 'antd';
 import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
+import { useParams } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
 import {
@@ -20,11 +21,9 @@ import { Settings } from './Settings';
 const { Title } = Typography;
 
 export function Acc({
-  match,
   parentCallback,
   didLoad,
 }: {
-  match: any;
   parentCallback?: any;
   didLoad?: (_: any) => void;
 }) {
@@ -32,8 +31,9 @@ export function Acc({
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
 
+  const params = useParams<{ hash: string; url: string }>();
   const url = URL.parse(
-    match.params.hash ? `${match.params.hash}@unknown` : `${match.params.url}`,
+    params.hash ? `${params.hash}@unknown` : `${params.url}`,
   );
 
   queryEffect(url, { queryType: 'default' })

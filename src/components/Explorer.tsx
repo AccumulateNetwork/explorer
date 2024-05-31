@@ -38,7 +38,7 @@ import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import Network from './explorer/Network';
-import page from './explorer/Settings';
+import Settings from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
@@ -267,44 +267,33 @@ export default function Explorer() {
             <SearchForm searching={(x) => (searchDidLoad = x)} />
             <Switch>
               <Route exact path="/" component={Blocks} />
+              <Route path="/validators" children={<Validators />} />
+              <Route path="/tokens" children={<Tokens />} />
+              <Route path="/staking" children={<Staking />} />
+              <Route path="/favourites" children={<Favourites />} />
+              <Route path="/blocks" children={<MinorBlocks />} />
+              <Route path="/network" children={<Network />} />
+              <Route path="/settings" children={<Settings />} />
 
               {!shared.network.mainnet && (
                 <Route exact path="/faucet" component={Faucet} />
               )}
 
-              <Route
-                path="/acc/:url+"
-                render={(match) => (
-                  <Acc
-                    {...match}
-                    didLoad={(x) => searchDidLoad?.(x)}
-                    parentCallback={handleWeb3ModuleData}
-                  />
-                )}
-              />
+              <Route path="/acc/:url+">
+                <Acc
+                  didLoad={(x) => searchDidLoad?.(x)}
+                  parentCallback={handleWeb3ModuleData}
+                />
+              </Route>
 
-              <Route
-                path="/data/:url+"
-                render={(x) => <Data url={x.match.params.url} />}
-              />
+              <Route path="/tx/:hash">
+                <Acc didLoad={(x) => searchDidLoad?.(x)} />
+              </Route>
 
-              <Route
-                path="/tx/:hash"
-                render={(match) => (
-                  <Acc {...match} didLoad={(x) => searchDidLoad?.(x)} />
-                )}
-              />
-              <Route path="/block/:index" component={Block} />
+              <Route path="/data/:url+" children={<Data />} />
+              <Route path="/block/:index" children={<Block />} />
 
-              <Route path="/validators" component={Validators} />
-              <Route path="/tokens" component={Tokens} />
-              <Route path="/staking" component={Staking} />
-              <Route path="/favourites" component={Favourites} />
-              <Route path="/blocks" component={MinorBlocks} />
-              <Route path="/network" component={Network} />
-              <Route path="/settings" component={page} />
-
-              <Route component={Error404} />
+              <Route children={<Error404 />} />
             </Switch>
           </Content>
 

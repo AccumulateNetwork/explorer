@@ -11,7 +11,7 @@ import moment from 'moment-timezone';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiInformationLine } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
@@ -23,7 +23,7 @@ import Error404 from './Error404';
 
 const { Title, Text } = Typography;
 
-const Block = ({ match }) => {
+const Block = () => {
   const pagination = {
     showSizeChanger: true,
     pageSizeOptions: ['10', '20', '50', '100'],
@@ -74,7 +74,7 @@ const Block = ({ match }) => {
   ];
 
   const { api, network } = useContext(Shared);
-  const { index } = match.params;
+  const { index } = useParams<{ index: string }>();
   useAsyncEffect(
     async (mounted) => {
       document.title = 'Minor block #' + index + ' | Accumulate Explorer';

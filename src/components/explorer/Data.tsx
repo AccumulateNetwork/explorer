@@ -2,6 +2,7 @@ import { Descriptions, List, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFileList2Line } from 'react-icons/ri';
+import { useParams } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
@@ -19,17 +20,18 @@ import Error404 from './Error404';
 
 const { Title } = Typography;
 
-export function Data(props: { url: string }) {
+export function Data() {
   // Return 404 if url is not a valid URL or transaction hash
+  const params = useParams<{ url: string }>();
   const [url, setUrl] = useState<URL>();
   const [notFound, setNotFound] = useState(false);
   useEffect(() => {
-    if (/^[0-9a-f]{64}$/i.test(props.url)) {
-      setUrl(URL.parse(`acc://${props.url}@unknown`));
+    if (/^[0-9a-f]{64}$/i.test(params.url)) {
+      setUrl(URL.parse(`acc://${params.url}@unknown`));
     } else {
       let url: URL;
       try {
-        url = URL.parse(props.url);
+        url = URL.parse(params.url);
       } catch (error) {
         setNotFound(true);
       }
@@ -38,7 +40,7 @@ export function Data(props: { url: string }) {
       }
       setUrl(url);
     }
-  }, [props.url]);
+  }, [params.url]);
 
   const [record, setRecord] = useState<DataTxnRecord>(null);
   queryEffect(url, { queryType: 'default' }).then((r) => {
