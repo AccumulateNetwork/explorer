@@ -29,7 +29,7 @@ export function SendTokens({
   record: TxnRecord<core.SendTokens | core.IssueTokens>;
 }) {
   // Load the token issuer
-  const { api } = useContext(Shared);
+  const { api, network } = useContext(Shared);
   const txn = record.message.transaction;
   const [issuer, setIssuer] = useState<core.TokenIssuer>();
   useAsyncEffect(
@@ -55,7 +55,7 @@ export function SendTokens({
         setIssuer(r.account);
       }
     },
-    [`${txn.header.principal}`],
+    [`${txn.header.principal}`, network.id],
   );
 
   const outputs = [

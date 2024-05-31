@@ -71,8 +71,7 @@ export function Chain(props: {
   const { type } = props;
   const url = URL.parse(props.url);
 
-  const { api } = useContext(Shared);
-  if (!api) return <Spin />;
+  const { api, network } = useContext(Shared);
 
   const [txChain, setTxChain] = useState<PendingRecord[] | ChainRecord[]>(null);
   const [account, setAccount] = useState<
@@ -119,7 +118,7 @@ export function Chain(props: {
         setIssuer(r2.account);
       }
     },
-    [props.url.toString()],
+    [props.url.toString(), network.id],
   );
 
   useAsyncEffect(
@@ -155,7 +154,7 @@ export function Chain(props: {
         setTableIsLoading(false);
       }
     },
-    [props.url, JSON.stringify(pagination)],
+    [props.url, JSON.stringify(pagination), network.id],
   );
 
   const columns: TableProps<ChainRecord>['columns'] = [

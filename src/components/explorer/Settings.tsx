@@ -4,11 +4,18 @@ import React from 'react';
 const { Title } = Typography;
 
 export const Settings = new (class Settings {
-  get enableDevMode() {
+  get enableDevMode(): boolean {
     return this.#get('enable-dev-mode', false);
   }
-  set enableDevMode(v) {
+  set enableDevMode(v: boolean) {
     this.#set('enable-dev-mode', v);
+  }
+
+  get networkName(): string {
+    return this.#get('network', '');
+  }
+  set networkName(v: string) {
+    this.#set('network', v);
   }
 
   #get(name, def) {

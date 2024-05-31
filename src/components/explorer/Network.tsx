@@ -29,7 +29,7 @@ const Network = () => {
   // Fetch network global variables, such as partitions and validators. This
   // changes extremely infrequently so loading this once is sufficient.
   const [network, setNetwork] = useState(null);
-  const { api } = useContext(Shared);
+  const { api, network: apiNet } = useContext(Shared);
   useAsyncEffect(async (mounted) => {
     const { network } = await api.networkStatus();
     if (!mounted()) {

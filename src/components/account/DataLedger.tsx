@@ -33,7 +33,7 @@ export function DataLedger({ scope }: { scope: URL }) {
     },
   ];
 
-  const { api } = useContext(Shared);
+  const { api, network } = useContext(Shared);
   const [dataChain] = useState(new DataChain(scope, api));
   const [entries, setEntries] = useState<TxnEntry[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
@@ -74,7 +74,7 @@ export function DataLedger({ scope }: { scope: URL }) {
       setTotalEntries(r.total);
       setTableIsLoading(false);
     },
-    [scope.toString(), JSON.stringify(pagination)],
+    [scope.toString(), JSON.stringify(pagination), network.id],
   );
 
   return (

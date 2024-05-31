@@ -2,25 +2,46 @@ import React from 'react';
 
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
-import networks, { Network, getNetwork } from './networks';
+import { Settings } from '../explorer/Settings';
+import { Mainnet, Network, getNetwork } from './networks';
+
+function defaultNetworkName(): string {
+  if (import.meta.env.VITE_APP_API_PATH) {
+    return import.meta.env.VITE_APP_API_PATH;
+  }
+  if (!Context.canChangeNetwork) {
+    return import.meta.env.VITE_NETWORK;
+  }
+  return Settings.networkName || 'mainnet';
+}
 
 export class Context {
-  readonly onApiError: (_: any) => void;
+  static readonly canChangeNetwork =
+    `${import.meta.env.VITE_NETWORK}`.toLowerCase() === 'any';
+  readonly canChangeNetwork = Context.canChangeNetwork;
 
-  #network?: Network;
-  #api?: JsonRpcClient;
+  #onApiError?: (_: any) => void;
+  readonly #network?: Network;
+  readonly #api?: JsonRpcClient;
 
-  constructor({
-    network,
-    onApiError = (e) => console.error(e),
-  }: {
-    network?: string;
-    onApiError?: (_: any) => void;
-  }) {
-    if (network) {
-      this.setNetwork(network);
+  constructor(
+    onApiError?: (_: any) => void,
+    name: string | Network = defaultNetworkName(),
+  ) {
+    if (!name) {
+      throw new Error(
+        'specify a network with the VITE_NETWORK environment variable',
+      );
     }
-    this.onApiError = onApiError;
+    const network = typeof name === 'string' ? getNetwork(name) : name;
+    if (!network) {
+      throw new Error(`unknown network ${name}`);
+    }
+
+    this.#onApiError = onApiError;
+    this.#network = network;
+    this.#api = new JsonRpcClient(`${network.api[0]}/v3`);
+    Settings.networkName = network.api[0];
   }
 
   get network() {
@@ -31,17 +52,13 @@ export class Context {
     return this.#api;
   }
 
-  setNetwork(network: string) {
-    this.#network = getNetwork(network);
-    if (!this.#network) {
-      throw new Error(`unknown network ${network}`);
-    }
-    this.#api = new JsonRpcClient(`${this.#network.api[0]}/v3`);
+  get onApiError() {
+    return this.#onApiError || ((e) => console.error(e));
   }
 }
 
 export const Shared = Object.assign(
-  React.createContext<Context>(new Context({})),
+  React.createContext<Context>(new Context()),
   {
     Context,
   },

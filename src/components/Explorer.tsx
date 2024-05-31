@@ -8,7 +8,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiArrowLeftRightLine,
@@ -25,11 +25,11 @@ import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import Logo from './common/Logo';
 import MinorBlocks from './common/MinorBlocks';
-import networks from './common/Networks.json';
 import ScrollToTop from './common/ScrollToTop';
 import { SearchForm } from './common/SearchForm';
 import { Shared } from './common/Shared';
 import { Version } from './common/Version';
+import networks from './common/networks';
 import { Acc } from './explorer/Acc';
 import Block from './explorer/Block';
 import Blocks from './explorer/Blocks';
@@ -48,11 +48,15 @@ const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
 
 export default function Explorer() {
-  const [currentNetwork, setCurrentNetwork] = useState(null);
+  const onApiError = (error) => {
+    console.error(error);
+    message.error('API call failed');
+  };
+  const [shared, setShared] = useState(new Shared.Context(onApiError));
+
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
-  const [isMainnet, setIsMainnet] = useState(false);
   const [web3ModuleData, setWeb3ModuleData] = useState(null);
 
   let searchDidLoad;
@@ -71,28 +75,27 @@ export default function Explorer() {
 
   const ExplorerSelect = (
     <Menu>
-      {networks.map((item) => (
-        <Menu.Item key={item.name}>
-          <a target="_blank" rel="noopener noreferrer" href={item.url}>
-            <Badge status="success" text={item.name} />
-          </a>
+      {Object.values(networks).map((item) => (
+        <Menu.Item key={item.label}>
+          {shared.canChangeNetwork ? (
+            <a
+              onClick={() => {
+                setShared(new Shared.Context(onApiError, item));
+              }}
+            >
+              <Badge status="success" text={item.label} />
+            </a>
+          ) : (
+            <a target="_blank" rel="noopener noreferrer" href={item.explorer}>
+              <Badge status="success" text={item.label} />
+            </a>
+          )}
         </Menu.Item>
       ))}
     </Menu>
   );
 
   useEffect(() => {
-    if (import.meta.env.VITE_APP_API_PATH) {
-      const matchedNetwork = networks.find((network) =>
-        network.api.includes(import.meta.env.VITE_APP_API_PATH),
-      );
-
-      setCurrentNetwork(matchedNetwork?.name || 'Unknown');
-      setIsMainnet(matchedNetwork?.mainnet || false);
-    } else {
-      setCurrentNetwork('Unknown');
-    }
-
     if (
       window.location.pathname === '/' ||
       window.location.pathname.includes('blocks')
@@ -113,15 +116,8 @@ export default function Explorer() {
     }
   }, []);
 
-  const sharedCtx = new Shared.Context({
-    network: import.meta.env.VITE_APP_API_PATH,
-    onApiError(error) {
-      console.error(error);
-      message.error('API call failed');
-    },
-  });
   return (
-    <Shared.Provider value={sharedCtx}>
+    <Shared.Provider value={shared}>
       <Router>
         <ScrollToTop />
         <Layout>
@@ -147,7 +143,7 @@ export default function Explorer() {
                 </Link>
               </Menu.Item>
 
-              {isMainnet && (
+              {shared.network.mainnet && (
                 <>
                   <Menu.Item key="/tokens">
                     <Link to="/tokens">
@@ -195,7 +191,7 @@ export default function Explorer() {
                 <Menu.Item key="bridge">
                   <a
                     href={
-                      isMainnet
+                      shared.network.mainnet
                         ? 'https://bridge.accumulatenetwork.io'
                         : 'https://testnet.bridge.accumulatenetwork.io'
                     }
@@ -210,7 +206,7 @@ export default function Explorer() {
                 </Menu.Item>
                 <Menu.Item
                   key="liquidstaking"
-                  style={!isMainnet ? { display: 'none' } : null}
+                  style={!shared.network.mainnet ? { display: 'none' } : null}
                 >
                   <a
                     href="https://accumulated.finance"
@@ -225,7 +221,7 @@ export default function Explorer() {
                 </Menu.Item>
                 <Menu.Item
                   key="wallet"
-                  style={!isMainnet ? { display: 'none' } : null}
+                  style={!shared.network.mainnet ? { display: 'none' } : null}
                 >
                   <a
                     href="https://accumulatenetwork.io/wallet"
@@ -248,21 +244,19 @@ export default function Explorer() {
                 </Menu.Item>
               </Menu.SubMenu>
             </Menu>
-            {currentNetwork ? (
-              <Dropdown
-                overlay={ExplorerSelect}
-                trigger={['click']}
-                className="network-badge"
-              >
-                <Button ghost>
-                  <Badge status="success" text={currentNetwork} />
-                  <DownOutlined />
-                </Button>
-              </Dropdown>
-            ) : null}
+            <Dropdown
+              overlay={ExplorerSelect}
+              trigger={['click']}
+              className="network-badge"
+            >
+              <Button ghost>
+                <Badge status="success" text={shared.network.label} />
+                <DownOutlined />
+              </Button>
+            </Dropdown>
           </Header>
 
-          {!isMainnet && (
+          {false && !shared.network.mainnet && (
             <Header className="web3">
               <Web3Module data={web3ModuleData} />
             </Header>
@@ -273,7 +267,7 @@ export default function Explorer() {
             <Switch>
               <Route exact path="/" component={Blocks} />
 
-              {currentNetwork !== 'Mainnet' && (
+              {!shared.network.mainnet && (
                 <Route exact path="/faucet" component={Faucet} />
               )}
 
@@ -319,7 +313,7 @@ export default function Explorer() {
               <Version />
             </p>
             <p>
-              <Text type="secondary">{sharedCtx.network.api[0]}</Text>
+              <Text type="secondary">{shared.network.api[0]}</Text>
             </p>
             <p>
               <a href="mailto:support@defidevs.io">support@defidevs.io</a>

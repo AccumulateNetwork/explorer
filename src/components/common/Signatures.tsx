@@ -16,7 +16,7 @@ const Signatures = (props) => {
 
   const [authorities, setAuthorities] = useState(null);
 
-  const { api } = useContext(Shared);
+  const { api, network } = useContext(Shared);
   const getAuthorities = async (scope) => {
     while (true) {
       const { account } = (await api.query(scope, {

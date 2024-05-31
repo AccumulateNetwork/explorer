@@ -39,7 +39,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
-    "start": "VITE_APP_API_PATH='https://kermit.accumulatenetwork.io' VITE_APP_ID='explorer-wespx' vite",
+    "start": "VITE_NETWORK=any VITE_APP_ID='explorer-wespx' vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format": "prettier -w src",

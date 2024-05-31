@@ -146,7 +146,7 @@ const MinorBlocks = (props) => {
     );
   }
 
-  const { api } = useContext(Shared);
+  const { api, network } = useContext(Shared);
   useAsyncEffect(
     async (mounted) => {
       setTableIsLoading(true);
@@ -176,7 +176,7 @@ const MinorBlocks = (props) => {
       setTotalEntries(r.total);
       setTableIsLoading(false);
     },
-    [JSON.stringify(pagination)],
+    [JSON.stringify(pagination), network.id],
   );
 
   return (

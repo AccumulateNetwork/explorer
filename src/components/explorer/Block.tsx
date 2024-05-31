@@ -73,7 +73,7 @@ const Block = ({ match }) => {
     },
   ];
 
-  const { api } = useContext(Shared);
+  const { api, network } = useContext(Shared);
   const { index } = match.params;
   useAsyncEffect(
     async (mounted) => {
@@ -92,7 +92,7 @@ const Block = ({ match }) => {
         messages: getBlockEntries(r).map((e) => e.asObject()),
       });
     },
-    [index],
+    [index, network.id],
   ).catch((error) => setError(`${error}`));
 
   if (notFound) {
