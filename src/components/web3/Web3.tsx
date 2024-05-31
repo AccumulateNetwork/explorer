@@ -218,7 +218,7 @@ export default function Component() {
     let pub = localStorage.getItem(account);
 
     // need more complex check here
-    if (pub && EthCrypto.publicKey.toAddress(pub) === account) {
+    if (pub && ethAddress(pub) === account) {
       setPublicKey(pub);
     }
   };
