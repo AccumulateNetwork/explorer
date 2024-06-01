@@ -1,32 +1,8 @@
 import { message } from 'antd';
-import { toChecksumAddress } from 'ethereumjs-util';
-import newKeccak from 'keccak';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { KeySignature } from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
-
-function keccak(name: string): (msg: Uint8Array) => Uint8Array {
-  return (msg) => {
-    const hash = newKeccak(name);
-    hash.update(Buffer.from(msg));
-    return hash.digest();
-  };
-}
-
-export const keccak224 = keccak('keccak224');
-export const keccak256 = keccak('keccak256');
-export const keccak384 = keccak('keccak384');
-export const keccak512 = keccak('keccak512');
-
-export function ethAddress(pub: Uint8Array | string) {
-  if (typeof pub === 'string') {
-    pub = Buffer.from(pub, 'hex');
-  }
-  const hash = keccak256(pub);
-  const addr = '0x' + Buffer.from(hash.slice(-20)).toString('hex');
-  return toChecksumAddress(addr);
-}
 
 /* global BigInt */
 

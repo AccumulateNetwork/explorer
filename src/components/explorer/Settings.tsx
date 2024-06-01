@@ -5,14 +5,17 @@ import { InfoTable } from '../common/InfoTable';
 
 const { Title } = Typography;
 
-function store<This, Value>(storage: Storage) {
+export function store<This, Value>(storage: Storage, prefix?: string) {
   return (
     { get }: ClassAccessorDecoratorTarget<This, Value>,
     { name }: ClassAccessorDecoratorContext<This, Value> & { name: string },
   ): ClassAccessorDecoratorResult<This, Value> => {
+    if (prefix) {
+      name = `${prefix}:${name}`;
+    }
     return {
       get() {
-        const s = localStorage.getItem(name);
+        const s = storage.getItem(name);
         if (!s) return get.call(this);
 
         try {
@@ -23,13 +26,13 @@ function store<This, Value>(storage: Storage) {
       },
 
       set(v: Value) {
-        localStorage.setItem(name, JSON.stringify(v));
+        storage.setItem(name, JSON.stringify(v));
       },
     };
   };
 }
 
-class SettingsClass {
+export const Settings = new (class {
   @store(localStorage)
   accessor enableDevMode: boolean = false;
 
@@ -55,6 +58,4 @@ class SettingsClass {
       </div>
     );
   }.bind(this);
-}
-
-export const Settings = new SettingsClass();
+})();

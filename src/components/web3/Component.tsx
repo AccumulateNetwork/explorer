@@ -21,7 +21,6 @@ import {
   message,
   notification,
 } from 'antd';
-import EthCrypto from 'eth-crypto';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { LuDatabaseBackup } from 'react-icons/lu';
@@ -39,11 +38,15 @@ import {
   RiUserLine,
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
-import Web3 from 'web3';
 
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
-import { Transaction } from 'accumulate.js/lib/core';
-import { ETHSignature } from 'accumulate.js/lib/core';
+import { errors } from 'accumulate.js';
+import { AccountRecord, NetworkStatus } from 'accumulate.js/lib/api_v3';
+import { Buffer } from 'accumulate.js/lib/common';
+import {
+  LiteIdentity,
+  Transaction,
+  TransactionArgs,
+} from 'accumulate.js/lib/core';
 import { Envelope } from 'accumulate.js/lib/messaging';
 
 import {
@@ -54,20 +57,15 @@ import {
   deriveBackupLDA,
   ethToUniversal,
 } from '../../utils/backup';
-import {
-  ethAddress,
-  ethToAccumulate,
-  joinBuffers,
-  rsvSigToDER,
-  sigMdHash,
-  truncateAddress,
-} from '../../utils/web3';
+import { ethToAccumulate, truncateAddress } from '../../utils/web3';
+import { CreditAmount } from '../common/Amount';
 import { Shared } from '../common/Shared';
 import { useAsyncEffect } from '../common/useAsync';
+import { Settings } from './Settings';
+import { Wallet } from './Wallet';
+import { Ethereum, ethAddress, isLedgerError, liteIDForEth } from './utils';
 
 const { Title, Paragraph, Text } = Typography;
-
-const Ethereum = 'ethereum' in window ? (window.ethereum as any) : void 0;
 
 const TabsPane = (Tabs as any).Pane;
 
@@ -88,6 +86,8 @@ if (!(window as any).decryptedBackupCache) {
     }
 }
 
+const wallet = new Wallet();
+
 export default function Component() {
   const { api } = useContext(Shared);
 
@@ -101,14 +101,14 @@ export default function Component() {
   const [ACME, setACME] = useState(null);
   const [ACMEError, setACMEError] = useState(null);
 
-  const [liteIdentity, setLiteIdentity] = useState(null);
+  const [liteIdentity, setLiteIdentity] = useState<LiteIdentity>(null);
   const [liteIdentityError, setLiteIdentityError] = useState(null);
   const [backupUrl, setBackupUrl] = useState(null);
   const [backupLDA, setBackupLDA] = useState(null);
   const [backupItems, setBackupItems] = useState([]);
   const [backupLDAError, setBackupLDAError] = useState(null);
 
-  const [publicKey, setPublicKey] = useState(null);
+  const [publicKey, setPublicKey] = useState<Uint8Array>(null);
 
   const [formAddCredits] = Form.useForm();
   const [formAddCreditsLiteTA, setFormAddCreditsLiteTA] = useState(null);
@@ -122,10 +122,9 @@ export default function Component() {
   const [liteTokenAccount, setLiteTokenAccount] = useState(null);
   const [liteTokenAccountError, setLiteTokenAccountError] = useState(null);
 
-  const [networkStatus, setNetworkStatus] = useState(null);
+  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>(null);
   const [networkStatusError, setNetworkStatusError] = useState(null);
 
-  const [web3, setWeb3] = useState(null);
   const [signWeb3Error, setSignWeb3Error] = useState(null);
 
   const [accAccount, setAccAccount] = useState(null);
@@ -145,9 +144,8 @@ export default function Component() {
 
   const connectWeb3 = async () => {
     if (Ethereum) {
-      setWeb3(new Web3(Ethereum));
+      wallet.connectWeb3();
       activate(injected);
-      localStorage.setItem('connected', 'Web3');
       setIsConnectWalletOpen(false);
       if (!isDashboardOpen) {
         toggleDashboard();
@@ -158,8 +156,7 @@ export default function Component() {
   };
 
   const disconnect = async () => {
-    localStorage.removeItem(`${account}`);
-    localStorage.removeItem('connected');
+    Settings.connected = null;
     deactivate();
   };
 
@@ -206,7 +203,7 @@ export default function Component() {
     setNetworkStatusError(null);
     try {
       const r = await api.networkStatus({ partition: 'directory' });
-      setNetworkStatus(r.oracle.price);
+      setNetworkStatus(r);
     } catch (error) {
       setNetworkStatus(null);
       setNetworkStatusError(`${error}`);
@@ -215,11 +212,9 @@ export default function Component() {
 
   // loadPublicKey loads ethereum public key from local storage
   const loadPublicKey = async (account) => {
-    let pub = localStorage.getItem(account);
-
-    // need more complex check here
-    if (pub && ethAddress(pub) === account) {
-      setPublicKey(pub);
+    const publicKey = Settings.getKey(account);
+    if (publicKey && ethAddress(publicKey) === account) {
+      setPublicKey(publicKey);
     }
   };
 
@@ -233,27 +228,9 @@ export default function Component() {
 
   // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
   const recoverPublicKey = async () => {
-    localStorage.removeItem(`${account}`);
-
-    let message = 'Login to Accumulate';
-    let signature = await signWeb3(web3.utils.utf8ToHex(message), true);
-    if (!signature) return;
-
-    console.log('Message:', message);
-    console.log('Signature:', signature);
-
-    let pub = EthCrypto.recoverPublicKey(
-      signature,
-      web3.eth.accounts.hashMessage(message),
-    );
-    console.log('Public key:', pub);
-    if (ethAddress(pub) !== account) {
-      notification.error({ message: 'Failed to recover public key' });
-      return;
-    }
-
-    setPublicKey(pub);
-    localStorage.setItem(account, pub);
+    const publicKey = await checkSignError(wallet.login(account));
+    setPublicKey(publicKey);
+    Settings.putKey(account, publicKey);
     setIsDashboardOpen(true);
   };
 
@@ -289,110 +266,66 @@ export default function Component() {
     setIsAddNoteOpen(false);
   };
 
-  const signAccumulate = async (args) => {
-    let upk = '04' + publicKey;
-
-    let sig = new ETHSignature({
-      signer: await ethToAccumulate(account),
-      signerVersion: 1,
-      timestamp: Date.now(),
-      publicKey: upk,
-    });
-
-    console.log('Signature:', sig);
-
-    let sigHash = await sigMdHash(sig);
-    console.log('SigMdHash:', sigHash.toString('hex'));
-
-    if (typeof args.asObject === 'function') {
-      args = args.asObject();
-    }
-    let tx = new Transaction({
-      header: {
-        ...args.header,
-        initiator: sigHash,
-      },
-      body: args.body,
-    });
-
-    console.log('Tx:', tx.asObject());
-
-    let hash = Buffer.from(await tx.hash());
-    console.log('TxHash:', hash.toString('hex'));
-
-    let message = joinBuffers([Buffer.from(sigHash), Buffer.from(hash)]);
-    console.log('SigMdHash+TxHash:', Buffer.from(message).toString('hex'));
-
-    let messageHash = Buffer.from(await sha256(message));
-
-    console.log('Hash(SigMdHash+TxHash):', messageHash.toString('hex'));
-
-    let signature = await signWeb3(web3.utils.bytesToHex(messageHash));
-
-    if (signature) {
-      console.log('Signature from MetaMask:', signature);
-
-      let signatureDER = await rsvSigToDER(signature);
-
-      console.log('Signature DER:', Buffer.from(signatureDER).toString('hex'));
-
-      sig.signature = signatureDER;
-      sig.transactionHash = hash;
-
-      let envelope = new Envelope({
-        signatures: [sig],
-        transaction: [tx],
-      });
-
-      console.log('Envelope:', envelope);
-
-      const r = await api.submit(envelope);
-      console.log(r);
-    }
-  };
-
-  const signWeb3 = async (message, personal = false) => {
-    setSignWeb3Error(null);
-    try {
-      if (Ethereum.isMetaMask && personal) {
-        return await Ethereum.request({
-          method: 'personal_sign',
-          params: [message, account],
-        });
-      }
-
-      return await web3.eth.sign(message, account);
-    } catch (error) {
-      // Extract the Ledger error
-      if (error.message.startsWith('Ledger device: ')) {
-        const i = error.message.indexOf('\n');
-        try {
-          const { originalError } = JSON.parse(error.message.substring(i + 1));
-          if (originalError) error = originalError;
-        } catch (_) {}
-      }
-
-      // Parse the status code
-      if ('statusCode' in error) {
-        // eslint-disable-next-line default-case
-        switch (error.statusCode) {
-          case 0x6d02:
-          case 0x6511:
-            error = new Error('Ledger: the Accumulate app is not running');
-            break;
-          case 0x530c:
-          case 0x6b0c:
-          case 0x5515:
-            error = new Error('Ledger: device is locked');
-            break;
-        }
-      }
-
-      notification.error({ message: `${error}` });
-      setSignWeb3Error(`${error}`);
+  const signAccumulate = async (args: Transaction | TransactionArgs) => {
+    const txn = args instanceof Transaction ? args : new Transaction(args);
+    const sig = await checkSignError(
+      wallet.signAccumulate(txn, {
+        publicKey,
+        signerVersion: 1,
+        timestamp: Date.now(),
+        signer: await liteIDForEth(publicKey),
+      }),
+    );
+    if (!sig?.signature) {
       return;
     }
+
+    const envelope = new Envelope({
+      transaction: [txn],
+      signatures: [sig],
+    });
+
+    console.log('Envelope:', envelope.asObject());
+    const r = await api.submit(envelope);
+    console.log(r);
   };
+
+  const checkSignError = async (promise) => {
+    try {
+      setSignWeb3Error(null);
+      return await promise;
+    } catch (error) {
+      error = isLedgerError(error);
+      if ('message' in error) {
+        error = error.message;
+      }
+      notification.error({ message: `${error}` });
+      setSignWeb3Error(`${error}`);
+    }
+  };
+
+  useAsyncEffect(
+    async (mounted) => {
+      setLiteIdentity(null);
+      setLiteIdentityError(null);
+
+      if (!publicKey) {
+        return;
+      }
+
+      try {
+        const url = await liteIDForEth(publicKey);
+        const { account } = (await api.query(url)) as AccountRecord;
+        if (!mounted() || !(account instanceof LiteIdentity)) {
+          return;
+        }
+        setLiteIdentity(account);
+      } catch (error) {
+        setLiteIdentityError(`${error}`);
+      }
+    },
+    [`${publicKey}`],
+  );
 
   useAsyncEffect(
     async (mounted) => {
@@ -404,7 +337,6 @@ export default function Component() {
         setPublicKey(null);
 
         const liteIdentity = await ethToAccumulate(account);
-        query(liteIdentity, setLiteIdentity, setLiteIdentityError);
         loadPublicKey(account);
         setAccAccount(liteIdentity);
 
@@ -452,9 +384,7 @@ export default function Component() {
   useEffect(() => {
     getNetworkStatus();
     query('ACME', setACME, setACMEError);
-    let connected = localStorage.getItem('connected');
-    if (connected !== null) {
-      setWeb3(new Web3(Ethereum));
+    if (wallet.connected) {
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -606,7 +536,7 @@ export default function Component() {
                       />
                     ) : (
                       <>
-                        {liteIdentity && liteIdentity.data ? (
+                        {liteIdentity ? (
                           <Paragraph>
                             <Title level={5}>
                               Credit Balance
@@ -621,10 +551,9 @@ export default function Component() {
                                 </Tooltip>
                               </IconContext.Provider>
                             </Title>
-                            {liteIdentity.data.creditBalance
-                              ? liteIdentity.data.creditBalance / 100
-                              : 0}
-                             credits
+                            <CreditAmount
+                              amount={liteIdentity.creditBalance || 0}
+                            />
                             <br />
                             <Button
                               shape="round"
@@ -763,7 +692,9 @@ export default function Component() {
                     </Title>
                     <Paragraph>
                       <Text copyable className="code">
-                        {publicKey ? publicKey : 'N/A'}
+                        {publicKey
+                          ? Buffer.from(publicKey).toString('hex')
+                          : 'N/A'}
                       </Text>
                     </Paragraph>
                   </TabsPane>
@@ -825,14 +756,20 @@ export default function Component() {
       >
         <List>
           <List.Item>
-            <Button block shape="round" size="large" onClick={connectWeb3}>
+            <Button
+              block
+              shape="round"
+              size="large"
+              onClick={connectWeb3}
+              disabled={!Ethereum}
+            >
               MetaMask
             </Button>
           </List.Item>
         </List>
         <List>
           <List.Item>
-            <Button block shape="round" size="large">
+            <Button block shape="round" size="large" disabled>
               WalletConnect
             </Button>
           </List.Item>
@@ -873,7 +810,7 @@ export default function Component() {
 
       <Modal
         title="Add Credits"
-        open={isAddCreditsOpen && account && liteIdentity}
+        open={isAddCreditsOpen && account && !!liteIdentity}
         onCancel={() => {
           setIsAddCreditsOpen(false);
           setSignWeb3Error(null);
@@ -977,19 +914,19 @@ export default function Component() {
               type="primary"
               shape="round"
               size="large"
-              disabled={
-                !liteTokenAccount ||
-                !formAddCreditsDestination ||
-                !formAddCreditsLiteTA ||
-                !liteTokenAccount.data ||
-                !liteTokenAccount.data.balance ||
-                formAddCreditsAmount <= 0 ||
-                (formAddCreditsAmount * 100 * Math.pow(10, 8)) /
-                  networkStatus.oracle.price >
-                  liteTokenAccount.data.balance
-                  ? true
-                  : false
-              }
+              // disabled={
+              //   !liteTokenAccount ||
+              //   !formAddCreditsDestination ||
+              //   !formAddCreditsLiteTA ||
+              //   !liteTokenAccount.data ||
+              //   !liteTokenAccount.data.balance ||
+              //   formAddCreditsAmount <= 0 ||
+              //   (formAddCreditsAmount * 100 * Math.pow(10, 8)) /
+              //     networkStatus.oracle.price >
+              //     liteTokenAccount.data.balance
+              //     ? true
+              //     : false
+              // }
             >
               Submit
             </Button>
