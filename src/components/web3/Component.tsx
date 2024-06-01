@@ -39,7 +39,6 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { errors } from 'accumulate.js';
 import { AccountRecord, NetworkStatus } from 'accumulate.js/lib/api_v3';
 import { Buffer } from 'accumulate.js/lib/common';
 import {
@@ -61,6 +60,7 @@ import { ethToAccumulate, truncateAddress } from '../../utils/web3';
 import { CreditAmount } from '../common/Amount';
 import { Shared } from '../common/Shared';
 import { useAsyncEffect } from '../common/useAsync';
+import { useSetting } from '../explorer/Settings';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { Ethereum, ethAddress, isLedgerError, liteIDForEth } from './utils';
@@ -86,16 +86,14 @@ if (!(window as any).decryptedBackupCache) {
     }
 }
 
-const wallet = new Wallet();
-
 export default function Component() {
   const { api } = useContext(Shared);
 
   const [isConnectWalletOpen, setIsConnectWalletOpen] = useState(false);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
-
-  const [isDashboardOpen, setIsDashboardOpen] = useState(
-    localStorage.getItem('isDashboardOpen') ? true : false,
+  const [isDashboardOpen, setIsDashboardOpen] = useSetting(
+    Settings,
+    'dashboardOpen',
   );
 
   const [ACME, setACME] = useState(null);
@@ -131,25 +129,14 @@ export default function Component() {
 
   const { account, activate, deactivate } = useWeb3React();
 
-  const toggleDashboard = () => {
-    if (!isDashboardOpen) {
-      localStorage.setItem('isDashboardOpen', 'true');
-    } else {
-      localStorage.removeItem('isDashboardOpen');
-    }
-    setIsDashboardOpen(!isDashboardOpen);
-  };
-
   const injected = new InjectedConnector({});
 
   const connectWeb3 = async () => {
     if (Ethereum) {
-      wallet.connectWeb3();
+      Wallet.connectWeb3();
       activate(injected);
       setIsConnectWalletOpen(false);
-      if (!isDashboardOpen) {
-        toggleDashboard();
-      }
+      setIsDashboardOpen(true);
     } else {
       message.warning('Web3 browser extension not found');
     }
@@ -228,7 +215,7 @@ export default function Component() {
 
   // recoverPublicKey recovers ethereum public key from signed message and saves it into the local storage
   const recoverPublicKey = async () => {
-    const publicKey = await checkSignError(wallet.login(account));
+    const publicKey = await checkSignError(Wallet.login(account));
     setPublicKey(publicKey);
     Settings.putKey(account, publicKey);
     setIsDashboardOpen(true);
@@ -269,7 +256,7 @@ export default function Component() {
   const signAccumulate = async (args: Transaction | TransactionArgs) => {
     const txn = args instanceof Transaction ? args : new Transaction(args);
     const sig = await checkSignError(
-      wallet.signAccumulate(txn, {
+      Wallet.signAccumulate(txn, {
         publicKey,
         signerVersion: 1,
         timestamp: Date.now(),
@@ -384,7 +371,7 @@ export default function Component() {
   useEffect(() => {
     getNetworkStatus();
     query('ACME', setACME, setACMEError);
-    if (wallet.connected) {
+    if (Wallet.connected) {
       activate(injected);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -420,7 +407,7 @@ export default function Component() {
           <Row align={'middle'}>
             <Col className="account-connected">
               {publicKey ? (
-                <Button shape="round" type="primary" onClick={toggleDashboard}>
+                <Button shape="round" type="primary" onClick={() => {}}>
                   <IconContext.Provider value={{ className: 'react-icons' }}>
                     <RiUserLine />
                   </IconContext.Provider>

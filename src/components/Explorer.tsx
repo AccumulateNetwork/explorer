@@ -43,6 +43,7 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
 import Web3 from './web3/Component';
+import { Login as Web3Login } from './web3/Login';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -254,16 +255,19 @@ export default function Explorer() {
               </Menu.SubMenu>
             </Menu>
 
-            <Dropdown
-              overlay={ExplorerSelect}
-              trigger={['click']}
-              className="network-badge"
-            >
-              <Button ghost>
-                <Badge status="success" text={shared.network.label} />
-                <DownOutlined />
-              </Button>
-            </Dropdown>
+            <div className="menu-right">
+              {!shared.network.mainnet && <Web3Login />}
+              <Dropdown
+                overlay={ExplorerSelect}
+                trigger={['click']}
+                className="network-badge"
+              >
+                <Button ghost>
+                  <Badge status="success" text={shared.network.label} />
+                  <DownOutlined />
+                </Button>
+              </Dropdown>
+            </div>
           </Header>
 
           {!shared.network.mainnet && (

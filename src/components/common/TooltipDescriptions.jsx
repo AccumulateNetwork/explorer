@@ -58,6 +58,9 @@ const tooltipDescs = {
     'The amount of ACME that are circulating in the market, calculated as total supply minus ACME owned by the Accumulate Foundation.',
   stakingType: 'Type of the staking',
   stakingRewards: 'Token account where staking rewards are deposited',
+
+  web3connect:
+    'Connect Web3 wallet to sign and submit txs on the Accumulate Network',
 };
 
 export default tooltipDescs;

@@ -588,16 +588,17 @@ h4.ant-typography .count {
   text-transform: uppercase;
 }
 
-.network-badge {
+.menu-right {
   display: none !important;
   position: absolute !important;
   top: 16px;
   right: 22px;
+  line-height: normal;
 }
 
 @media only screen and (min-width: 950px) {
-  .network-badge {
-    display: block !important;
+  .menu-right {
+    display: flex !important;
   }
 }
 

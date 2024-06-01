@@ -26,7 +26,7 @@ import {
   recoverPublicKey,
 } from './utils';
 
-export class Wallet {
+export const Wallet = new (class Wallet {
   #driver?: Driver;
 
   get connected() {
@@ -114,18 +114,15 @@ export class Wallet {
     message: Uint8Array | Transaction,
     opts: SignOptions & { publicKey: Uint8Array },
   ) {
-    const key = new Web3Key(this, opts.publicKey);
+    const key = new Web3Key(opts.publicKey);
     const signer = await Signer.forPage(opts.signer, key);
     return await signer.sign(message, opts);
   }
-}
+})();
 
 class Web3Key extends BaseKey {
-  readonly #wallet: Wallet;
-
-  constructor(wallet: Wallet, publicKey: Uint8Array) {
+  constructor(publicKey: Uint8Array) {
     super(new EthAddress(publicKey));
-    this.#wallet = wallet;
   }
 
   async signRaw(
@@ -134,7 +131,7 @@ class Web3Key extends BaseKey {
   ): Promise<Uint8Array> {
     const sigMdHash = await sha256(encode(signature));
     const hash = await sha256(Buffer.concat([sigMdHash, message]));
-    return await this.#wallet.signEth(this.address, hash);
+    return await Wallet.signEth(this.address, hash);
   }
 }
 

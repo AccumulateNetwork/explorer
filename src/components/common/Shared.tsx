@@ -5,14 +5,20 @@ import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 import { Settings } from '../explorer/Settings';
 import { Network, getNetwork } from './networks';
 
-type BroadcastMessage = DidChangeNetwork;
+type BroadcastMessage = DidChangeNetwork | DidChangeSetting;
 
 interface DidChangeNetwork {
   type: 'didChangeNetwork';
   networkID: string;
 }
 
+interface DidChangeSetting {
+  type: 'didChangeSetting';
+  name: string;
+}
+
 const broadcast = new BroadcastChannel('shared-broadcast');
+const broadcastListeners = [];
 
 export class Context {
   static readonly canChangeNetwork =
@@ -57,9 +63,20 @@ export class Context {
 
   static postBroadcast(message: BroadcastMessage) {
     broadcast.postMessage(message);
+    broadcastListeners.forEach((fn) => {
+      try {
+        fn(message);
+      } catch (error) {
+        console.log(error);
+      }
+    });
   }
 
   static onBroadcast(fn: (message: BroadcastMessage) => void) {
+    // Get messages from this window
+    broadcastListeners.push(fn);
+
+    // Get messages from other windows
     broadcast.addEventListener('message', (msg) => fn(msg.data));
   }
 }
