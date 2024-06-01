@@ -25,7 +25,8 @@ header {
   margin: 0;
 }
 
-header.testnet, header.testnet > .ant-menu {
+header.testnet,
+header.testnet > .ant-menu {
   background-color: #402152;
 }
 
@@ -45,7 +46,6 @@ main {
     width: 100vw;
   }
 }
-
 
 .logo {
   height: 38px;

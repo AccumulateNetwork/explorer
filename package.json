@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
+    "@babel/plugin-proposal-decorators": "^7.24.6",
     "@vitejs/plugin-react": "^4.3.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
@@ -24,6 +25,9 @@
     "react-syntax-highlighter": "^15.5.0",
     "rxjs": "^7.8.1",
     "web3": "^1.8.2"
+  },
+  "overrides": {
+    "esbuild": "^0.21.0"
   },
   "devDependencies": {
     "@ledgerhq/hw-transport": "^6.30.6",
@@ -57,6 +61,7 @@
     "singleQuote": true,
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
+    "importOrderParserPlugins": ["typescript", "jsx", "decorators", "decoratorAutoAccessors"],
     "importOrder": [
       "<THIRD_PARTY_MODULES>",
       "^accumulate.js",

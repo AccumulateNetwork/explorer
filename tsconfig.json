@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
-    "target": "ESNext",
+    "target": "es2020",
     "types": ["vite/client"],
     "isolatedModules": true,
     "moduleResolution": "Node",
-    "module": "ESNext",
+    "module": "es2020",
     "jsx": "react",
     "allowSyntheticDefaultImports": true,
     "noEmit": true,
     "allowJs": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
   },
   "include": ["src"]
 }

@@ -10,12 +10,13 @@ import {
   isFavourite,
   removeFavourite,
 } from '../common/Favourites';
+import { Settings } from './Settings';
 
 const { Title } = Typography;
 
 const Favourites = () => {
   const [favourites, setFavourites] = useState(
-    JSON.parse(localStorage.getItem('favourites') || '[]').map((address) => {
+    Settings.favourites.map((address) => {
       return { address, star: true };
     }),
   );

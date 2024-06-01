@@ -38,7 +38,7 @@ import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import Network from './explorer/Network';
-import Settings from './explorer/Settings';
+import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
@@ -282,7 +282,7 @@ export default function Explorer() {
               <Route path="/favourites" children={<Favourites />} />
               <Route path="/blocks" children={<MinorBlocks />} />
               <Route path="/network" children={<Network />} />
-              <Route path="/settings" children={<Settings />} />
+              <Route path="/settings" children={<Settings.Edit />} />
 
               {!shared.network.mainnet && (
                 <Route exact path="/faucet" children={<Faucet />} />

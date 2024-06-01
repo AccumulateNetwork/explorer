@@ -1,3 +1,5 @@
+import { Settings } from '../explorer/Settings';
+
 function isFavourite(address) {
   const favourites = loadFavourites();
   return favourites.includes(address);
@@ -18,11 +20,11 @@ function removeFavourite(address) {
 }
 
 function saveFavourites(favourites) {
-  localStorage.setItem('favourites', JSON.stringify(favourites));
+  Settings.favourites = favourites;
 }
 
 function loadFavourites() {
-  return JSON.parse(localStorage.getItem('favourites')) || [];
+  return Settings.favourites;
 }
 
 export { isFavourite, addFavourite, removeFavourite, loadFavourites };

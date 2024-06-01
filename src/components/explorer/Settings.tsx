@@ -5,50 +5,56 @@ import { InfoTable } from '../common/InfoTable';
 
 const { Title } = Typography;
 
-export const Settings = new (class Settings {
-  get enableDevMode(): boolean {
-    return this.#get('enable-dev-mode', false);
-  }
-  set enableDevMode(v: boolean) {
-    this.#set('enable-dev-mode', v);
-  }
-
-  get networkName(): string {
-    return this.#get('network', '');
-  }
-  set networkName(v: string) {
-    this.#set('network', v);
-  }
-
-  #get(name, def) {
-    const s = localStorage.getItem(name);
-    if (!s) return def;
-
-    try {
-      return JSON.parse(s);
-    } catch (_) {
-      return def;
-    }
-  }
-
-  #set(name, value) {
-    localStorage.setItem(name, JSON.stringify(value));
-  }
-})();
-
-export default function () {
+function store<This, Value>(storage: Storage) {
   return (
-    <div>
-      <Title level={2}>Settings</Title>
+    { get }: ClassAccessorDecoratorTarget<This, Value>,
+    { name }: ClassAccessorDecoratorContext<This, Value> & { name: string },
+  ): ClassAccessorDecoratorResult<This, Value> => {
+    return {
+      get() {
+        const s = localStorage.getItem(name);
+        if (!s) return get.call(this);
 
-      <InfoTable>
-        <Descriptions.Item key="dev-mode" label="Developer mode">
-          <Switch
-            defaultChecked={Settings.enableDevMode}
-            onChange={(v) => (Settings.enableDevMode = v)}
-          />
-        </Descriptions.Item>
-      </InfoTable>
-    </div>
-  );
+        try {
+          return JSON.parse(s);
+        } catch (_) {
+          return get.call(this);
+        }
+      },
+
+      set(v: Value) {
+        localStorage.setItem(name, JSON.stringify(v));
+      },
+    };
+  };
 }
+
+class SettingsClass {
+  @store(localStorage)
+  accessor enableDevMode: boolean = false;
+
+  @store(localStorage)
+  accessor networkName: string = 'mainnet';
+
+  @store(localStorage)
+  accessor favourites: string[] = [];
+
+  readonly Edit = function () {
+    return (
+      <div>
+        <Title level={2}>Settings</Title>
+
+        <InfoTable>
+          <Descriptions.Item key="dev-mode" label="Developer mode">
+            <Switch
+              defaultChecked={this.enableDevMode}
+              onChange={(v) => (this.enableDevMode = v)}
+            />
+          </Descriptions.Item>
+        </InfoTable>
+      </div>
+    );
+  }.bind(this);
+}
+
+export const Settings = new SettingsClass();
