@@ -11,12 +11,12 @@ import {
 import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
 import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
+import tooltipDescs from '../../utils/lang';
 import { CompactList } from '../common/CompactList';
 import { EntryHash } from '../common/EntryHash';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { describeTimestamp } from './timestamp';
 
 const { Title, Text } = Typography;

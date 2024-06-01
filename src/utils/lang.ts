@@ -1,4 +1,4 @@
-const tooltipDescs = {
+export const tooltip = {
   tokenAcctUrl:
     "The URL of the token account, where an account's balances and transactions are organized for a particular token",
   tokenUrl: 'The URL of the token',
@@ -59,8 +59,19 @@ const tooltipDescs = {
   stakingType: 'Type of the staking',
   stakingRewards: 'Token account where staking rewards are deposited',
 
-  web3connect:
-    'Connect Web3 wallet to sign and submit txs on the Accumulate Network',
+  web3: {
+    connect:
+      'Connect Web3 wallet to sign and submit txs on the Accumulate Network',
+
+    liteIdentity:
+      'Accumulate Lite Identity is an account associated with your Ethereum key',
+
+    credits:
+      'Credits are used to pay for network transactions. You can add credits by converting ACME tokens.',
+
+    backup:
+      'Backup Account is a lite data account used to backup your settings',
+  },
 };
 
-export default tooltipDescs;
+export default tooltip;

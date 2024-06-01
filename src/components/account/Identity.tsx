@@ -10,6 +10,7 @@ import {
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { CreditAmount } from '../common/Amount';
@@ -17,7 +18,6 @@ import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory } from './Directory';

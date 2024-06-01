@@ -1,5 +1,5 @@
 import { Descriptions, Switch, Typography } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { InfoTable } from '../common/InfoTable';
 import { Shared } from '../common/Shared';
@@ -12,11 +12,17 @@ export function useSetting<V, K extends keyof V & string>(
 ): [V[K], (x: V[K]) => void] {
   const [value, setValue] = useState(v[k]);
   const { name } = store.resolve(v, { name: k });
-  Shared.Context.onBroadcast((msg) => {
-    if (msg.type === 'didChangeSetting' && msg.name === name) {
-      setValue(v[k]);
-    }
-  });
+
+  useEffect(() => {
+    let mounted = true;
+    Shared.Context.onBroadcast((msg) => {
+      if (mounted && msg.type === 'didChangeSetting' && msg.name === name) {
+        setValue(v[k]);
+      }
+      return () => (mounted = false);
+    });
+  }, []);
+
   return [value, (x) => (v[k] = x)];
 }
 

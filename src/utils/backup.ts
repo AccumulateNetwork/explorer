@@ -1,8 +1,10 @@
 import { encrypt } from 'eth-sig-util';
 
-import { PublicKeyHashAddress } from 'accumulate.js';
+import { Address, PublicKeyHashAddress } from 'accumulate.js';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { SignatureType, Transaction } from 'accumulate.js/lib/core';
+
+import { EthPublicKey } from '../components/web3/Wallet';
 
 // // Bug fix
 // const bufferFrom = Buffer.from
@@ -128,23 +130,16 @@ export function ethToUniversal(address) {
   return new PublicKeyHashAddress(SignatureType.ETH, bytes);
 }
 
-/**
- * Derives the URL of the LDA used to backup the given AIP-001 address.
- * @param {Address} address
- */
-export async function deriveBackupLDA(address) {
+export async function deriveBackupLDA(publicKey: Uint8Array) {
   // Simulate creating an LDA with H(address, 'backup') as the first extid
-  const v = await sha256(await sha256(await backupToken(address)));
+  const addr = new EthPublicKey(publicKey);
+  const v = await sha256(await sha256(await backupToken(addr)));
   return `acc://${Buffer.from(v).toString('hex')}`;
 }
 
-/**
- * Constructs the WriteData transaction needed to create the LDA used to backup
- * the given AIP-001 address.
- * @param {Address} address
- */
-export async function createBackupLDATxn(address) {
-  const token = await backupToken(address);
+export async function initializeBackupTxn(publicKey: Uint8Array) {
+  const addr = new EthPublicKey(publicKey);
+  const token = await backupToken(addr);
   const chainID = await sha256(await sha256(token));
   return new Transaction({
     header: {
@@ -160,11 +155,7 @@ export async function createBackupLDATxn(address) {
   });
 }
 
-/**
- * Derives the token for the LDA used to backup the given AIP-001 address.
- * @param {Address} address
- */
-async function backupToken(address) {
+async function backupToken(address: Address) {
   if (!address.publicKeyHash) {
     throw new Error('cannot use address: has no hash');
   }

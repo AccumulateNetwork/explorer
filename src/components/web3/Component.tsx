@@ -51,10 +51,10 @@ import { Envelope } from 'accumulate.js/lib/messaging';
 import {
   backupIsSupported,
   createBackupEntry,
-  createBackupLDATxn,
   decryptBackupEntry,
   deriveBackupLDA,
   ethToUniversal,
+  initializeBackupTxn,
 } from '../../utils/backup';
 import { ethToAccumulate, truncateAddress } from '../../utils/web3';
 import { CreditAmount } from '../common/Amount';
@@ -66,8 +66,6 @@ import { Wallet } from './Wallet';
 import { Ethereum, ethAddress, isLedgerError, liteIDForEth } from './utils';
 
 const { Title, Paragraph, Text } = Typography;
-
-const TabsPane = (Tabs as any).Pane;
 
 // Cache decrypted messages to avoid asking the user to decrypt every single
 // time the component renders. This is ok as long as the messages aren't
@@ -242,7 +240,7 @@ export default function Component() {
 
   const createBackupLDA = async () => {
     await signAccumulate(
-      await createBackupLDATxn(await ethToUniversal(account)),
+      await initializeBackupTxn(await ethToUniversal(account)),
     );
   };
 
@@ -327,8 +325,11 @@ export default function Component() {
         loadPublicKey(account);
         setAccAccount(liteIdentity);
 
+        if (!publicKey) {
+          return;
+        }
         const entries = [];
-        const backupLDA = await deriveBackupLDA(await ethToUniversal(account));
+        const backupLDA = await deriveBackupLDA(publicKey);
         setBackupUrl(backupLDA);
         await query(backupLDA, setBackupLDA, setBackupLDAError);
         await queryBackup(
@@ -451,152 +452,9 @@ export default function Component() {
             <Row>
               <Col className="card-container">
                 <Tabs defaultActiveKey="account" type="card">
-                  <TabsPane
-                    tab={
-                      <span>
-                        <IconContext.Provider
-                          value={{ className: 'react-icons' }}
-                        >
-                          <RiAccountCircleLine />
-                        </IconContext.Provider>
-                        Account
-                      </span>
-                    }
-                    key="account"
-                  >
-                    <Title level={5}>
-                      Accumulate Lite Identity
-                      <IconContext.Provider
-                        value={{ className: 'react-icons' }}
-                      >
-                        <Tooltip
-                          overlayClassName="explorer-tooltip"
-                          title="Accumulate Lite Identity is an account associated with your Ethereum key"
-                        >
-                          <RiQuestionLine />
-                        </Tooltip>
-                      </IconContext.Provider>
-                    </Title>
-                    <Paragraph>
-                      {liteIdentity ? (
-                        <Link to={'/acc/' + accAccount.replace('acc://', '')}>
-                          {accAccount}
-                        </Link>
-                      ) : (
-                        <Text>{accAccount}</Text>
-                      )}
-                    </Paragraph>
-                    <Divider />
-                    {liteIdentityError ? (
-                      <Alert
-                        type="warning"
-                        message={
-                          <Text>
-                            <strong>Lite Identity does not exist yet</strong>
-                            <br />
-                            To create a lite identity send ACME to{' '}
-                            <Text copyable={{ text: `${accAccount}/ACME` }}>
-                              <Text mark>{`${accAccount}/ACME`}</Text>
-                            </Text>
-                            <br />
-                            You can also{' '}
-                            <a
-                              href="https://bridge.accumulatenetwork.io/release"
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              <strong>
-                                bridge WACME
-                                <IconContext.Provider
-                                  value={{
-                                    className: 'react-icons react-icons-end',
-                                  }}
-                                >
-                                  <RiExternalLinkLine />
-                                </IconContext.Provider>
-                              </strong>
-                            </a>{' '}
-                            from Ethereum or Arbitrum, using the above address
-                            as the destination.
-                          </Text>
-                        }
-                      />
-                    ) : (
-                      <>
-                        {liteIdentity ? (
-                          <Paragraph>
-                            <Title level={5}>
-                              Credit Balance
-                              <IconContext.Provider
-                                value={{ className: 'react-icons' }}
-                              >
-                                <Tooltip
-                                  overlayClassName="explorer-tooltip"
-                                  title="Credits are used to pay for network transactions. You can add credits by converting ACME tokens."
-                                >
-                                  <RiQuestionLine />
-                                </Tooltip>
-                              </IconContext.Provider>
-                            </Title>
-                            <CreditAmount
-                              amount={liteIdentity.creditBalance || 0}
-                            />
-                            <br />
-                            <Button
-                              shape="round"
-                              type="primary"
-                              onClick={() => setIsAddCreditsOpen(true)}
-                            >
-                              <IconContext.Provider
-                                value={{ className: 'react-icons' }}
-                              >
-                                <RiAddCircleFill />
-                              </IconContext.Provider>
-                              Add credits
-                            </Button>
-                          </Paragraph>
-                        ) : (
-                          <Skeleton paragraph={false} />
-                        )}
-                      </>
-                    )}
-                    <Paragraph></Paragraph>
-                  </TabsPane>
                   {backupIsSupported() && (
-                    <TabsPane
-                      tab={
-                        <span>
-                          <IconContext.Provider
-                            value={{ className: 'react-icons' }}
-                          >
-                            <LuDatabaseBackup />
-                          </IconContext.Provider>
-                          Backup
-                        </span>
-                      }
-                      key="backup"
-                    >
-                      <Title level={5}>
-                        Backup Account
-                        <IconContext.Provider
-                          value={{ className: 'react-icons' }}
-                        >
-                          <Tooltip
-                            overlayClassName="explorer-tooltip"
-                            title="Backup Account is a lite data account used to backup your settings"
-                          >
-                            <RiQuestionLine />
-                          </Tooltip>
-                        </IconContext.Provider>
-                      </Title>
+                    <Tabs.TabPane>
                       <Paragraph>
-                        {backupLDA ? (
-                          <Link to={'/acc/' + backupUrl.replace('acc://', '')}>
-                            {backupUrl}
-                          </Link>
-                        ) : (
-                          <Text>{backupUrl}</Text>
-                        )}
                         <Divider />
                         {backupLDAError ? (
                           <Button
@@ -631,9 +489,9 @@ export default function Component() {
                           </>
                         )}
                       </Paragraph>
-                    </TabsPane>
+                    </Tabs.TabPane>
                   )}
-                  <TabsPane
+                  <Tabs.TabPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -684,8 +542,8 @@ export default function Component() {
                           : 'N/A'}
                       </Text>
                     </Paragraph>
-                  </TabsPane>
-                  <TabsPane
+                  </Tabs.TabPane>
+                  <Tabs.TabPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -711,8 +569,8 @@ export default function Component() {
                         </Tooltip>
                       </IconContext.Provider>
                     </Title>
-                  </TabsPane>
-                  <TabsPane
+                  </Tabs.TabPane>
+                  <Tabs.TabPane
                     tab={
                       <span>
                         <IconContext.Provider
@@ -727,7 +585,7 @@ export default function Component() {
                     key="actions"
                   >
                     <Title level={5}>Transactions</Title>
-                  </TabsPane>
+                  </Tabs.TabPane>
                 </Tabs>
               </Col>
             </Row>

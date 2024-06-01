@@ -114,15 +114,15 @@ export const Wallet = new (class Wallet {
     message: Uint8Array | Transaction,
     opts: SignOptions & { publicKey: Uint8Array },
   ) {
-    const key = new Web3Key(opts.publicKey);
+    const key = new Web3Signer(opts.publicKey);
     const signer = await Signer.forPage(opts.signer, key);
     return await signer.sign(message, opts);
   }
 })();
 
-class Web3Key extends BaseKey {
+export class Web3Signer extends BaseKey {
   constructor(publicKey: Uint8Array) {
-    super(new EthAddress(publicKey));
+    super(new EthPublicKey(publicKey));
   }
 
   async signRaw(
@@ -135,7 +135,7 @@ class Web3Key extends BaseKey {
   }
 }
 
-class EthAddress extends PublicKeyAddress {
+export class EthPublicKey extends PublicKeyAddress {
   constructor(publicKey: Uint8Array) {
     if (publicKey[0] != 0x04) {
       publicKey = Buffer.concat([new Uint8Array([0x04]), publicKey]);

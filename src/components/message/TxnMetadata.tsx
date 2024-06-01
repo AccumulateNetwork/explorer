@@ -11,11 +11,11 @@ import {
 import { MessageRecord } from 'accumulate.js/lib/api_v3';
 import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
+import tooltipDescs from '../../utils/lang';
 import { Content } from '../common/Content';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 
 const { Title, Text } = Typography;
 

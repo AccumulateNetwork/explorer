@@ -38,12 +38,13 @@ import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import Network from './explorer/Network';
-import { Settings } from './explorer/Settings';
+import { Settings, useSetting } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import Web3 from './web3/Component';
+import { Dashboard as Web3Dashboard } from './web3/Dashboard';
 import { Login as Web3Login } from './web3/Login';
+import { Settings as Web3Settings } from './web3/Settings';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -54,6 +55,7 @@ export default function Explorer() {
     message.error('API call failed');
   };
   const [shared, setShared] = useState(new Shared.Context(onApiError));
+  const [web3DashOpen] = useSetting(Web3Settings, 'dashboardOpen');
 
   // Run once
   useEffect(() => {
@@ -271,8 +273,11 @@ export default function Explorer() {
           </Header>
 
           {!shared.network.mainnet && (
-            <Header className="web3">
-              <Web3 />
+            <Header
+              className="web3"
+              style={{ display: web3DashOpen ? null : 'none' }}
+            >
+              <Web3Dashboard />
             </Header>
           )}
 

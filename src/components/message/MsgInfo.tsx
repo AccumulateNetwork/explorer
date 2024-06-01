@@ -10,12 +10,12 @@ import {
 import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
 import { MessageType } from 'accumulate.js/lib/messaging';
 
+import tooltipDescs from '../../utils/lang';
 import { CompactList } from '../common/CompactList';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { describeTimestamp } from './timestamp';
 
 const { Title } = Typography;

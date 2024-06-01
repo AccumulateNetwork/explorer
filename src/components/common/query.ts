@@ -13,6 +13,7 @@ import {
   DelegateSearchQueryArgsWithType,
   DirectoryQueryArgsWithType,
   ErrorRecord,
+  JsonRpcClient,
   KeyRecord,
   MajorBlockRecord,
   MessageHashSearchQueryArgsWithType,
@@ -24,9 +25,12 @@ import {
   QueryArgs,
   Record,
   RecordRange,
+  RpcError,
   TxIDRecord,
   UrlRecord,
 } from 'accumulate.js/lib/api_v3';
+import { Error as Error2, Status } from 'accumulate.js/lib/errors';
+import { Envelope, EnvelopeArgs } from 'accumulate.js/lib/messaging';
 
 import { Shared } from './Shared';
 import { useAsyncEffect } from './useAsync';
@@ -290,4 +294,75 @@ class CallNode<T1, T2> implements Thenable<T2> {
     this.#onreject.push((x) => node.call(x));
     return node;
   }
+}
+
+const waitTime = 500;
+const waitLimit = 30_000 / waitTime;
+
+export async function submitAndWait(api: JsonRpcClient, env: EnvelopeArgs) {
+  const results = await api.submit(env);
+  const error = results.filter((x) => !x.success).map((x) => x.message);
+  if (error.length) {
+    throw new Error(error.join('\n'));
+  }
+
+  await waitForEach(
+    api,
+    results.map((r) => r.status.txID),
+  );
+}
+
+async function waitFor(api: JsonRpcClient, txid: TxID | URLArgs) {
+  const r = await waitForSingle(api, txid);
+  await waitForEach(api, r.produced?.records?.map((r) => r.value) || []);
+  return r;
+}
+
+async function waitForEach(api: JsonRpcClient, txids: TxID[]) {
+  await Promise.all(txids.map((id) => id && waitFor(api, id)));
+}
+
+async function waitForSingle(api: JsonRpcClient, txid: TxID | URLArgs) {
+  console.log(`Waiting for ${txid}`);
+  for (let i = 0; i < waitLimit; i++) {
+    try {
+      const r = (await api.query(txid)) as MessageRecord;
+      if (r.status === Status.Delivered) {
+        return r;
+      }
+
+      // Status is pending or unknown
+      await new Promise((r) => setTimeout(r, waitTime));
+      continue;
+    } catch (error) {
+      const err2 = isClientError(error);
+      if (err2.code === Status.NotFound) {
+        // Not found
+        await new Promise((r) => setTimeout(r, waitTime));
+        continue;
+      }
+
+      throw new Error(`Transaction failed: ${err2.message}`);
+    }
+  }
+
+  throw new Error(
+    `Transaction still missing or pending after ${(waitTime * waitLimit) / 1000} seconds`,
+  );
+}
+
+function isClientError(error: any) {
+  if (!(error instanceof RpcError)) throw error;
+  if (error.code > -33000) throw error;
+
+  let err2;
+  try {
+    err2 = new Error2(error.data);
+  } catch (_) {
+    throw error;
+  }
+  if (err2.code && err2.code >= 500) {
+    throw err2;
+  }
+  return err2;
 }

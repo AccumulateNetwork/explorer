@@ -13,6 +13,7 @@ import { MessageRecord } from 'accumulate.js/lib/api_v3';
 import { VoteType } from 'accumulate.js/lib/core';
 import { SignatureMessage } from 'accumulate.js/lib/messaging';
 
+import tooltipDescs from '../../utils/lang';
 import { AccTitle } from '../common/AccTitle';
 import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
@@ -20,7 +21,6 @@ import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { MsgInfo } from './MsgInfo';
 import { SigHeader } from './SigHeader';
 

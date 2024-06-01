@@ -12,6 +12,7 @@ import {
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
@@ -20,7 +21,6 @@ import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import { describeParent } from './parent';
 

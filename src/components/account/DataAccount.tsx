@@ -10,13 +10,13 @@ import {
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { DataLedger } from './DataLedger';

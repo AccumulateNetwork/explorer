@@ -7,7 +7,7 @@ import { FaWallet } from 'react-icons/fa';
 import { RiQuestionLine } from 'react-icons/ri';
 import { connect } from 'rxjs';
 
-import tooltipDescs from '../common/TooltipDescriptions';
+import Tooltips from '../../utils/lang';
 import { useSetting } from '../explorer/Settings';
 import { Connect } from './Connect';
 import { Settings } from './Settings';
@@ -51,7 +51,7 @@ export function Login() {
     <>
       <Tooltip
         overlayClassName="explorer-tooltip"
-        title={connected ? truncateAddress(account) : tooltipDescs.web3connect}
+        title={connected ? truncateAddress(account) : Tooltips.web3.connect}
       >
         <Button
           shape="circle"

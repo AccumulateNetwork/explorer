@@ -7,13 +7,13 @@ import { core } from 'accumulate.js';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import tooltipDescs from '../../utils/lang';
 import { isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import { RawData } from '../common/RawData';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { describeProperty } from '../common/properties';
 import { Settings } from '../explorer/Settings';
 import { AccChains } from './AccChains';

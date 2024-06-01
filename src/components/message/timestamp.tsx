@@ -9,9 +9,9 @@ import { Link } from 'react-router-dom';
 
 import { TxID, URL } from 'accumulate.js';
 
+import tooltipDescs from '../../utils/lang';
 import { Nobr } from '../common/Nobr';
 import { Shared } from '../common/Shared';
-import tooltipDescs from '../common/TooltipDescriptions';
 import { useAsyncEffect } from '../common/useAsync';
 
 const { Text } = Typography;
