@@ -1,3 +1,5 @@
+import { message } from 'antd';
+import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
 import Driver from 'web3';
 
@@ -9,12 +11,7 @@ import {
   Signer,
 } from 'accumulate.js';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
-import {
-  Signature,
-  SignatureType,
-  Transaction,
-  TransactionArgs,
-} from 'accumulate.js/lib/core';
+import { Signature, SignatureType, Transaction } from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
 
 import { Settings } from './Settings';
@@ -26,11 +23,17 @@ import {
   recoverPublicKey,
 } from './utils';
 
+type EncryptedData = Omit<EthEncryptedData, 'version'>;
+
 export const Wallet = new (class Wallet {
   #driver?: Driver;
 
   get connected() {
     return !!this.#driver;
+  }
+
+  get canEncrypt() {
+    return Ethereum.isMetaMask;
   }
 
   constructor() {
@@ -78,15 +81,16 @@ export const Wallet = new (class Wallet {
     message: string | Uint8Array,
     personal = false,
   ) {
+    if (!this.connected) {
+      this.connectWeb3();
+    }
+
     if (typeof account !== 'string') {
       const short = Buffer.from(account.publicKeyHash.slice(-20));
       account = toChecksumAddress(`0x${short.toString('hex')}`);
     }
     if (typeof message !== 'string') {
-      message = Buffer.from(message).toString('hex');
-    }
-    if (!message.startsWith('0x')) {
-      message = '0x' + message;
+      message = '0x' + Buffer.from(message).toString('hex');
     }
 
     if (Ethereum.isMetaMask && personal) {
@@ -117,6 +121,42 @@ export const Wallet = new (class Wallet {
     const key = new Web3Signer(opts.publicKey);
     const signer = await Signer.forPage(opts.signer, key);
     return await signer.sign(message, opts);
+  }
+
+  async decrypt(account: string, data: EncryptedData): Promise<string> {
+    if (!this.connected) {
+      this.connectWeb3();
+    }
+    if (!this.canEncrypt) {
+      throw new Error('Encryption not supported for current Web3 connector');
+    }
+
+    const s = JSON.stringify({
+      version: 'x25519-xsalsa20-poly1305',
+      ...data,
+    });
+    const message = '0x' + Buffer.from(s).toString('hex');
+    return await Ethereum.request({
+      method: 'eth_decrypt',
+      params: [message, account],
+    });
+  }
+
+  async encrypt(account: string, data: string): Promise<EncryptedData> {
+    if (!this.connected) {
+      this.connectWeb3();
+    }
+    if (!this.canEncrypt) {
+      throw new Error('Encryption not supported for current Web3 connector');
+    }
+
+    const key = await Ethereum.request({
+      method: 'eth_getEncryptionPublicKey',
+      params: [account],
+    });
+    const encrypted = encrypt(key, { data }, 'x25519-xsalsa20-poly1305');
+    delete encrypted.version;
+    return encrypted;
   }
 })();
 

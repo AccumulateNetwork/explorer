@@ -3,13 +3,13 @@ import {
   Alert,
   Button,
   Divider,
+  Form,
   Skeleton,
   Tabs,
   TabsProps,
   Typography,
 } from 'antd';
 import React, { useContext, useState } from 'react';
-import { IconContext } from 'react-icons';
 import { LuDatabaseBackup } from 'react-icons/lu';
 import {
   RiAccountCircleLine,
@@ -20,9 +20,10 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
-import { RecordType } from 'accumulate.js/lib/api_v3';
+import { RecordRange, RecordType } from 'accumulate.js/lib/api_v3';
 import {
   AccountType,
+  DataEntryType,
   LiteDataAccount,
   LiteIdentity,
   Transaction,
@@ -31,19 +32,15 @@ import {
 import { Status } from 'accumulate.js/lib/errors';
 
 import { tooltip } from '../../utils/lang';
+import { TxnEntry, isRecordOfDataTxn } from '../../utils/types';
 import { CreditAmount } from '../common/Amount';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
-import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { queryEffect, submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import {
-  Backup as BackupValues,
-  backupIsSupported,
-  deriveBackupLDA,
-  initializeBackupTxn,
-} from './Backup';
+import { AddNote } from './AddNote';
+import { Backup, Entry } from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { isLedgerError, liteIDForEth } from './utils';
@@ -58,6 +55,9 @@ export function Dashboard() {
   const [identityUrl, setIdentityUrl] = useState<URL>();
   const [backupUrl, setBackupUrl] = useState<URL>();
 
+  const [openAddNote, setOpenAddNote] = useState(false);
+  const [formAddNote] = Form.useForm();
+
   useAsyncEffect(
     async (mounted) => {
       const publicKey = Settings.getKey(account);
@@ -67,7 +67,7 @@ export function Dashboard() {
 
       const [lidUrl, backupUrl] = await Promise.all([
         liteIDForEth(publicKey),
-        deriveBackupLDA(publicKey),
+        Backup.chainFor(publicKey),
       ]);
       if (!mounted()) {
         return;
@@ -79,7 +79,7 @@ export function Dashboard() {
     [account],
   );
 
-  const signAccumulate = async (args: TransactionArgs) => {
+  const sign = async (args: TransactionArgs) => {
     setError(null);
 
     try {
@@ -109,12 +109,44 @@ export function Dashboard() {
     }
   };
 
+  const initBackups = async () => {
+    const publicKey = Settings.getKey(account);
+    if (!publicKey) {
+      setError('Public key is not known');
+      return;
+    }
+    await sign(await Backup.initialize(publicKey));
+  };
+
+  const addNote = async () => {
+    const publicKey = Settings.getKey(account);
+    if (!publicKey) {
+      setError('Public key is not known');
+      return;
+    }
+
+    const entry = await Backup.encrypt(account, {
+      type: 'note',
+      value: formAddNote.getFieldValue('value'),
+    });
+
+    await sign({
+      header: {
+        principal: await Backup.chainFor(publicKey),
+      },
+      body: {
+        type: 'writeData',
+        entry,
+      },
+    });
+  };
+
   const tabs: TabsProps['items'] = [
     {
       key: 'account',
       label: <WithIcon icon={RiAccountCircleLine}>Account</WithIcon>,
       children: (
-        <Identity
+        <Dashboard.Identity
           url={identityUrl}
           addCredits={() => {
             throw new Error('TODO');
@@ -124,19 +156,37 @@ export function Dashboard() {
     },
     {
       key: 'backup',
-      disabled: !backupIsSupported(),
+      disabled: !Backup.supported,
       label: <WithIcon icon={LuDatabaseBackup}>Backup</WithIcon>,
       children: (
-        <Backup
+        <Dashboard.Backup
           url={backupUrl}
-          sign={signAccumulate}
-          addNote={() => {
-            throw new Error('TODO');
-          }}
+          initialize={initBackups}
+          addNote={() => (setError(null), setOpenAddNote(true))}
         />
       ),
     },
   ];
+
+  const ShowError = () => {
+    if (!error) {
+      return false;
+    }
+    return (
+      <Alert
+        type="error"
+        message={
+          typeof error === 'object' &&
+          'message' in error &&
+          typeof error.message === 'string'
+            ? error.message
+            : `${error}`
+        }
+        closable
+        onClose={() => setError(null)}
+      />
+    );
+  };
 
   return (
     <div className="web3-module connected">
@@ -148,25 +198,21 @@ export function Dashboard() {
           items={tabs}
         />
       </div>
-      {error && (
-        <Alert
-          type="error"
-          message={
-            typeof error === 'object' &&
-            'message' in error &&
-            typeof error.message === 'string'
-              ? error.message
-              : `${error}`
-          }
-          closable
-          onClose={() => setError(null)}
-        />
-      )}
+      <ShowError />
+
+      <AddNote
+        open={openAddNote && !!account}
+        canSubmit={formAddNote.getFieldValue('value') != ''}
+        onCancel={() => setOpenAddNote(false)}
+        onSubmit={() => addNote().finally(() => setOpenAddNote(false))}
+        form={formAddNote}
+        children={<ShowError />}
+      />
     </div>
   );
 }
 
-function Identity({
+Dashboard.Identity = function ({
   url: url,
   addCredits,
 }: {
@@ -307,23 +353,23 @@ function Identity({
       </Paragraph>
     </>
   );
-}
+};
 
-function Backup({
+Dashboard.Backup = function ({
   url,
-  sign,
   addNote,
+  initialize,
 }: {
   url: URL;
-  sign: (_: TransactionArgs) => Promise<void>;
   addNote: () => any;
+  initialize: () => any;
 }) {
+  const { account: eth } = useWeb3React();
+
   const [account, setAccount] = useState<LiteDataAccount>(null);
   const [missing, setMissing] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [entries, setEntries] = useShared(BackupValues, 'entries');
-  const { account: eth } = useWeb3React();
-  const publicKey = Settings.getKey(eth);
+  const [entries, setEntries] = useState<Entry[]>();
 
   queryEffect(url, null, [creating]).then((r) => {
     if (r.recordType === RecordType.Error) {
@@ -340,9 +386,61 @@ function Backup({
     setAccount(r.account);
   });
 
+  const { api, onApiError } = useContext(Shared);
+  useAsyncEffect(
+    async (mounted) => {
+      if (!account?.url) {
+        return;
+      }
+
+      let start = 1;
+      const entries = [];
+      while (true) {
+        const { records, total } = (await api.query(account?.url, {
+          queryType: 'chain',
+          name: 'main',
+          range: {
+            start: start,
+            expand: true,
+          },
+        })) as RecordRange<TxnEntry>;
+        if (!mounted()) {
+          return;
+        }
+        if (!records?.length) {
+          break;
+        }
+
+        for (const r of records) {
+          if (!isRecordOfDataTxn(r)) {
+            continue;
+          }
+
+          const { entry } = r.value.message.transaction.body;
+          if (entry.type !== DataEntryType.DoubleHash) {
+            continue;
+          }
+
+          const plain = await Backup.decrypt(eth, entry);
+          if (!mounted()) {
+            return;
+          }
+          entries.push(plain);
+        }
+
+        start += records.length;
+        if (start >= total) {
+          break;
+        }
+      }
+      setEntries(entries);
+    },
+    [`${account?.url}`],
+  ).catch(onApiError);
+
   const create = async () => {
     setCreating(true);
-    await sign(await initializeBackupTxn(publicKey));
+    await initialize();
     setCreating(false);
   };
 
@@ -368,7 +466,7 @@ function Backup({
             shape="round"
             type="primary"
             onClick={create}
-            disabled={creating || !publicKey}
+            disabled={creating}
           >
             <WithIcon icon={RiAddCircleFill}>Create</WithIcon>
           </Button>
@@ -379,14 +477,8 @@ function Backup({
 
   const Items = () => (
     <>
-      {entries.map((x, i) => (
-        <pre key={`${i}`}>{JSON.stringify(x)}</pre>
-      ))}
-      <Button
-        shape="round"
-        type="primary"
-        onClick={() => setEntries([...entries, { type: 'note', value: 'foo' }])}
-      >
+      {entries?.map((x, i) => <pre key={`${i}`}>{JSON.stringify(x)}</pre>)}
+      <Button shape="round" type="primary" onClick={addNote}>
         <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
       </Button>
     </>
@@ -424,4 +516,4 @@ function Backup({
       </Paragraph>
     </>
   );
-}
+};

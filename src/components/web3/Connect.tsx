@@ -5,11 +5,11 @@ import { Ethereum } from './utils';
 
 export function Connect({
   open,
-  onClick,
+  onSubmit,
   onCancel,
 }: {
   open: boolean;
-  onClick: () => any;
+  onSubmit: () => any;
   onCancel: () => any;
 }) {
   return (
@@ -25,7 +25,7 @@ export function Connect({
             block
             shape="round"
             size="large"
-            onClick={onClick}
+            onClick={onSubmit}
             disabled={!Ethereum}
           >
             MetaMask

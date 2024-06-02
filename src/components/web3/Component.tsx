@@ -47,35 +47,11 @@ import { ethToAccumulate, truncateAddress } from '../../utils/web3';
 import { Shared } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { useAsyncEffect } from '../common/useAsync';
-import {
-  backupIsSupported,
-  createBackupEntry,
-  decryptBackupEntry,
-  deriveBackupLDA,
-  initializeBackupTxn,
-} from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { Ethereum, ethAddress, isLedgerError, liteIDForEth } from './utils';
 
 const { Title, Paragraph, Text } = Typography;
-
-// Cache decrypted messages to avoid asking the user to decrypt every single
-// time the component renders. This is ok as long as the messages aren't
-// sensitive.
-if (!(window as any).decryptedBackupCache) {
-  (window as any).decryptedBackupCache = new Map();
-
-  const v = localStorage.getItem('backup');
-  if (v)
-    try {
-      for (const [key, value] of Object.entries(JSON.parse(v))) {
-        (window as any).decryptedBackupCache.set(key, value);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-}
 
 export default function Component() {
   const { api } = useContext(Shared);
@@ -231,13 +207,12 @@ export default function Component() {
     setIsAddCreditsOpen(false);
   };
 
-  const createBackupLDA = async () => {
-    await signAccumulate(await initializeBackupTxn(publicKey));
-  };
-
   const handleFormAddNote = async () => {
     const v = formAddNote.getFieldValue('value');
-    const txn = await createBackupEntry(account, { type: 'note', value: v });
+    const txn = await createBackupEntry(
+      account,
+      JSON.stringify({ type: 'note', value: v }),
+    );
     await signAccumulate(txn);
     setIsAddNoteOpen(false);
   };
@@ -583,66 +558,6 @@ export default function Component() {
           )}
         </div>
       )}
-
-      <Modal
-        title="Connect Wallet"
-        open={isConnectWalletOpen}
-        onCancel={() => setIsConnectWalletOpen(false)}
-        footer={false}
-      >
-        <List>
-          <List.Item>
-            <Button
-              block
-              shape="round"
-              size="large"
-              onClick={connectWeb3}
-              disabled={!Ethereum}
-            >
-              MetaMask
-            </Button>
-          </List.Item>
-        </List>
-        <List>
-          <List.Item>
-            <Button block shape="round" size="large" disabled>
-              WalletConnect
-            </Button>
-          </List.Item>
-        </List>
-      </Modal>
-
-      <Modal
-        title="Add Note"
-        open={isAddNoteOpen && account && backupLDA}
-        onCancel={() => {
-          setIsAddNoteOpen(false);
-          setSignWeb3Error(null);
-        }}
-        footer={false}
-      >
-        <Form form={formAddNote} layout="vertical" className="modal-form">
-          <Form.Item label="Note" className="text-row" name="value">
-            <Input />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              onClick={handleFormAddNote}
-              type="primary"
-              shape="round"
-              size="large"
-              disabled={formAddNote.getFieldValue('value') == ''}
-            >
-              Submit
-            </Button>
-            {signWeb3Error?.message && (
-              <Paragraph style={{ marginTop: 10, marginBottom: 0 }}>
-                <Text type="danger">{signWeb3Error.message}</Text>
-              </Paragraph>
-            )}
-          </Form.Item>
-        </Form>
-      </Modal>
 
       <Modal
         title="Add Credits"

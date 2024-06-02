@@ -69,7 +69,7 @@ export function Login() {
       <Connect
         open={connectOpen}
         onCancel={() => setConnectOpen(false)}
-        onClick={connect}
+        onSubmit={connect}
       />
     </>
   );
