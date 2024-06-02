@@ -32,6 +32,24 @@ const info = bind(
   },
 );
 
+interface AccessorMetadata {
+  stored?: boolean;
+  broadcast?: boolean;
+}
+
+function getAccessorMetadata({
+  name,
+  metadata,
+}: {
+  name: string;
+  metadata: DecoratorMetadata;
+}) {
+  if (!(name in metadata)) {
+    metadata[name] = {};
+  }
+  return metadata[name] as AccessorMetadata;
+}
+
 export function prefix<C extends Ctor>(prefix: string) {
   return (target: C, _: ClassDecoratorContext<C>) => {
     info(target).prefix = prefix;
@@ -39,7 +57,8 @@ export function prefix<C extends Ctor>(prefix: string) {
 }
 
 export function storage<C extends Ctor>(storage: Storage) {
-  return (target: C, _: ClassDecoratorContext<C>) => {
+  return (target: C, context: ClassDecoratorContext<C>) => {
+    context.metadata.storage = storage;
     info(target).storage = storage;
   };
 }
@@ -48,6 +67,11 @@ export function stored<T, V>(
   { get, set }: ClassAccessorDecoratorTarget<T, V>,
   context: ClassAccessorDecoratorContext<T, V> & Named,
 ): ClassAccessorDecoratorResult<T, V> {
+  const md = getAccessorMetadata(context);
+  if (md.broadcast) {
+    throw new Error(`@broadcast must come before @stored`);
+  }
+  md.stored = true;
   return {
     get() {
       const { storage, name } = info.resolve(this, context);
@@ -79,6 +103,7 @@ export function broadcast<This, Value>(
   { get, set }: ClassAccessorDecoratorTarget<This, Value>,
   context: ClassAccessorDecoratorContext<This, Value> & Named,
 ): ClassAccessorDecoratorResult<This, Value> {
+  getAccessorMetadata(context).broadcast = true;
   return {
     set(value: Value) {
       const previous = get.call(this);

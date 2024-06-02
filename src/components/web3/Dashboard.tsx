@@ -36,9 +36,11 @@ import { TxnEntry, isRecordOfDataTxn } from '../../utils/types';
 import { CreditAmount } from '../common/Amount';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
+import { ShowError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { queryEffect, submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import { AddCredits } from './AddCredits';
 import { AddNote } from './AddNote';
 import { Backup, Entry } from './Backup';
 import { Settings } from './Settings';
@@ -57,6 +59,9 @@ export function Dashboard() {
 
   const [openAddNote, setOpenAddNote] = useState(false);
   const [formAddNote] = Form.useForm();
+
+  const [openAddCredits, setOpenAddCredits] = useState(false);
+  const [formAddCredits] = Form.useForm();
 
   useAsyncEffect(
     async (mounted) => {
@@ -141,6 +146,25 @@ export function Dashboard() {
     });
   };
 
+  const addCredits = async () => {
+    await sign({
+      header: {
+        principal: formAddCredits.getFieldValue('tokenAccount'),
+      },
+      body: {
+        type: 'addCredits',
+        recipient: formAddCredits.getFieldValue('recipient'),
+        amount: formAddCredits.getFieldValue('tokens'),
+        oracle: formAddCredits.getFieldValue('oracle'),
+      },
+    });
+
+    // Trigger refresh
+    const u = identityUrl;
+    setIdentityUrl(null);
+    setIdentityUrl(u);
+  };
+
   const tabs: TabsProps['items'] = [
     {
       key: 'account',
@@ -148,9 +172,7 @@ export function Dashboard() {
       children: (
         <Dashboard.Identity
           url={identityUrl}
-          addCredits={() => {
-            throw new Error('TODO');
-          }}
+          addCredits={() => (setError(null), setOpenAddCredits(true))}
         />
       ),
     },
@@ -168,26 +190,6 @@ export function Dashboard() {
     },
   ];
 
-  const ShowError = () => {
-    if (!error) {
-      return false;
-    }
-    return (
-      <Alert
-        type="error"
-        message={
-          typeof error === 'object' &&
-          'message' in error &&
-          typeof error.message === 'string'
-            ? error.message
-            : `${error}`
-        }
-        closable
-        onClose={() => setError(null)}
-      />
-    );
-  };
-
   return (
     <div className="web3-module connected">
       <div className="account">
@@ -198,15 +200,22 @@ export function Dashboard() {
           items={tabs}
         />
       </div>
-      <ShowError />
+      <ShowError error={error} onClose={() => setError(null)} />
 
       <AddNote
-        open={openAddNote && !!account}
-        canSubmit={formAddNote.getFieldValue('value') != ''}
+        open={account && openAddNote}
         onCancel={() => setOpenAddNote(false)}
         onSubmit={() => addNote().finally(() => setOpenAddNote(false))}
         form={formAddNote}
-        children={<ShowError />}
+        children={<ShowError error={error} onClose={() => setError(null)} />}
+      />
+
+      <AddCredits
+        open={account && openAddCredits}
+        onCancel={() => setOpenAddCredits(false)}
+        onSubmit={() => addCredits().finally(() => setOpenAddCredits(false))}
+        form={formAddCredits}
+        children={<ShowError error={error} onClose={() => setError(null)} />}
       />
     </div>
   );
@@ -222,6 +231,7 @@ Dashboard.Identity = function ({
   const { network } = useContext(Shared);
   const [account, setAccount] = useState<LiteIdentity>(null);
   const [missing, setMissing] = useState(false);
+  const { account: eth } = useWeb3React();
 
   queryEffect(url).then((r) => {
     if (r.recordType === RecordType.Error) {
@@ -329,28 +339,32 @@ Dashboard.Identity = function ({
         </WithIcon>
       </Title>
 
-      <Paragraph>
+      <Text copyable>
         {account ? (
           <Link to={account.url}>{account.url.toString()}</Link>
         ) : (
-          <Text>{url.toString()}</Text>
+          url.toString()
         )}
+      </Text>
 
-        <Divider />
+      <Title level={5}>Ethereum Address</Title>
 
-        {missing ? (
-          <NoLID />
-        ) : account ? (
-          <LIDInfo />
-        ) : (
-          <Skeleton
-            className={'skeleton-singleline'}
-            active
-            title={true}
-            paragraph={false}
-          />
-        )}
-      </Paragraph>
+      <Text copyable>{eth}</Text>
+
+      <Divider />
+
+      {missing ? (
+        <NoLID />
+      ) : account ? (
+        <LIDInfo />
+      ) : (
+        <Skeleton
+          className={'skeleton-singleline'}
+          active
+          title={true}
+          paragraph={false}
+        />
+      )}
     </>
   );
 };

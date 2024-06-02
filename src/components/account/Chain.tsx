@@ -7,6 +7,7 @@ import {
   Tag,
   Typography,
 } from 'antd';
+import { ColumnType } from 'antd/lib/table';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -22,7 +23,6 @@ import {
   ChainEntryRecord,
   ErrorRecord,
   MessageRecord,
-  QueryArgs,
   RangeOptionsArgs,
   Record,
   RecordRange,
@@ -172,7 +172,7 @@ export function Chain(props: {
     [props.url, JSON.stringify(pagination), network.id],
   );
 
-  const columns: TableProps<ChainRecord>['columns'] = [
+  const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [
     {
       title: '#',
       className: 'no-break',
@@ -202,50 +202,49 @@ export function Chain(props: {
         return <Chain.Type message={value.message} />;
       },
     },
-  ];
 
-  if (account) {
-    columns.push(
-      {
-        title: 'From',
-        className: 'no-break',
-        render({ value }: ChainRecord) {
-          if (value instanceof ErrorRecord) return null;
-          if (value.message.type !== MessageType.Transaction) return null;
-          return (
-            <Chain.TxnFrom account={account} txn={value.message.transaction} />
-          );
-        },
+    {
+      title: 'From',
+      className: 'no-break',
+      hidden: !account,
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnFrom account={account} txn={value.message.transaction} />
+        );
       },
-      {
-        title: 'To',
-        className: 'no-break',
-        render({ value }: ChainRecord) {
-          if (value instanceof ErrorRecord) return null;
-          if (value.message.type !== MessageType.Transaction) return null;
-          return (
-            <Chain.TxnTo account={account} txn={value.message.transaction} />
-          );
-        },
+    },
+    {
+      title: 'To',
+      className: 'no-break',
+      hidden: !account || account.type === AccountType.LiteIdentity,
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnTo account={account} txn={value.message.transaction} />
+        );
       },
-      {
-        title: 'Amount',
-        className: 'no-break',
-        align: 'right',
-        render({ value }: ChainRecord) {
-          if (value instanceof ErrorRecord) return null;
-          if (value.message.type !== MessageType.Transaction) return null;
-          return (
-            <Chain.TxnAmount
-              account={account}
-              issuer={issuer}
-              txn={value.message.transaction}
-            />
-          );
-        },
+    },
+    {
+      title: 'Amount',
+      className: 'no-break',
+      align: 'right',
+      hidden: !account,
+      render({ value }: ChainRecord) {
+        if (value instanceof ErrorRecord) return null;
+        if (value.message.type !== MessageType.Transaction) return null;
+        return (
+          <Chain.TxnAmount
+            account={account}
+            issuer={issuer}
+            txn={value.message.transaction}
+          />
+        );
       },
-    );
-  }
+    },
+  ];
 
   function Icon() {
     switch (type) {
@@ -295,7 +294,7 @@ export function Chain(props: {
   return (
     <Table
       dataSource={txChain as ChainRecord[]}
-      columns={columns}
+      columns={columns.filter((x) => !x.hidden)}
       pagination={pagination}
       onChange={(p) => setPagination(p)}
       rowKey="index"
@@ -383,6 +382,9 @@ Chain.TxnFrom = function ({
       break;
 
     case TransactionType.SyntheticDepositTokens:
+      if (account.type === AccountType.LiteIdentity) {
+        return null;
+      }
     case TransactionType.SyntheticDepositCredits:
       if (txn.body.isRefund) {
         return (
@@ -435,6 +437,11 @@ Chain.TxnTo = function ({
   switch (txn.body.type) {
     case TransactionType.SyntheticDepositCredits:
       return null;
+    case TransactionType.SyntheticDepositTokens:
+      if (account.type === AccountType.LiteIdentity) {
+        return null;
+      }
+      break;
   }
 
   const to = recipientsOfTx(txn);
@@ -484,6 +491,9 @@ Chain.TxnAmount = function ({
       return <CreditAmount {...amountFor(account, txn)} />;
 
     case TransactionType.SyntheticDepositTokens:
+      if (account.type === AccountType.LiteIdentity) {
+        return null;
+      }
     case TransactionType.SyntheticBurnTokens:
       return <TokenAmount issuer={issuer} amount={txn.body.amount} />;
 

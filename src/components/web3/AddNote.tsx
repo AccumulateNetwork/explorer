@@ -6,20 +6,29 @@ export function AddNote({
   onSubmit,
   onCancel,
   children,
-  canSubmit,
   form,
 }: {
   open: boolean;
   onSubmit: () => any;
   onCancel: () => any;
   children?: React.ReactNode;
-  canSubmit: boolean;
   form: FormInstance;
 }) {
   const [pending, setPending] = useState(false);
   return (
-    <Modal title="Add Note" open={open} onCancel={onCancel} footer={false}>
-      <Form form={form} layout="vertical" className="modal-form">
+    <Modal
+      title="Add Note"
+      open={open}
+      onCancel={onCancel}
+      footer={false}
+      forceRender
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        className="modal-form"
+        preserve={false}
+      >
         <Form.Item label="Note" className="text-row" name="value">
           <Input />
         </Form.Item>
@@ -36,7 +45,7 @@ export function AddNote({
             type="primary"
             shape="round"
             size="large"
-            disabled={!canSubmit || pending}
+            disabled={!form.getFieldValue('value') || pending}
           >
             {pending ? <Spin /> : 'Submit'}
           </Button>

@@ -6,8 +6,8 @@ export const Settings = new (
   @storage(localStorage)
   @prefix('web3')
   class Settings {
-    @stored @broadcast accessor dashboardOpen = false;
-    @stored @broadcast accessor connected: ConnectedType = null;
+    @broadcast @stored accessor dashboardOpen = false;
+    @broadcast @stored accessor connected: ConnectedType = null;
 
     @stored accessor backup: Record<string, any> = {};
     @stored accessor #publicKeys: Record<string, string> = {};
