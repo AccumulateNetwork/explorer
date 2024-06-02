@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { TxID } from 'accumulate.js';
 
 import { Link } from '../common/Link';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;

@@ -62,10 +62,7 @@ export function TxnInfo({
     <span>
       <Nobr>
         <IconContext.Provider value={{ className: 'react-icons' }}>
-          <Tooltip
-            overlayClassName="explorer-tooltip"
-            title={tooltipDescs.entryHash}
-          >
+          <Tooltip overlayClassName="explorer-tooltip">
             <RiQuestionLine />
           </Tooltip>
         </IconContext.Provider>
@@ -96,7 +93,7 @@ export function TxnInfo({
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <Tooltip
             overlayClassName="explorer-tooltip"
-            title={tooltipDescs.sigCause}
+            title={tooltipDescs.cause}
           >
             <RiQuestionLine />
           </Tooltip>

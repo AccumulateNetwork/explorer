@@ -137,7 +137,7 @@ export function Signature({
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <Tooltip
             overlayClassName="explorer-tooltip"
-            title={tooltipDescs.sigCause}
+            title={tooltipDescs.cause}
           >
             <RiQuestionLine />
           </Tooltip>

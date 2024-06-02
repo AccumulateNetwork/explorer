@@ -6,7 +6,7 @@ import { RiEarthLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 
 const { Title, Paragraph, Text } = Typography;
 

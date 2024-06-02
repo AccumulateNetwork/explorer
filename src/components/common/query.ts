@@ -32,7 +32,7 @@ import {
 import { Error as Error2, Status } from 'accumulate.js/lib/errors';
 import { Envelope, EnvelopeArgs } from 'accumulate.js/lib/messaging';
 
-import { Shared } from './Shared';
+import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 export function queryEffect(

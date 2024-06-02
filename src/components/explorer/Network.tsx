@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 
 import { RpcError } from 'accumulate.js/lib/api_v3';
 
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 
 const { Title, Text } = Typography;

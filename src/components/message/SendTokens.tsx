@@ -15,7 +15,7 @@ import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from './Outputs';
 import { TxnHeader } from './TxnHeader';

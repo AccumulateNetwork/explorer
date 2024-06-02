@@ -21,7 +21,7 @@ import {
 import getBlockEntries from '../../utils/getBlockEntries';
 import { CompactList } from './CompactList';
 import Count from './Count';
-import { Shared } from './Shared';
+import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;

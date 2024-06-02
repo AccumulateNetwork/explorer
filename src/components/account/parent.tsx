@@ -30,7 +30,7 @@ export function describeParent(account: Account) {
     : getParentUrl(account.url);
   if (!parentUrl) return null;
 
-  const tooltip = lite ? tooltipDescs.lightIdentityUrl : tooltipDescs.adiUrl;
+  const tooltip = lite ? tooltipDescs.acctUrl : tooltipDescs.adiUrl;
   const labelTxt = lite ? 'Identity' : page ? 'Key Book' : 'ADI';
   const label = (
     <span>

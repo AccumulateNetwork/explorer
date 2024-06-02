@@ -4,7 +4,22 @@ import { Address, PublicKeyHashAddress } from 'accumulate.js';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { SignatureType, Transaction } from 'accumulate.js/lib/core';
 
-import { EthPublicKey } from '../components/web3/Wallet';
+import { broadcast, prefix } from '../common/Shared';
+import { EthPublicKey } from './Wallet';
+
+type Entry = Note;
+
+interface Note {
+  type: 'note';
+  value: string;
+}
+
+export const Backup = new (
+  @prefix('web3:backup')
+  class Backup {
+    @broadcast accessor entries: Entry[] = [];
+  }
+)();
 
 // // Bug fix
 // const bufferFrom = Buffer.from

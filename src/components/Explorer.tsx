@@ -25,9 +25,10 @@ import { Link, Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import Logo from './common/Logo';
 import MinorBlocks from './common/MinorBlocks';
+import { Shared } from './common/Network';
 import ScrollToTop from './common/ScrollToTop';
 import { SearchForm } from './common/SearchForm';
-import { Shared } from './common/Shared';
+import { useShared } from './common/Shared';
 import { Version } from './common/Version';
 import networks from './common/networks';
 import { Acc } from './explorer/Acc';
@@ -38,7 +39,7 @@ import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import Network from './explorer/Network';
-import { Settings, useSetting } from './explorer/Settings';
+import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
@@ -55,7 +56,7 @@ export default function Explorer() {
     message.error('API call failed');
   };
   const [shared, setShared] = useState(new Shared.Context(onApiError));
-  const [web3DashOpen] = useSetting(Web3Settings, 'dashboardOpen');
+  const [web3DashOpen] = useShared(Web3Settings, 'dashboardOpen');
 
   // Run once
   useEffect(() => {

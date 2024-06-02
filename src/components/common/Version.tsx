@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 
 import { ExecutorVersion } from 'accumulate.js/lib/core';
 
-import { Shared } from './Shared';
+import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 export function Version() {

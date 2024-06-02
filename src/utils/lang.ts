@@ -27,7 +27,6 @@ export const tooltip = {
   txFrom: 'The sending party of this transaction',
   txTo: 'The receiving party, or parties, of this transaction',
   txId: 'The unique identifier assigned to this transaction',
-  txCause: 'The cause of the Accumulate transaction',
   txStatus: 'The status of the Accumulate transaction',
   adiUrl: 'The URL of the ADI (Accumulate Digital Identifier)',
   identityUrl: 'The URL of the Light Identity',
@@ -58,6 +57,12 @@ export const tooltip = {
     'The amount of ACME that are circulating in the market, calculated as total supply minus ACME owned by the Accumulate Foundation.',
   stakingType: 'Type of the staking',
   stakingRewards: 'Token account where staking rewards are deposited',
+  cause: 'The cause of the transaction or signature',
+  produced: 'Messages produced in response to this message',
+  memo: 'A memo provided by the user',
+  metadata: 'Metadata provided by the user',
+  timestamp: 'The timestamp of the block in which the transaction was executed',
+  block: 'The block in which the transaction was executed',
 
   web3: {
     connect:

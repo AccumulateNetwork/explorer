@@ -30,18 +30,20 @@ import {
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
-import {
-  backupIsSupported,
-  deriveBackupLDA,
-  initializeBackupTxn,
-} from '../../utils/backup';
 import { tooltip } from '../../utils/lang';
 import { CreditAmount } from '../common/Amount';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
+import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { queryEffect, submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import {
+  Backup as BackupValues,
+  backupIsSupported,
+  deriveBackupLDA,
+  initializeBackupTxn,
+} from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { isLedgerError, liteIDForEth } from './utils';
@@ -319,6 +321,7 @@ function Backup({
   const [account, setAccount] = useState<LiteDataAccount>(null);
   const [missing, setMissing] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [entries, setEntries] = useShared(BackupValues, 'entries');
   const { account: eth } = useWeb3React();
   const publicKey = Settings.getKey(eth);
 
@@ -376,7 +379,14 @@ function Backup({
 
   const Items = () => (
     <>
-      <Button shape="round" type="primary" onClick={addNote}>
+      {entries.map((x, i) => (
+        <pre key={`${i}`}>{JSON.stringify(x)}</pre>
+      ))}
+      <Button
+        shape="round"
+        type="primary"
+        onClick={() => setEntries([...entries, { type: 'note', value: 'foo' }])}
+      >
         <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
       </Button>
     </>

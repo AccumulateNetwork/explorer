@@ -18,7 +18,7 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import getBlockEntries from '../../utils/getBlockEntries';
 import Count from '../common/Count';
 import { InfoTable } from '../common/InfoTable';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import Error404 from './Error404';
 

@@ -37,7 +37,7 @@ export function DataAccount({
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <Tooltip
             overlayClassName="explorer-tooltip"
-            title={tooltipDescs.dataAccountUrl}
+            title={tooltipDescs.acctUrl}
           >
             <RiQuestionLine />
           </Tooltip>

@@ -1,15 +1,16 @@
-import { broadcast, store } from '../explorer/Settings';
+import { broadcast, prefix, storage, stored } from '../common/Shared';
 
 type ConnectedType = 'Web3' | null;
 
 export const Settings = new (
-  @store(localStorage, 'web3')
+  @storage(localStorage)
+  @prefix('web3')
   class Settings {
-    @store @broadcast('web3') accessor dashboardOpen = false;
-    @store @broadcast('web3') accessor connected: ConnectedType = null;
+    @stored @broadcast accessor dashboardOpen = false;
+    @stored @broadcast accessor connected: ConnectedType = null;
 
-    @store accessor backup: Record<string, any> = {};
-    @store accessor #publicKeys: Record<string, string> = {};
+    @stored accessor backup: Record<string, any> = {};
+    @stored accessor #publicKeys: Record<string, string> = {};
 
     getKey(account: string): Uint8Array {
       return Buffer.from(this.#publicKeys[account], 'hex');

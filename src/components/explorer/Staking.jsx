@@ -24,7 +24,7 @@ import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
 import { InfoTable } from '../common/InfoTable';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 
 const { Title, Text } = Typography;
 

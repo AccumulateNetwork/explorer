@@ -22,7 +22,7 @@ import { Link } from 'react-router-dom';
 import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 
 const { Title, Text } = Typography;
 

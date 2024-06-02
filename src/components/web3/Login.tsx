@@ -8,15 +8,15 @@ import { RiQuestionLine } from 'react-icons/ri';
 import { connect } from 'rxjs';
 
 import Tooltips from '../../utils/lang';
-import { useSetting } from '../explorer/Settings';
+import { useShared } from '../common/Shared';
 import { Connect } from './Connect';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { Ethereum, truncateAddress } from './utils';
 
 export function Login() {
-  const [dashOpen, setDashOpen] = useSetting(Settings, 'dashboardOpen');
-  const [connected] = useSetting(Settings, 'connected');
+  const [dashOpen, setDashOpen] = useShared(Settings, 'dashboardOpen');
+  const [connected] = useShared(Settings, 'connected');
   const [connectOpen, setConnectOpen] = useState(false);
   const { account, activate } = useWeb3React();
 

@@ -54,7 +54,7 @@ import {
   totalAmount,
 } from '../common/Amount';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from '../message/Outputs';
 

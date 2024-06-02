@@ -14,7 +14,6 @@ import {
   Modal,
   Row,
   Select,
-  Skeleton,
   Tabs,
   Tooltip,
   Typography,
@@ -23,11 +22,8 @@ import {
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { LuDatabaseBackup } from 'react-icons/lu';
 import {
-  RiAccountCircleLine,
   RiAddCircleFill,
-  RiExternalLinkLine,
   RiInformationLine,
   RiKey2Line,
   RiListCheck,
@@ -37,7 +33,6 @@ import {
   RiStackLine,
   RiUserLine,
 } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
 
 import { AccountRecord, NetworkStatus } from 'accumulate.js/lib/api_v3';
 import { Buffer } from 'accumulate.js/lib/common';
@@ -48,19 +43,17 @@ import {
 } from 'accumulate.js/lib/core';
 import { Envelope } from 'accumulate.js/lib/messaging';
 
+import { ethToAccumulate, truncateAddress } from '../../utils/web3';
+import { Shared } from '../common/Network';
+import { useShared } from '../common/Shared';
+import { useAsyncEffect } from '../common/useAsync';
 import {
   backupIsSupported,
   createBackupEntry,
   decryptBackupEntry,
   deriveBackupLDA,
-  ethToUniversal,
   initializeBackupTxn,
-} from '../../utils/backup';
-import { ethToAccumulate, truncateAddress } from '../../utils/web3';
-import { CreditAmount } from '../common/Amount';
-import { Shared } from '../common/Shared';
-import { useAsyncEffect } from '../common/useAsync';
-import { useSetting } from '../explorer/Settings';
+} from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { Ethereum, ethAddress, isLedgerError, liteIDForEth } from './utils';
@@ -89,7 +82,7 @@ export default function Component() {
 
   const [isConnectWalletOpen, setIsConnectWalletOpen] = useState(false);
   const [isAddCreditsOpen, setIsAddCreditsOpen] = useState(false);
-  const [isDashboardOpen, setIsDashboardOpen] = useSetting(
+  const [isDashboardOpen, setIsDashboardOpen] = useShared(
     Settings,
     'dashboardOpen',
   );
@@ -239,9 +232,7 @@ export default function Component() {
   };
 
   const createBackupLDA = async () => {
-    await signAccumulate(
-      await initializeBackupTxn(await ethToUniversal(account)),
-    );
+    await signAccumulate(await initializeBackupTxn(publicKey));
   };
 
   const handleFormAddNote = async () => {

@@ -15,7 +15,7 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { Shared } from '../common/Shared';
+import { Shared } from '../common/Network';
 import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
 

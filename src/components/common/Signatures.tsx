@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import { Shared } from './Shared';
+import { Shared } from './Network';
 
 const { Title, Text, Paragraph } = Typography;
 
