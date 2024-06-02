@@ -2,7 +2,7 @@ import { Address } from 'accumulate.js';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { DoubleHashDataEntry, Transaction } from 'accumulate.js/lib/core';
 
-import { broadcast, prefix } from '../common/Shared';
+import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { EthPublicKey, Wallet } from './Wallet';
 
 export type Entry = Note;
@@ -14,8 +14,9 @@ interface Note {
 
 export const Backup = new (
   @prefix('web3:backup')
+  @storage(localStorage)
   class Backup {
-    @broadcast accessor entries: Record<string, Entry> = {};
+    @broadcast @stored accessor entries: Record<string, Entry> = {};
 
     get supported() {
       return Wallet.canEncrypt;
@@ -64,8 +65,10 @@ export const Backup = new (
       );
 
       // Update the cache and broadcast
-      this.entries[hash] = entry;
-      this.entries = this.entries;
+      this.entries = {
+        ...this.entries,
+        [hash]: entry,
+      };
       return entry;
     }
 
