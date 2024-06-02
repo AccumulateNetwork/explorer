@@ -57,6 +57,11 @@ export const Wallet = new (class Wallet {
     Settings.connected = 'Web3';
   }
 
+  disconnect() {
+    this.#driver = null;
+    Settings.connected = null;
+  }
+
   async login(account: string): Promise<Uint8Array | undefined> {
     if (!this.connected) {
       this.connectWeb3();

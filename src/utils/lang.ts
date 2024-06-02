@@ -68,6 +68,10 @@ export const tooltip = {
     connect:
       'Connect Web3 wallet to sign and submit txs on the Accumulate Network',
 
+    disconnect: 'Disconnect Web3 wallet',
+
+    toggleDashboard: 'Open or close the Web3 dashboard',
+
     liteIdentity:
       'Accumulate Lite Identity is an account associated with your Ethereum key',
 

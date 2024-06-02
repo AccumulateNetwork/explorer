@@ -1,3 +1,4 @@
+import { CloseOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
 import {
   Alert,
@@ -198,8 +199,15 @@ export function Dashboard() {
           defaultActiveKey="account"
           type="card"
           items={tabs}
+          tabBarExtraContent={
+            <CloseOutlined
+              style={{ cursor: 'pointer' }}
+              onClick={() => (Settings.dashboardOpen = false)}
+            />
+          }
         />
       </div>
+
       <ShowError error={error} onClose={() => setError(null)} />
 
       <AddNote

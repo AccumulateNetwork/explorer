@@ -1,24 +1,23 @@
+import { LogoutOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { Button, Tooltip, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaWallet } from 'react-icons/fa';
-import { RiQuestionLine } from 'react-icons/ri';
-import { connect } from 'rxjs';
 
-import Tooltips from '../../utils/lang';
+import { tooltip } from '../../utils/lang';
 import { useShared } from '../common/Shared';
 import { Connect } from './Connect';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
-import { Ethereum, truncateAddress } from './utils';
+import { Ethereum } from './utils';
 
 export function Login() {
   const [dashOpen, setDashOpen] = useShared(Settings, 'dashboardOpen');
   const [connected] = useShared(Settings, 'connected');
   const [connectOpen, setConnectOpen] = useState(false);
-  const { account, activate } = useWeb3React();
+  const { activate, deactivate } = useWeb3React();
 
   // First load
   const injected = new InjectedConnector({});
@@ -28,12 +27,18 @@ export function Login() {
     }
   }, []);
 
-  const onClick = () => {
+  const onClickWallet = () => {
     if (connected) {
       setDashOpen(!dashOpen);
     } else {
       setConnectOpen(true);
     }
+  };
+
+  const disconnect = () => {
+    setDashOpen(false);
+    Wallet.disconnect();
+    deactivate();
   };
 
   const connect = () => {
@@ -49,14 +54,30 @@ export function Login() {
 
   return (
     <>
+      {connected && (
+        <Tooltip
+          overlayClassName="explorer-tooltip"
+          title={tooltip.web3.disconnect}
+        >
+          <Button
+            className="web3-logout-button"
+            icon={<LogoutOutlined />}
+            type="ghost"
+            shape="circle"
+            style={{ marginRight: '0.5em' }}
+            onClick={disconnect}
+          />
+        </Tooltip>
+      )}
+
       <Tooltip
         overlayClassName="explorer-tooltip"
-        title={connected ? truncateAddress(account) : Tooltips.web3.connect}
+        title={connected ? tooltip.web3.toggleDashboard : tooltip.web3.connect}
       >
         <Button
           shape="circle"
           type={connected ? 'primary' : 'default'}
-          onClick={onClick}
+          onClick={onClickWallet}
           style={{ marginRight: '1em' }}
           icon={
             <IconContext.Provider value={{ className: 'react-icons' }}>

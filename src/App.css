@@ -738,8 +738,20 @@ header.web3 {
   flex-flow: column;
 }
 
-.web3-module > .login {
-  max-width: 1600px;
+@media screen and (min-width: 1600px) {
+  .web3-module > .account {
+    width: 1600px;
+  }
+}
+
+@media (max-width: 1599px), not screen {
+  .web3-module > .account {
+    width: 100vw;
+  }
+}
+
+.web3-logout-button:not(:hover) {
+  color: white;
 }
 
 .web3-module.connected {
