@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { Input, Table, TablePaginationConfig, Tag, Typography } from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
@@ -15,8 +14,7 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account as Web3Backup } from '../web3/Account';
-import { Settings as Web3Settings } from '../web3/Settings';
+import { Account as Web3Account, useWeb3 } from '../web3/Account';
 
 const { Title, Text } = Typography;
 
@@ -65,33 +63,12 @@ export function DataLedger({ scope }: { scope: URL }) {
     [scope.toString(), JSON.stringify(pagination), network.id],
   );
 
-  const { account: eth } = useWeb3React();
-  const [web3backup, setWeb3backup] = useState<Web3Backup['entries']>();
-
-  useAsyncEffect(
-    async (mounted) => {
-      if (!/^[0-9a-f]+$/i.test(scope?.authority)) {
-        return;
-      }
-
-      const publicKey = Web3Settings.getKey(eth);
-      if (!publicKey) {
-        return;
-      }
-
-      const backup = Web3Backup.for(publicKey);
-      await backup.load(api);
-      if (
-        !mounted() ||
-        !URL.parse(backup.liteIdUrl).equals(scope) ||
-        !backup.entries
-      ) {
-        return;
-      }
-
-      setWeb3backup(backup.entries);
-    },
-    [`${scope}`, eth],
+  const web3 = useWeb3(
+    (a) =>
+      /^[0-9a-f]+$/i.test(scope?.authority) &&
+      a?.backupUrl?.equals(scope) &&
+      !!a?.entries,
+    [`${scope}`],
   );
 
   const columns = [
@@ -107,7 +84,7 @@ export function DataLedger({ scope }: { scope: URL }) {
     {
       title: 'Entry Data',
       render: (entry: DataTxnEntry) => (
-        <DataLedger.EntryData entry={entry} web3backup={web3backup} />
+        <DataLedger.EntryData entry={entry} web3={web3} />
       ),
     },
   ];
@@ -159,10 +136,10 @@ DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
 
 DataLedger.EntryData = function ({
   entry,
-  web3backup,
+  web3,
 }: {
   entry: DataTxnEntry;
-  web3backup: Web3Backup['entries'];
+  web3: Web3Account;
 }) {
   const [hash, setHash] = useState<string>();
 
@@ -177,13 +154,13 @@ DataLedger.EntryData = function ({
     [entry],
   );
 
-  if (web3backup && hash in web3backup) {
+  if (web3 && hash in web3.entries) {
     return (
       <Input.Group compact className="extid">
         <Text className="extid-type">Web3 Backup</Text>
         <Text className="extid-text extid-json">
           <SyntaxHighlighter language="json">
-            {JSON.stringify(web3backup[hash])}
+            {JSON.stringify(web3.entries[hash])}
           </SyntaxHighlighter>
         </Text>
       </Input.Group>

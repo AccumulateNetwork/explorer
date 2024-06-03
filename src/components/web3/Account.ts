@@ -1,3 +1,5 @@
+import { useWeb3React } from '@web3-react/core';
+import { useContext, useState } from 'react';
 import nacl from 'tweetnacl';
 
 import { URL, URLArgs, core } from 'accumulate.js';
@@ -23,8 +25,11 @@ import {
   isRecordOf,
   isRecordOfDataTxn,
 } from '../../utils/types';
+import { Shared } from '../common/Network';
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
+import { useAsyncEffect } from '../common/useAsync';
+import { Settings } from './Settings';
 import { EthPublicKey, Wallet } from './Wallet';
 import { ethAddress, liteIDForEth } from './utils';
 
@@ -52,14 +57,15 @@ export class Account {
     return new this(publicKey);
   }
 
-  readonly #publicKey: Uint8Array;
+  readonly publicKey: Uint8Array;
   liteIdUrl: URL;
   backupUrl: URL;
   liteIdentity: LiteIdentity;
   backupAccount: LiteDataAccount;
+  entries: { [hash: string]: Entry };
+
   #rawEntries: DataEntry[];
   #encryptionKey: Uint8Array;
-  entries: { [hash: string]: Entry };
 
   // TODO: this should be private, but that screws up the decorators
   constructor(publicKey: Uint8Array) {
@@ -68,12 +74,12 @@ export class Account {
       return Account.#for.get(key);
     }
 
-    this.#publicKey = publicKey;
+    this.publicKey = publicKey;
     Account.#for.set(key, this);
   }
 
   get ethereum() {
-    return ethAddress(this.#publicKey);
+    return ethAddress(this.publicKey);
   }
 
   get canEncrypt() {
@@ -98,7 +104,7 @@ export class Account {
   async generateKey(sign: SignAccumulate) {
     // Generate and encrypt a key
     const { key, data } = await generateKey({
-      publicKey: this.#publicKey,
+      publicKey: this.publicKey,
       token: (s) => this.#token(s),
     });
 
@@ -137,7 +143,7 @@ export class Account {
       return;
     }
 
-    this.liteIdUrl = URL.parse(await liteIDForEth(this.#publicKey));
+    this.liteIdUrl = URL.parse(await liteIDForEth(this.publicKey));
 
     const v = await sha256(await sha256(await this.#token('backup')));
     this.backupUrl = URL.parse(`acc://${Buffer.from(v).toString('hex')}`);
@@ -195,7 +201,7 @@ export class Account {
 
     this.#encryptionKey = await decryptKey({
       data: parts,
-      account: ethAddress(this.#publicKey),
+      account: ethAddress(this.publicKey),
     });
     Account.#keys = {
       ...Account.#keys,
@@ -215,7 +221,7 @@ export class Account {
   }
 
   async #token(suffix: string) {
-    const addr = new EthPublicKey(this.#publicKey);
+    const addr = new EthPublicKey(this.publicKey);
     return sha256(Buffer.from(`${await addr.format()}:${suffix}`, 'utf-8'));
   }
 
@@ -410,4 +416,43 @@ async function queryAccount<C extends Ctor<core.Account>>(
 
   // Unknown error
   throw new Error(`An unexpected error occurred while retrieving ${url}`);
+}
+
+export function useWeb3(
+  predicate?: (_: Account) => boolean,
+  dependencies: any[] = [],
+) {
+  const { api } = useContext(Shared);
+  const { account: eth } = useWeb3React();
+  const [value, setValue] = useState<Account>();
+
+  useAsyncEffect(
+    async (mounted) => {
+      if (!eth) {
+        setValue(null);
+        return;
+      }
+
+      const publicKey = Settings.getKey(eth);
+      if (!publicKey) {
+        setValue(null);
+        return;
+      }
+
+      const account = Account.for(publicKey);
+      await account.load(api);
+      if (!mounted()) {
+        return;
+      }
+      if (predicate && !predicate(account)) {
+        setValue(null);
+        return;
+      }
+
+      setValue(account);
+    },
+    [eth, ...dependencies],
+  );
+
+  return value;
 }

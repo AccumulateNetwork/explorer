@@ -1,4 +1,4 @@
-import { CloseOutlined } from '@ant-design/icons';
+import { CloseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
 import {
   Alert,
@@ -21,15 +21,7 @@ import {
 } from 'react-icons/ri';
 import { Link as RouterLink } from 'react-router-dom';
 
-import { URL } from 'accumulate.js';
-import { RecordType } from 'accumulate.js/lib/api_v3';
-import {
-  AccountType,
-  LiteIdentity,
-  Transaction,
-  TransactionArgs,
-} from 'accumulate.js/lib/core';
-import { Status } from 'accumulate.js/lib/errors';
+import { Transaction, TransactionArgs } from 'accumulate.js/lib/core';
 
 import { tooltip } from '../../utils/lang';
 import { CreditAmount } from '../common/Amount';
@@ -37,14 +29,14 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
-import { queryEffect, submitAndWait } from '../common/query';
+import { submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Account } from './Account';
 import { AddCredits } from './AddCredits';
 import { AddNote } from './AddNote';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
-import { isLedgerError, liteIDForEth } from './utils';
+import { isLedgerError } from './utils';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -53,13 +45,10 @@ export function Dashboard() {
   const [error, setError] = useState<any>();
 
   const { account: eth, deactivate } = useWeb3React();
-  const [publicKey, setPublicKey] = useState<Uint8Array>();
   const [account, setAccount] = useState<Account>();
 
   const [openAddNote, setOpenAddNote] = useState(false);
-
   const [openAddCredits, setOpenAddCredits] = useState(false);
-  const [formAddCredits] = Form.useForm();
 
   // If an account is connected at 'boot' but we don't know the public key,
   // disconnect
@@ -98,14 +87,13 @@ export function Dashboard() {
         }
       }
 
-      const backup = Account.for(publicKey);
-      await backup.load(api);
+      const account = Account.for(publicKey);
+      await account.load(api);
       if (!mounted()) {
         return;
       }
 
-      setPublicKey(publicKey);
-      setAccount(backup);
+      setAccount(account);
     },
     [eth],
   ).catch(setError);
@@ -116,10 +104,10 @@ export function Dashboard() {
     try {
       const txn = new Transaction(args);
       const sig = await Wallet.signAccumulate(txn, {
-        publicKey,
+        publicKey: account.publicKey,
         signerVersion: 1,
         timestamp: Date.now(),
-        signer: await liteIDForEth(publicKey),
+        signer: account.liteIdUrl,
       });
       if (!sig?.signature) {
         return false;
@@ -156,26 +144,7 @@ export function Dashboard() {
     }
   };
 
-  const addNote = async ({ value }: AddNote.Fields) => {
-    await account.addEntry(sign, {
-      type: 'note',
-      value,
-    });
-  };
-
-  const addCredits = async () => {
-    await sign({
-      header: {
-        principal: formAddCredits.getFieldValue('tokenAccount'),
-      },
-      body: {
-        type: 'addCredits',
-        recipient: formAddCredits.getFieldValue('recipient'),
-        amount: formAddCredits.getFieldValue('tokens'),
-        oracle: formAddCredits.getFieldValue('oracle'),
-      },
-    });
-
+  const didAddCredits = async () => {
     await account.reloadLiteIdentity(api);
 
     // Trigger refresh
@@ -184,11 +153,22 @@ export function Dashboard() {
     setAccount(b);
   };
 
+  const Loading = () => (
+    <Skeleton
+      className={'skeleton-singleline'}
+      active
+      title={true}
+      paragraph={false}
+    />
+  );
+
   const tabs: TabsProps['items'] = [
     {
       key: 'account',
       label: <WithIcon icon={RiAccountCircleLine}>Account</WithIcon>,
-      children: (
+      children: !account ? (
+        <Loading />
+      ) : (
         <Dashboard.Identity
           account={account}
           addCredits={() => (setError(null), setOpenAddCredits(true))}
@@ -199,7 +179,9 @@ export function Dashboard() {
       key: 'backup',
       disabled: !Account.supported,
       label: <WithIcon icon={LuDatabaseBackup}>Backup</WithIcon>,
-      children: (
+      children: !account ? (
+        <Loading />
+      ) : (
         <Dashboard.Backup
           account={account}
           initialize={initBackups}
@@ -207,11 +189,11 @@ export function Dashboard() {
         />
       ),
     },
-    // {
-    //   key: 'pages',
-    //   label: <WithIcon icon={RiStackLine}>Key Pages</WithIcon>,
-    //   children: <Dashboard.Pages />,
-    // },
+    {
+      key: 'books',
+      label: <WithIcon icon={RiStackLine}>Key Books</WithIcon>,
+      children: !account ? <Loading /> : <Dashboard.Books account={account} />,
+    },
   ];
 
   return (
@@ -236,16 +218,13 @@ export function Dashboard() {
       <AddNote
         open={eth && openAddNote}
         onCancel={() => setOpenAddNote(false)}
-        onSubmit={(v) => addNote(v).finally(() => setOpenAddNote(false))}
-        children={<ShowError error={error} onClose={() => setError(null)} />}
+        onFinish={() => setOpenAddNote(false)}
       />
 
       <AddCredits
         open={eth && openAddCredits}
         onCancel={() => setOpenAddCredits(false)}
-        onSubmit={() => addCredits().finally(() => setOpenAddCredits(false))}
-        form={formAddCredits}
-        children={<ShowError error={error} onClose={() => setError(null)} />}
+        onFinish={() => didAddCredits().finally(() => setOpenAddCredits(false))}
       />
     </div>
   );
@@ -259,18 +238,6 @@ Dashboard.Identity = function ({
   addCredits: () => any;
 }) {
   const { network } = useContext(Shared);
-  const { account: eth } = useWeb3React();
-
-  if (!account?.liteIdUrl) {
-    return (
-      <Skeleton
-        className={'skeleton-singleline'}
-        active
-        title={true}
-        paragraph={false}
-      />
-    );
-  }
 
   const BridgeLink = ({ text }: { text: string }) => (
     <a
@@ -363,7 +330,7 @@ Dashboard.Identity = function ({
 
       <Title level={5}>Ethereum Address</Title>
 
-      <Text copyable>{eth}</Text>
+      <Text copyable>{account.ethereum}</Text>
 
       <Divider />
 
@@ -381,21 +348,7 @@ Dashboard.Backup = function ({
   initialize: () => any;
   account: Account;
 }) {
-  const [url, setUrl] = useState<URL>();
   const [creating, setCreating] = useState(false);
-
-  useAsyncEffect(async (mounted) => {});
-
-  if (!account) {
-    return (
-      <Skeleton
-        className={'skeleton-singleline'}
-        active
-        title={true}
-        paragraph={false}
-      />
-    );
-  }
 
   const Create = () => (
     <Alert
@@ -459,6 +412,24 @@ Dashboard.Backup = function ({
   );
 };
 
-Dashboard.Pages = function ({}: {}) {
-  return null;
+Dashboard.Books = function ({ account }: { account: Account }) {
+  return (
+    <>
+      <Title level={5}>
+        <WithIcon after icon={RiQuestionLine} tooltip={tooltip.web3.keyBookTab}>
+          Accumulate Key Books
+        </WithIcon>
+      </Title>
+
+      <Alert
+        type="info"
+        message={
+          <span>
+            {'To register a key book, navigate to it and click '}
+            <PlusCircleOutlined />
+          </span>
+        }
+      />
+    </>
+  );
 };

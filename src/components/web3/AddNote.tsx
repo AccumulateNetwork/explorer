@@ -1,24 +1,41 @@
 import { Button, Form, FormInstance, Input, Modal, Spin } from 'antd';
 import React, { useState } from 'react';
 
-export declare namespace AddNote {
-  interface Fields {
-    value: string;
-  }
+import { useWeb3 } from './Account';
+import { Sign } from './Sign';
+
+interface Fields {
+  value: string;
 }
 
 export function AddNote({
   open,
-  onSubmit,
+  onFinish,
   onCancel,
-  children,
 }: {
   open: boolean;
-  onSubmit: (_: AddNote.Fields) => any;
-  onCancel: () => any;
-  children?: React.ReactNode;
+  onFinish(): any;
+  onCancel(): any;
 }) {
+  const account = useWeb3();
+  const [form] = Form.useForm<Fields>();
+  const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);
+
+  const submit = async ({ value }: Fields) => {
+    setPending(true);
+    try {
+      await account.addEntry((txn) => Sign.submit(setToSign, txn), {
+        type: 'note',
+        value,
+      });
+      onFinish();
+    } finally {
+      onCancel();
+      setPending(false);
+    }
+  };
+
   return (
     <Modal
       title="Add Note"
@@ -26,20 +43,17 @@ export function AddNote({
       onCancel={onCancel}
       footer={false}
       forceRender
+      closable={!pending}
+      maskClosable={!pending}
     >
       <Form
+        form={form}
         layout="vertical"
         className="modal-form"
         preserve={false}
+        requiredMark={false}
         disabled={pending}
-        onFinish={async (v) => {
-          setPending(true);
-          try {
-            await onSubmit(v);
-          } finally {
-            setPending(false);
-          }
-        }}
+        onFinish={submit}
       >
         <Form.Item
           label="Note"
@@ -58,9 +72,10 @@ export function AddNote({
             loading={pending}
             children="Submit"
           />
-          {children}
         </Form.Item>
       </Form>
+
+      <Sign request={toSign} />
     </Modal>
   );
 }

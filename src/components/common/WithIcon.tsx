@@ -28,16 +28,14 @@ export function WithIcon({
   if (after) {
     return (
       <>
-        {children}
-        {icon}
+        {children} {icon}
       </>
     );
   }
 
   return (
     <>
-      {icon}
-      {children}
+      {icon} {children}
     </>
   );
 }

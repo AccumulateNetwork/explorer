@@ -355,7 +355,7 @@ async function waitForSingle(api: JsonRpcClient, txid: TxID | URLArgs) {
   );
 }
 
-function isClientError(error: any) {
+export function isClientError(error: any) {
   if (!(error instanceof RpcError)) throw error;
   if (error.code > -33000) throw error;
 

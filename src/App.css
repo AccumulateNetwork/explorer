@@ -759,6 +759,10 @@ header.web3 {
   flex-flow: column;
 }
 
+.web3-register-book {
+  display: flex;
+  align-items: center;
+}
 
 .web3-module > .account {
   padding: 0;

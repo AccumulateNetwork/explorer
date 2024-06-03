@@ -7,7 +7,13 @@ import { addFavourite, isFavourite, removeFavourite } from './Favourites';
 
 const { Title } = Typography;
 
-export function AccTitle({ title, url }: { title: string; url: URL | TxID }) {
+export function AccTitle({
+  title,
+  url,
+}: {
+  title: React.ReactNode;
+  url: URL | TxID;
+}) {
   if (url instanceof TxID) {
     url = url.asUrl();
   }

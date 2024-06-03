@@ -83,7 +83,8 @@ export const tooltip = {
 
     keyPageEntry: 'This is your Web3 key',
 
-    keyPageTab: 'Accumulate key pages linked to your Web3 account',
+    keyBookTab: 'Accumulate key books linked to your Web3 account',
+    registerKeyBook: 'Link this key book to your Web3 account',
   },
 };
 
