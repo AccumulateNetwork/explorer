@@ -18,6 +18,7 @@ import {
   RiAccountCircleLine,
   RiAddCircleFill,
   RiExternalLinkLine,
+  RiLink,
   RiQuestionLine,
   RiStackLine,
 } from 'react-icons/ri';
@@ -194,8 +195,12 @@ export function Dashboard() {
     },
     {
       key: 'books',
-      label: <WithIcon icon={RiStackLine}>Key Books</WithIcon>,
-      children: !account ? <Loading /> : <Dashboard.Books account={account} />,
+      label: <WithIcon icon={RiLink}>Linked</WithIcon>,
+      children: !account ? (
+        <Loading />
+      ) : (
+        <Dashboard.Registered account={account} />
+      ),
     },
   ];
 
@@ -415,8 +420,8 @@ Dashboard.Backup = function ({
   );
 };
 
-Dashboard.Books = function ({ account }: { account: Account }) {
-  const NoBooks = () => (
+Dashboard.Registered = function ({ account }: { account: Account }) {
+  const NoAccounts = () => (
     <Alert
       type="info"
       message={
@@ -428,7 +433,7 @@ Dashboard.Books = function ({ account }: { account: Account }) {
     />
   );
 
-  const ListBooks = () => (
+  const ListAccounts = () => (
     <CompactList
       size="small"
       dataSource={account.registeredBooks}
@@ -448,12 +453,16 @@ Dashboard.Books = function ({ account }: { account: Account }) {
   return (
     <>
       <Title level={5}>
-        <WithIcon after icon={RiQuestionLine} tooltip={tooltip.web3.keyBookTab}>
-          Accumulate Key Books
+        <WithIcon
+          after
+          icon={RiQuestionLine}
+          tooltip={tooltip.web3.registeredTab}
+        >
+          Linked Accumulate Accounts
         </WithIcon>
       </Title>
 
-      {account.registeredBooks?.length ? <ListBooks /> : <NoBooks />}
+      {account.registeredBooks?.length ? <ListAccounts /> : <NoAccounts />}
     </>
   );
 };

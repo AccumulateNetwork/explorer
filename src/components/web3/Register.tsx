@@ -21,15 +21,6 @@ export function Register({
   const account = useWeb3();
   const [toSign, setToSign] = useState<Sign.Request>();
 
-  const ttRegister =
-    kind === 'book'
-      ? tooltip.web3.registerKeyBook
-      : tooltip.web3.registerKeyPage;
-  const ttRegistered =
-    kind === 'book'
-      ? tooltip.web3.registeredKeyBook
-      : tooltip.web3.registeredKeyPage;
-
   const register = () =>
     account.addEntry((txn) => Sign.submit(setToSign, txn), {
       type: 'registerBook',
@@ -45,7 +36,7 @@ export function Register({
       <WithIcon
         after
         icon={<CheckCircleTwoTone twoToneColor="#6fd226" />}
-        tooltip={ttRegistered}
+        tooltip={tooltip.web3.registered}
         children={children}
       />
     );
@@ -55,7 +46,10 @@ export function Register({
     <div className="web3-register-book">
       {children}
 
-      <Tooltip overlayClassName="explorer-tooltip" title={ttRegister}>
+      <Tooltip
+        overlayClassName="explorer-tooltip"
+        title={tooltip.web3.register}
+      >
         <Button
           icon={<PlusCircleOutlined />}
           shape="circle"
