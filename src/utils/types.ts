@@ -59,7 +59,7 @@ export type TxnRecord<T extends TransactionBody = TransactionBody> =
 export type TxnEntry<T extends TransactionBody = TransactionBody> =
   ChainEntryRecord<TxnRecord<T>>;
 
-type Ctor<Of = any> = abstract new (...args: any) => Of;
+export type Ctor<Of = any> = abstract new (...args: any) => Of;
 
 type TxnRecordOrEntry<T extends TransactionBody> = TxnRecord<T> | TxnEntry<T>;
 type SigRecordOrEntry<T extends Signature> = SigRecord<T> | SigEntry<T>;
@@ -68,7 +68,7 @@ type MsgRecordOrEntry<T extends Message> = MsgRecord<T> | MsgEntry<T>;
 type TxnCtor = Ctor<TransactionBody>;
 
 // Overload for errors
-export function isRecordOf<C extends Ctor<Account>, S extends Status>(
+export function isRecordOf<S extends Status>(
   r: Record,
   ...types: [S]
 ): r is ErrorRecord & { value?: { status?: S } };

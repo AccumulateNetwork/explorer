@@ -164,58 +164,6 @@ export default function Component() {
                         <IconContext.Provider
                           value={{ className: 'react-icons' }}
                         >
-                          <RiKey2Line />
-                        </IconContext.Provider>
-                        Key
-                      </span>
-                    }
-                    key="key"
-                  >
-                    <Title level={5}>
-                      Public Key
-                      <IconContext.Provider
-                        value={{ className: 'react-icons' }}
-                      >
-                        <Tooltip
-                          overlayClassName="explorer-tooltip"
-                          title="Public key associated with your Ethereum address in the Accumulate network"
-                        >
-                          <RiQuestionLine />
-                        </Tooltip>
-                      </IconContext.Provider>
-                    </Title>
-                    <Paragraph>
-                      <Text copyable className="code">
-                        {account.substring(2).toLowerCase()}
-                      </Text>
-                    </Paragraph>
-                    <Title level={5}>
-                      Public Key (uncompressed)
-                      <IconContext.Provider
-                        value={{ className: 'react-icons' }}
-                      >
-                        <Tooltip
-                          overlayClassName="explorer-tooltip"
-                          title="The same public key (in the uncompressed format), that is used to sign txs on the Accumulate network"
-                        >
-                          <RiQuestionLine />
-                        </Tooltip>
-                      </IconContext.Provider>
-                    </Title>
-                    <Paragraph>
-                      <Text copyable className="code">
-                        {publicKey
-                          ? Buffer.from(publicKey).toString('hex')
-                          : 'N/A'}
-                      </Text>
-                    </Paragraph>
-                  </Tabs.TabPane>
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <IconContext.Provider
-                          value={{ className: 'react-icons' }}
-                        >
                           <RiStackLine />
                         </IconContext.Provider>
                         Key Pages
@@ -236,22 +184,6 @@ export default function Component() {
                         </Tooltip>
                       </IconContext.Provider>
                     </Title>
-                  </Tabs.TabPane>
-                  <Tabs.TabPane
-                    tab={
-                      <span>
-                        <IconContext.Provider
-                          value={{ className: 'react-icons' }}
-                        >
-                          <RiListCheck />
-                        </IconContext.Provider>
-                        Transactions
-                        <Badge count={0} showZero />
-                      </span>
-                    }
-                    key="actions"
-                  >
-                    <Title level={5}>Transactions</Title>
                   </Tabs.TabPane>
                 </Tabs>
               </Col>

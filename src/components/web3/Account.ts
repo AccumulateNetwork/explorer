@@ -1,6 +1,6 @@
 import nacl from 'tweetnacl';
 
-import { URLArgs } from 'accumulate.js';
+import { URL, URLArgs, core } from 'accumulate.js';
 import {
   JsonRpcClient,
   RecordRange,
@@ -12,15 +12,21 @@ import {
   DataEntryType,
   DoubleHashDataEntry,
   LiteDataAccount,
+  LiteIdentity,
   TransactionArgs,
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
-import { TxnEntry, isRecordOf, isRecordOfDataTxn } from '../../utils/types';
+import {
+  Ctor,
+  TxnEntry,
+  isRecordOf,
+  isRecordOfDataTxn,
+} from '../../utils/types';
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
 import { EthPublicKey, Wallet } from './Wallet';
-import { ethAddress } from './utils';
+import { ethAddress, liteIDForEth } from './utils';
 
 export type Entry = Note;
 
@@ -47,10 +53,13 @@ export class Account {
   }
 
   readonly #publicKey: Uint8Array;
-  #account: LiteDataAccount;
+  liteIdUrl: URL;
+  backupUrl: URL;
+  liteIdentity: LiteIdentity;
+  backupAccount: LiteDataAccount;
   #rawEntries: DataEntry[];
   #encryptionKey: Uint8Array;
-  #entries: { [hash: string]: Entry };
+  entries: { [hash: string]: Entry };
 
   // TODO: this should be private, but that screws up the decorators
   constructor(publicKey: Uint8Array) {
@@ -63,29 +72,19 @@ export class Account {
     Account.#for.set(key, this);
   }
 
-  get entries(): { readonly [hash: string]: Entry } {
-    return this.#entries;
+  get ethereum() {
+    return ethAddress(this.#publicKey);
   }
 
-  get account() {
-    return this.#account;
-  }
-
-  get hasKey() {
+  get canEncrypt() {
     return !!this.#encryptionKey;
   }
 
-  async chain() {
-    const v = await sha256(await sha256(await this.#token('backup')));
-    return `acc://${Buffer.from(v).toString('hex')}`;
-  }
-
   async load(api: JsonRpcClient) {
-    if (await this.#loadAccount(api)) {
-      await this.#loadEntries(api);
-      await this.#locateKey();
-      await this.#decryptEntries();
-    }
+    await this.#loadAccount(api);
+    await this.#loadEntries(api);
+    await this.#locateKey();
+    await this.#decryptEntries();
   }
 
   async initialize(sign: SignAccumulate) {
@@ -125,47 +124,38 @@ export class Account {
     }
 
     const entryHash = Buffer.from(await dataEntry.hash()).toString('hex');
-    this.#entries[entryHash] = entry;
+    this.entries[entryHash] = entry;
     return true;
   }
 
+  async reloadLiteIdentity(api: JsonRpcClient) {
+    this.liteIdentity = await queryAccount(api, this.liteIdUrl, LiteIdentity);
+  }
+
   async #loadAccount(api: JsonRpcClient) {
-    if (this.#account) {
+    if (this.backupAccount) {
       return;
     }
 
-    const principal = await this.chain();
+    this.liteIdUrl = URL.parse(await liteIDForEth(this.#publicKey));
+
+    const v = await sha256(await sha256(await this.#token('backup')));
+    this.backupUrl = URL.parse(`acc://${Buffer.from(v).toString('hex')}`);
 
     // Does the LDA exist?
-    const r = await api.query(principal).catch(isErrorRecord);
-    if (isRecordOf(r, LiteDataAccount)) {
-      // Yes
-      this.#account = r.account;
-      return true;
-    }
-
-    if (isRecordOf(r, Status.NotFound)) {
-      // No, create it
-      return false;
-    }
-
-    if (r.recordType === RecordType.Error) {
-      // Some other error occurred
-      throw new Error(r.value.message);
-    }
-
-    // Unknown error
-    throw new Error(
-      'An unexpected error occurred while retrieving the backup account',
-    );
+    const [lid, lda] = await Promise.all([
+      queryAccount(api, this.liteIdUrl, LiteIdentity),
+      queryAccount(api, this.backupUrl, LiteDataAccount),
+    ]);
+    this.liteIdentity = lid;
+    this.backupAccount = lda;
   }
 
   async #loadEntries(api: JsonRpcClient) {
-    if (this.#rawEntries) {
+    if (this.#rawEntries || !this.backupAccount) {
       return;
     }
 
-    const principal = await this.chain();
     const tokens = [
       // The token for entries
       (await this.#token('entry')).toString('hex'),
@@ -173,7 +163,7 @@ export class Account {
       (await this.#token('key')).toString('hex'),
     ];
 
-    this.#rawEntries = await filterDataEntries(api, principal, (entry) =>
+    this.#rawEntries = await filterDataEntries(api, this.backupUrl, (entry) =>
       tokens.includes(partAsHex(entry, 0)),
     );
   }
@@ -214,10 +204,10 @@ export class Account {
   }
 
   async #decryptEntries() {
-    if (!this.#encryptionKey || !this.#rawEntries || this.#entries) {
+    if (!this.#encryptionKey || !this.#rawEntries || this.entries) {
       return;
     }
-    this.#entries = await decryptEntries({
+    this.entries = await decryptEntries({
       key: this.#encryptionKey,
       crypt: this.#rawEntries,
       token: (s) => this.#token(s),
@@ -231,8 +221,8 @@ export class Account {
 
   async #submit(sign: SignAccumulate, ...data: Uint8Array[]) {
     const entry = new DoubleHashDataEntry({ data });
-    const ok = sign({
-      header: { principal: await this.chain() },
+    const ok = await sign({
+      header: { principal: this.backupUrl },
       body: { type: 'writeData', entry },
     });
     if (ok) {
@@ -395,4 +385,29 @@ function entryParts(entry: DataEntry) {
     default:
       return entry.data;
   }
+}
+
+async function queryAccount<C extends Ctor<core.Account>>(
+  api: JsonRpcClient,
+  url: URLArgs,
+  type: C,
+): Promise<InstanceType<C> | null> {
+  const r = await api.query(url).catch(isErrorRecord);
+  if (isRecordOf(r, Status.NotFound)) {
+    // Account does not exist
+    return null;
+  }
+
+  if (isRecordOf(r, type)) {
+    // Account exists and is the specified type
+    return r.account;
+  }
+
+  if (r.recordType === RecordType.Error) {
+    // Some other error occurred
+    throw new Error(r.value.message);
+  }
+
+  // Unknown error
+  throw new Error(`An unexpected error occurred while retrieving ${url}`);
 }

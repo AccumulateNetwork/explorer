@@ -17,6 +17,7 @@ import {
   RiAddCircleFill,
   RiExternalLinkLine,
   RiQuestionLine,
+  RiStackLine,
 } from 'react-icons/ri';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -51,11 +52,9 @@ export function Dashboard() {
   const { api } = useContext(Shared);
   const [error, setError] = useState<any>();
 
-  const { account, deactivate } = useWeb3React();
+  const { account: eth, deactivate } = useWeb3React();
   const [publicKey, setPublicKey] = useState<Uint8Array>();
-  const [backup, setBackup] = useState<Account>();
-  const [identityUrl, setIdentityUrl] = useState<URL>();
-  const [backupUrl, setBackupUrl] = useState<URL>();
+  const [account, setAccount] = useState<Account>();
 
   const [openAddNote, setOpenAddNote] = useState(false);
 
@@ -65,31 +64,31 @@ export function Dashboard() {
   // If an account is connected at 'boot' but we don't know the public key,
   // disconnect
   useEffect(() => {
-    if (!account) {
+    if (!eth) {
       return;
     }
     if (!Wallet.connected) {
       Settings.dashboardOpen = false;
-    } else if (!Settings.getKey(account)) {
+    } else if (!Settings.getKey(eth)) {
       Settings.dashboardOpen = false;
       Wallet.disconnect();
       deactivate();
     }
-  }, [account]);
+  }, [eth]);
 
   useAsyncEffect(
     async (mounted) => {
-      if (!account) {
+      if (!eth) {
         return;
       }
 
       // Load or get the public key
-      let publicKey = Settings.getKey(account);
+      let publicKey = Settings.getKey(eth);
       if (!publicKey) {
         try {
           setError(null);
-          publicKey = await Wallet.login(account);
-          Settings.putKey(account, publicKey);
+          publicKey = await Wallet.login(eth);
+          Settings.putKey(eth, publicKey);
         } catch (error) {
           setError(isLedgerError(error));
           deactivate();
@@ -100,21 +99,15 @@ export function Dashboard() {
       }
 
       const backup = Account.for(publicKey);
-      const [_, lidUrl, backupUrl] = await Promise.all([
-        backup.load(api),
-        liteIDForEth(publicKey),
-        backup.chain(),
-      ]);
+      await backup.load(api);
       if (!mounted()) {
         return;
       }
 
       setPublicKey(publicKey);
-      setBackup(backup);
-      setIdentityUrl(URL.parse(lidUrl));
-      setBackupUrl(URL.parse(backupUrl));
+      setAccount(backup);
     },
-    [account],
+    [eth],
   ).catch(setError);
 
   const sign = async (args: TransactionArgs) => {
@@ -145,26 +138,26 @@ export function Dashboard() {
 
   const initBackups = async () => {
     try {
-      if (!backup.account) {
-        if (!(await backup.initialize(sign))) {
+      if (!account.backupAccount) {
+        if (!(await account.initialize(sign))) {
           return;
         }
-        await backup.load(api);
+        await account.load(api);
       }
-      if (!backup.hasKey) {
-        if (!(await backup.generateKey(sign))) {
+      if (!account.canEncrypt) {
+        if (!(await account.generateKey(sign))) {
           return;
         }
-        await backup.load(api);
+        await account.load(api);
       }
-      setBackup(backup);
+      setAccount(account);
     } catch (error) {
       setError(isLedgerError(error));
     }
   };
 
   const addNote = async ({ value }: AddNote.Fields) => {
-    await backup.addEntry(sign, {
+    await account.addEntry(sign, {
       type: 'note',
       value,
     });
@@ -183,10 +176,12 @@ export function Dashboard() {
       },
     });
 
+    await account.reloadLiteIdentity(api);
+
     // Trigger refresh
-    const u = identityUrl;
-    setIdentityUrl(null);
-    setIdentityUrl(u);
+    const b = account;
+    setAccount(null);
+    setAccount(b);
   };
 
   const tabs: TabsProps['items'] = [
@@ -195,7 +190,7 @@ export function Dashboard() {
       label: <WithIcon icon={RiAccountCircleLine}>Account</WithIcon>,
       children: (
         <Dashboard.Identity
-          url={identityUrl}
+          account={account}
           addCredits={() => (setError(null), setOpenAddCredits(true))}
         />
       ),
@@ -206,13 +201,17 @@ export function Dashboard() {
       label: <WithIcon icon={LuDatabaseBackup}>Backup</WithIcon>,
       children: (
         <Dashboard.Backup
-          backup={backup}
-          url={backupUrl}
+          account={account}
           initialize={initBackups}
           addNote={() => (setError(null), setOpenAddNote(true))}
         />
       ),
     },
+    // {
+    //   key: 'pages',
+    //   label: <WithIcon icon={RiStackLine}>Key Pages</WithIcon>,
+    //   children: <Dashboard.Pages />,
+    // },
   ];
 
   return (
@@ -235,14 +234,14 @@ export function Dashboard() {
       <ShowError error={error} onClose={() => setError(null)} />
 
       <AddNote
-        open={account && openAddNote}
+        open={eth && openAddNote}
         onCancel={() => setOpenAddNote(false)}
         onSubmit={(v) => addNote(v).finally(() => setOpenAddNote(false))}
         children={<ShowError error={error} onClose={() => setError(null)} />}
       />
 
       <AddCredits
-        open={account && openAddCredits}
+        open={eth && openAddCredits}
         onCancel={() => setOpenAddCredits(false)}
         onSubmit={() => addCredits().finally(() => setOpenAddCredits(false))}
         form={formAddCredits}
@@ -253,32 +252,16 @@ export function Dashboard() {
 }
 
 Dashboard.Identity = function ({
-  url: url,
+  account,
   addCredits,
 }: {
-  url: URL;
+  account: Account;
   addCredits: () => any;
 }) {
   const { network } = useContext(Shared);
-  const [account, setAccount] = useState<LiteIdentity>(null);
-  const [missing, setMissing] = useState(false);
   const { account: eth } = useWeb3React();
 
-  queryEffect(url).then((r) => {
-    if (r.recordType === RecordType.Error) {
-      setMissing(r.value.code === Status.NotFound);
-      return;
-    }
-    if (r.recordType !== RecordType.Account) {
-      return;
-    }
-    if (r.account.type !== AccountType.LiteIdentity) {
-      return;
-    }
-    setAccount(r.account);
-  });
-
-  if (!url) {
+  if (!account?.liteIdUrl) {
     return (
       <Skeleton
         className={'skeleton-singleline'}
@@ -304,7 +287,7 @@ Dashboard.Identity = function ({
   );
 
   const FaucetLink = ({ text }: { text: string }) => (
-    <RouterLink to={`/faucet/${url.toString()}`}>
+    <RouterLink to={`/faucet/${account.liteIdUrl.toString()}`}>
       <strong>
         <WithIcon after icon={RiExternalLinkLine}>
           {text}
@@ -321,8 +304,8 @@ Dashboard.Identity = function ({
           <strong>Lite Identity does not exist yet</strong>
           <br />
           To create a lite identity send ACME to{' '}
-          <Text copyable={{ text: `${url.toString()}/ACME` }}>
-            <Text mark>{`${url.toString()}/ACME`}</Text>
+          <Text copyable={{ text: `${account.liteIdUrl.toString()}/ACME` }}>
+            <Text mark>{`${account.liteIdUrl.toString()}/ACME`}</Text>
           </Text>
           <br />
           {network.mainnet ? (
@@ -349,7 +332,7 @@ Dashboard.Identity = function ({
         </WithIcon>
       </Title>
 
-      <CreditAmount amount={account.creditBalance || 0} />
+      <CreditAmount amount={account.liteIdentity.creditBalance || 0} />
       <br />
 
       <Button shape="round" type="primary" onClick={addCredits}>
@@ -372,9 +355,9 @@ Dashboard.Identity = function ({
 
       <Text copyable>
         {account ? (
-          <Link to={account.url}>{account.url.toString()}</Link>
+          <Link to={account.liteIdUrl}>{account.liteIdUrl.toString()}</Link>
         ) : (
-          url.toString()
+          account.liteIdUrl.toString()
         )}
       </Text>
 
@@ -384,42 +367,26 @@ Dashboard.Identity = function ({
 
       <Divider />
 
-      {missing ? (
-        <NoLID />
-      ) : account ? (
-        <LIDInfo />
-      ) : (
-        <Skeleton
-          className={'skeleton-singleline'}
-          active
-          title={true}
-          paragraph={false}
-        />
-      )}
+      {account.liteIdentity ? <LIDInfo /> : <NoLID />}
     </>
   );
 };
 
 Dashboard.Backup = function ({
-  url,
   addNote,
   initialize,
-  backup,
+  account,
 }: {
-  url: URL;
   addNote: () => any;
   initialize: () => any;
-  backup: Account;
+  account: Account;
 }) {
+  const [url, setUrl] = useState<URL>();
   const [creating, setCreating] = useState(false);
 
-  const doInit = async () => {
-    setCreating(true);
-    await initialize();
-    setCreating(false);
-  };
+  useAsyncEffect(async (mounted) => {});
 
-  if (!backup) {
+  if (!account) {
     return (
       <Skeleton
         className={'skeleton-singleline'}
@@ -440,7 +407,11 @@ Dashboard.Backup = function ({
           <Button
             shape="round"
             type="primary"
-            onClick={doInit}
+            onClick={async () => {
+              setCreating(true);
+              await initialize();
+              setCreating(false);
+            }}
             disabled={creating}
           >
             <WithIcon icon={RiAddCircleFill}>Initialize</WithIcon>
@@ -459,10 +430,12 @@ Dashboard.Backup = function ({
       </Title>
 
       <Paragraph>
-        {backup.account ? (
-          <Link to={backup.account.url}>{backup.account.url.toString()}</Link>
+        {account.backupAccount ? (
+          <Link to={account.backupAccount.url}>
+            {account.backupAccount.url.toString()}
+          </Link>
         ) : (
-          <Text>{url.toString()}</Text>
+          <Text>{account.backupAccount.toString()}</Text>
         )}
 
         <Divider />
@@ -474,7 +447,7 @@ Dashboard.Backup = function ({
             title={true}
             paragraph={false}
           />
-        ) : !backup.account || !backup.hasKey ? (
+        ) : !account.backupAccount || !account.canEncrypt ? (
           <Create />
         ) : (
           <Button shape="round" type="primary" onClick={addNote}>
@@ -484,4 +457,8 @@ Dashboard.Backup = function ({
       </Paragraph>
     </>
   );
+};
+
+Dashboard.Pages = function ({}: {}) {
+  return null;
 };

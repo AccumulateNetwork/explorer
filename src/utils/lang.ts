@@ -82,6 +82,8 @@ export const tooltip = {
       'Backup Account is a lite data account used to backup your settings',
 
     keyPageEntry: 'This is your Web3 key',
+
+    keyPageTab: 'Accumulate key pages linked to your Web3 account',
   },
 };
 
