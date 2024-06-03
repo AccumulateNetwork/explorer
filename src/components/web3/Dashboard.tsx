@@ -38,9 +38,9 @@ import { ShowError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { queryEffect, submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import { Account } from './Account';
 import { AddCredits } from './AddCredits';
 import { AddNote } from './AddNote';
-import { Backup } from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { isLedgerError, liteIDForEth } from './utils';
@@ -53,7 +53,7 @@ export function Dashboard() {
 
   const { account, deactivate } = useWeb3React();
   const [publicKey, setPublicKey] = useState<Uint8Array>();
-  const [backup, setBackup] = useState<Backup>();
+  const [backup, setBackup] = useState<Account>();
   const [identityUrl, setIdentityUrl] = useState<URL>();
   const [backupUrl, setBackupUrl] = useState<URL>();
 
@@ -99,7 +99,7 @@ export function Dashboard() {
         }
       }
 
-      const backup = Backup.for(publicKey);
+      const backup = Account.for(publicKey);
       const [_, lidUrl, backupUrl] = await Promise.all([
         backup.load(api),
         liteIDForEth(publicKey),
@@ -202,7 +202,7 @@ export function Dashboard() {
     },
     {
       key: 'backup',
-      disabled: !Backup.supported,
+      disabled: !Account.supported,
       label: <WithIcon icon={LuDatabaseBackup}>Backup</WithIcon>,
       children: (
         <Dashboard.Backup
@@ -409,7 +409,7 @@ Dashboard.Backup = function ({
   url: URL;
   addNote: () => any;
   initialize: () => any;
-  backup: Backup;
+  backup: Account;
 }) {
   const [creating, setCreating] = useState(false);
 
@@ -450,17 +450,6 @@ Dashboard.Backup = function ({
     />
   );
 
-  const Items = () => (
-    <>
-      {Object.values(backup.entries).map((x, i) => (
-        <pre key={`${i}`}>{JSON.stringify(x)}</pre>
-      ))}
-      <Button shape="round" type="primary" onClick={addNote}>
-        <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
-      </Button>
-    </>
-  );
-
   return (
     <>
       <Title level={5}>
@@ -487,9 +476,7 @@ Dashboard.Backup = function ({
           />
         ) : !backup.account || !backup.hasKey ? (
           <Create />
-        ) : (
-          <Items />
-        )}
+        ) : null}
       </Paragraph>
     </>
   );

@@ -92,7 +92,7 @@ export function Content(props: {
     }
   }, [type]);
 
-  const shortLimit = 32;
+  const shortLimit = 16;
   useEffect(() => {
     if (!current) {
       setCurrentShort('');
