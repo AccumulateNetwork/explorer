@@ -1,4 +1,5 @@
-import { Descriptions, List, Tag, Tooltip, Typography } from 'antd';
+import { useWeb3React } from '@web3-react/core';
+import { Descriptions, List, Row, Tag, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -12,7 +13,7 @@ import {
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import tooltipDescs from '../../utils/lang';
+import tooltipDescs, { tooltip } from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
@@ -188,6 +189,12 @@ KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
 };
 
 KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
+  const { account: eth } = useWeb3React();
+  const isETH =
+    entry.publicKeyHash &&
+    eth.replace(/^0x/, '').toLowerCase() ==
+      Buffer.from(entry.publicKeyHash).toString('hex');
+
   return (
     <span>
       {entry.delegate ? (
@@ -202,7 +209,21 @@ KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
         </span>
       ) : null}
       {entry.delegate && entry.publicKeyHash ? <p></p> : null}
-      {entry.publicKeyHash ? <Key keyHash={entry.publicKeyHash} /> : null}
+      {isETH ? (
+        <Row>
+          <span>
+            <Tooltip
+              overlayClassName="explorer-tooltip"
+              title={tooltip.web3.keyPageEntry}
+            >
+              <Tag color="green">Web3</Tag>
+            </Tooltip>
+          </span>
+          <Key keyHash={entry.publicKeyHash} type="ETH" />
+        </Row>
+      ) : entry.publicKeyHash ? (
+        <Key keyHash={entry.publicKeyHash} />
+      ) : null}
     </span>
   );
 };

@@ -29,24 +29,17 @@ export function SearchForm({
     return authority;
   }
 
-  const clear = () =>
-    setTimeout(() => {
-      if (searchRef.current?.input?.value) {
-        searchRef.current.input.value = '';
-      }
-    });
-
   const searchRef = useRef<InputRef>(null);
   const navigate = (value) => {
     if (history?.location?.pathname === value) {
-      clear();
+      searchForm.resetFields();
       return;
     }
     if (searching) {
       setSearchIsLoading(true);
       searching((_) => {
         setSearchIsLoading(false);
-        clear();
+        searchForm.resetFields();
       });
     }
     history.push(value);

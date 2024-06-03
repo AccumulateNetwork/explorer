@@ -476,7 +476,11 @@ Dashboard.Backup = function ({
           />
         ) : !backup.account || !backup.hasKey ? (
           <Create />
-        ) : null}
+        ) : (
+          <Button shape="round" type="primary" onClick={addNote}>
+            <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
+          </Button>
+        )}
       </Paragraph>
     </>
   );
