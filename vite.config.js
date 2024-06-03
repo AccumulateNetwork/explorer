@@ -23,6 +23,8 @@ export default defineConfig({
     // this sets a default port to 3000
     port: 3000,
 
+    host: '0.0.0.0',
+
     watch: {
       useFsEvents: true,
     },

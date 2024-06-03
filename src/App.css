@@ -1,6 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
 @import 'antd/dist/antd.css';
 
+:root {
+  --content-padding-top: 25px;
+  --content-padding-bottom: 15px;
+  --content-padding-right: 20px;
+  --content-padding-left: max(env(safe-area-inset-left), var(--content-padding-right));
+}
+
 .react-icons {
   vertical-align: middle;
 }
@@ -31,7 +38,10 @@ header.testnet > .ant-menu {
 }
 
 main {
-  padding: 25px 20px 30px 20px;
+  padding-top: var(--content-padding-top);
+  padding-right: var(--content-padding-right);
+  padding-bottom: var(--content-padding-bottom);
+  padding-left: var(--content-padding-left);
   margin: 0;
 }
 
@@ -751,7 +761,9 @@ header.web3 {
 
 
 .web3-module > .account {
-  padding: 0 20px;
+  padding: 0;
+  padding-right: var(--content-padding-right);
+  padding-left: var(--content-padding-left);
 }
 
 @media screen and (min-width: 1600px) {

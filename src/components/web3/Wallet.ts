@@ -33,7 +33,7 @@ export const Wallet = new (class Wallet {
   }
 
   get canEncrypt() {
-    return Ethereum.isMetaMask;
+    return Ethereum?.isMetaMask;
   }
 
   constructor() {
@@ -98,7 +98,7 @@ export const Wallet = new (class Wallet {
       message = '0x' + Buffer.from(message).toString('hex');
     }
 
-    if (Ethereum.isMetaMask && personal) {
+    if (Ethereum?.isMetaMask && personal) {
       const sig = await Ethereum.request({
         method: 'personal_sign',
         params: [message, account],
