@@ -1,6 +1,9 @@
+import { FaLessThanEqual } from 'react-icons/fa';
+
 import {
   AccountRecord,
   ChainEntryRecord,
+  ErrorRecord,
   MessageRecord,
   Record,
   RecordType,
@@ -21,6 +24,7 @@ import {
   WriteDataTo,
 } from 'accumulate.js/lib/core';
 import { Encoding, Enum } from 'accumulate.js/lib/encoding';
+import { Status } from 'accumulate.js/lib/errors';
 import {
   Message,
   MessageType,
@@ -62,6 +66,12 @@ type SigRecordOrEntry<T extends Signature> = SigRecord<T> | SigEntry<T>;
 type MsgRecordOrEntry<T extends Message> = MsgRecord<T> | MsgEntry<T>;
 
 type TxnCtor = Ctor<TransactionBody>;
+
+// Overload for errors
+export function isRecordOf<C extends Ctor<Account>, S extends Status>(
+  r: Record,
+  ...types: [S]
+): r is ErrorRecord & { value?: { status?: S } };
 
 // Overloads for accounts
 export function isRecordOf<C extends Ctor<Account>>(
@@ -124,7 +134,14 @@ export function isRecordOf<C extends Array<Ctor>>(
  * @param type The constructor of the given type
  * @returns Whether the record contains the given type
  */
-function checkRecordType(r: Record, type: Ctor): boolean {
+function checkRecordType(r: Record, type: Ctor | Status): boolean {
+  if (typeof type === 'number') {
+    if (r.recordType !== RecordType.Error) {
+      return false;
+    }
+    return r.value.code === type;
+  }
+
   // Get the discriminator enum type from the constructor
   const enc = Encoding.forClass(type);
   const [field] = enc?.fields;

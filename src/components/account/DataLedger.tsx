@@ -1,7 +1,9 @@
-import { Table, TablePaginationConfig, Tag, Typography } from 'antd';
+import { useWeb3React } from '@web3-react/core';
+import { Input, Table, TablePaginationConfig, Tag, Typography } from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFileList2Line } from 'react-icons/ri';
+import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { URL } from 'accumulate.js';
 
@@ -13,26 +15,12 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
+import { Backup as Web3Backup } from '../web3/Backup';
+import { Settings as Web3Settings } from '../web3/Settings';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export function DataLedger({ scope }: { scope: URL }) {
-  const columns = [
-    {
-      title: '#',
-      render: (entry: DataTxnEntry) => <DataLedger.Index entry={entry} />,
-    },
-    {
-      title: 'ID',
-      className: 'code',
-      render: (entry: DataTxnEntry) => <DataLedger.ID entry={entry} />,
-    },
-    {
-      title: 'Entry Data',
-      render: (entry: DataTxnEntry) => <DataLedger.EntryData entry={entry} />,
-    },
-  ];
-
   const { api, network } = useContext(Shared);
   const [dataChain] = useState(new DataChain(scope, api));
   const [entries, setEntries] = useState<TxnEntry[]>(null);
@@ -76,6 +64,54 @@ export function DataLedger({ scope }: { scope: URL }) {
     },
     [scope.toString(), JSON.stringify(pagination), network.id],
   );
+
+  const { account: eth } = useWeb3React();
+  const [web3backup, setWeb3backup] = useState<Web3Backup['entries']>();
+
+  useAsyncEffect(
+    async (mounted) => {
+      if (!/^[0-9a-f]+$/i.test(scope?.authority)) {
+        return;
+      }
+
+      const publicKey = Web3Settings.getKey(eth);
+      if (!publicKey) {
+        return;
+      }
+
+      const backup = Web3Backup.for(publicKey);
+      const lda = await backup.chain();
+      if (!mounted() || !URL.parse(lda).equals(scope)) {
+        return;
+      }
+
+      await backup.load(api);
+      if (!mounted() || !backup.entries) {
+        return;
+      }
+
+      setWeb3backup(backup.entries);
+    },
+    [`${scope}`, eth],
+  );
+
+  const columns = [
+    {
+      title: '#',
+      render: (entry: DataTxnEntry) => <DataLedger.Index entry={entry} />,
+    },
+    {
+      title: 'ID',
+      className: 'code',
+      render: (entry: DataTxnEntry) => <DataLedger.ID entry={entry} />,
+    },
+    {
+      title: 'Entry Data',
+      render: (entry: DataTxnEntry) => (
+        <DataLedger.EntryData entry={entry} web3backup={web3backup} />
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -122,7 +158,39 @@ DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
   );
 };
 
-DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
+DataLedger.EntryData = function ({
+  entry,
+  web3backup,
+}: {
+  entry: DataTxnEntry;
+  web3backup: Web3Backup['entries'];
+}) {
+  const [hash, setHash] = useState<string>();
+
+  useAsyncEffect(
+    async (mounted) => {
+      const hash = await entry.value.message.transaction.body.entry.hash();
+      if (!mounted()) {
+        return;
+      }
+      setHash(Buffer.from(hash).toString('hex'));
+    },
+    [entry],
+  );
+
+  if (web3backup && hash in web3backup) {
+    return (
+      <Input.Group compact className="extid">
+        <Text className="extid-type">Web3 Backup</Text>
+        <Text className="extid-text extid-json">
+          <SyntaxHighlighter language="json">
+            {JSON.stringify(web3backup[hash])}
+          </SyntaxHighlighter>
+        </Text>
+      </Input.Group>
+    );
+  }
+
   const data = dataEntryParts(entry.value.message.transaction.body.entry);
   if (data.length == 0) return null;
 

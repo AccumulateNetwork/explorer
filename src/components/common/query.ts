@@ -30,7 +30,7 @@ import {
   UrlRecord,
 } from 'accumulate.js/lib/api_v3';
 import { Error as Error2, Status } from 'accumulate.js/lib/errors';
-import { Envelope, EnvelopeArgs } from 'accumulate.js/lib/messaging';
+import { EnvelopeArgs } from 'accumulate.js/lib/messaging';
 
 import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
@@ -210,19 +210,10 @@ export function queryEffect(
             return;
           }
 
-          const r = await ctx.api.query(scope, query as any).catch((err) => {
-            try {
-              if (
-                typeof err === 'object' &&
-                'data' in err &&
-                typeof err.data === 'object'
-              ) {
-                return new ErrorRecord({ value: new errors.Error(err.data) });
-              }
-            } catch (_) {}
-            ctx.onApiError(err);
-            return null;
-          });
+          const r = await ctx.api
+            .query(scope, query as any)
+            .catch(isErrorRecord)
+            .catch((err) => (ctx.onApiError(err), null));
           if (!r || !mounted()) {
             return;
           }
@@ -240,6 +231,19 @@ export function queryEffect(
       return node;
     },
   };
+}
+
+export function isErrorRecord(error: any) {
+  try {
+    if (
+      typeof error === 'object' &&
+      'data' in error &&
+      typeof error.data === 'object'
+    ) {
+      return new ErrorRecord({ value: new errors.Error(error.data) });
+    }
+  } catch (_) {}
+  throw error;
 }
 
 export type Call<In = void, Out = void> = (_: In) => Out | PromiseLike<Out>;

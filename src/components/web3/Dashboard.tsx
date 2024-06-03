@@ -1,4 +1,4 @@
-import { CloseOutlined, LogoutOutlined } from '@ant-design/icons';
+import { CloseOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
 import {
   Alert,
@@ -10,7 +10,7 @@ import {
   TabsProps,
   Typography,
 } from 'antd';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { LuDatabaseBackup } from 'react-icons/lu';
 import {
   RiAccountCircleLine,
@@ -21,11 +21,9 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
-import { RecordRange, RecordType } from 'accumulate.js/lib/api_v3';
+import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   AccountType,
-  DataEntryType,
-  LiteDataAccount,
   LiteIdentity,
   Transaction,
   TransactionArgs,
@@ -33,7 +31,6 @@ import {
 import { Status } from 'accumulate.js/lib/errors';
 
 import { tooltip } from '../../utils/lang';
-import { TxnEntry, isRecordOfDataTxn } from '../../utils/types';
 import { CreditAmount } from '../common/Amount';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
@@ -43,7 +40,7 @@ import { queryEffect, submitAndWait } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from './AddCredits';
 import { AddNote } from './AddNote';
-import { Backup, Entry } from './Backup';
+import { Backup } from './Backup';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { isLedgerError, liteIDForEth } from './utils';
@@ -51,50 +48,79 @@ import { isLedgerError, liteIDForEth } from './utils';
 const { Title, Paragraph, Text } = Typography;
 
 export function Dashboard() {
-  const { account } = useWeb3React();
   const { api } = useContext(Shared);
-
   const [error, setError] = useState<any>();
+
+  const { account, deactivate } = useWeb3React();
+  const [publicKey, setPublicKey] = useState<Uint8Array>();
+  const [backup, setBackup] = useState<Backup>();
   const [identityUrl, setIdentityUrl] = useState<URL>();
   const [backupUrl, setBackupUrl] = useState<URL>();
 
   const [openAddNote, setOpenAddNote] = useState(false);
-  const [formAddNote] = Form.useForm();
 
   const [openAddCredits, setOpenAddCredits] = useState(false);
   const [formAddCredits] = Form.useForm();
 
+  // If an account is connected at 'boot' but we don't know the public key,
+  // disconnect
+  useEffect(() => {
+    if (!account) {
+      return;
+    }
+    if (!Wallet.connected) {
+      Settings.dashboardOpen = false;
+    } else if (!Settings.getKey(account)) {
+      Settings.dashboardOpen = false;
+      Wallet.disconnect();
+      deactivate();
+    }
+  }, [account]);
+
   useAsyncEffect(
     async (mounted) => {
-      const publicKey = Settings.getKey(account);
-      if (!publicKey) {
+      if (!account) {
         return;
       }
 
-      const [lidUrl, backupUrl] = await Promise.all([
+      // Load or get the public key
+      let publicKey = Settings.getKey(account);
+      if (!publicKey) {
+        try {
+          setError(null);
+          publicKey = await Wallet.login(account);
+          Settings.putKey(account, publicKey);
+        } catch (error) {
+          setError(isLedgerError(error));
+          deactivate();
+          Wallet.disconnect();
+          Settings.dashboardOpen = false;
+          return;
+        }
+      }
+
+      const backup = Backup.for(publicKey);
+      const [_, lidUrl, backupUrl] = await Promise.all([
+        backup.load(api),
         liteIDForEth(publicKey),
-        Backup.chainFor(publicKey),
+        backup.chain(),
       ]);
       if (!mounted()) {
         return;
       }
 
+      setPublicKey(publicKey);
+      setBackup(backup);
       setIdentityUrl(URL.parse(lidUrl));
       setBackupUrl(URL.parse(backupUrl));
     },
     [account],
-  );
+  ).catch(setError);
 
   const sign = async (args: TransactionArgs) => {
     setError(null);
 
     try {
-      const publicKey = Settings.getKey(account);
-      if (!publicKey) {
-        setError('Cannot sign: missing public key');
-        return;
-      }
-
       const txn = new Transaction(args);
       const sig = await Wallet.signAccumulate(txn, {
         publicKey,
@@ -103,47 +129,44 @@ export function Dashboard() {
         signer: await liteIDForEth(publicKey),
       });
       if (!sig?.signature) {
-        return;
+        return false;
       }
 
       await submitAndWait(api, {
         transaction: [txn],
         signatures: [sig],
       });
+      return true;
+    } catch (error) {
+      setError(isLedgerError(error));
+      return false;
+    }
+  };
+
+  const initBackups = async () => {
+    try {
+      if (!backup.account) {
+        if (!(await backup.initialize(sign))) {
+          return;
+        }
+        await backup.load(api);
+      }
+      if (!backup.hasKey) {
+        if (!(await backup.generateKey(sign))) {
+          return;
+        }
+        await backup.load(api);
+      }
+      setBackup(backup);
     } catch (error) {
       setError(isLedgerError(error));
     }
   };
 
-  const initBackups = async () => {
-    const publicKey = Settings.getKey(account);
-    if (!publicKey) {
-      setError('Public key is not known');
-      return;
-    }
-    await sign(await Backup.initialize(publicKey));
-  };
-
-  const addNote = async () => {
-    const publicKey = Settings.getKey(account);
-    if (!publicKey) {
-      setError('Public key is not known');
-      return;
-    }
-
-    const entry = await Backup.encrypt(account, {
+  const addNote = async ({ value }: AddNote.Fields) => {
+    await backup.addEntry(sign, {
       type: 'note',
-      value: formAddNote.getFieldValue('value'),
-    });
-
-    await sign({
-      header: {
-        principal: await Backup.chainFor(publicKey),
-      },
-      body: {
-        type: 'writeData',
-        entry,
-      },
+      value,
     });
   };
 
@@ -183,6 +206,7 @@ export function Dashboard() {
       label: <WithIcon icon={LuDatabaseBackup}>Backup</WithIcon>,
       children: (
         <Dashboard.Backup
+          backup={backup}
           url={backupUrl}
           initialize={initBackups}
           addNote={() => (setError(null), setOpenAddNote(true))}
@@ -213,8 +237,7 @@ export function Dashboard() {
       <AddNote
         open={account && openAddNote}
         onCancel={() => setOpenAddNote(false)}
-        onSubmit={() => addNote().finally(() => setOpenAddNote(false))}
-        form={formAddNote}
+        onSubmit={(v) => addNote(v).finally(() => setOpenAddNote(false))}
         children={<ShowError error={error} onClose={() => setError(null)} />}
       />
 
@@ -381,92 +404,22 @@ Dashboard.Backup = function ({
   url,
   addNote,
   initialize,
+  backup,
 }: {
   url: URL;
   addNote: () => any;
   initialize: () => any;
+  backup: Backup;
 }) {
-  const { account: eth } = useWeb3React();
-
-  const [account, setAccount] = useState<LiteDataAccount>(null);
-  const [missing, setMissing] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [entries, setEntries] = useState<Entry[]>();
 
-  queryEffect(url, null, [creating]).then((r) => {
-    if (r.recordType === RecordType.Error) {
-      setMissing(r.value.code === Status.NotFound);
-      return;
-    }
-    setMissing(false);
-    if (r.recordType !== RecordType.Account) {
-      return;
-    }
-    if (r.account.type !== AccountType.LiteDataAccount) {
-      return;
-    }
-    setAccount(r.account);
-  });
-
-  const { api, onApiError } = useContext(Shared);
-  useAsyncEffect(
-    async (mounted) => {
-      if (!account?.url) {
-        return;
-      }
-
-      let start = 1;
-      const entries = [];
-      while (true) {
-        const { records, total } = (await api.query(account?.url, {
-          queryType: 'chain',
-          name: 'main',
-          range: {
-            start: start,
-            expand: true,
-          },
-        })) as RecordRange<TxnEntry>;
-        if (!mounted()) {
-          return;
-        }
-        if (!records?.length) {
-          break;
-        }
-
-        for (const r of records) {
-          if (!isRecordOfDataTxn(r)) {
-            continue;
-          }
-
-          const { entry } = r.value.message.transaction.body;
-          if (entry.type !== DataEntryType.DoubleHash) {
-            continue;
-          }
-
-          const plain = await Backup.decrypt(eth, entry);
-          if (!mounted()) {
-            return;
-          }
-          entries.push(plain);
-        }
-
-        start += records.length;
-        if (start >= total) {
-          break;
-        }
-      }
-      setEntries(entries);
-    },
-    [`${account?.url}`],
-  ).catch(onApiError);
-
-  const create = async () => {
+  const doInit = async () => {
     setCreating(true);
     await initialize();
     setCreating(false);
   };
 
-  if (!url) {
+  if (!backup) {
     return (
       <Skeleton
         className={'skeleton-singleline'}
@@ -482,15 +435,15 @@ Dashboard.Backup = function ({
       type="warning"
       message={
         <Text>
-          <strong>Backup account does not exist yet</strong>
+          <strong>Backups have not yet been initialized</strong>
           <br />
           <Button
             shape="round"
             type="primary"
-            onClick={create}
+            onClick={doInit}
             disabled={creating}
           >
-            <WithIcon icon={RiAddCircleFill}>Create</WithIcon>
+            <WithIcon icon={RiAddCircleFill}>Initialize</WithIcon>
           </Button>
         </Text>
       }
@@ -499,7 +452,9 @@ Dashboard.Backup = function ({
 
   const Items = () => (
     <>
-      {entries?.map((x, i) => <pre key={`${i}`}>{JSON.stringify(x)}</pre>)}
+      {Object.values(backup.entries).map((x, i) => (
+        <pre key={`${i}`}>{JSON.stringify(x)}</pre>
+      ))}
       <Button shape="round" type="primary" onClick={addNote}>
         <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
       </Button>
@@ -515,8 +470,8 @@ Dashboard.Backup = function ({
       </Title>
 
       <Paragraph>
-        {account ? (
-          <Link to={account.url}>{account.url.toString()}</Link>
+        {backup.account ? (
+          <Link to={backup.account.url}>{backup.account.url.toString()}</Link>
         ) : (
           <Text>{url.toString()}</Text>
         )}
@@ -530,7 +485,7 @@ Dashboard.Backup = function ({
             title={true}
             paragraph={false}
           />
-        ) : missing ? (
+        ) : !backup.account || !backup.hasKey ? (
           <Create />
         ) : (
           <Items />

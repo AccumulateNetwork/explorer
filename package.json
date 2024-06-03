@@ -24,6 +24,7 @@
     "react-router-dom": "^5.3.0",
     "react-syntax-highlighter": "^15.5.0",
     "rxjs": "^7.8.1",
+    "tweetnacl": "^1.0.3",
     "web3": "^1.8.2"
   },
   "overrides": {
@@ -61,7 +62,12 @@
     "singleQuote": true,
     "importOrderSeparation": true,
     "importOrderSortSpecifiers": true,
-    "importOrderParserPlugins": ["typescript", "jsx", "decorators", "decoratorAutoAccessors"],
+    "importOrderParserPlugins": [
+      "typescript",
+      "jsx",
+      "decorators",
+      "decoratorAutoAccessors"
+    ],
     "importOrder": [
       "<THIRD_PARTY_MODULES>",
       "^accumulate.js",

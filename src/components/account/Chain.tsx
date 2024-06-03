@@ -3,7 +3,6 @@ import {
   Skeleton,
   Table,
   TablePaginationConfig,
-  TableProps,
   Tag,
   Typography,
 } from 'antd';

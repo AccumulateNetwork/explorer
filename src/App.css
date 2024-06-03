@@ -390,6 +390,17 @@ h4.ant-typography .count {
   height: 33px !important;
 }
 
+.extid-json {
+  padding: 0 !important;
+}
+
+.extid-json pre {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: none !important;
+}
+
 .extid .extid-text,
 .extid .extid-type {
   font-size: 13px !important;
@@ -738,6 +749,11 @@ header.web3 {
   flex-flow: column;
 }
 
+
+.web3-module > .account {
+  padding: 0 20px;
+}
+
 @media screen and (min-width: 1600px) {
   .web3-module > .account {
     width: 1600px;
@@ -749,6 +765,7 @@ header.web3 {
     width: 100vw;
   }
 }
+
 
 .web3-logout-button:not(:hover) {
   color: white;

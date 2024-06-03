@@ -1,18 +1,22 @@
 import { Button, Form, FormInstance, Input, Modal, Spin } from 'antd';
 import React, { useState } from 'react';
 
+export declare namespace AddNote {
+  interface Fields {
+    value: string;
+  }
+}
+
 export function AddNote({
   open,
   onSubmit,
   onCancel,
   children,
-  form,
 }: {
   open: boolean;
-  onSubmit: () => any;
+  onSubmit: (_: AddNote.Fields) => any;
   onCancel: () => any;
   children?: React.ReactNode;
-  form: FormInstance;
 }) {
   const [pending, setPending] = useState(false);
   return (
@@ -24,31 +28,36 @@ export function AddNote({
       forceRender
     >
       <Form
-        form={form}
         layout="vertical"
         className="modal-form"
         preserve={false}
+        disabled={pending}
+        onFinish={async (v) => {
+          setPending(true);
+          try {
+            await onSubmit(v);
+          } finally {
+            setPending(false);
+          }
+        }}
       >
-        <Form.Item label="Note" className="text-row" name="value">
+        <Form.Item
+          label="Note"
+          className="text-row"
+          name="value"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item>
           <Button
-            onClick={async () => {
-              setPending(true);
-              try {
-                await onSubmit();
-              } finally {
-                setPending(false);
-              }
-            }}
+            htmlType="submit"
             type="primary"
             shape="round"
             size="large"
-            disabled={!form.getFieldValue('value') || pending}
-          >
-            {pending ? <Spin /> : 'Submit'}
-          </Button>
+            loading={pending}
+            children="Submit"
+          />
           {children}
         </Form.Item>
       </Form>
