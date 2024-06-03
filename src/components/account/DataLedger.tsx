@@ -80,13 +80,12 @@ export function DataLedger({ scope }: { scope: URL }) {
       }
 
       const backup = Web3Backup.for(publicKey);
-      const lda = await backup.backupChain();
-      if (!mounted() || !URL.parse(lda).equals(scope)) {
-        return;
-      }
-
       await backup.load(api);
-      if (!mounted() || !backup.entries) {
+      if (
+        !mounted() ||
+        !URL.parse(backup.liteIdUrl).equals(scope) ||
+        !backup.entries
+      ) {
         return;
       }
 
