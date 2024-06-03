@@ -33,11 +33,16 @@ import { Settings } from './Settings';
 import { EthPublicKey, Wallet } from './Wallet';
 import { ethAddress, liteIDForEth } from './utils';
 
-export type Entry = Note;
+export type Entry = Note | RegisterBook;
 
 interface Note {
   type: 'note';
   value: string;
+}
+
+interface RegisterBook {
+  type: 'registerBook';
+  url: string;
 }
 
 type SignAccumulate = (txn: TransactionArgs) => Promise<boolean>;
@@ -63,6 +68,7 @@ export class Account {
   liteIdentity: LiteIdentity;
   backupAccount: LiteDataAccount;
   entries: { [hash: string]: Entry };
+  registeredBooks: URL[];
 
   #rawEntries: DataEntry[];
   #encryptionKey: Uint8Array;
@@ -213,11 +219,22 @@ export class Account {
     if (!this.#encryptionKey || !this.#rawEntries || this.entries) {
       return;
     }
+
     this.entries = await decryptEntries({
       key: this.#encryptionKey,
       crypt: this.#rawEntries,
       token: (s) => this.#token(s),
     });
+
+    this.registeredBooks = [];
+    for (const entry of Object.values(this.entries)) {
+      if (entry.type !== 'registerBook') {
+        continue;
+      }
+      try {
+        this.registeredBooks.push(URL.parse(entry.url));
+      } catch (_) {}
+    }
   }
 
   async #token(suffix: string) {

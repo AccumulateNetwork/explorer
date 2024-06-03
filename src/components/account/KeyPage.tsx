@@ -10,7 +10,7 @@ import {
   RiQuestionLine,
 } from 'react-icons/ri';
 
-import { core } from 'accumulate.js';
+import { URL, core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import tooltipDescs, { tooltip } from '../../utils/lang';
@@ -22,6 +22,7 @@ import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Register as Web3Register } from '../web3/Register';
 import { AccChains } from './AccChains';
 import { describeParent } from './parent';
 
@@ -29,6 +30,7 @@ const { Title, Paragraph, Text } = Typography;
 
 export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
   const { account } = record;
+  const bookUrl = URL.parse(account.url.toString().replace(/\/\d+$/, ''));
 
   const labelURL = (
     <span>
@@ -80,7 +82,14 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
 
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle
+        url={account.url}
+        title={
+          <Web3Register kind="page" book={bookUrl}>
+            Key Page
+          </Web3Register>
+        }
+      />
 
       {/* Account type */}
       <InfoTable>

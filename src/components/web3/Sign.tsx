@@ -42,7 +42,13 @@ Sign.submit = (set: (_: Sign.Request) => void, args: TransactionArgs) => {
   return promise;
 };
 
-export function Sign({ request }: { request: Sign.Request }) {
+export function Sign({
+  request,
+  title = 'Signing',
+}: {
+  request: Sign.Request;
+  title?: React.ReactNode;
+}) {
   const account = useWeb3();
   const { api } = useContext(Shared);
   const [open, setOpen] = useState(false);
@@ -104,7 +110,7 @@ export function Sign({ request }: { request: Sign.Request }) {
 
   return (
     <Modal
-      title="Signing"
+      title={title}
       open={open}
       footer={false}
       closable={closable}

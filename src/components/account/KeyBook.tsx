@@ -6,7 +6,7 @@ import { RiInformationLine, RiQuestionLine, RiStackLine } from 'react-icons/ri';
 import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
-import tooltipDescs from '../../utils/lang';
+import { tooltip } from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
@@ -14,6 +14,7 @@ import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Register as Web3Register } from '../web3/Register';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { describeParent } from './parent';
@@ -33,7 +34,7 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <Tooltip
             overlayClassName="explorer-tooltip"
-            title={tooltipDescs.keyBookUrl}
+            title={tooltip.keyBookUrl}
           >
             <RiQuestionLine />
           </Tooltip>
@@ -42,9 +43,17 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
       </Nobr>
     </span>
   );
+
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle
+        url={account.url}
+        title={
+          <Web3Register kind="book" book={account.url}>
+            Key Book
+          </Web3Register>
+        }
+      />
 
       {/* Account type */}
       <InfoTable>

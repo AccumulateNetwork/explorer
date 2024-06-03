@@ -4,15 +4,17 @@ import {
   Alert,
   Button,
   Divider,
-  Form,
+  List,
   Skeleton,
   Tabs,
   TabsProps,
   Typography,
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
+import { IconContext } from 'react-icons';
 import { LuDatabaseBackup } from 'react-icons/lu';
 import {
+  RiAccountBoxLine,
   RiAccountCircleLine,
   RiAddCircleFill,
   RiExternalLinkLine,
@@ -25,6 +27,7 @@ import { Transaction, TransactionArgs } from 'accumulate.js/lib/core';
 
 import { tooltip } from '../../utils/lang';
 import { CreditAmount } from '../common/Amount';
+import { CompactList } from '../common/CompactList';
 import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
@@ -413,6 +416,35 @@ Dashboard.Backup = function ({
 };
 
 Dashboard.Books = function ({ account }: { account: Account }) {
+  const NoBooks = () => (
+    <Alert
+      type="info"
+      message={
+        <span>
+          {'To register a key book, navigate to it and click '}
+          <PlusCircleOutlined />
+        </span>
+      }
+    />
+  );
+
+  const ListBooks = () => (
+    <CompactList
+      size="small"
+      dataSource={account.registeredBooks}
+      renderItem={(item) => (
+        <List.Item>
+          <Link to={item}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiAccountBoxLine />
+            </IconContext.Provider>
+            {item.toString()}
+          </Link>
+        </List.Item>
+      )}
+    />
+  );
+
   return (
     <>
       <Title level={5}>
@@ -421,15 +453,7 @@ Dashboard.Books = function ({ account }: { account: Account }) {
         </WithIcon>
       </Title>
 
-      <Alert
-        type="info"
-        message={
-          <span>
-            {'To register a key book, navigate to it and click '}
-            <PlusCircleOutlined />
-          </span>
-        }
-      />
+      {account.registeredBooks?.length ? <ListBooks /> : <NoBooks />}
     </>
   );
 };

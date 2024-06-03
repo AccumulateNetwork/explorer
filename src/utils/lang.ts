@@ -85,6 +85,9 @@ export const tooltip = {
 
     keyBookTab: 'Accumulate key books linked to your Web3 account',
     registerKeyBook: 'Link this key book to your Web3 account',
+    registeredKeyBook: 'This key book has been linked to your Web3 account',
+    registerKeyPage: 'Link this key page to your Web3 account',
+    registeredKeyPage: 'This key page has been linked to your Web3 account',
   },
 };
 

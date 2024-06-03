@@ -1,4 +1,12 @@
-import { Button, Form, InputNumber, Modal, Select, Typography } from 'antd';
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Typography,
+} from 'antd';
 import { sign } from 'eth-crypto';
 import React, { useContext, useState } from 'react';
 import { RiQuestionLine } from 'react-icons/ri';
@@ -85,7 +93,7 @@ export function AddCredits({
     })
     .catch(setTokenAccountError);
 
-  const [tokens, setTokens] = useState<number>();
+  // Calculate the ACME amount
   const changed = ({ oracle, credits }: Fields) => {
     if (!oracle || isNaN(oracle)) {
       return;
@@ -95,9 +103,9 @@ export function AddCredits({
     }
     const tokens = ((credits * 100) / oracle) * 10 ** 8;
     form.setFieldsValue({ tokens });
-    setTokens(tokens);
   };
 
+  // Submit the transaction
   const submit = async ({
     tokenAccount,
     recipient,
@@ -205,12 +213,19 @@ export function AddCredits({
               style={{ width: '100%' }}
               addonAfter={
                 <span>
-                  credits = <TokenAmount bare amount={tokens} issuer="ACME" />
+                  credits ={' '}
+                  <TokenAmount
+                    bare
+                    amount={Form.useWatch('tokens', form)}
+                    issuer="ACME"
+                  />
                 </span>
               }
             />
           </Form.Item>
-          <Form.Item noStyle name="tokens" />
+          <Form.Item noStyle name="tokens">
+            <Input type="hidden" />
+          </Form.Item>
         </Form.Item>
         <Form.Item>
           <Button
