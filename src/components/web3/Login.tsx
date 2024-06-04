@@ -71,7 +71,7 @@ export function Login() {
 
       <Tooltip
         overlayClassName="explorer-tooltip"
-        title={connected ? tooltip.web3.toggleDashboard : tooltip.web3.connect}
+        title={connected ? tooltip.web3.openDashboard : tooltip.web3.connect}
       >
         <Button
           shape="circle"
