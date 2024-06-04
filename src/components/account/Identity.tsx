@@ -8,7 +8,7 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountType } from 'accumulate.js/lib/core';
+import { AccountType, LiteIdentity } from 'accumulate.js/lib/core';
 
 import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
@@ -18,6 +18,8 @@ import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
+import { WithIcon } from '../common/WithIcon';
+import { useWeb3 } from '../web3/Account';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory } from './Directory';
@@ -30,48 +32,48 @@ export function Identity({
   record: AccountRecordOf<core.ADI | core.LiteIdentity>;
 }) {
   const { account } = record;
+  const web3 = useWeb3();
+  const isWeb3Lite = web3?.liteIdUrl?.equals(account.url);
 
-  const typeStr =
-    account instanceof core.ADI ? (
-      'ADI'
-    ) : (
-      <EnumValue type={AccountType} value={account.type} />
-    );
+  const isADI = account instanceof core.ADI;
+  const typeStr = isADI ? (
+    'ADI'
+  ) : (
+    <EnumValue type={AccountType} value={account.type} />
+  );
+
+  const labelETH = (
+    <WithIcon
+      icon={RiQuestionLine}
+      tooltip={tooltipDescs.web3.ethereumAddress}
+      children="Ethereum Address"
+    />
+  );
 
   const labelURL = (
-    <span>
-      <Nobr>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <Tooltip
-            overlayClassName="explorer-tooltip"
-            title={tooltipDescs.adiUrl}
-          >
-            <RiQuestionLine />
-          </Tooltip>
-        </IconContext.Provider>
-        URL
-      </Nobr>
-    </span>
+    <WithIcon
+      icon={RiQuestionLine}
+      tooltip={tooltipDescs.adiUrl}
+      children="URL"
+    />
   );
 
   const labelBalance = (
-    <span>
-      <Nobr>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <Tooltip
-            overlayClassName="explorer-tooltip"
-            title={tooltipDescs.creditBalance}
-          >
-            <RiQuestionLine />
-          </Tooltip>
-        </IconContext.Provider>
-        Credit Balance
-      </Nobr>
-    </span>
+    <WithIcon
+      icon={RiQuestionLine}
+      tooltip={tooltipDescs.creditBalance}
+      children="Credit Balance"
+    />
   );
+
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle
+        url={account.url}
+        title={
+          isWeb3Lite ? 'Web3 Lite Identity' : isADI ? 'ADI' : 'Lite Identity'
+        }
+      />
 
       {/* Account type */}
       <InfoTable>
@@ -86,6 +88,12 @@ export function Identity({
         {typeStr} Info
       </Title>
       <InfoTable>
+        {isWeb3Lite && (
+          <Descriptions.Item label={labelETH}>
+            <Text copyable>{web3.ethereum}</Text>
+          </Descriptions.Item>
+        )}
+
         <Descriptions.Item label={labelURL}>
           {account.url.toString()}
         </Descriptions.Item>

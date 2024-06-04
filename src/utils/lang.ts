@@ -83,6 +83,8 @@ export const tooltip = {
 
     keyPageEntry: 'This is your Web3 key',
 
+    ethereumAddress: 'The Ethereum address of your Web3 wallet',
+
     register: 'Link this account to your Web3 wallet',
     registered: 'This account has been linked to your Web3 wallet',
     registeredTab: 'Accumulate accounts linked to your Web3 wallet',

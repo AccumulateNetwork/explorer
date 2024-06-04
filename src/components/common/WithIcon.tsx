@@ -2,6 +2,8 @@ import { Tooltip } from 'antd';
 import React from 'react';
 import { IconContext, IconType } from 'react-icons';
 
+import { Nobr } from './Nobr';
+
 export function WithIcon({
   icon,
   after,
@@ -32,15 +34,17 @@ export function WithIcon({
 
   if (after) {
     return (
-      <span>
-        {children} {icon}
-      </span>
+      <Nobr>
+        {children}
+        {icon}
+      </Nobr>
     );
   }
 
   return (
-    <span>
-      {icon} {children}
-    </span>
+    <Nobr>
+      {icon}
+      {children}
+    </Nobr>
   );
 }

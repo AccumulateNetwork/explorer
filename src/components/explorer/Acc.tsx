@@ -16,6 +16,8 @@ import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
+import { useWeb3 } from '../web3/Account';
+import { MissingLiteID as Web3MissingLiteID } from '../web3/MissingLiteID';
 import Error404 from './Error404';
 import { Settings } from './Settings';
 
@@ -28,6 +30,7 @@ export function Acc({
   parentCallback?: any;
   didLoad?: (_: any) => void;
 }) {
+  const web3 = useWeb3();
   const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
@@ -52,6 +55,9 @@ export function Acc({
     .finally((x) => didLoad?.(x));
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
+    if (web3?.liteIdUrl?.equals(url)) {
+      return <Web3MissingLiteID />;
+    }
     return <Error404 />;
   }
 
