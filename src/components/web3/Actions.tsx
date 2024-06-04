@@ -10,6 +10,7 @@ import {
   AuthorityEntry,
   KeyPage,
   KeySpec,
+  LiteIdentity,
 } from 'accumulate.js/lib/core';
 
 import { Shared } from '../common/Network';
@@ -20,7 +21,7 @@ import { useWeb3 } from './Account';
 import { SendTokens } from './SendTokens';
 
 interface Signer {
-  page: KeyPage;
+  signer: KeyPage | LiteIdentity;
   entry: KeySpec;
 }
 
@@ -78,6 +79,7 @@ export function Actions(props: { account: URL }) {
     return false;
   }
 
+  const { signer } = signers[0];
   return (
     <>
       <Dropdown className="web3-actions" menu={{ items }}>
@@ -94,8 +96,8 @@ export function Actions(props: { account: URL }) {
         onCancel={() => setOpen(null)}
         onFinish={() => setOpen(null)}
         signer={{
-          signer: signers[0].page.url,
-          signerVersion: signers[0].page.version,
+          signer: signer.url,
+          signerVersion: signer instanceof KeyPage ? signer.version : 1,
         }}
       />
     </>
@@ -112,15 +114,28 @@ async function getSigners(
     return;
   }
 
-  return (web3?.registeredBooks || [])
-    .filter(({ book }) => authorities.some(({ url }) => book.url.equals(url)))
-    .flatMap(({ pages }) => pages)
-    .flatMap((page) => page.keys.flatMap((entry) => ({ page, entry })))
-    .filter(
-      ({ entry }) =>
-        Buffer.from(entry.publicKeyHash).toString('hex') ===
-        web3.ethereum.replace(/^0x/, '').toLowerCase(),
-    );
+  // if (web3?.liteIdentity && authorities.some(({ url}) => web3.liteIdUrl.equals(url)))
+  const ethKeyHash = web3.ethereum.replace(/^0x/, '').toLowerCase();
+  return [
+    ...(authorities.some(({ url }) => web3?.liteIdentity?.url.equals(url))
+      ? [
+          {
+            signer: web3.liteIdentity,
+            entry: new KeySpec({ publicKeyHash: ethKeyHash }),
+          },
+        ]
+      : []),
+    ...(web3?.registeredBooks || [])
+      .filter(({ book }) => authorities.some(({ url }) => book.url.equals(url)))
+      .flatMap(({ pages }) => pages)
+      .flatMap((page) =>
+        page.keys.flatMap((entry) => ({ signer: page, entry })),
+      )
+      .filter(
+        ({ entry }) =>
+          Buffer.from(entry.publicKeyHash).toString('hex') === ethKeyHash,
+      ),
+  ];
 }
 
 async function resolveAuthorities(api: JsonRpcClient, account: core.Account) {

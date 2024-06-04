@@ -177,10 +177,10 @@ export function SendTokens(props: {
             </Paragraph>
           )}
         </Form.Item>
-        <Form.Item label="Recipient" name="to">
+        <Form.Item label="Recipient" name="to" rules={[{ required: true }]}>
           <Input />
         </Form.Item>
-        <Form.Item label="Amount" name="amount">
+        <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>
           <InputNumber
             min={0}
             max={issuer && Number(from.balance) / 10 ** issuer.precision}

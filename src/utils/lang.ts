@@ -70,7 +70,7 @@ export const tooltip = {
 
     disconnect: 'Disconnect Web3 wallet',
 
-    openDashboard: 'Open the Web3 dashboard',
+    openDashboard: 'Open the Web3 wallet dashboard',
 
     liteIdentity:
       'Accumulate Lite Identity is an account associated with your Ethereum key',

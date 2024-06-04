@@ -45,7 +45,7 @@
     "react-error-overlay": "6.0.9"
   },
   "scripts": {
-    "start": "VITE_NETWORK=any VITE_APP_ID='explorer-wespx' vite",
+    "start": "VITE_NETWORK=any VITE_APP_ID='explorer-wespx' vite dev",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format": "prettier -w src",
