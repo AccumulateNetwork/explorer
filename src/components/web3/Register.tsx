@@ -31,7 +31,7 @@ export function Register({
     return children;
   }
 
-  if (account.registeredBooks?.some((x) => book.equals(x))) {
+  if (account.registeredBooks?.some((x) => x.book.url.equals(book))) {
     return (
       <WithIcon
         after

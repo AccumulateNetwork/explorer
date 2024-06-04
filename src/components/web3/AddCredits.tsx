@@ -148,7 +148,6 @@ export function AddCredits({
       <Form
         form={form}
         layout="vertical"
-        className="modal-form"
         preserve={false}
         requiredMark={false}
         disabled={pending}

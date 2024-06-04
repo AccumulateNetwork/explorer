@@ -328,7 +328,7 @@ Dashboard.Identity = function ({
         </WithIcon>
       </Title>
 
-      <Text copyable>
+      <Text copyable={{ text: account.liteIdUrl.toString() }}>
         {account ? (
           <Link to={account.liteIdUrl}>{account.liteIdUrl.toString()}</Link>
         ) : (
@@ -439,11 +439,11 @@ Dashboard.Registered = function ({ account }: { account: Account }) {
       dataSource={account.registeredBooks}
       renderItem={(item) => (
         <List.Item>
-          <Link to={item}>
+          <Link to={item.book.url}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
               <RiAccountBoxLine />
             </IconContext.Provider>
-            {item.toString()}
+            {item.book.url.toString()}
           </Link>
         </List.Item>
       )}

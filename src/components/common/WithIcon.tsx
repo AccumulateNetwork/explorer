@@ -32,15 +32,15 @@ export function WithIcon({
 
   if (after) {
     return (
-      <>
+      <span>
         {children} {icon}
-      </>
+      </span>
     );
   }
 
   return (
-    <>
+    <span>
       {icon} {children}
-    </>
+    </span>
   );
 }

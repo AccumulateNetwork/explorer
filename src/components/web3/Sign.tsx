@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert, Modal, Spin } from 'antd';
 import React, { useContext, useState } from 'react';
 
-import { TxID } from 'accumulate.js';
+import { SignOptions, TxID } from 'accumulate.js';
 import { JsonRpcClient, MessageRecord } from 'accumulate.js/lib/api_v3';
 import { Transaction, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
@@ -16,15 +16,21 @@ import { Account, useWeb3 } from './Account';
 import { Wallet } from './Wallet';
 
 export declare namespace Sign {
+  type Signer = SignOptions;
   interface Request {
     args: TransactionArgs;
+    signer?: Signer;
     onFinish(): any;
     onCancel(): any;
     initiated?: boolean;
   }
 }
 
-Sign.submit = (set: (_: Sign.Request) => void, args: TransactionArgs) => {
+Sign.submit = (
+  set: (_: Sign.Request) => void,
+  args: TransactionArgs,
+  signer?: Sign.Signer,
+) => {
   let resolve: (_: boolean) => void;
   const promise = new Promise<boolean>((r) => {
     resolve = r;
@@ -32,6 +38,7 @@ Sign.submit = (set: (_: Sign.Request) => void, args: TransactionArgs) => {
 
   set({
     args,
+    signer,
     onFinish() {
       resolve(true);
     },
@@ -80,13 +87,12 @@ export function Sign({
         };
       };
 
-      const { args, onCancel, onFinish } = request;
+      const { args, signer, onCancel, onFinish } = request;
       setOpen(true);
       setClosable(false);
       try {
         request.initiated = true;
-        if (await sign({ push, api, account, args })) {
-          setOpen(false);
+        if (await sign({ push, api, account, args, signer })) {
           onFinish();
           return true;
         }
@@ -124,21 +130,25 @@ export function Sign({
 async function sign({
   push,
   api,
-  account,
   args,
+  account,
+  signer,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
   api: JsonRpcClient;
   account: Account;
   args: TransactionArgs;
+  signer: Sign.Signer;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
   const txn = new Transaction(args);
   const sig = await Wallet.signAccumulate(txn, {
     publicKey: account.publicKey,
-    signerVersion: 1,
     timestamp: Date.now(),
-    signer: account.liteIdUrl,
+    ...(signer || {
+      signer: account.liteIdUrl,
+      signerVersion: 1,
+    }),
   }).catch((error) => {
     update(
       <Failure>
@@ -183,8 +193,9 @@ async function sign({
     return;
   }
 
+  const seen = new Set<string>();
   const ok = await Promise.all(
-    results.map((r) => waitFor({ api, push, txid: r.status.txID })),
+    results.map((r) => waitFor({ api, push, seen, txid: r.status.txID })),
   );
   return ok.every((x) => x);
 }
@@ -196,11 +207,18 @@ async function waitFor({
   push,
   api,
   txid,
+  seen,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
   api: JsonRpcClient;
   txid: TxID;
+  seen: Set<string>;
 }): Promise<boolean> {
+  if (seen.has(txid.toString())) {
+    return true;
+  }
+  seen.add(txid.toString());
+
   const replace = push(
     <Pending>
       <Link to={txid}>{txstr(txid)}</Link>
@@ -226,7 +244,9 @@ async function waitFor({
       }
 
       const ok = await Promise.all(
-        r.produced.records.map((r) => waitFor({ push, api, txid: r.value })),
+        r.produced.records.map((r) =>
+          waitFor({ push, api, seen, txid: r.value }),
+        ),
       );
       return ok.every((x) => x);
     } catch (error) {

@@ -13,6 +13,8 @@ import {
   DataEntry,
   DataEntryType,
   DoubleHashDataEntry,
+  KeyBook,
+  KeyPage,
   LiteDataAccount,
   LiteIdentity,
   TransactionArgs,
@@ -68,7 +70,7 @@ export class Account {
   liteIdentity: LiteIdentity;
   backupAccount: LiteDataAccount;
   entries: { [hash: string]: Entry };
-  registeredBooks: URL[];
+  registeredBooks: { book: KeyBook; pages: KeyPage[] }[];
 
   #rawEntries: DataEntry[];
   #encryptionKey: Uint8Array;
@@ -97,6 +99,7 @@ export class Account {
     await this.#loadEntries(api);
     await this.#locateKey();
     await this.#decryptEntries();
+    await this.#loadRegistered(api);
   }
 
   async initialize(sign: SignAccumulate) {
@@ -225,16 +228,46 @@ export class Account {
       crypt: this.#rawEntries,
       token: (s) => this.#token(s),
     });
+  }
 
-    this.registeredBooks = [];
-    for (const entry of Object.values(this.entries)) {
-      if (entry.type !== 'registerBook') {
-        continue;
-      }
-      try {
-        this.registeredBooks.push(URL.parse(entry.url));
-      } catch (_) {}
+  async #loadRegistered(api: JsonRpcClient) {
+    if (!this.entries || this.registeredBooks) {
+      return;
     }
+
+    const tryParse = (s: string) => {
+      try {
+        return URL.parse(s);
+      } catch (_) {}
+    };
+    this.registeredBooks = await Promise.all(
+      Object.values(this.entries)
+        .filter((x): x is RegisterBook => x.type === 'registerBook')
+        .map((x) => tryParse(x.url))
+        .filter((x) => x)
+        .map(async (x) => {
+          const r = await api.query(x);
+          if (!isRecordOf(r, KeyBook)) {
+            return;
+          }
+
+          const pages = await Promise.all(
+            [...Array(r.account.pageCount).keys()].map(async (_, i) => {
+              const r = await api.query(`${x}/${i + 1}`);
+              if (!isRecordOf(r, KeyPage)) {
+                return;
+              }
+              return r.account;
+            }),
+          );
+
+          return {
+            book: r.account,
+            pages: pages.filter((x) => x),
+          };
+        })
+        .filter((x) => x),
+    );
   }
 
   async #token(suffix: string) {

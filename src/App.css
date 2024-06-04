@@ -191,6 +191,14 @@ main {
   margin-bottom: 25px;
 }
 
+.web3-actions {
+  margin-left: 10px;
+}
+
+.ant-dropdown-menu-title-content > .ant-btn-link {
+  padding: 0;
+}
+
 h2.ant-typography,
 h4.ant-typography:not(.ant-typography-secondary) {
   color: #000 !important;
