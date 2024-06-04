@@ -26,6 +26,7 @@ import { WithIcon } from '../common/WithIcon';
 import { useWeb3 } from './Account';
 import { AddCredits } from './AddCredits';
 import { Connect } from './Connect';
+import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
 import { Sign } from './Sign';
 import { Wallet } from './Wallet';
@@ -145,6 +146,19 @@ export function Dashboard() {
         )}
       </InfoTable>
 
+      {!account?.liteIdentity && (
+        <Alert
+          type="warning"
+          style={{ marginBottom: 20 }}
+          message={
+            <MissingLiteID.Create
+              eth={account.ethereum}
+              lite={account.liteIdUrl}
+            />
+          }
+        />
+      )}
+
       <Title level={4}>On-chain Backup </Title>
 
       <InfoTable>
@@ -186,7 +200,11 @@ export function Dashboard() {
           ) : (
             <Tooltip
               overlayClassName="explorer-tooltip"
-              title="Credits are required for this operation"
+              title={
+                account.liteIdentity
+                  ? 'Purchase credits to enable this action'
+                  : 'Create the lite identity and purchase credits to enable this action'
+              }
             >
               <Button
                 shape="round"
