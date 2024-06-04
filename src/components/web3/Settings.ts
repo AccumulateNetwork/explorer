@@ -13,13 +13,17 @@ export const Settings = new (
     @stored accessor #publicKeys: Record<string, string> = {};
 
     getKey(account: string): Uint8Array {
-      return Buffer.from(this.#publicKeys[account], 'hex');
+      return Buffer.from(this.#publicKeys[normalize(account)], 'hex');
     }
 
     putKey(account: string, publicKey: Uint8Array) {
       const keys = this.#publicKeys;
-      keys[account] = Buffer.from(publicKey).toString('hex');
+      keys[normalize(account)] = Buffer.from(publicKey).toString('hex');
       this.#publicKeys = keys;
     }
   }
 )();
+
+function normalize(account: string) {
+  return account.replace(/^0x/, '').toLowerCase();
+}

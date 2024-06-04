@@ -3,12 +3,13 @@ import React, { MouseEventHandler, useContext, useState } from 'react';
 import { RiExternalLinkLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
+import { Submission } from 'accumulate.js/lib/api_v3';
 
 import { AccTitle } from '../common/AccTitle';
 import { Shared } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
-import { useWeb3 } from './Account';
 import { Sign } from './Sign';
+import { useWeb3 } from './useWeb3';
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -38,12 +39,14 @@ export function MissingLiteID() {
 
 MissingLiteID.Create = function ({ lite, eth }: { lite: URL; eth: string }) {
   const { api, network } = useContext(Shared);
-  const [faucetRq, setFaucetRq] = useState<Sign.WaitForRequest>();
+  const [faucetRq, setFaucetRq] = useState<Sign.WaitForRequest<Submission>>();
 
   const clickFaucet: MouseEventHandler = (e) => {
     e.preventDefault();
     setFaucetRq({
       submit: () => api.faucet(`${lite}/ACME`),
+      onCancel() {},
+      onFinish() {},
     });
   };
 

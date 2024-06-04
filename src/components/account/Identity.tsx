@@ -18,7 +18,7 @@ import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { WithIcon } from '../common/WithIcon';
-import { useWeb3 } from '../web3/Account';
+import { useWeb3 } from '../web3/useWeb3';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory } from './Directory';

@@ -17,8 +17,7 @@ export const keccak256 = keccak('keccak256');
 export const keccak384 = keccak('keccak384');
 export const keccak512 = keccak('keccak512');
 
-export const Ethereum =
-  'ethereum' in window ? (window.ethereum as any) : void 0;
+export const Ethereum = window.ethereum;
 
 export function ethAddress(pub: Uint8Array | string) {
   if (typeof pub === 'string') {

@@ -71,8 +71,8 @@ export function Dashboard() {
 
   useAsyncEffect(
     async (mounted) => {
+      return;
       if (!eth) {
-        return;
       }
 
       // Load or get the public key

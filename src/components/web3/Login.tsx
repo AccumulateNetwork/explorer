@@ -10,14 +10,16 @@ import { tooltip } from '../../utils/lang';
 import { useShared } from '../common/Shared';
 import { Connect } from './Connect';
 import { Settings } from './Settings';
+import { Sign } from './Sign';
 import { Wallet } from './Wallet';
-import { Ethereum } from './utils';
+import { Ethereum, isLedgerError } from './utils';
 
 export function Login() {
   const history = useHistory();
   const [connected] = useShared(Settings, 'connected');
   const [connectOpen, setConnectOpen] = useState(false);
   const { activate, deactivate } = useWeb3React();
+  const [request, setRequest] = useState<Sign.WaitForRequest<Uint8Array>>();
 
   // First load
   useEffect(() => {
@@ -40,15 +42,36 @@ export function Login() {
     deactivate();
   };
 
-  const connect = () => {
+  const connect = async () => {
     if (!Ethereum) {
       message.warning('Web3 browser extension not found');
     }
 
+    setConnectOpen(false);
     Wallet.connect('Web3');
     activate(Wallet.connector);
-    setConnectOpen(false);
-    history.push('/web3');
+
+    if (!Ethereum.selectedAddress) {
+      return;
+    }
+    if (Settings.getKey(Ethereum.selectedAddress)) {
+      return;
+    }
+
+    const [publicKey] =
+      (await Sign.waitFor(setRequest, () =>
+        Wallet.login(Ethereum.selectedAddress).catch((e) =>
+          Promise.reject(isLedgerError(e)),
+        ),
+      )) || [];
+
+    if (publicKey) {
+      Settings.putKey(Ethereum.selectedAddress, publicKey);
+      history.push('/web3');
+    } else {
+      deactivate();
+      Wallet.disconnect();
+    }
   };
 
   return (
@@ -85,6 +108,9 @@ export function Login() {
           }
         />
       </Tooltip>
+
+      {/* Modals */}
+      <Sign.WaitFor title="Login" request={request} />
 
       <Connect
         open={connectOpen}

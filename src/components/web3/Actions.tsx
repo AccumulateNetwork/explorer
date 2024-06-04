@@ -17,8 +17,8 @@ import { Shared } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import * as web3 from './Account';
-import { useWeb3 } from './Account';
 import { SendTokens } from './SendTokens';
+import { useWeb3 } from './useWeb3';
 
 interface Signer {
   signer: KeyPage | LiteIdentity;

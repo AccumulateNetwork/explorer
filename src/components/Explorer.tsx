@@ -28,7 +28,6 @@ import MinorBlocks from './common/MinorBlocks';
 import { Shared } from './common/Network';
 import ScrollToTop from './common/ScrollToTop';
 import { SearchForm } from './common/SearchForm';
-import { useShared } from './common/Shared';
 import { Version } from './common/Version';
 import networks from './common/networks';
 import { Acc } from './explorer/Acc';
@@ -43,10 +42,8 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import { Dashboard as Web3Dashboard } from './web3/Dashboard';
-import { Dashboard as Web3Dashboard2 } from './web3/Dashboard2';
+import { Dashboard as Web3Dashboard } from './web3/Dashboard2';
 import { Login as Web3Login } from './web3/Login';
-import { Settings as Web3Settings } from './web3/Settings';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -57,7 +54,6 @@ export default function Explorer() {
     message.error('API call failed');
   };
   const [shared, setShared] = useState(new Shared.Context(onApiError));
-  const [web3DashOpen] = useShared(Web3Settings, 'dashboardOpen');
 
   // Run once
   useEffect(() => {
@@ -274,15 +270,6 @@ export default function Explorer() {
             </div>
           </Header>
 
-          {!shared.network.mainnet && (
-            <Header
-              className="web3"
-              style={{ display: web3DashOpen ? null : 'none' }}
-            >
-              <Web3Dashboard />
-            </Header>
-          )}
-
           <Content>
             <SearchForm searching={(x) => (searchDidLoad = x)} />
             <Switch>
@@ -294,7 +281,7 @@ export default function Explorer() {
               <Route path="/blocks" children={<MinorBlocks />} />
               <Route path="/network" children={<Network />} />
               <Route path="/settings" children={<Settings.Edit />} />
-              <Route path="/web3" children={<Web3Dashboard2 />} />
+              <Route path="/web3" children={<Web3Dashboard />} />
 
               {!shared.network.mainnet && (
                 <Route exact path="/faucet" children={<Faucet />} />

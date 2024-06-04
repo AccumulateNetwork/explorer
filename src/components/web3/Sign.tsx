@@ -16,8 +16,9 @@ import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account, useWeb3 } from './Account';
+import { Account } from './Account';
 import { Wallet } from './Wallet';
+import { useWeb3 } from './useWeb3';
 
 const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
@@ -33,8 +34,10 @@ export declare namespace Sign {
     initiated?: boolean;
   }
 
-  interface WaitForRequest {
-    submit: () => Promise<TxID | Submission | (TxID | Submission)[]>;
+  interface WaitForRequest<T> {
+    submit: () => Promise<T | T[]>;
+    onFinish(_: T[]): any;
+    onCancel(): any;
     initiated?: boolean;
   }
 }
@@ -57,6 +60,25 @@ Sign.submit = (
     },
     onCancel() {
       resolve(false);
+    },
+  });
+  return promise;
+};
+
+Sign.waitFor = function <T>(
+  set: (_: Sign.WaitForRequest<T>) => void,
+  submit: () => Promise<T | T[]>,
+) {
+  let resolve: (_: T[] | null) => void;
+  const promise = new Promise<T[] | null>((r) => {
+    resolve = r;
+  });
+
+  set({
+    submit,
+    onFinish: resolve,
+    onCancel() {
+      resolve(null);
     },
   });
   return promise;
@@ -95,8 +117,8 @@ export function Sign({
         push(<ShowError error={error} />);
       } finally {
         setClosable(true);
+        onCancel();
       }
-      onCancel();
     },
     [request, account],
   );
@@ -121,12 +143,12 @@ export function Sign({
   );
 }
 
-Sign.WaitFor = function ({
+Sign.WaitFor = function <T>({
   request,
   title,
   canCloseEarly,
 }: {
-  request: Sign.WaitForRequest;
+  request: Sign.WaitForRequest<T>;
   title: React.ReactNode;
   canCloseEarly?: boolean;
 }) {
@@ -141,13 +163,14 @@ Sign.WaitFor = function ({
         return;
       }
 
+      const { submit, onCancel, onFinish } = request;
       const push = newMutableChildren(mounted, setChildren);
       setOpen(true);
       setClosable(canCloseEarly);
       try {
         request.initiated = true;
         let update = push(<Pending>Submitting</Pending>);
-        let results = await request.submit().catch((error) => {
+        let results = await submit().catch((error) => {
           update(
             <Failure>
               <ShowError bare error={error} />
@@ -164,7 +187,7 @@ Sign.WaitFor = function ({
 
         let ok = true;
         for (const r of results) {
-          if (r instanceof TxID || r.success) {
+          if (!(r instanceof Submission) || r.success) {
             continue;
           }
           ok = false;
@@ -180,15 +203,23 @@ Sign.WaitFor = function ({
 
         const seen = new Set<string>();
         await Promise.all(
-          results.map((r) => {
-            const txid = r instanceof TxID ? r : r.status.txID;
-            return waitFor({ api, push, seen, txid });
-          }),
+          (results as any[])
+            .filter(
+              (r): r is TxID | Submission =>
+                r instanceof TxID || r instanceof Submission,
+            )
+            .map((r) => {
+              const txid = r instanceof TxID ? r : r.status.txID;
+              return waitFor({ api, push, seen, txid });
+            }),
         );
+
+        onFinish(results);
       } catch (error) {
         push(<ShowError error={error} />);
       } finally {
         setClosable(true);
+        onCancel();
       }
     },
     [request],

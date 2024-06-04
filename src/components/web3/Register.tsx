@@ -6,8 +6,8 @@ import { URL } from 'accumulate.js';
 
 import tooltip from '../../utils/lang';
 import { WithIcon } from '../common/WithIcon';
-import { useWeb3 } from './Account';
 import { Sign } from './Sign';
+import { useWeb3 } from './useWeb3';
 
 export function Register({
   children,

@@ -1,5 +1,4 @@
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { useWeb3React } from '@web3-react/core';
 import {
   Alert,
   Button,
@@ -13,6 +12,7 @@ import {
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine, RiQuestionLine } from 'react-icons/ri';
+import { useHistory } from 'react-router-dom';
 
 import { TransactionArgs } from 'accumulate.js/lib/core';
 
@@ -23,21 +23,19 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
-import { useWeb3 } from './Account';
 import { AddCredits } from './AddCredits';
-import { Connect } from './Connect';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
 import { Sign } from './Sign';
-import { Wallet } from './Wallet';
+import { useWeb3 } from './useWeb3';
 
 const { Title, Text } = Typography;
 
 export function Dashboard() {
   const account = useWeb3();
+  const history = useHistory();
   const { api } = useContext(Shared);
   const [connected] = useShared(Settings, 'connected');
-  const { activate } = useWeb3React();
 
   const [openAddCredits, setOpenAddCredits] = useState(false);
   const [toSign, setToSign] = useState<Sign.Request>();
@@ -67,18 +65,8 @@ export function Dashboard() {
 
   const title = <Title level={2}>Web3 Wallet</Title>;
   if (!connected) {
-    return (
-      <>
-        {title}
-
-        <Connect.Inner
-          onSubmit={() => {
-            Wallet.connect('Web3');
-            activate(Wallet.connector);
-          }}
-        />
-      </>
-    );
+    history.push('/');
+    return false;
   }
 
   if (!account) {

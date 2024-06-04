@@ -14,7 +14,8 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account as Web3Account, useWeb3 } from '../web3/Account';
+import { Account as Web3Account } from '../web3/Account';
+import { useWeb3 } from '../web3/useWeb3';
 
 const { Title, Text } = Typography;
 

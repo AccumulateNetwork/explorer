@@ -22,7 +22,7 @@ import { WithIcon } from '../common/WithIcon';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Sign } from '../web3/Sign';
-import { useWeb3 } from './Account';
+import { useWeb3 } from './useWeb3';
 
 const { Text, Paragraph } = Typography;
 

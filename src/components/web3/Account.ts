@@ -28,7 +28,13 @@ import {
   isRecordOfDataTxn,
 } from '../../utils/types';
 import { Shared } from '../common/Network';
-import { broadcast, prefix, storage, stored } from '../common/Shared';
+import {
+  broadcast,
+  prefix,
+  storage,
+  stored,
+  useShared,
+} from '../common/Shared';
 import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Settings } from './Settings';
@@ -466,43 +472,4 @@ async function queryAccount<C extends Ctor<core.Account>>(
 
   // Unknown error
   throw new Error(`An unexpected error occurred while retrieving ${url}`);
-}
-
-export function useWeb3(
-  predicate?: (_: Account) => boolean,
-  dependencies: any[] = [],
-) {
-  const { api } = useContext(Shared);
-  const { account: eth } = useWeb3React();
-  const [value, setValue] = useState<Account>();
-
-  useAsyncEffect(
-    async (mounted) => {
-      if (!eth) {
-        setValue(null);
-        return;
-      }
-
-      const publicKey = Settings.getKey(eth);
-      if (!publicKey) {
-        setValue(null);
-        return;
-      }
-
-      const account = Account.for(publicKey);
-      await account.load(api);
-      if (!mounted()) {
-        return;
-      }
-      if (predicate && !predicate(account)) {
-        setValue(null);
-        return;
-      }
-
-      setValue(account);
-    },
-    [eth, ...dependencies],
-  );
-
-  return value;
 }

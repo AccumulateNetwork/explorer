@@ -22,8 +22,8 @@ import { isRecordOf } from '../../utils/types';
 import { TokenAmount } from '../common/Amount';
 import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
-import { useWeb3 } from './Account';
 import { Sign } from './Sign';
+import { useWeb3 } from './useWeb3';
 
 const { Text, Paragraph } = Typography;
 

@@ -73,7 +73,7 @@ export const Wallet = new (class Wallet {
     }
 
     const publicKey = recoverPublicKey(signature, hashMessage(message));
-    if (ethAddress(publicKey) !== account) {
+    if (ethAddress(publicKey).toLowerCase() !== account.toLowerCase()) {
       throw new Error('Failed to recover public key');
     }
 
@@ -98,10 +98,10 @@ export const Wallet = new (class Wallet {
     }
 
     if (Ethereum?.isMetaMask && personal) {
-      const sig = await Ethereum.request({
+      const sig = (await Ethereum.request({
         method: 'personal_sign',
         params: [message, account],
-      });
+      })) as string;
       if (!sig) {
         return;
       }
@@ -140,10 +140,10 @@ export const Wallet = new (class Wallet {
       ...data,
     });
     const message = '0x' + Buffer.from(s).toString('hex');
-    return await Ethereum.request({
+    return (await Ethereum.request({
       method: 'eth_decrypt',
       params: [message, account],
-    });
+    })) as string;
   }
 
   async encrypt(account: string, data: string): Promise<EncryptedData> {
@@ -154,10 +154,10 @@ export const Wallet = new (class Wallet {
       throw new Error('Encryption not supported for current Web3 connector');
     }
 
-    const key = await Ethereum.request({
+    const key = (await Ethereum.request({
       method: 'eth_getEncryptionPublicKey',
       params: [account],
-    });
+    })) as string;
     const encrypted = encrypt(key, { data }, 'x25519-xsalsa20-poly1305');
     delete encrypted.version;
     return encrypted;

@@ -1,8 +1,8 @@
 import { Button, Form, FormInstance, Input, Modal, Spin } from 'antd';
 import React, { useState } from 'react';
 
-import { useWeb3 } from './Account';
 import { Sign } from './Sign';
+import { useWeb3 } from './useWeb3';
 
 interface Fields {
   value: string;
