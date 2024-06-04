@@ -1,10 +1,10 @@
 import { LogoutOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
-import { InjectedConnector } from '@web3-react/injected-connector';
 import { Button, Tooltip, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaWallet } from 'react-icons/fa';
+import { useHistory } from 'react-router-dom';
 
 import { tooltip } from '../../utils/lang';
 import { useShared } from '../common/Shared';
@@ -14,29 +14,28 @@ import { Wallet } from './Wallet';
 import { Ethereum } from './utils';
 
 export function Login() {
-  const [dashOpen, setDashOpen] = useShared(Settings, 'dashboardOpen');
+  const history = useHistory();
   const [connected] = useShared(Settings, 'connected');
   const [connectOpen, setConnectOpen] = useState(false);
   const { activate, deactivate } = useWeb3React();
 
   // First load
-  const injected = new InjectedConnector({});
   useEffect(() => {
     if (Wallet.connected) {
-      activate(injected);
+      activate(Wallet.connector);
     }
   }, []);
 
   const onClickWallet = () => {
     if (connected) {
-      setDashOpen(!dashOpen);
+      history.push('/web3');
     } else {
       setConnectOpen(true);
     }
   };
 
   const disconnect = () => {
-    setDashOpen(false);
+    // setDashOpen(false);
     Wallet.disconnect();
     deactivate();
   };
@@ -46,10 +45,10 @@ export function Login() {
       message.warning('Web3 browser extension not found');
     }
 
-    Wallet.connectWeb3();
-    activate(injected);
+    Wallet.connect('Web3');
+    activate(Wallet.connector);
     setConnectOpen(false);
-    setDashOpen(true);
+    history.push('/web3');
   };
 
   return (

@@ -1,4 +1,4 @@
-import { Descriptions, Tooltip, Typography } from 'antd';
+import { Descriptions, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -8,7 +8,7 @@ import {
 } from 'react-icons/ri';
 
 import { core } from 'accumulate.js';
-import { AccountType, LiteIdentity } from 'accumulate.js/lib/core';
+import { AccountType } from 'accumulate.js/lib/core';
 
 import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
@@ -17,7 +17,6 @@ import { CreditAmount } from '../common/Amount';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
-import { Nobr } from '../common/Nobr';
 import { WithIcon } from '../common/WithIcon';
 import { useWeb3 } from '../web3/Account';
 import { AccChains } from './AccChains';

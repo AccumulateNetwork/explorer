@@ -44,6 +44,7 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
 import { Dashboard as Web3Dashboard } from './web3/Dashboard';
+import { Dashboard as Web3Dashboard2 } from './web3/Dashboard2';
 import { Login as Web3Login } from './web3/Login';
 import { Settings as Web3Settings } from './web3/Settings';
 
@@ -293,6 +294,7 @@ export default function Explorer() {
               <Route path="/blocks" children={<MinorBlocks />} />
               <Route path="/network" children={<Network />} />
               <Route path="/settings" children={<Settings.Edit />} />
+              <Route path="/web3" children={<Web3Dashboard2 />} />
 
               {!shared.network.mainnet && (
                 <Route exact path="/faucet" children={<Faucet />} />

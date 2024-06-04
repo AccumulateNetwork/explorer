@@ -9,8 +9,8 @@ export function Connect({
   onCancel,
 }: {
   open: boolean;
-  onSubmit: () => any;
-  onCancel: () => any;
+  onSubmit(): any;
+  onCancel(): any;
 }) {
   return (
     <Modal
@@ -18,7 +18,14 @@ export function Connect({
       open={open}
       onCancel={onCancel}
       footer={false}
-    >
+      children={<Connect.Inner onSubmit={onSubmit} />}
+    />
+  );
+}
+
+Connect.Inner = function ({ onSubmit }: { onSubmit(): any }) {
+  return (
+    <>
       <List>
         <List.Item>
           <Button
@@ -39,6 +46,6 @@ export function Connect({
           </Button>
         </List.Item>
       </List>
-    </Modal>
+    </>
   );
-}
+};

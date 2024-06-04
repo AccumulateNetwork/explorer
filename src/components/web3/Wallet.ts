@@ -1,3 +1,4 @@
+import { InjectedConnector } from '@web3-react/injected-connector';
 import { message } from 'antd';
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
@@ -27,6 +28,7 @@ type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
 export const Wallet = new (class Wallet {
   #driver?: Driver;
+  readonly connector = new InjectedConnector({});
 
   get connected() {
     return !!this.#driver;
@@ -37,15 +39,12 @@ export const Wallet = new (class Wallet {
   }
 
   constructor() {
-    switch (Settings.connected) {
-      case 'Web3':
-        if (Ethereum) {
-          this.connectWeb3();
-        }
+    if (Ethereum && Settings.connected) {
+      this.connect();
     }
   }
 
-  connectWeb3() {
+  connect(type: 'Web3' = Settings.connected) {
     if (this.connected) {
       throw new Error('Already connected');
     }
@@ -54,7 +53,7 @@ export const Wallet = new (class Wallet {
     }
 
     this.#driver = new Driver(Ethereum);
-    Settings.connected = 'Web3';
+    Settings.connected = type;
   }
 
   disconnect() {
@@ -64,7 +63,7 @@ export const Wallet = new (class Wallet {
 
   async login(account: string): Promise<Uint8Array | undefined> {
     if (!this.connected) {
-      this.connectWeb3();
+      this.connect();
     }
 
     const message = 'Login to Accumulate';
@@ -87,7 +86,7 @@ export const Wallet = new (class Wallet {
     personal = false,
   ) {
     if (!this.connected) {
-      this.connectWeb3();
+      this.connect();
     }
 
     if (typeof account !== 'string') {
@@ -110,7 +109,7 @@ export const Wallet = new (class Wallet {
     }
 
     if (!this.connected) {
-      this.connectWeb3();
+      this.connect();
     }
     const sig = await this.#driver.eth.sign(message, account);
     if (!sig) {
@@ -130,7 +129,7 @@ export const Wallet = new (class Wallet {
 
   async decrypt(account: string, data: EncryptedData): Promise<string> {
     if (!this.connected) {
-      this.connectWeb3();
+      this.connect();
     }
     if (!this.canEncrypt) {
       throw new Error('Encryption not supported for current Web3 connector');
@@ -149,7 +148,7 @@ export const Wallet = new (class Wallet {
 
   async encrypt(account: string, data: string): Promise<EncryptedData> {
     if (!this.connected) {
-      this.connectWeb3();
+      this.connect();
     }
     if (!this.canEncrypt) {
       throw new Error('Encryption not supported for current Web3 connector');

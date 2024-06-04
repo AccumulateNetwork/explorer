@@ -78,8 +78,11 @@ export const tooltip = {
     credits:
       'Credits are used to pay for network transactions. You can add credits by converting ACME tokens.',
 
-    backup:
-      'Backup Account is a lite data account used to backup your settings',
+    backup: 'The lite data account used to backup your settings',
+    backupsEnabled:
+      'On-chain backups for Accumulate data linked to your Web3 wallet are enabled',
+    backupsDisabled:
+      'On-chain backups for Accumulate data linked to your Web3 wallet are not enabled',
 
     keyPageEntry: 'This is your Web3 key',
 

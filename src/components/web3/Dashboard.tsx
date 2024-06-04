@@ -396,7 +396,7 @@ Dashboard.Backup = function ({
             {account.backupAccount.url.toString()}
           </Link>
         ) : (
-          <Text>{account.backupAccount.toString()}</Text>
+          <Text>{account.backupUrl.toString()}</Text>
         )}
 
         <Divider />
