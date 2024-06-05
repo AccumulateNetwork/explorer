@@ -155,7 +155,7 @@ DataLedger.EntryData = function ({
     [entry],
   );
 
-  const storeEntry = web3?.store?.get(hash);
+  const storeEntry = web3?.online?.get(hash);
   if (storeEntry) {
     return (
       <Input.Group compact className="extid">

@@ -104,7 +104,7 @@ export function Dashboard() {
           }
         >
           <Text copyable={{ text: `${account.liteIdUrl}` }}>
-            {account.online.account ? (
+            {account.liteIdentity ? (
               <Link to={account.liteIdUrl}>{`${account.liteIdUrl}`}</Link>
             ) : (
               `${account.liteIdUrl}`

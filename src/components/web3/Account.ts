@@ -1,25 +1,15 @@
-import nacl from 'tweetnacl';
-
 import { URL } from 'accumulate.js';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
-import {
-  DataEntry,
-  DataEntryType,
-  DoubleHashDataEntry,
-  KeyBook,
-  KeyPage,
-  LiteDataAccount,
-  LiteIdentity,
-  TransactionArgs,
-} from 'accumulate.js/lib/core';
+import { Buffer } from 'accumulate.js/lib/common';
+import { KeyBook, KeyPage, LiteIdentity } from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
 import { broadcast, prefix, storage, stored } from '../common/Shared';
-import { fetchAccount, fetchDataEntries } from '../common/query';
-import { OfflineStore } from './OnlineStore';
+import { fetchAccount } from '../common/query';
+import { OfflineStore } from './OfflineStore';
+import { OnlineStore } from './OnlineStore';
 import { RegisterBook, Store } from './Store';
-import { EthPublicKey, Wallet } from './Wallet';
+import { Wallet } from './Wallet';
 import { ethAddress, liteIDForEth } from './utils';
 
 @prefix('web3:account')
@@ -40,7 +30,7 @@ export class Account {
     }
 
     const lite = URL.parse(await liteIDForEth(publicKey));
-    const offline = await OfflineStore.for(publicKey);
+    const offline = await OnlineStore.for(publicKey);
     const inst = new this(publicKey, lite, offline);
     Account.#for.set(key, inst);
     return inst;
@@ -48,16 +38,18 @@ export class Account {
 
   readonly publicKey: Uint8Array;
   readonly liteIdUrl: URL;
-  readonly online: OfflineStore;
+  readonly online: OnlineStore;
+  readonly offline: OfflineStore;
   liteIdentity?: LiteIdentity;
   entries?: Store.Entry[];
   registeredBooks?: { book: KeyBook; pages: KeyPage[] }[];
 
   // TODO: this should be private, but that screws up the decorators
-  constructor(publicKey: Uint8Array, liteIdUrl: URL, offline: OfflineStore) {
+  constructor(publicKey: Uint8Array, liteIdUrl: URL, online: OnlineStore) {
     this.publicKey = publicKey;
     this.liteIdUrl = liteIdUrl;
-    this.online = offline;
+    this.online = online;
+    this.offline = new OfflineStore(publicKey);
   }
 
   get ethereum() {
@@ -65,7 +57,7 @@ export class Account {
   }
 
   get store(): Store {
-    return this.online;
+    return this.online.canEncrypt ? this.online : this.offline;
   }
 
   async load(api: JsonRpcClient) {
@@ -74,13 +66,9 @@ export class Account {
     }
 
     await this.online.load(api);
-    this.entries = [...this.online];
+    this.entries = [...this.store];
 
     await this.#loadRegistered(api);
-  }
-
-  async addEntry(sign: Store.Sign, plain: Store.Entry) {
-    return this.online.add(sign, plain);
   }
 
   async reloadLiteIdentity(api: JsonRpcClient) {

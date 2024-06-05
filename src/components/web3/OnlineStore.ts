@@ -17,7 +17,7 @@ import { Store } from './Store';
 import { EthPublicKey, Wallet } from './Wallet';
 import { ethAddress } from './utils';
 
-export class OfflineStore {
+export class OnlineStore {
   static async for(publicKey: Uint8Array) {
     const token = new Token(publicKey);
     const hash = await sha256(await sha256(await token.for('backup')));
@@ -45,7 +45,7 @@ export class OfflineStore {
     return !!this.#key;
   }
 
-  *[Symbol.iterator](): Generator<Store.Entry, void, void> {
+  *[Symbol.iterator](): Generator<Store.Entry, void, undefined> {
     if (!this.#entries) {
       return;
     }

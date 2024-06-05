@@ -22,12 +22,12 @@ export function Register({
   const [toSign, setToSign] = useState<Sign.Request>();
 
   const register = () =>
-    account.addEntry((txn) => Sign.submit(setToSign, txn), {
+    account.store.add((txn) => Sign.submit(setToSign, txn), {
       type: 'registerBook',
       url: book.toString(),
     });
 
-  if (!account?.online?.account) {
+  if (!account) {
     return children;
   }
 

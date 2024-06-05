@@ -25,7 +25,7 @@ export function AddNote({
   const submit = async ({ value }: Fields) => {
     setPending(true);
     try {
-      await account.addEntry((txn) => Sign.submit(setToSign, txn), {
+      await account.store.add((txn) => Sign.submit(setToSign, txn), {
         type: 'note',
         value,
       });

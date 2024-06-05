@@ -1,6 +1,7 @@
-import { URL } from 'accumulate.js';
+import { URL, URLArgs } from 'accumulate.js';
 
-export function getParentUrl(url: URL) {
+export function getParentUrl(url: URLArgs) {
+  url = URL.parse(url);
   const path = url.path.replace(/^\/|\/$/g, '');
   if (path === '') return;
 
@@ -13,4 +14,9 @@ export function getParentUrl(url: URL) {
     search: '',
     hash: '',
   });
+}
+
+export function isLite(url: URLArgs) {
+  url = URL.parse(url);
+  return /^[0-9a-f]{48}$/i.test(url.authority);
 }

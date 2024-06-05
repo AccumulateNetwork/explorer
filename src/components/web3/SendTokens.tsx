@@ -7,18 +7,20 @@ import {
   Select,
   Typography,
 } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import React from 'react';
 
-import { URLArgs } from 'accumulate.js';
+import { URL, URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   LiteTokenAccount,
   TokenAccount,
   TokenIssuer,
 } from 'accumulate.js/lib/core';
+import { Status } from 'accumulate.js/lib/errors';
 
 import { isRecordOf } from '../../utils/types';
+import { isLite } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
@@ -64,7 +66,11 @@ export function SendTokens(props: {
   const [from, setFrom] = useState<TokenAccount | LiteTokenAccount>();
   queryEffect(fromUrl).then((r) => {
     if (r.recordType == RecordType.Error) {
-      setError('from', r.value);
+      if (r.value.code === Status.NotFound) {
+        setError('from', `${fromUrl} does not exist`);
+      } else {
+        setError('from', r.value);
+      }
       return;
     }
 
@@ -81,7 +87,11 @@ export function SendTokens(props: {
   const [issuer, setIssuer] = useState<TokenIssuer>();
   queryEffect(from?.tokenUrl).then((r) => {
     if (r.recordType == RecordType.Error) {
-      setError('from', r.value);
+      if (r.value.code === Status.NotFound) {
+        setError('from', 'Unable to load the token type');
+      } else {
+        setError('from', r.value);
+      }
       return;
     }
 
@@ -98,7 +108,16 @@ export function SendTokens(props: {
   const [to, setTo] = useState<TokenAccount | LiteTokenAccount>();
   queryEffect(toUrl).then((r) => {
     if (r.recordType == RecordType.Error) {
-      setError('to', r.value);
+      if (r.value.code !== Status.NotFound) {
+        setError('to', r.value);
+      } else if (!isLite(toUrl)) {
+        setError('to', `${toUrl} does not exist`);
+      } else {
+        const url = URL.parse(toUrl);
+        const tokenUrl = url.path.replace(/^\//, '');
+        setTo(new LiteTokenAccount({ url, tokenUrl }));
+        clearError('to');
+      }
       return;
     }
 
@@ -110,6 +129,12 @@ export function SendTokens(props: {
     setTo(r.account);
     clearError('to');
   });
+
+  useEffect(() => {
+    if (from && to && !from.tokenUrl.equals(to.tokenUrl)) {
+      setError('to', `Cannot send ${issuer.symbol || issuer.url} to ${to.url}`);
+    }
+  }, [`${from?.tokenUrl}`, `${to?.tokenUrl}`]);
 
   const submit = async ({ from, to, amount }: Fields) => {
     amount *= 10 ** issuer.precision;
