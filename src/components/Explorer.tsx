@@ -42,7 +42,7 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import { Dashboard as Web3Dashboard } from './web3/Dashboard2';
+import { Dashboard as Web3Dashboard } from './web3/Dashboard';
 import { Login as Web3Login } from './web3/Login';
 
 const { Header, Content, Footer } = Layout;
