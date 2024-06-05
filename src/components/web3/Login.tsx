@@ -110,7 +110,7 @@ export function Login() {
       </Tooltip>
 
       {/* Modals */}
-      <Sign.WaitFor title="Login" request={request} />
+      <Sign.WaitFor title="Login" closeWhenDone request={request} />
 
       <Connect
         open={connectOpen}

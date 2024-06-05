@@ -10,7 +10,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountBoxLine,
@@ -61,12 +61,17 @@ export function Dashboard() {
     }
   };
 
-  const title = <Title level={2}>Web3 Wallet</Title>;
+  useEffect(() => {
+    if (!connected) {
+      history.push('/');
+    }
+  }, [connected]);
+
   if (!connected) {
-    history.push('/');
     return false;
   }
 
+  const title = <Title level={2}>Web3 Wallet</Title>;
   if (!account) {
     return (
       <>

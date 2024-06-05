@@ -147,10 +147,12 @@ Sign.WaitFor = function <T>({
   request,
   title,
   canCloseEarly,
+  closeWhenDone,
 }: {
   request: Sign.WaitForRequest<T>;
   title: React.ReactNode;
   canCloseEarly?: boolean;
+  closeWhenDone?: boolean;
 }) {
   const { api } = useContext(Shared);
   const [open, setOpen] = useState(false);
@@ -215,6 +217,9 @@ Sign.WaitFor = function <T>({
         );
 
         onFinish(results);
+        if (closeWhenDone) {
+          setOpen(false);
+        }
       } catch (error) {
         push(<ShowError error={error} />);
       } finally {
