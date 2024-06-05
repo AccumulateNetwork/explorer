@@ -1,4 +1,8 @@
-import { DisconnectOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import {
+  DisconnectOutlined,
+  LinkOutlined,
+  PlusCircleOutlined,
+} from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -44,6 +48,7 @@ export function Dashboard() {
   const history = useHistory();
   const { api } = useContext(Shared);
   const [connected] = useShared(Settings, 'connected');
+  const [linkedAccounts] = useShared(account, 'linked');
 
   const [openAddCredits, setOpenAddCredits] = useState(false);
   const [openAddNote, setOpenAddNote] = useState(false);
@@ -247,15 +252,15 @@ export function Dashboard() {
         </WithIcon>
       </Title>
 
-      {!account.linked?.books ? (
+      {!linkedAccounts?.urls ? (
         <Skeleton />
-      ) : !account.linked?.books.length ? (
+      ) : !linkedAccounts?.urls.length ? (
         <Alert
           type="info"
           message={
             <span>
-              {'To register a key book, navigate to it and click '}
-              <PlusCircleOutlined />
+              {'To link an account, navigate to it and click '}
+              <LinkOutlined />
             </span>
           }
         />
@@ -263,7 +268,7 @@ export function Dashboard() {
         <List
           size="small"
           bordered
-          dataSource={account.linked?.urls?.filter(
+          dataSource={linkedAccounts?.urls?.filter(
             (x) => x !== account.liteIdUrl.toString(),
           )}
           renderItem={(item) => (

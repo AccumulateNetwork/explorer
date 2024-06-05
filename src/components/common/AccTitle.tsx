@@ -11,6 +11,7 @@ import { Sign } from '../web3/Sign';
 import { useWeb3 } from '../web3/useWeb3';
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';
 import { Shared } from './Network';
+import { useShared } from './Shared';
 
 const { Title } = Typography;
 
@@ -76,6 +77,7 @@ function Link({ account }: { account: Account }) {
   const web3 = useWeb3();
   const { api } = useContext(Shared);
   const [toSign, setToSign] = useState<Sign.Request>();
+  const [linked] = useShared(web3, 'linked');
 
   const link = async () => {
     const ok = await web3.store.add((txn) => Sign.submit(setToSign, txn), {
@@ -93,7 +95,7 @@ function Link({ account }: { account: Account }) {
     return false;
   }
 
-  if (!web3.linked?.urls?.includes(account.url.toString().toLowerCase())) {
+  if (!linked?.urls?.includes(account.url.toString().toLowerCase())) {
     return (
       <>
         <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.link}>

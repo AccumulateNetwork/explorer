@@ -108,15 +108,15 @@ export function broadcast<This, Value>(
     set(value: Value) {
       const previous = get.call(this);
       set.call(this, value);
-      if (JSON.stringify(previous) === JSON.stringify(value)) {
+      if (previous === value) {
         return;
       }
 
       const { name } = info.resolve(this, context);
       bChannel.postMessage({ name, value });
-      bLocal[name]?.forEach((fn) => {
+      bLocal.forEach((fn) => {
         try {
-          fn(value);
+          fn(name, value);
         } catch (error) {
           console.log(error);
         }
@@ -125,12 +125,13 @@ export function broadcast<This, Value>(
   };
 }
 
+type bCallback = (name: string, value: any) => any;
 const bChannel = new BroadcastChannel('shared-values');
-const bLocal = {} as Record<string, ((_: any) => any)[]>;
+const bLocal = new Set<bCallback>();
 bChannel.addEventListener('message', ({ data: { name, value } }) => {
-  bLocal[name]?.forEach((fn) => {
+  bLocal.forEach((fn) => {
     try {
-      fn(value);
+      fn(name, value);
     } catch (error) {
       console.log(error);
     }
@@ -141,21 +142,27 @@ export function useShared<V, K extends keyof V & string>(
   v: V,
   k: K,
 ): [V[K], (x: V[K]) => void] {
-  const [value, setValue] = useState(v[k]);
-  const { name } = info.resolve(v, { name: k });
+  const [value, setValue] = useState(v?.[k]);
 
+  let cb: bCallback;
   useEffect(() => {
-    let mounted = true;
-
-    if (!(name in bLocal)) {
-      bLocal[name] = [];
+    if (cb) {
+      bLocal.delete(cb);
     }
-    bLocal[name].push((value) => mounted && setValue(value));
+    if (!v) {
+      return;
+    }
+
+    setValue(v[k]);
+
+    const { name } = info.resolve(v, { name: k });
+    cb = (n, v) => n === name && setValue(v);
+    bLocal.add(cb);
 
     return () => {
-      mounted = false;
+      bLocal.delete(cb);
     };
-  }, []);
+  }, [v]);
 
   return [value, (x) => (v[k] = x)];
 }

@@ -43,7 +43,7 @@ export class Account {
   readonly offline: OfflineStore;
   liteIdentity?: LiteIdentity;
   entries?: Store.Entry[];
-  linked?: Linked;
+  @broadcast accessor linked: Linked | null;
 
   // TODO: this should be private, but that screws up the decorators
   constructor(publicKey: Uint8Array, liteIdUrl: URL, online: OnlineStore) {
@@ -70,7 +70,7 @@ export class Account {
     this.entries = [...this.store];
 
     if (!this.linked) {
-      this.linked = await Linked.load(api, [
+      const x = await Linked.load(api, [
         {
           type: 'link',
           accountType: 'identity',
@@ -78,6 +78,7 @@ export class Account {
         },
         ...this.entries,
       ]);
+      this.linked = x;
     }
   }
 
