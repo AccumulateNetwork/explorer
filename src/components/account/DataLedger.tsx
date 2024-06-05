@@ -67,7 +67,7 @@ export function DataLedger({ scope }: { scope: URL }) {
   const web3 = useWeb3(
     (a) =>
       /^[0-9a-f]+$/i.test(scope?.authority) &&
-      a?.backupUrl?.equals(scope) &&
+      a?.online?.url?.equals(scope) &&
       !!a?.entries,
     [`${scope}`],
   );
@@ -155,13 +155,14 @@ DataLedger.EntryData = function ({
     [entry],
   );
 
-  if (web3 && hash in web3.entries) {
+  const storeEntry = web3?.store?.get(hash);
+  if (storeEntry) {
     return (
       <Input.Group compact className="extid">
         <Text className="extid-type">Web3 Backup</Text>
         <Text className="extid-text extid-json">
           <SyntaxHighlighter language="json">
-            {JSON.stringify(web3.entries[hash])}
+            {JSON.stringify(storeEntry)}
           </SyntaxHighlighter>
         </Text>
       </Input.Group>

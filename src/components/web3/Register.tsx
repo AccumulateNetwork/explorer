@@ -27,7 +27,7 @@ export function Register({
       url: book.toString(),
     });
 
-  if (!account?.backupAccount) {
+  if (!account?.online?.account) {
     return children;
   }
 

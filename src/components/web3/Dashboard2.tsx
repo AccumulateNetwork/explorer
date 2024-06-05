@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   Descriptions,
+  Divider,
   List,
   Skeleton,
   Tag,
@@ -11,7 +12,11 @@ import {
 } from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
-import { RiAccountBoxLine, RiQuestionLine } from 'react-icons/ri';
+import {
+  RiAccountBoxLine,
+  RiAddCircleFill,
+  RiQuestionLine,
+} from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 
 import { TransactionArgs } from 'accumulate.js/lib/core';
@@ -23,7 +28,9 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
+import { Settings as MainSettings } from '../explorer/Settings';
 import { AddCredits } from './AddCredits';
+import { AddNote } from './AddNote';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
 import { Sign } from './Sign';
@@ -38,6 +45,8 @@ export function Dashboard() {
   const [connected] = useShared(Settings, 'connected');
 
   const [openAddCredits, setOpenAddCredits] = useState(false);
+  const [openAddNote, setOpenAddNote] = useState(false);
+
   const [toSign, setToSign] = useState<Sign.Request>();
   const sign = (txn: TransactionArgs, signer?: Sign.Signer) =>
     Sign.submit(setToSign, txn, signer);
@@ -46,18 +55,7 @@ export function Dashboard() {
   const enableBackups = async () => {
     setEnablingBackups(true);
     try {
-      if (!account.backupAccount) {
-        if (!(await account.initialize(sign))) {
-          return;
-        }
-        await account.load(api);
-      }
-      if (!account.canEncrypt) {
-        if (!(await account.generateKey(sign))) {
-          return;
-        }
-        await account.load(api);
-      }
+      await account.online.setup(api, sign);
     } finally {
       setEnablingBackups(false);
     }
@@ -106,7 +104,11 @@ export function Dashboard() {
           }
         >
           <Text copyable={{ text: `${account.liteIdUrl}` }}>
-            <Link to={account.liteIdUrl}>{`${account.liteIdUrl}`}</Link>
+            {account.online.account ? (
+              <Link to={account.liteIdUrl}>{`${account.liteIdUrl}`}</Link>
+            ) : (
+              `${account.liteIdUrl}`
+            )}
           </Text>
         </Descriptions.Item>
 
@@ -159,15 +161,13 @@ export function Dashboard() {
             />
           }
         >
-          {account.backupAccount ? (
-            <Text copyable={{ text: `${account.backupUrl}` }}>
-              <Link to={account.backupUrl}>{`${account.backupUrl}`}</Link>
-            </Text>
-          ) : (
-            <Text copyable={{ text: `${account.backupUrl}` }}>
-              {`${account.backupUrl}`}
-            </Text>
-          )}
+          <Text copyable={{ text: `${account.online.url}` }}>
+            {account.online.account ? (
+              <Link to={account.online.url}>{`${account.online.url}`}</Link>
+            ) : (
+              `${account.online.url}`
+            )}
+          </Text>
         </Descriptions.Item>
 
         <Descriptions.Item
@@ -176,14 +176,14 @@ export function Dashboard() {
               icon={RiQuestionLine}
               children="Status"
               tooltip={
-                account.backupAccount
+                account.online.account
                   ? tooltip.web3.backupsEnabled
                   : tooltip.web3.backupsDisabled
               }
             />
           }
         >
-          {account.backupAccount ? (
+          {account.online.account ? (
             <Tag color="blue">enabled</Tag>
           ) : (
             <Tooltip
@@ -207,6 +207,18 @@ export function Dashboard() {
           )}
         </Descriptions.Item>
       </InfoTable>
+
+      {MainSettings.enableDevMode && (
+        <Button
+          shape="round"
+          type="primary"
+          style={{ marginBottom: 20 }}
+          disabled={!account.online.canEncrypt}
+          onClick={() => setOpenAddNote(true)}
+        >
+          <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
+        </Button>
+      )}
 
       <Title level={4}>
         <WithIcon
@@ -259,6 +271,12 @@ export function Dashboard() {
             .reloadLiteIdentity(api)
             .finally(() => setOpenAddCredits(false))
         }
+      />
+
+      <AddNote
+        open={openAddNote}
+        onCancel={() => setOpenAddNote(false)}
+        onFinish={() => setOpenAddNote(false)}
       />
     </>
   );

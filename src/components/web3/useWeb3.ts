@@ -30,7 +30,7 @@ export function useWeb3(
         return;
       }
 
-      const account = Account.for(publicKey);
+      const account = await Account.for(publicKey);
       await account.load(api);
       if (!mounted()) {
         return;

@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 
-import { TxID, URLArgs, errors, messaging } from 'accumulate.js';
+import { TxID, URLArgs, core, errors, messaging } from 'accumulate.js';
 import {
   AccountRecord,
   AnchorSearchQueryArgsWithType,
@@ -25,13 +25,21 @@ import {
   QueryArgs,
   Record,
   RecordRange,
+  RecordType,
   RpcError,
   TxIDRecord,
   UrlRecord,
 } from 'accumulate.js/lib/api_v3';
+import { DataEntry } from 'accumulate.js/lib/core';
 import { Error as Error2, Status } from 'accumulate.js/lib/errors';
 import { EnvelopeArgs } from 'accumulate.js/lib/messaging';
 
+import {
+  Ctor,
+  TxnEntry,
+  isRecordOf,
+  isRecordOfDataTxn,
+} from '../../utils/types';
 import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
 
@@ -369,4 +377,62 @@ export function isClientError(error: any) {
     throw err2;
   }
   return err2;
+}
+
+export async function fetchAccount<C extends Ctor<core.Account>>(
+  api: JsonRpcClient,
+  url: URLArgs,
+  type: C,
+): Promise<InstanceType<C> | null> {
+  const r = await api.query(url).catch(isErrorRecord);
+  if (isRecordOf(r, Status.NotFound)) {
+    // Account does not exist
+    return null;
+  }
+
+  if (isRecordOf(r, type)) {
+    // Account exists and is the specified type
+    return r.account;
+  }
+
+  if (r.recordType === RecordType.Error) {
+    // Some other error occurred
+    throw new Error(r.value.message);
+  }
+
+  // Unknown error
+  throw new Error(`An unexpected error occurred while retrieving ${url}`);
+}
+
+export async function fetchDataEntries(
+  api: JsonRpcClient,
+  scope: URLArgs,
+  predicate?: (_: DataEntry) => boolean,
+) {
+  const results: DataEntry[] = [];
+  for (let start = 0; ; ) {
+    const { records = [], total = 0 } = (await api.query(scope, {
+      queryType: 'chain',
+      name: 'main',
+      range: {
+        start,
+        expand: true,
+      },
+    })) as RecordRange<TxnEntry>;
+
+    for (const r of records) {
+      if (!isRecordOfDataTxn(r)) {
+        continue;
+      }
+      const { entry } = r.value.message.transaction.body;
+      if (!predicate || predicate(entry)) {
+        results.push(entry);
+      }
+    }
+    start += records.length;
+    if (start >= total) {
+      break;
+    }
+  }
+  return results;
 }
