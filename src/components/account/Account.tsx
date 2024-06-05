@@ -1,5 +1,5 @@
 import { Descriptions, Tooltip, Typography } from 'antd';
-import React, { useState } from 'react';
+import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine } from 'react-icons/ri';
 
@@ -13,9 +13,7 @@ import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
-import { RawData } from '../common/RawData';
 import { describeProperty } from '../common/properties';
-import { Settings } from '../explorer/Settings';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { DataAccount } from './DataAccount';
@@ -83,7 +81,7 @@ Account.Generic = function ({ record }: { record: AccountRecord }) {
   const accountObj = account.asObject();
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle title="Account" url={account.url} linkable={account} />
 
       {/* Account type */}
       <InfoTable>

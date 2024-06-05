@@ -37,6 +37,11 @@ export class OnlineStore {
     this.#token = token;
   }
 
+  resetEntries() {
+    this.#raw = null;
+    this.#entries = null;
+  }
+
   get account() {
     return this.#account;
   }

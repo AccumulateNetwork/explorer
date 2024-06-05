@@ -156,7 +156,7 @@ export function TokenAccount({
 
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle title="Token Account" url={account.url} linkable={account} />
 
       {/* Account type */}
       <InfoTable>

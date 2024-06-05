@@ -88,9 +88,10 @@ export const tooltip = {
 
     ethereumAddress: 'The Ethereum address of your Web3 wallet',
 
-    register: 'Link this account to your Web3 wallet',
-    registered: 'This account has been linked to your Web3 wallet',
-    registeredTab: 'Accumulate accounts linked to your Web3 wallet',
+    link: 'Link this account to your Web3 wallet',
+    unlink: 'Unlink this account from your Web3 wallet',
+    linked: 'This account has been linked to your Web3 wallet',
+    linkedSection: 'Accumulate accounts linked to your Web3 wallet',
   },
 };
 

@@ -63,7 +63,7 @@ export function Actions(props: { account: URL }) {
   useAsyncEffect(
     async (mounted) => {
       setSigners([]);
-      if (!web3?.registeredBooks || !acc) {
+      if (!web3?.linked?.books || !acc) {
         return;
       }
       const signers = await getSigners(api, web3, acc);
@@ -125,7 +125,7 @@ async function getSigners(
           },
         ]
       : []),
-    ...(web3?.registeredBooks || [])
+    ...(web3?.linked?.books || [])
       .filter(({ book }) => authorities.some(({ url }) => book.url.equals(url)))
       .flatMap(({ pages }) => pages)
       .flatMap((page) =>

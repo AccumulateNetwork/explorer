@@ -78,7 +78,7 @@ export function TokenIssuer({
 
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle title="Token Issuer" url={account.url} linkable={account} />
 
       {/* Account type */}
       <InfoTable>

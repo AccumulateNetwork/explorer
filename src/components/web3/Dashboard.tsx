@@ -1,4 +1,4 @@
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { DisconnectOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
@@ -19,6 +19,7 @@ import {
 } from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 
+import { URLArgs } from 'accumulate.js';
 import { TransactionArgs } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
@@ -59,6 +60,17 @@ export function Dashboard() {
     } finally {
       setEnablingBackups(false);
     }
+  };
+
+  const unlink = async (url: URLArgs) => {
+    const ok = await account.store.add((txn) => Sign.submit(setToSign, txn), {
+      type: 'unlink',
+      url: `${url}`,
+    });
+    if (!ok) {
+      return;
+    }
+    await account.reload(api, 'entries', 'linked');
   };
 
   useEffect(() => {
@@ -229,15 +241,15 @@ export function Dashboard() {
         <WithIcon
           after
           icon={RiQuestionLine}
-          tooltip={tooltip.web3.registeredTab}
+          tooltip={tooltip.web3.linkedSection}
         >
           Linked Accumulate Accounts
         </WithIcon>
       </Title>
 
-      {!account.registeredBooks ? (
+      {!account.linked?.books ? (
         <Skeleton />
-      ) : !account.registeredBooks.length ? (
+      ) : !account.linked?.books.length ? (
         <Alert
           type="info"
           message={
@@ -251,14 +263,28 @@ export function Dashboard() {
         <List
           size="small"
           bordered
-          dataSource={account.registeredBooks}
+          dataSource={account.linked?.urls?.filter(
+            (x) => x !== account.liteIdUrl.toString(),
+          )}
           renderItem={(item) => (
-            <List.Item>
-              <Link to={item.book.url}>
+            <List.Item
+              actions={[
+                <Tooltip
+                  overlayClassName="explorer-tooltip"
+                  title={tooltip.web3.unlink}
+                >
+                  <DisconnectOutlined
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => unlink(item)}
+                  />
+                </Tooltip>,
+              ]}
+            >
+              <Link to={item}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                   <RiAccountBoxLine />
                 </IconContext.Provider>
-                {item.book.url.toString()}
+                {item}
               </Link>
             </List.Item>
           )}
@@ -273,7 +299,7 @@ export function Dashboard() {
         onCancel={() => setOpenAddCredits(false)}
         onFinish={() =>
           account
-            .reloadLiteIdentity(api)
+            .reload(api, 'liteIdentity')
             .finally(() => setOpenAddCredits(false))
         }
       />

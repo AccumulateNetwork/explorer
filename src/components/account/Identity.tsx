@@ -69,8 +69,13 @@ export function Identity({
     <div>
       <AccTitle
         url={account.url}
+        linkable={account}
         title={
-          isWeb3Lite ? 'Web3 Lite Identity' : isADI ? 'ADI' : 'Lite Identity'
+          isWeb3Lite
+            ? 'Web3 Lite Identity'
+            : isADI
+              ? 'Identity'
+              : 'Lite Identity'
         }
       />
 

@@ -30,7 +30,7 @@ import {
   TxIDRecord,
   UrlRecord,
 } from 'accumulate.js/lib/api_v3';
-import { DataEntry } from 'accumulate.js/lib/core';
+import { Account, DataEntry } from 'accumulate.js/lib/core';
 import { Error as Error2, Status } from 'accumulate.js/lib/errors';
 import { EnvelopeArgs } from 'accumulate.js/lib/messaging';
 
@@ -379,20 +379,19 @@ export function isClientError(error: any) {
   return err2;
 }
 
-export async function fetchAccount<C extends Ctor<core.Account>>(
-  api: JsonRpcClient,
-  url: URLArgs,
-  type: C,
-): Promise<InstanceType<C> | null> {
+export async function fetchAccount<
+  C extends Ctor<core.Account>,
+  A extends Account = InstanceType<C>,
+>(api: JsonRpcClient, url: URLArgs, type?: C): Promise<A | null> {
   const r = await api.query(url).catch(isErrorRecord);
   if (isRecordOf(r, Status.NotFound)) {
     // Account does not exist
     return null;
   }
 
-  if (isRecordOf(r, type)) {
+  if (r.recordType === RecordType.Account && (!type || isRecordOf(r, type))) {
     // Account exists and is the specified type
-    return r.account;
+    return r.account as A;
   }
 
   if (r.recordType === RecordType.Error) {

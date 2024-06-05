@@ -49,7 +49,7 @@ export function DataAccount({
 
   return (
     <div>
-      <AccTitle title="Account" url={account.url} />
+      <AccTitle title="Data Account" url={account.url} linkable={account} />
 
       {/* Account type */}
       <InfoTable>

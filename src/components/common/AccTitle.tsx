@@ -1,19 +1,27 @@
-import { Rate, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { LinkOutlined } from '@ant-design/icons';
+import { Rate, Tooltip, Typography } from 'antd';
+import React, { useContext, useEffect, useState } from 'react';
 
-import { TxID, URL } from 'accumulate.js';
+import { TxID, URL, URLArgs } from 'accumulate.js';
+import { Account, AccountType } from 'accumulate.js/lib/core';
 
+import tooltip from '../../utils/lang';
 import { Actions } from '../web3/Actions';
+import { Sign } from '../web3/Sign';
+import { useWeb3 } from '../web3/useWeb3';
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';
+import { Shared } from './Network';
 
 const { Title } = Typography;
 
 export function AccTitle({
   title,
   url,
+  linkable,
 }: {
   title: React.ReactNode;
   url: URL | TxID;
+  linkable?: Account;
 }) {
   if (url instanceof TxID) {
     url = url.asUrl();
@@ -36,7 +44,7 @@ export function AccTitle({
   return (
     <div>
       <Title level={2} key="main">
-        {title}
+        {title} {linkable && <Link account={linkable} />}
         {!url.username && <Actions account={url} />}
       </Title>
       <Title
@@ -61,5 +69,48 @@ export function AccTitle({
         {url.toString()}
       </Title>
     </div>
+  );
+}
+
+function Link({ account }: { account: Account }) {
+  const web3 = useWeb3();
+  const { api } = useContext(Shared);
+  const [toSign, setToSign] = useState<Sign.Request>();
+
+  const link = async () => {
+    const ok = await web3.store.add((txn) => Sign.submit(setToSign, txn), {
+      type: 'link',
+      url: `${account.url}`,
+      accountType: AccountType.getName(account.type) as any,
+    });
+    if (!ok) {
+      return;
+    }
+    await web3.reload(api, 'entries', 'linked');
+  };
+
+  if (!web3) {
+    return false;
+  }
+
+  if (!web3.linked?.urls?.includes(account.url.toString().toLowerCase())) {
+    return (
+      <>
+        <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.link}>
+          <LinkOutlined
+            style={{ color: 'lightgray', cursor: 'pointer' }}
+            onClick={link}
+          />
+        </Tooltip>
+
+        <Sign title={`Linking ${account.url}`} request={toSign} />
+      </>
+    );
+  }
+
+  return (
+    <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.linked}>
+      <LinkOutlined style={{ color: '#61b3ff' }} />
+    </Tooltip>
   );
 }

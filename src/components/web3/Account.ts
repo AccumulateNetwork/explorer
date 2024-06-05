@@ -6,9 +6,10 @@ import { KeyBook, KeyPage, LiteIdentity } from 'accumulate.js/lib/core';
 import { isRecordOf } from '../../utils/types';
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { fetchAccount } from '../common/query';
+import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
 import { OnlineStore } from './OnlineStore';
-import { RegisterBook, Store } from './Store';
+import { Store } from './Store';
 import { Wallet } from './Wallet';
 import { ethAddress, liteIDForEth } from './utils';
 
@@ -42,7 +43,7 @@ export class Account {
   readonly offline: OfflineStore;
   liteIdentity?: LiteIdentity;
   entries?: Store.Entry[];
-  registeredBooks?: { book: KeyBook; pages: KeyPage[] }[];
+  linked?: Linked;
 
   // TODO: this should be private, but that screws up the decorators
   constructor(publicKey: Uint8Array, liteIdUrl: URL, online: OnlineStore) {
@@ -68,50 +69,28 @@ export class Account {
     await this.online.load(api);
     this.entries = [...this.store];
 
-    await this.#loadRegistered(api);
-  }
-
-  async reloadLiteIdentity(api: JsonRpcClient) {
-    this.liteIdentity = await fetchAccount(api, this.liteIdUrl, LiteIdentity);
-  }
-
-  async #loadRegistered(api: JsonRpcClient) {
-    if (!this.entries || this.registeredBooks) {
-      return;
+    if (!this.linked) {
+      this.linked = await Linked.load(api, [
+        {
+          type: 'link',
+          accountType: 'identity',
+          url: `${this.liteIdUrl}`,
+        },
+        ...this.entries,
+      ]);
     }
+  }
 
-    const tryParse = (s: string) => {
-      try {
-        return URL.parse(s);
-      } catch (_) {}
-    };
-    this.registeredBooks = await Promise.all(
-      Object.values(this.entries)
-        .filter((x): x is RegisterBook => x.type === 'registerBook')
-        .map((x) => tryParse(x.url))
-        .filter((x) => x)
-        .map(async (x) => {
-          const r = await api.query(x);
-          if (!isRecordOf(r, KeyBook)) {
-            return;
-          }
-
-          const pages = await Promise.all(
-            [...Array(r.account.pageCount).keys()].map(async (_, i) => {
-              const r = await api.query(`${x}/${i + 1}`);
-              if (!isRecordOf(r, KeyPage)) {
-                return;
-              }
-              return r.account;
-            }),
-          );
-
-          return {
-            book: r.account,
-            pages: pages.filter((x) => x),
-          };
-        })
-        .filter((x) => x),
-    );
+  async reload(
+    api: JsonRpcClient,
+    ...fields: ('liteIdentity' | 'entries' | 'linked')[]
+  ) {
+    for (const f of fields) {
+      this[f] = null;
+      if (f === 'entries') {
+        this.online.resetEntries();
+      }
+    }
+    await this.load(api);
   }
 }

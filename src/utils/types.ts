@@ -1,5 +1,3 @@
-import { FaLessThanEqual } from 'react-icons/fa';
-
 import {
   AccountRecord,
   ChainEntryRecord,
@@ -31,6 +29,12 @@ import {
   SignatureMessage,
   TransactionMessage,
 } from 'accumulate.js/lib/messaging';
+
+export type IsNameOf<T, S> = T extends { getName(_: any): infer R }
+  ? S extends R
+    ? S
+    : never
+  : never;
 
 export type AccountRecordOf<T extends Account> = AccountRecord & {
   account?: T;

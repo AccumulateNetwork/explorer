@@ -14,7 +14,6 @@ import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import { Register as Web3Register } from '../web3/Register';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { describeParent } from './parent';
@@ -46,14 +45,7 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
 
   return (
     <div>
-      <AccTitle
-        url={account.url}
-        title={
-          <Web3Register kind="book" book={account.url}>
-            Key Book
-          </Web3Register>
-        }
-      />
+      <AccTitle url={account.url} linkable={account} title="Key Book" />
 
       {/* Account type */}
       <InfoTable>

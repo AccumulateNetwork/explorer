@@ -22,7 +22,6 @@ import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
-import { Register as Web3Register } from '../web3/Register';
 import { AccChains } from './AccChains';
 import { describeParent } from './parent';
 
@@ -82,14 +81,7 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
 
   return (
     <div>
-      <AccTitle
-        url={account.url}
-        title={
-          <Web3Register kind="page" book={bookUrl}>
-            Key Page
-          </Web3Register>
-        }
-      />
+      <AccTitle url={account.url} linkable={account} title="Key Page" />
 
       {/* Account type */}
       <InfoTable>

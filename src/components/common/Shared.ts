@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { bind } from '../../utils/blackmagic';
+import { bind } from '../../utils/typemagic';
 
 type Ctor = abstract new (...args: any) => any;
 type Named = { name: string };
