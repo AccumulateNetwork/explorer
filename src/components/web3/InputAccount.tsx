@@ -135,6 +135,10 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
             <Input
               value={initialValue && `${initialValue}`}
               readOnly={readOnly}
+              style={{
+                backgroundColor: 'hsla(0, 0%, 0%, 0.04)',
+                cursor: 'not-allowed',
+              }}
               onChange={(e) => slowValueChange(e.target.value)}
             />
           ) : !baseOpts?.length ? (
