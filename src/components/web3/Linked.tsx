@@ -7,6 +7,7 @@ import {
   UrlRecord,
 } from 'accumulate.js/lib/api_v3';
 import {
+  Account,
   AccountType,
   KeyBook,
   KeyPage,
@@ -26,7 +27,8 @@ interface LinkedBook {
 }
 
 export class Linked {
-  readonly urls: string[];
+  readonly direct: Account[];
+  readonly all: Account[];
   readonly books: LinkedBook[];
   readonly liteIDs: LiteIdentity[];
   readonly tokens: (TokenAccount | LiteTokenAccount)[];
@@ -51,13 +53,14 @@ export class Linked {
     }
 
     const context: Required<Linked> = {
-      urls: [...urls],
+      direct: [],
+      all: [],
       liteIDs: [],
       books: [],
       tokens: [],
     };
 
-    await Promise.all([...urls].map((u) => load(api, context, u)));
+    await Promise.all([...urls].map((u) => load(api, context, u, true)));
 
     return new this(context);
   }
@@ -67,6 +70,7 @@ async function load(
   api: JsonRpcClient,
   context: Required<Linked>,
   url: URLArgs,
+  direct = false,
 ) {
   const r = await api.query(url).catch(isErrorRecord);
   if (isRecordOf(r, Status.NotFound)) {
@@ -78,7 +82,11 @@ async function load(
   if (r.recordType !== RecordType.Account) {
     return;
   }
+  if (direct) {
+    context.direct.push(r.account);
+  }
 
+  context.all.push(r.account);
   switch (r.account.type) {
     case AccountType.Identity:
       await loadDirectory(api, context, url, r.directory);
@@ -90,7 +98,7 @@ async function load(
       break;
 
     case AccountType.KeyBook: {
-      const pages = await loadPages(api, r.account);
+      const pages = await loadPages(api, context, r.account);
       context.books.push({ book: r.account, pages });
       break;
     }
@@ -102,13 +110,18 @@ async function load(
   }
 }
 
-async function loadPages(api: JsonRpcClient, book: KeyBook) {
+async function loadPages(
+  api: JsonRpcClient,
+  context: Required<Linked>,
+  book: KeyBook,
+) {
   return await Promise.all(
     [...Array(book.pageCount).keys()].map(async (_, i) => {
       const r = await api.query(`${book.url}/${i + 1}`);
       if (!isRecordOf(r, KeyPage)) {
         return;
       }
+      context.all.push(r.account);
       return r.account;
     }),
   );

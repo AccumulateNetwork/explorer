@@ -1,16 +1,8 @@
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  Typography,
-} from 'antd';
+import { Button, Form, InputNumber, Modal, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import React from 'react';
 
-import { URL, URLArgs } from 'accumulate.js';
+import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   LiteTokenAccount,
@@ -20,13 +12,11 @@ import {
 import { Status } from 'accumulate.js/lib/errors';
 
 import { isRecordOf } from '../../utils/types';
-import { isLite } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
-import { InputTokenAccount } from './InputTokenAccount';
+import { InputTokenAccount } from './InputAccount';
 import { Sign } from './Sign';
-import { useWeb3 } from './useWeb3';
 
 const { Text, Paragraph } = Typography;
 
@@ -36,15 +26,20 @@ interface Fields {
   amount: number;
 }
 
-export function SendTokens(props: {
-  from: URLArgs;
+export function SendTokens({
+  open,
+  onCancel,
+  onFinish,
+  signer,
+  ...props
+}: {
+  from?: URLArgs;
+  to?: URLArgs;
   open: boolean;
   signer?: Sign.Signer;
   onCancel: () => any;
   onFinish: () => any;
 }) {
-  const account = useWeb3();
-  const { open, onCancel, onFinish, signer } = props;
   const [form] = Form.useForm<Fields>();
   const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);
@@ -135,18 +130,10 @@ export function SendTokens(props: {
           <InputTokenAccount
             name="from"
             noStyle
-            allowMissingLite
             readOnly={!!props.from}
             initialValue={props.from}
             rules={[{ required: true }]}
           />
-          {/* <Select placeholder="Choose token account">
-          {account && (
-            <Select.Option
-              value={`${account.liteIdUrl}/ACME`}
-            >{`${account.liteIdUrl}/ACME`}</Select.Option>
-          )}
-        </Select> */}
           {from && issuer && (
             <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
               <Text type="secondary">
@@ -160,6 +147,8 @@ export function SendTokens(props: {
           label="Recipient"
           name="to"
           allowMissingLite
+          readOnly={!!props.to}
+          initialValue={props.to}
           rules={[{ required: true }]}
         />
         <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>

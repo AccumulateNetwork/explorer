@@ -1,5 +1,7 @@
 import { URL, URLArgs } from 'accumulate.js';
 
+export const ACME = URL.parse('acc://ACME');
+
 export function getParentUrl(url: URLArgs) {
   url = URL.parse(url);
   const path = url.path.replace(/^\/|\/$/g, '');

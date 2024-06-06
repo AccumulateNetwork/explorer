@@ -48,7 +48,10 @@ export function Dashboard() {
   const history = useHistory();
   const { api } = useContext(Shared);
   const [connected] = useShared(Settings, 'connected');
-  const [linkedAccounts] = useShared(account, 'linked');
+  const [linked] = useShared(account, 'linked');
+  const linkedAccounts = linked?.direct?.filter(
+    (x) => !account.liteIdUrl.equals(x.url),
+  );
 
   const [openAddCredits, setOpenAddCredits] = useState(false);
   const [openAddNote, setOpenAddNote] = useState(false);
@@ -252,9 +255,9 @@ export function Dashboard() {
         </WithIcon>
       </Title>
 
-      {!linkedAccounts?.urls ? (
+      {!linkedAccounts ? (
         <Skeleton />
-      ) : !linkedAccounts?.urls.length ? (
+      ) : !linkedAccounts.length ? (
         <Alert
           type="info"
           message={
@@ -268,9 +271,7 @@ export function Dashboard() {
         <List
           size="small"
           bordered
-          dataSource={linkedAccounts?.urls?.filter(
-            (x) => x !== account.liteIdUrl.toString(),
-          )}
+          dataSource={linkedAccounts}
           renderItem={(item) => (
             <List.Item
               actions={[
@@ -280,16 +281,16 @@ export function Dashboard() {
                 >
                   <DisconnectOutlined
                     style={{ cursor: 'pointer' }}
-                    onClick={() => unlink(item)}
+                    onClick={() => unlink(item.url)}
                   />
                 </Tooltip>,
               ]}
             >
-              <Link to={item}>
+              <Link to={item.url}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                   <RiAccountBoxLine />
                 </IconContext.Provider>
-                {item}
+                {`${item.url}`}
               </Link>
             </List.Item>
           )}
@@ -300,6 +301,7 @@ export function Dashboard() {
       <Sign request={toSign} />
 
       <AddCredits
+        to={account?.liteIdUrl}
         open={openAddCredits}
         onCancel={() => setOpenAddCredits(false)}
         onFinish={() =>

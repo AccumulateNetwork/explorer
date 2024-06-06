@@ -3,7 +3,7 @@ import { Button, Dropdown, DropdownProps, Space } from 'antd';
 import { MenuItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useContext, useEffect, useState } from 'react';
 
-import { URL, core } from 'accumulate.js';
+import { URL, URLArgs, core } from 'accumulate.js';
 import { JsonRpcClient, RecordType } from 'accumulate.js/lib/api_v3';
 import {
   AccountType,
@@ -17,6 +17,7 @@ import { Shared } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import * as web3 from './Account';
+import { AddCredits } from './AddCredits';
 import { SendTokens } from './SendTokens';
 import { useWeb3 } from './useWeb3';
 
@@ -25,12 +26,18 @@ interface Signer {
   entry: KeySpec;
 }
 
+interface ToFrom {
+  to?: URLArgs;
+  from?: URLArgs;
+}
+
 export function Actions(props: { account: URL }) {
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
   const [items, setItems] = useState<DropdownProps['menu']['items']>([]);
   const [open, setOpen] = useState<string>(null);
+  const [toFrom, setToFrom] = useState<ToFrom>({});
 
   queryEffect(props.account).then((r) => {
     if (r.recordType === RecordType.Account) {
@@ -38,24 +45,48 @@ export function Actions(props: { account: URL }) {
     }
   });
 
-  useEffect(() => {
-    const sendTokens: MenuItemType = {
-      key: 'sendTokens',
+  const item = ({
+    label,
+    open,
+    to,
+    from,
+  }: { label: string; open: string } & ToFrom): MenuItemType => {
+    return {
+      key: label,
       label: (
-        <a onClick={(e) => (e.preventDefault(), setOpen('sendTokens'))}>
-          Send tokens
-        </a>
+        <a
+          onClick={(e) => {
+            e.preventDefault();
+            setToFrom({ to, from });
+            setOpen(open);
+          }}
+          children={label}
+        />
       ),
     };
-    const addCredits: MenuItemType = {
-      key: 'addCredits',
-      disabled: true,
-      label: 'Purchase credits',
-    };
+  };
+
+  useEffect(() => {
     switch (acc?.type) {
       case AccountType.TokenAccount:
       case AccountType.LiteTokenAccount:
-        setItems([sendTokens, addCredits]);
+        setItems([
+          item({ label: 'Send tokens', open: 'sendTokens', from: acc.url }),
+          item({ label: 'Receive tokens', open: 'sendTokens', to: acc.url }),
+          item({
+            label: 'Purchase credits',
+            open: 'addCredits',
+            from: acc.url,
+          }),
+        ]);
+        break;
+
+      case AccountType.LiteIdentity:
+      case AccountType.KeyPage:
+        setItems([
+          item({ label: 'Purchase credits', open: 'addCredits', to: acc.url }),
+        ]);
+        break;
     }
   }, [acc]);
 
@@ -90,16 +121,32 @@ export function Actions(props: { account: URL }) {
         </a>
       </Dropdown>
 
-      <SendTokens
-        from={props.account}
-        open={open === 'sendTokens'}
-        onCancel={() => setOpen(null)}
-        onFinish={() => setOpen(null)}
-        signer={{
-          signer: signer.url,
-          signerVersion: signer instanceof KeyPage ? signer.version : 1,
-        }}
-      />
+      {/* Modals */}
+      {open === 'sendTokens' && (
+        <SendTokens
+          {...toFrom}
+          open={open === 'sendTokens'}
+          onCancel={() => setOpen(null)}
+          onFinish={() => setOpen(null)}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+          }}
+        />
+      )}
+
+      {open === 'addCredits' && (
+        <AddCredits
+          {...toFrom}
+          open={open === 'addCredits'}
+          onCancel={() => setOpen(null)}
+          onFinish={() => setOpen(null)}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+          }}
+        />
+      )}
     </>
   );
 }

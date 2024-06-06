@@ -10,6 +10,8 @@ import {
   TransactionType,
 } from 'accumulate.js/lib/core';
 
+import { ACME } from '../../utils/url';
+
 const { Text } = Typography;
 
 export function TokenAmount({
@@ -154,7 +156,7 @@ export function recipientsOfTx(
     case TransactionType.SyntheticBurnTokens:
       return [
         new TokenRecipient({
-          url: URL.parse('acc://ACME'),
+          url: ACME,
           amount: tx.body.amount,
         }),
       ];
@@ -191,7 +193,7 @@ export function recipientsOfTx(
       }
       return [
         new TokenRecipient({
-          url: URL.parse('acc://ACME'),
+          url: ACME,
           amount: tx.body.acmeBurnt,
         }),
       ];

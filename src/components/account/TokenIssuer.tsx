@@ -9,6 +9,7 @@ import { AccountType } from 'accumulate.js/lib/core';
 import getSupply from '../../utils/getSupply';
 import tooltipDescs from '../../utils/lang';
 import { AccountRecordOf } from '../../utils/types';
+import { ACME } from '../../utils/url';
 import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
@@ -128,8 +129,7 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
   const [supply, setSupply] = useState(null);
 
   const { network } = useContext(Shared);
-  const isACME =
-    account.url.toString().toLowerCase() === 'acc://acme' && network.metrics;
+  const isACME = account.url.equals(ACME) && network.metrics;
   useEffect(() => {
     if (isACME) {
       getSupply(network, setSupply);

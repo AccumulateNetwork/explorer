@@ -8,13 +8,20 @@ import {
   Typography,
 } from 'antd';
 import { sign } from 'eth-crypto';
-import React, { useContext, useState } from 'react';
-import { RiQuestionLine } from 'react-icons/ri';
+import React, { useContext, useEffect, useState } from 'react';
+import { RiQuestionLine, RiRestaurantLine } from 'react-icons/ri';
 
+import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { LiteTokenAccount } from 'accumulate.js/lib/core';
+import {
+  KeyPage,
+  LiteIdentity,
+  LiteTokenAccount,
+  TokenAccount,
+} from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
+import { ACME } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
@@ -22,13 +29,14 @@ import { WithIcon } from '../common/WithIcon';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Sign } from '../web3/Sign';
+import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
 import { useWeb3 } from './useWeb3';
 
 const { Text, Paragraph } = Typography;
 
 interface Fields {
-  tokenAccount: string;
-  recipient: string;
+  from: TokenAccount | LiteTokenAccount;
+  to: LiteIdentity | KeyPage;
   credits: number;
   oracle: number;
   tokens: number;
@@ -38,12 +46,16 @@ export function AddCredits({
   open,
   onCancel,
   onFinish,
+  signer,
+  ...props
 }: {
+  from?: URLArgs;
+  to?: URLArgs;
   open: boolean;
+  signer?: Sign.Signer;
   onCancel: () => any;
   onFinish: () => any;
 }) {
-  const account = useWeb3();
   const [form] = Form.useForm<Fields>();
   const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);
@@ -69,29 +81,21 @@ export function AddCredits({
     }
   }, []);
 
-  // Query the token account
-  const [tokenAccountUrl, setTokenAccountUrl] = useState<string>();
-  const [tokenAccount, setTokenAccount] = useState<LiteTokenAccount>();
-  const [tokenAccountError, setTokenAccountError] = useState<any>();
-
-  queryEffect(tokenAccountUrl)
-    .then((r) => {
-      if (r.recordType === RecordType.Error) {
-        setTokenAccountError(r.value);
-        return;
-      }
-      if (
-        !isRecordOf(r, LiteTokenAccount) ||
-        r.account.tokenUrl.toString().toLowerCase() !== 'acc://acme'
-      ) {
-        setTokenAccountError(
-          `An unexpected error occurred while fetching ${tokenAccountUrl}`,
-        );
-        return;
-      }
-      setTokenAccount(r.account);
-    })
-    .catch(setTokenAccountError);
+  // Validate the sender
+  const from = Form.useWatch('from', form);
+  useEffect(() => {
+    if (!from?.tokenUrl) {
+      return;
+    }
+    if (!from.tokenUrl.equals(ACME)) {
+      form.setFields([
+        {
+          name: 'from',
+          errors: [`Cannot use ${from.tokenUrl} to purchase credits`],
+        },
+      ]);
+    }
+  }, [from]);
 
   // Calculate the ACME amount
   const changed = ({ oracle, credits }: Fields) => {
@@ -106,25 +110,24 @@ export function AddCredits({
   };
 
   // Submit the transaction
-  const submit = async ({
-    tokenAccount,
-    recipient,
-    tokens,
-    oracle,
-  }: Fields) => {
+  const submit = async ({ from, to, tokens, oracle }: Fields) => {
     setPending(true);
     try {
-      await Sign.submit(setToSign, {
-        header: {
-          principal: tokenAccount,
+      await Sign.submit(
+        setToSign,
+        {
+          header: {
+            principal: from.url,
+          },
+          body: {
+            type: 'addCredits',
+            recipient: to.url,
+            amount: tokens,
+            oracle,
+          },
         },
-        body: {
-          type: 'addCredits',
-          recipient,
-          amount: tokens,
-          oracle,
-        },
-      });
+        signer,
+      );
       onFinish();
     } finally {
       setPending(false);
@@ -168,45 +171,31 @@ export function AddCredits({
             style={{ width: '100%' }}
           />
         </Form.Item>
-        <Form.Item noStyle name="foo">
-          <Input name="hidden" />
-        </Form.Item>
-        <Form.Item label="ACME Token Account">
-          <Form.Item noStyle name="tokenAccount" rules={[{ required: true }]}>
-            <Select
-              placeholder="Choose token account"
-              onChange={(e) => setTokenAccountUrl(e)}
-            >
-              {account && (
-                <Select.Option
-                  value={`${account.liteIdUrl}/ACME`}
-                >{`${account.liteIdUrl}/ACME`}</Select.Option>
-              )}
-            </Select>
-          </Form.Item>
-          {tokenAccount && (
+        <Form.Item label="Sender">
+          <InputTokenAccount
+            name="from"
+            noStyle
+            readOnly={!!props.from}
+            initialValue={props.from}
+            rules={[{ required: true }]}
+          />
+          {from?.tokenUrl?.equals(ACME) && (
             <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
               <Text type="secondary">
                 Available balance:{' '}
-                <TokenAmount amount={tokenAccount?.balance} issuer={'ACME'} />
+                <TokenAmount amount={from?.balance} issuer={'ACME'} />
               </Text>
             </Paragraph>
           )}
-          {tokenAccountError && <ShowError error={tokenAccountError} />}
         </Form.Item>
-        <Form.Item
-          label="Credits Destination"
+        <InputCreditRecipient
+          label="Recipient"
           name="recipient"
+          readOnly={!!props.to}
+          initialValue={props.to}
+          allowMissingLite
           rules={[{ required: true }]}
-        >
-          <Select placeholder="Choose credits destination">
-            {account && (
-              <Select.Option value={account.liteIdUrl.toString() || ''}>
-                {account.liteIdUrl.toString()}
-              </Select.Option>
-            )}
-          </Select>
-        </Form.Item>
+        />
         <Form.Item label="Amount">
           <Form.Item noStyle name="credits" rules={[{ required: true }]}>
             <InputNumber

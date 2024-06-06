@@ -95,7 +95,7 @@ function Link({ account }: { account: Account }) {
     return false;
   }
 
-  if (!linked?.urls?.includes(account.url.toString().toLowerCase())) {
+  if (!linked?.all?.some((x) => account.url.equals(x.url))) {
     return (
       <>
         <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.link}>
