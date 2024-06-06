@@ -24,14 +24,15 @@ import { isLite } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
+import { InputTokenAccount } from './InputTokenAccount';
 import { Sign } from './Sign';
 import { useWeb3 } from './useWeb3';
 
 const { Text, Paragraph } = Typography;
 
 interface Fields {
-  from: string;
-  to: string;
+  from: TokenAccount | LiteTokenAccount;
+  to: TokenAccount | LiteTokenAccount;
   amount: number;
 }
 
@@ -61,27 +62,13 @@ export function SendTokens(props: {
     form.setFields([{ name: field, errors: [] }]);
   };
 
-  // Load the sender
-  const fromUrl = props.from || Form.useWatch('from', form);
-  const [from, setFrom] = useState<TokenAccount | LiteTokenAccount>();
-  queryEffect(fromUrl).then((r) => {
-    if (r.recordType == RecordType.Error) {
-      if (r.value.code === Status.NotFound) {
-        setError('from', `${fromUrl} does not exist`);
-      } else {
-        setError('from', r.value);
-      }
-      return;
+  const from = Form.useWatch('from', form);
+  const to = Form.useWatch('to', form);
+  useEffect(() => {
+    if (from?.tokenUrl && to?.tokenUrl && !from.tokenUrl.equals(to.tokenUrl)) {
+      setError('to', `Cannot send ${issuer.symbol || issuer.url} to ${to.url}`);
     }
-
-    if (!isRecordOf(r, TokenAccount, LiteTokenAccount)) {
-      setError('from', `${fromUrl} is not a token account`);
-      return;
-    }
-
-    setFrom(r.account);
-    clearError('from');
-  });
+  }, [`${from?.tokenUrl}`, `${to?.tokenUrl}`]);
 
   // Load the issuer
   const [issuer, setIssuer] = useState<TokenIssuer>();
@@ -104,38 +91,6 @@ export function SendTokens(props: {
     clearError('from');
   });
 
-  const toUrl = Form.useWatch('to', form);
-  const [to, setTo] = useState<TokenAccount | LiteTokenAccount>();
-  queryEffect(toUrl).then((r) => {
-    if (r.recordType == RecordType.Error) {
-      if (r.value.code !== Status.NotFound) {
-        setError('to', r.value);
-      } else if (!isLite(toUrl)) {
-        setError('to', `${toUrl} does not exist`);
-      } else {
-        const url = URL.parse(toUrl);
-        const tokenUrl = url.path.replace(/^\//, '');
-        setTo(new LiteTokenAccount({ url, tokenUrl }));
-        clearError('to');
-      }
-      return;
-    }
-
-    if (!isRecordOf(r, TokenAccount, LiteTokenAccount)) {
-      setError('to', `${toUrl} is not a token account`);
-      return;
-    }
-
-    setTo(r.account);
-    clearError('to');
-  });
-
-  useEffect(() => {
-    if (from && to && !from.tokenUrl.equals(to.tokenUrl)) {
-      setError('to', `Cannot send ${issuer.symbol || issuer.url} to ${to.url}`);
-    }
-  }, [`${from?.tokenUrl}`, `${to?.tokenUrl}`]);
-
   const submit = async ({ from, to, amount }: Fields) => {
     amount *= 10 ** issuer.precision;
     setPending(true);
@@ -144,11 +99,11 @@ export function SendTokens(props: {
         setToSign,
         {
           header: {
-            principal: from,
+            principal: from.url,
           },
           body: {
             type: 'sendTokens',
-            to: [{ url: to, amount }],
+            to: [{ url: to.url, amount }],
           },
         },
         signer,
@@ -175,24 +130,23 @@ export function SendTokens(props: {
         requiredMark={false}
         disabled={pending}
         onFinish={submit}
-        initialValues={{
-          from: props.from,
-        }}
       >
         <Form.Item label="Sender">
-          <Form.Item noStyle name="from" rules={[{ required: true }]}>
-            {props.from ? (
-              <Input readOnly />
-            ) : (
-              <Select placeholder="Choose token account">
-                {account && (
-                  <Select.Option
-                    value={`${account.liteIdUrl}/ACME`}
-                  >{`${account.liteIdUrl}/ACME`}</Select.Option>
-                )}
-              </Select>
-            )}
-          </Form.Item>
+          <InputTokenAccount
+            name="from"
+            noStyle
+            allowMissingLite
+            readOnly={!!props.from}
+            initialValue={props.from}
+            rules={[{ required: true }]}
+          />
+          {/* <Select placeholder="Choose token account">
+          {account && (
+            <Select.Option
+              value={`${account.liteIdUrl}/ACME`}
+            >{`${account.liteIdUrl}/ACME`}</Select.Option>
+          )}
+        </Select> */}
           {from && issuer && (
             <Paragraph style={{ marginTop: 5, marginBottom: 0 }}>
               <Text type="secondary">
@@ -202,9 +156,12 @@ export function SendTokens(props: {
             </Paragraph>
           )}
         </Form.Item>
-        <Form.Item label="Recipient" name="to" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
+        <InputTokenAccount
+          label="Recipient"
+          name="to"
+          allowMissingLite
+          rules={[{ required: true }]}
+        />
         <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>
           <InputNumber
             min={0}

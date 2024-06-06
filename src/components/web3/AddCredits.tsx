@@ -168,6 +168,9 @@ export function AddCredits({
             style={{ width: '100%' }}
           />
         </Form.Item>
+        <Form.Item noStyle name="foo">
+          <Input name="hidden" />
+        </Form.Item>
         <Form.Item label="ACME Token Account">
           <Form.Item noStyle name="tokenAccount" rules={[{ required: true }]}>
             <Select

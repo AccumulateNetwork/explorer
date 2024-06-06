@@ -26,3 +26,13 @@ export function bind<Self, In extends Array<unknown>, Out, Props extends any>(
     ),
   );
 }
+
+export function split<V, K extends keyof V & string>(
+  value: V,
+  ...keys: K[]
+): [Pick<V, K>, Omit<V, K>] {
+  const entries = Object.entries(value);
+  const a = entries.filter(([key]) => keys.includes(key as any));
+  const b = entries.filter(([key]) => !keys.includes(key as any));
+  return [Object.fromEntries(a), Object.fromEntries(b)] as any;
+}
