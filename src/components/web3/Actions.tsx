@@ -1,5 +1,6 @@
 import { DownOutlined, PlayCircleTwoTone } from '@ant-design/icons';
-import { Button, Dropdown, DropdownProps, Space } from 'antd';
+import { Button, Dropdown, DropdownProps, Space, Typography } from 'antd';
+import menu from 'antd/lib/menu';
 import { MenuItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -16,10 +17,12 @@ import {
 import { Shared } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { AddCredits } from '../forms/AddCredits';
-import { SendTokens } from '../forms/SendTokens';
+import { AddCredits } from '../form/AddCredits';
+import { SendTokens } from '../form/SendTokens';
 import * as web3 from './Account';
 import { useWeb3 } from './useWeb3';
+
+const { Text } = Typography;
 
 interface Signer {
   signer: KeyPage | LiteIdentity;
@@ -32,12 +35,13 @@ interface ToFrom {
 }
 
 export function Actions(props: { account: URL }) {
+  type FormKey = 'addCredits' | 'sendTokens';
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
   const [items, setItems] = useState<DropdownProps['menu']['items']>([]);
-  const [open, setOpen] = useState<string>(null);
   const [toFrom, setToFrom] = useState<ToFrom>({});
+  const [open, setOpen] = useState<FormKey>();
 
   queryEffect(props.account).then((r) => {
     if (r.recordType === RecordType.Account) {
@@ -50,19 +54,14 @@ export function Actions(props: { account: URL }) {
     open,
     to,
     from,
-  }: { label: string; open: string } & ToFrom): MenuItemType => {
+  }: { label: string; open: FormKey } & ToFrom): MenuItemType => {
     return {
       key: label,
-      label: (
-        <a
-          onClick={(e) => {
-            e.preventDefault();
-            setToFrom({ to, from });
-            setOpen(open);
-          }}
-          children={label}
-        />
-      ),
+      label: <Text>{label}</Text>,
+      onClick() {
+        setToFrom({ to, from });
+        setOpen(open);
+      },
     };
   };
 
@@ -114,11 +113,10 @@ export function Actions(props: { account: URL }) {
   return (
     <>
       <Dropdown className="web3-actions" menu={{ items }}>
-        <a onClick={(e) => e.preventDefault()}>
-          <Space>
-            <PlayCircleTwoTone twoToneColor="#60b820" />
-          </Space>
-        </a>
+        <PlayCircleTwoTone
+          style={{ cursor: 'pointer' }}
+          twoToneColor="#60b820"
+        />
       </Dropdown>
 
       {/* Modals */}
@@ -127,7 +125,7 @@ export function Actions(props: { account: URL }) {
           {...toFrom}
           open={open === 'sendTokens'}
           onCancel={() => setOpen(null)}
-          onFinish={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
@@ -140,7 +138,7 @@ export function Actions(props: { account: URL }) {
           {...toFrom}
           open={open === 'addCredits'}
           onCancel={() => setOpen(null)}
-          onFinish={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
@@ -161,8 +159,7 @@ async function getSigners(
     return;
   }
 
-  // if (web3?.liteIdentity && authorities.some(({ url}) => web3.liteIdUrl.equals(url)))
-  const ethKeyHash = web3.ethereum.replace(/^0x/, '').toLowerCase();
+  const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
   return [
     ...(authorities.some(({ url }) => web3?.liteIdentity?.url.equals(url))
       ? [

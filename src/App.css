@@ -12,6 +12,11 @@
   vertical-align: middle;
 }
 
+input:read-only {
+  background-color: hsla(0, 0%, 0%, 0.04);
+  cursor: not-allowed;
+}
+
 .loader {
   position: absolute !important;
   top: 0;

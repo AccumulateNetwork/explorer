@@ -1,3 +1,5 @@
+import { V } from 'vite/dist/node/types.d-aGj9QkWt';
+
 import {
   AccountRecord,
   ChainEntryRecord,
@@ -9,12 +11,20 @@ import {
 import {
   Account,
   AccountType,
+  DataAccount,
+  DataAccountArgsWithType,
   DataEntry,
   FactomDataEntryWrapper,
+  LiteDataAccount,
+  LiteDataAccountArgsWithType,
+  LiteTokenAccount,
+  LiteTokenAccountArgsWithType,
   Signature,
   SignatureType,
   SyntheticWriteData,
   SystemWriteData,
+  TokenAccount,
+  TokenAccountArgsWithType,
   Transaction,
   TransactionBody,
   TransactionType,
@@ -63,7 +73,7 @@ export type TxnRecord<T extends TransactionBody = TransactionBody> =
 export type TxnEntry<T extends TransactionBody = TransactionBody> =
   ChainEntryRecord<TxnRecord<T>>;
 
-export type Ctor<Of = any> = abstract new (...args: any) => Of;
+export type Ctor<Of = any> = new (...args: any) => Of;
 
 type TxnRecordOrEntry<T extends TransactionBody> = TxnRecord<T> | TxnEntry<T>;
 type SigRecordOrEntry<T extends Signature> = SigRecord<T> | SigEntry<T>;
@@ -223,4 +233,65 @@ export function dataEntryParts(entry: DataEntry): Uint8Array[] {
     return entry.data.map((x) => x || new Uint8Array());
   }
   return [entry.data, ...entry.extIds].map((x) => x || new Uint8Array());
+}
+
+export function hydrate<A, I>(args: A, type: new (args: A) => I): I;
+export function hydrate<A, I>(args: A, type: { fromObject(args: A): I }): I;
+export function hydrate<A, I>(args: A[], type: new (args: A) => I): I[];
+export function hydrate<A, I>(args: A[], type: { fromObject(args: A): I }): I[];
+
+export function hydrate<A, I>(
+  value: A | A[],
+  ctor: (new (args: A) => I) | { fromObject(args: A): I },
+): I | I[] {
+  if ('fromObject' in ctor) {
+    if (value instanceof Array) {
+      return value.map((v) => hydrate(v, ctor));
+    }
+    return ctor.fromObject(value);
+  } else {
+    if (value instanceof Array) {
+      return value.map((v) => hydrate(v, ctor));
+    }
+    if (value instanceof ctor) {
+      return value;
+    }
+    return new ctor(value);
+  }
+}
+
+export namespace AnyTokenAccount {
+  export function fromObject(
+    args: TokenAccountArgsWithType | LiteTokenAccountArgsWithType,
+  ) {
+    if (args instanceof LiteTokenAccount || args instanceof TokenAccount) {
+      return args;
+    }
+    switch (args.type) {
+      case 'liteTokenAccount':
+      case AccountType.LiteTokenAccount:
+        return new LiteTokenAccount(args);
+      case 'tokenAccount':
+      case AccountType.TokenAccount:
+        return new TokenAccount(args);
+    }
+  }
+}
+
+export namespace AnyDataAccount {
+  export function fromObject(
+    args: DataAccountArgsWithType | LiteDataAccountArgsWithType,
+  ) {
+    if (args instanceof LiteDataAccount || args instanceof DataAccount) {
+      return args;
+    }
+    switch (args.type) {
+      case 'liteDataAccount':
+      case AccountType.LiteDataAccount:
+        return new LiteDataAccount(args);
+      case 'dataAccount':
+      case AccountType.DataAccount:
+        return new DataAccount(args);
+    }
+  }
 }

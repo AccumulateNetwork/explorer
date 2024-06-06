@@ -10,19 +10,14 @@ import {
   PublicKeyHashAddress,
   SignOptions,
   Signer,
+  URL,
 } from 'accumulate.js';
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { Signature, SignatureType, Transaction } from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
 
 import { Settings } from './Settings';
-import {
-  Ethereum,
-  ethAddress,
-  hashMessage,
-  keccak256,
-  recoverPublicKey,
-} from './utils';
+import { Ethereum, hashMessage, keccak256, recoverPublicKey } from './utils';
 
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
@@ -188,4 +183,36 @@ export class EthPublicKey extends PublicKeyAddress {
     const keyHash = keccak256(publicKey.slice(1));
     super(SignatureType.ETH, keyHash, publicKey);
   }
+
+  get ethereum() {
+    return ethAddress(this.publicKey);
+  }
+
+  async lite() {
+    return URL.parse(await liteIDForEth(this.publicKey));
+  }
+}
+
+function ethAddress(pub: Uint8Array | string) {
+  if (typeof pub === 'string') {
+    pub = Buffer.from(pub, 'hex');
+  }
+  if (pub[0] == 0x04) {
+    pub = pub.slice(1);
+  }
+  const hash = keccak256(pub);
+  const addr = '0x' + Buffer.from(hash.slice(-20)).toString('hex');
+  return toChecksumAddress(addr);
+}
+
+async function liteIDForEth(publicKey: Uint8Array) {
+  if (publicKey[0] == 0x04) {
+    publicKey = publicKey.slice(1);
+  }
+  const ethHash = keccak256(publicKey).slice(-20);
+  const ethAddr = Buffer.from(ethHash).toString('hex');
+  const hashHash = await sha256(Buffer.from(ethAddr));
+  const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
+
+  return `acc://${ethAddr}${checkSum}`;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from 'react';
 
 export function useAsyncEffect<V>(
   effect: (isMounted: () => boolean) => V | Promise<V>,
@@ -8,7 +8,7 @@ export function useAsyncEffect<V>(
   let reject: (_?: any) => void;
   let promise = new Promise<void>((r, j) => ((resolve = r), (reject = j)));
 
-  React.useEffect(function () {
+  useEffect(function () {
     let mounted = true;
 
     (async () => {

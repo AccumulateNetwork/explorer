@@ -135,7 +135,7 @@ export function Sign({
       title={title}
       open={open}
       footer={false}
-      closable={closable}
+      closable={true} // Always allow manually closing
       maskClosable={closable}
       children={reverse}
       onCancel={() => setOpen(false)}
@@ -295,7 +295,7 @@ async function sign({
   let update = push(<Pending>Signing</Pending>);
   const txn = new Transaction(args);
   const sig = await Wallet.signAccumulate(txn, {
-    publicKey: account.publicKey,
+    publicKey: account.publicKey.publicKey,
     timestamp: Date.now(),
     ...(signer || {
       signer: account.liteIdUrl,
@@ -377,6 +377,16 @@ async function waitFor({
   for (let i = 0; i < waitLimit; i++) {
     try {
       const r = (await api.query(txid)) as MessageRecord;
+      if (r.status >= 400) {
+        replace(
+          <Failure>
+            <Link to={txid}>
+              <ShowError bare error={r.error || 'An unknown error occurred'} />
+            </Link>
+          </Failure>,
+        );
+        return false;
+      }
       if (r.status !== Status.Delivered) {
         // Status is pending or unknown
         await new Promise((r) => setTimeout(r, waitTime));
@@ -408,7 +418,9 @@ async function waitFor({
 
       replace(
         <Failure>
-          <Link to={txid}>{<ShowError bare error={error} />}</Link>
+          <Link to={txid}>
+            <ShowError bare error={error} />
+          </Link>
         </Failure>,
       );
       return false;

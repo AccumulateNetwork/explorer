@@ -1,17 +1,15 @@
 import { URL } from 'accumulate.js';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 import { Buffer } from 'accumulate.js/lib/common';
-import { KeyBook, KeyPage, LiteIdentity } from 'accumulate.js/lib/core';
+import { LiteIdentity } from 'accumulate.js/lib/core';
 
-import { isRecordOf } from '../../utils/types';
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { fetchAccount } from '../common/query';
 import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
 import { OnlineStore } from './OnlineStore';
 import { Store } from './Store';
-import { Wallet } from './Wallet';
-import { ethAddress, liteIDForEth } from './utils';
+import { EthPublicKey, Wallet } from './Wallet';
 
 @prefix('web3:account')
 @storage(localStorage)
@@ -30,31 +28,27 @@ export class Account {
       return this.#for.get(key);
     }
 
-    const lite = URL.parse(await liteIDForEth(publicKey));
-    const offline = await OnlineStore.for(publicKey);
-    const inst = new this(publicKey, lite, offline);
+    const ethPub = new EthPublicKey(publicKey);
+    const offline = await OnlineStore.for(ethPub);
+    const inst = new this(ethPub, await ethPub.lite(), offline);
     Account.#for.set(key, inst);
     return inst;
   }
 
-  readonly publicKey: Uint8Array;
+  readonly publicKey: EthPublicKey;
   readonly liteIdUrl: URL;
   readonly online: OnlineStore;
   readonly offline: OfflineStore;
   liteIdentity?: LiteIdentity;
   entries?: Store.Entry[];
-  @broadcast accessor linked: Linked | null;
+  @broadcast.as(Linked) accessor linked: Linked | null;
 
   // TODO: this should be private, but that screws up the decorators
-  constructor(publicKey: Uint8Array, liteIdUrl: URL, online: OnlineStore) {
+  constructor(publicKey: EthPublicKey, liteIdUrl: URL, online: OnlineStore) {
     this.publicKey = publicKey;
     this.liteIdUrl = liteIdUrl;
     this.online = online;
-    this.offline = new OfflineStore(publicKey);
-  }
-
-  get ethereum() {
-    return ethAddress(this.publicKey);
+    this.offline = new OfflineStore(publicKey.publicKey);
   }
 
   get store(): Store {

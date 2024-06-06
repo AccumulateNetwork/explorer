@@ -8,7 +8,7 @@ import { useHistory } from 'react-router-dom';
 
 import { tooltip } from '../../utils/lang';
 import { useShared } from '../common/Shared';
-import { Sign } from '../forms/Sign';
+import { Sign } from '../form/Sign';
 import { Settings } from './Settings';
 import { Wallet } from './Wallet';
 import { Ethereum, isLedgerError } from './utils';

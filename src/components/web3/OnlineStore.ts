@@ -15,10 +15,9 @@ import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { fetchAccount, fetchDataEntries } from '../common/query';
 import { Store } from './Store';
 import { EthPublicKey, Wallet } from './Wallet';
-import { ethAddress } from './utils';
 
 export class OnlineStore {
-  static async for(publicKey: Uint8Array) {
+  static async for(publicKey: EthPublicKey) {
     const token = new Token(publicKey);
     const hash = await sha256(await sha256(await token.for('backup')));
     const url = URL.parse(`acc://${Buffer.from(hash).toString('hex')}`);
@@ -226,15 +225,15 @@ class Entry {
 }
 
 class Token {
-  readonly #publicKey: Uint8Array;
+  readonly #publicKey: EthPublicKey;
   readonly #cache: Record<string, Uint8Array> = {};
 
-  constructor(publicKey: Uint8Array) {
+  constructor(publicKey: EthPublicKey) {
     this.#publicKey = publicKey;
   }
 
   get ethereum() {
-    return ethAddress(this.#publicKey);
+    return this.#publicKey.ethereum;
   }
 
   async for(suffix: string | Uint8Array) {
@@ -245,7 +244,7 @@ class Token {
       return this.#cache[suffix];
     }
 
-    const addr = new EthPublicKey(this.#publicKey);
+    const addr = this.#publicKey;
     const token = await sha256(
       Buffer.from(`${await addr.format()}:${suffix}`, 'utf-8'),
     );

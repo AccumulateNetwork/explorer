@@ -1,4 +1,4 @@
-import { Form, FormItemProps, Input, Select, SelectProps } from 'antd';
+import { Form, FormItemProps, Input, Select, Space } from 'antd';
 import { BaseOptionType } from 'antd/lib/select';
 import React, { useEffect, useState } from 'react';
 
@@ -6,6 +6,7 @@ import { URL, URLArgs, errors } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   Account,
+  KeyBook,
   KeyPage,
   LiteDataAccount,
   LiteIdentity,
@@ -14,43 +15,42 @@ import {
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
-import { debounce } from '../../utils/forms';
 import { Ctor, isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
-import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
-import { useWeb3 } from './useWeb3';
+import { useWeb3 } from '../web3/useWeb3';
+import { debounce, formUtils } from './utils';
 
 interface InputAccountProps
   extends Omit<FormItemProps, 'children' | 'onChange'> {
   allowMissingLite?: boolean;
   readOnly?: boolean;
   initialValue?: URLArgs;
+  after?: React.ReactNode;
+  placeholder?: string;
 }
 
 export const InputTokenAccount = newFor(LiteTokenAccount, TokenAccount);
 export const InputCreditRecipient = newFor(LiteIdentity, KeyPage);
+export const InputAuthority = newFor(KeyBook);
 
 function newFor<C extends Array<Ctor<Account>>>(...types: C) {
   return ({
-    name,
     allowMissingLite,
     initialValue,
     readOnly,
+    after,
+    placeholder,
     ...props
   }: InputAccountProps) => {
     const web3 = useWeb3();
     const form = Form.useFormInstance();
     const [url, setURL] = useState<string>();
+    const { set, setError } = formUtils(form, props.name);
 
     useEffect(() => {
       setURL(initialValue && `${initialValue}`);
     }, [initialValue]);
-
-    const setError = (error: any) => {
-      error = unwrapError(error) || `An unknown error occurred`;
-      form.setFields([{ name, errors: [error] }]);
-    };
 
     const handleError = (e: errors.Error) => {
       if (e.code !== Status.NotFound) {
@@ -65,20 +65,20 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
 
       if (types.includes(LiteIdentity)) {
         const value = new LiteIdentity({ url });
-        form.setFields([{ name, value, errors: [] }]);
+        set({ value, errors: [] });
         return;
       }
 
       if (types.includes(LiteTokenAccount)) {
         const tokenUrl = URL.parse(url).path.replace(/^\//, '');
         const value = new LiteTokenAccount({ url, tokenUrl });
-        form.setFields([{ name, value, errors: [] }]);
+        set({ value, errors: [] });
         return;
       }
 
       if (types.includes(LiteDataAccount)) {
         const value = new LiteDataAccount({ url });
-        form.setFields([{ name, value, errors: [] }]);
+        set({ value, errors: [] });
         return;
       }
 
@@ -98,7 +98,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       }
 
       const value = r.account;
-      form.setFields([{ name, value, errors: [] }]);
+      set({ value, errors: [] });
     });
 
     const [baseOpts, setBaseOpts] = useState<BaseOptionType[]>();
@@ -111,54 +111,53 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       setAllOpts(opts);
     }, [web3?.linked?.all]);
 
-    const slowValueChange = debounce(setURL, 300);
+    const slowValueChange = debounce(setURL, 200);
     return (
-      <>
-        <Form.Item
-          {...props}
-          name={name}
-          initialValue={initialValue && `${initialValue}`}
-          normalize={(value) => {
-            if (typeof value === 'string') {
-              return { url: value };
-            }
-            return value;
-          }}
-          getValueProps={(value) => {
-            if (value && typeof value === 'object') {
-              value = `${value.url}`;
-            }
-            return { value };
-          }}
-        >
+      <Form.Item
+        {...props}
+        initialValue={initialValue && `${initialValue}`}
+        normalize={(value) => {
+          if (typeof value === 'string') {
+            return { url: value };
+          }
+          return value;
+        }}
+        getValueProps={(value) => {
+          if (value && typeof value === 'object') {
+            value = `${value.url}`;
+          }
+          return { value };
+        }}
+      >
+        <Space.Compact block>
           {readOnly ? (
             <Input
               value={initialValue && `${initialValue}`}
               readOnly={readOnly}
-              style={{
-                backgroundColor: 'hsla(0, 0%, 0%, 0.04)',
-                cursor: 'not-allowed',
-              }}
               onChange={(e) => slowValueChange(e.target.value)}
+              placeholder={placeholder}
             />
           ) : !baseOpts?.length ? (
             <Input
               readOnly={readOnly}
               onChange={(e) => slowValueChange(e.target.value)}
+              placeholder={placeholder}
             />
           ) : (
             <Select
               showSearch
               options={allOpts}
               filterOption={(s, opt) => opt.value.toString().includes(s)}
+              placeholder={placeholder}
               onSearch={(s) =>
                 setAllOpts([{ label: s, value: s }, ...baseOpts])
               }
               onSelect={setURL}
             />
           )}
-        </Form.Item>
-      </>
+          {after}
+        </Space.Compact>
+      </Form.Item>
     );
   };
 }

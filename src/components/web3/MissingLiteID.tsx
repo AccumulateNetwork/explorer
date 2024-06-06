@@ -8,7 +8,7 @@ import { Submission } from 'accumulate.js/lib/api_v3';
 import { AccTitle } from '../common/AccTitle';
 import { Shared } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
-import { Sign } from '../forms/Sign';
+import { Sign } from '../form/Sign';
 import { useWeb3 } from './useWeb3';
 
 const { Paragraph, Text, Title } = Typography;
@@ -31,7 +31,10 @@ export function MissingLiteID() {
       <AccTitle title={title} url={account.liteIdUrl} />
 
       <Paragraph>
-        <MissingLiteID.Create eth={account.ethereum} lite={account.liteIdUrl} />
+        <MissingLiteID.Create
+          eth={account.publicKey.ethereum}
+          lite={account.liteIdUrl}
+        />
       </Paragraph>
     </div>
   );

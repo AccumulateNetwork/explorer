@@ -64,6 +64,14 @@ export const tooltip = {
   timestamp: 'The timestamp of the block in which the transaction was executed',
   block: 'The block in which the transaction was executed',
 
+  form: {
+    adiUrl: 'The URL of the ADI',
+    adiKeyBook: 'The key book that will own the ADI',
+    initialKey: "The initial key of the ADI's key book",
+    externallyOwned:
+      'The ADI or account will be owned by an authority within a different ADI',
+  },
+
   web3: {
     connect:
       'Connect Web3 wallet to sign and submit txs on the Accumulate Network',

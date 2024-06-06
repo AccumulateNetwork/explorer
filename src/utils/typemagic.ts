@@ -27,12 +27,38 @@ export function bind<Self, In extends Array<unknown>, Out, Props extends any>(
   );
 }
 
-export function split<V, K extends keyof V & string>(
+export function pick<V, K extends keyof V & string>(
   value: V,
   ...keys: K[]
-): [Pick<V, K>, Omit<V, K>] {
-  const entries = Object.entries(value);
-  const a = entries.filter(([key]) => keys.includes(key as any));
-  const b = entries.filter(([key]) => !keys.includes(key as any));
-  return [Object.fromEntries(a), Object.fromEntries(b)] as any;
+): Pick<V, K> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([key]) => keys.includes(key as any)),
+  ) as any;
+}
+
+export function omit<V, K extends keyof V & string>(
+  value: V,
+  ...keys: K[]
+): Omit<V, K> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([key]) => !keys.includes(key as any)),
+  ) as any;
+}
+
+type Func = (..._: any[]) => any;
+
+type FirstArg<Fn extends Func> =
+  Parameters<Fn> extends [infer FirstArg, ...infer _] ? FirstArg : never;
+
+type OmitFirst<Fn extends Func> =
+  Parameters<Fn> extends [infer _, ...infer Rest] ? Rest : never;
+
+export type SplitFirst<Fn extends Func> = (
+  arg: FirstArg<Fn>,
+) => (...args: OmitFirst<Fn>) => ReturnType<Fn>;
+
+export function curryFirst<Fn extends Func>(fn: Fn): SplitFirst<Fn> {
+  return ((first: any) =>
+    (...rest: any[]) =>
+      fn(first, ...rest)) as SplitFirst<Fn>;
 }

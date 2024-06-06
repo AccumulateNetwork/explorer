@@ -1,22 +1,15 @@
-import { Button, Form, FormInstance, Input, Modal, Spin } from 'antd';
+import { Button, Form, Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
 import { useWeb3 } from '../web3/useWeb3';
+import { TxnFormProps } from './BaseTxnForm';
 import { Sign } from './Sign';
 
 interface Fields {
   value: string;
 }
 
-export function AddNote({
-  open,
-  onFinish,
-  onCancel,
-}: {
-  open: boolean;
-  onFinish(): any;
-  onCancel(): any;
-}) {
+export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
   const account = useWeb3();
   const [form] = Form.useForm<Fields>();
   const [toSign, setToSign] = useState<Sign.Request>();
@@ -25,7 +18,7 @@ export function AddNote({
   const submit = async ({ value }: Fields) => {
     setPending(true);
     try {
-      await account.store.add((txn) => Sign.submit(setToSign, txn), {
+      await account.store.add((txn) => Sign.submit(setToSign, txn, signer), {
         type: 'note',
         value,
       });

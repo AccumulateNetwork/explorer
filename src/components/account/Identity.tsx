@@ -94,7 +94,7 @@ export function Identity({
       <InfoTable>
         {isWeb3Lite && (
           <Descriptions.Item label={labelETH}>
-            <Text copyable>{web3.ethereum}</Text>
+            <Text copyable>{web3.publicKey.ethereum}</Text>
           </Descriptions.Item>
         )}
 

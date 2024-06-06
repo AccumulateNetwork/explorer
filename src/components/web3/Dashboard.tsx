@@ -34,9 +34,10 @@ import { Shared } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { Settings as MainSettings } from '../explorer/Settings';
-import { AddCredits } from '../forms/AddCredits';
-import { AddNote } from '../forms/AddNote';
-import { Sign } from '../forms/Sign';
+import { AddCredits } from '../form/AddCredits';
+import { AddNote } from '../form/AddNote';
+import { CreateIdentity } from '../form/CreateIdentity';
+import { Sign } from '../form/Sign';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
 import { useWeb3 } from './useWeb3';
@@ -53,9 +54,9 @@ export function Dashboard() {
     (x) => !account.liteIdUrl.equals(x.url),
   );
 
-  const [openAddCredits, setOpenAddCredits] = useState(false);
-  const [openAddNote, setOpenAddNote] = useState(false);
-
+  const [open, setOpen] = useState<
+    'addCredits' | 'addNote' | 'createIdentity'
+  >();
   const [toSign, setToSign] = useState<Sign.Request>();
   const sign = (txn: TransactionArgs, signer?: Sign.Signer) =>
     Sign.submit(setToSign, txn, signer);
@@ -116,7 +117,7 @@ export function Dashboard() {
             />
           }
         >
-          <Text copyable>{account.ethereum}</Text>
+          <Text copyable>{account.publicKey.ethereum}</Text>
         </Descriptions.Item>
 
         <Descriptions.Item
@@ -153,7 +154,7 @@ export function Dashboard() {
               <Button
                 shape="round"
                 type="primary"
-                onClick={() => setOpenAddCredits(true)}
+                onClick={() => setOpen('addCredits')}
                 children="Purchase"
               />
             )}
@@ -167,7 +168,7 @@ export function Dashboard() {
           style={{ marginBottom: 20 }}
           message={
             <MissingLiteID.Create
-              eth={account.ethereum}
+              eth={account.publicKey.ethereum}
               lite={account.liteIdUrl}
             />
           }
@@ -183,6 +184,15 @@ export function Dashboard() {
           Linked Accumulate Accounts
         </WithIcon>
       </Title>
+
+      <Paragraph>
+        <Button
+          shape="round"
+          type="primary"
+          onClick={() => setOpen('createIdentity')}
+          children="Create ADI"
+        />
+      </Paragraph>
 
       {!linkedAccounts ? (
         <Skeleton />
@@ -293,7 +303,7 @@ export function Dashboard() {
           type="primary"
           style={{ marginBottom: 20 }}
           disabled={!account.online.canEncrypt}
-          onClick={() => setOpenAddNote(true)}
+          onClick={() => setOpen('addNote')}
         >
           <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
         </Button>
@@ -302,22 +312,38 @@ export function Dashboard() {
       {/* Modals */}
       <Sign request={toSign} />
 
-      <AddCredits
-        to={account?.liteIdUrl}
-        open={openAddCredits}
-        onCancel={() => setOpenAddCredits(false)}
-        onFinish={() =>
-          account
-            .reload(api, 'liteIdentity')
-            .finally(() => setOpenAddCredits(false))
-        }
-      />
+      {open === 'addCredits' && (
+        <AddCredits
+          to={account?.liteIdUrl}
+          open={open === 'addCredits'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => {
+            if (ok) {
+              try {
+                account.reload(api, 'liteIdentity');
+              } finally {
+                setOpen(null);
+              }
+            }
+          }}
+        />
+      )}
 
-      <AddNote
-        open={openAddNote}
-        onCancel={() => setOpenAddNote(false)}
-        onFinish={() => setOpenAddNote(false)}
-      />
+      {open === 'addNote' && (
+        <AddNote
+          open={open === 'addNote'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+        />
+      )}
+
+      {open === 'createIdentity' && (
+        <CreateIdentity
+          open={open === 'createIdentity'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+        />
+      )}
     </>
   );
 }

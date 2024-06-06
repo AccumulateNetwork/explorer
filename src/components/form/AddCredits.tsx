@@ -1,18 +1,8 @@
-import {
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Select,
-  Typography,
-} from 'antd';
-import { sign } from 'eth-crypto';
+import { Button, Form, Input, InputNumber, Modal, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
-import { RiQuestionLine, RiRestaurantLine } from 'react-icons/ri';
+import { RiQuestionLine } from 'react-icons/ri';
 
 import { URLArgs } from 'accumulate.js';
-import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   KeyPage,
   LiteIdentity,
@@ -20,16 +10,13 @@ import {
   TokenAccount,
 } from 'accumulate.js/lib/core';
 
-import { isRecordOf } from '../../utils/types';
 import { ACME } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { Shared } from '../common/Network';
-import { ShowError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
-import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { InputCreditRecipient, InputTokenAccount } from '../web3/InputAccount';
-import { useWeb3 } from '../web3/useWeb3';
+import { TxnFormProps } from './BaseTxnForm';
+import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
 import { Sign } from './Sign';
 
 const { Text, Paragraph } = Typography;
@@ -51,11 +38,7 @@ export function AddCredits({
 }: {
   from?: URLArgs;
   to?: URLArgs;
-  open: boolean;
-  signer?: Sign.Signer;
-  onCancel: () => any;
-  onFinish: () => any;
-}) {
+} & TxnFormProps) {
   const [form] = Form.useForm<Fields>();
   const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);

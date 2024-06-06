@@ -19,18 +19,6 @@ export const keccak512 = keccak('keccak512');
 
 export const Ethereum = window.ethereum;
 
-export function ethAddress(pub: Uint8Array | string) {
-  if (typeof pub === 'string') {
-    pub = Buffer.from(pub, 'hex');
-  }
-  if (pub[0] == 0x04) {
-    pub = pub.slice(1);
-  }
-  const hash = keccak256(pub);
-  const addr = '0x' + Buffer.from(hash.slice(-20)).toString('hex');
-  return toChecksumAddress(addr);
-}
-
 export function isLedgerError(error) {
   // Extract the Ledger error
   if (error.message.startsWith('Ledger device: ')) {
@@ -77,18 +65,6 @@ export function recoverPublicKey(signature: Uint8Array, hash: Uint8Array) {
 
   // Remove leading '04'
   return publicKey;
-}
-
-export async function liteIDForEth(publicKey: Uint8Array) {
-  if (publicKey[0] == 0x04) {
-    publicKey = publicKey.slice(1);
-  }
-  const ethHash = keccak256(publicKey).slice(-20);
-  const ethAddr = Buffer.from(ethHash).toString('hex');
-  const hashHash = await sha256(Buffer.from(ethAddr));
-  const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
-
-  return `acc://${ethAddr}${checkSum}`;
 }
 
 export const truncateAddress = (address?: string) => {

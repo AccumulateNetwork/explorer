@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { bind } from '../../utils/typemagic';
+import { Ctor } from '../../utils/types';
 
-type Ctor = abstract new (...args: any) => any;
 type Named = { name: string };
 
 interface ClassInfo {
@@ -100,29 +100,59 @@ export function stored<T, V>(
 }
 
 export function broadcast<This, Value>(
-  { get, set }: ClassAccessorDecoratorTarget<This, Value>,
+  target: ClassAccessorDecoratorTarget<This, Value>,
   context: ClassAccessorDecoratorContext<This, Value> & Named,
 ): ClassAccessorDecoratorResult<This, Value> {
   getAccessorMetadata(context).broadcast = true;
   return {
     set(value: Value) {
-      const previous = get.call(this);
-      set.call(this, value);
-      if (previous === value) {
-        return;
-      }
-
-      const { name } = info.resolve(this, context);
-      bChannel.postMessage({ name, value });
-      bLocal.forEach((fn) => {
-        try {
-          fn(name, value);
-        } catch (error) {
-          console.log(error);
-        }
-      });
+      bSet.call(this, target, context, value);
     },
   };
+}
+
+broadcast.as = function <C extends Ctor<{ asObject(): any }>>(ctor: C) {
+  return <This>(
+    target: ClassAccessorDecoratorTarget<This, InstanceType<C>>,
+    context: ClassAccessorDecoratorContext<This, InstanceType<C>> & Named,
+  ): ClassAccessorDecoratorResult<This, InstanceType<C>> => {
+    getAccessorMetadata(context).broadcast = true;
+    return {
+      set(value: any) {
+        if (!(value instanceof ctor)) {
+          value = new ctor(value);
+        }
+        bSet.call(this, target, context, value, (v) => v.asObject());
+      },
+    };
+  };
+};
+
+function bSet<This, Value>(
+  { get, set }: ClassAccessorDecoratorTarget<This, Value>,
+  context: ClassAccessorDecoratorContext<This, Value> & Named,
+  value: Value,
+  postAs?: (_: Value) => any,
+) {
+  const previous = get.call(this);
+  set.call(this, value);
+  if (previous === value) {
+    return;
+  }
+
+  if (postAs) {
+    value = postAs(value);
+  }
+
+  const { name } = info.resolve(this, context);
+  bChannel.postMessage({ name, value });
+  bLocal.forEach((fn) => {
+    try {
+      fn(name, value);
+    } catch (error) {
+      console.log(error);
+    }
+  });
 }
 
 type bCallback = (name: string, value: any) => any;
