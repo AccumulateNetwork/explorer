@@ -1,6 +1,5 @@
-import { DownOutlined, PlayCircleTwoTone } from '@ant-design/icons';
-import { Button, Dropdown, DropdownProps, Space, Typography } from 'antd';
-import menu from 'antd/lib/menu';
+import { PlayCircleTwoTone } from '@ant-design/icons';
+import { Dropdown, DropdownProps, Typography } from 'antd';
 import { MenuItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -77,13 +76,6 @@ export function Actions(props: { account: URL }) {
             open: 'addCredits',
             from: acc.url,
           }),
-        ]);
-        break;
-
-      case AccountType.LiteIdentity:
-      case AccountType.KeyPage:
-        setItems([
-          item({ label: 'Purchase credits', open: 'addCredits', to: acc.url }),
         ]);
         break;
     }

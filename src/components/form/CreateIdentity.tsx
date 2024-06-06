@@ -5,17 +5,20 @@ import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
+import { AccountType, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
+import { omit } from '../../utils/typemagic';
 import { Shared } from '../common/Network';
 import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
+import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/useWeb3';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
+import { Sign } from './Sign';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {
@@ -82,8 +85,36 @@ export function CreateIdentity(props: TxnFormProps) {
     }
   });
 
+  const isMounted = useIsMounted();
+  const [toSign, setToSign] = useState<Sign.Request>();
+  const onFinish = async (ok: boolean) => {
+    if (!isMounted.current) {
+      return;
+    }
+    if (ok) {
+      const ok = await web3.store.add((txn) => Sign.submit(setToSign, txn), {
+        type: 'link',
+        url: form.getFieldValue('url'),
+        accountType: 'identity',
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      if (ok) {
+        await web3.reload(api, 'entries', 'linked');
+      }
+    }
+    props.onFinish(ok);
+  };
+
   return (
-    <BaseTxnForm {...props} title="Create ADI" form={form} submit={submit}>
+    <BaseTxnForm
+      {...omit(props, 'onFinish')}
+      title="Create ADI"
+      form={form}
+      submit={submit}
+      onFinish={onFinish}
+    >
       <Form.Item
         name="url"
         rules={[{ required: true }]}
@@ -172,6 +203,8 @@ export function CreateIdentity(props: TxnFormProps) {
           )}
         />
       </Form.Item>
+
+      <Sign title={`Linking ${form.getFieldValue('url')}`} request={toSign} />
     </BaseTxnForm>
   );
 }

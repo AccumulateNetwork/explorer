@@ -85,10 +85,9 @@ function Link({ account }: { account: Account }) {
       url: `${account.url}`,
       accountType: AccountType.getName(account.type) as any,
     });
-    if (!ok) {
-      return;
+    if (ok) {
+      await web3.reload(api, 'entries', 'linked');
     }
-    await web3.reload(api, 'entries', 'linked');
   };
 
   if (!web3) {

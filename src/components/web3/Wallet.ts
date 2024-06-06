@@ -180,7 +180,7 @@ export class EthPublicKey extends PublicKeyAddress {
       publicKey = Buffer.concat([new Uint8Array([0x04]), publicKey]);
     }
 
-    const keyHash = keccak256(publicKey.slice(1));
+    const keyHash = keccak256(publicKey.slice(1)).slice(-20);
     super(SignatureType.ETH, keyHash, publicKey);
   }
 

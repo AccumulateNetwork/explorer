@@ -1,6 +1,7 @@
 import { Button, Form, Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
+import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/useWeb3';
 import { TxnFormProps } from './BaseTxnForm';
 import { Sign } from './Sign';
@@ -15,15 +16,25 @@ export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
   const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);
 
+  const isMounted = useIsMounted();
   const submit = async ({ value }: Fields) => {
     setPending(true);
     try {
-      await account.store.add((txn) => Sign.submit(setToSign, txn, signer), {
-        type: 'note',
-        value,
-      });
-      onFinish();
+      const ok = await account.store.add(
+        (txn) => Sign.submit(setToSign, txn, signer),
+        {
+          type: 'note',
+          value,
+        },
+      );
+      if (!isMounted.current) {
+        return;
+      }
+      onFinish(ok);
     } finally {
+      if (!isMounted.current) {
+        return;
+      }
       onCancel();
       setPending(false);
     }
