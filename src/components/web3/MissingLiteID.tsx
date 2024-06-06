@@ -8,7 +8,7 @@ import { Submission } from 'accumulate.js/lib/api_v3';
 import { AccTitle } from '../common/AccTitle';
 import { Shared } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
-import { Sign } from './Sign';
+import { Sign } from '../forms/Sign';
 import { useWeb3 } from './useWeb3';
 
 const { Paragraph, Text, Title } = Typography;

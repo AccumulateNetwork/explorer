@@ -28,9 +28,9 @@ import { ShowError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { Sign } from '../web3/Sign';
-import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
-import { useWeb3 } from './useWeb3';
+import { InputCreditRecipient, InputTokenAccount } from '../web3/InputAccount';
+import { useWeb3 } from '../web3/useWeb3';
+import { Sign } from './Sign';
 
 const { Text, Paragraph } = Typography;
 

@@ -34,14 +34,14 @@ import { Shared } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { Settings as MainSettings } from '../explorer/Settings';
-import { AddCredits } from './AddCredits';
-import { AddNote } from './AddNote';
+import { AddCredits } from '../forms/AddCredits';
+import { AddNote } from '../forms/AddNote';
+import { Sign } from '../forms/Sign';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
-import { Sign } from './Sign';
 import { useWeb3 } from './useWeb3';
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 export function Dashboard() {
   const account = useWeb3();
@@ -174,7 +174,61 @@ export function Dashboard() {
         />
       )}
 
-      <Title level={4}>On-chain Backup </Title>
+      <Title level={4}>
+        <WithIcon
+          after
+          icon={RiQuestionLine}
+          tooltip={tooltip.web3.linkedSection}
+        >
+          Linked Accumulate Accounts
+        </WithIcon>
+      </Title>
+
+      {!linkedAccounts ? (
+        <Skeleton />
+      ) : !linkedAccounts.length ? (
+        <Alert
+          type="info"
+          message={
+            <span>
+              {'To link an account, navigate to it and click '}
+              <LinkOutlined />
+            </span>
+          }
+        />
+      ) : (
+        <List
+          size="small"
+          bordered
+          dataSource={linkedAccounts}
+          renderItem={(item) => (
+            <List.Item
+              actions={[
+                <Tooltip
+                  overlayClassName="explorer-tooltip"
+                  title={tooltip.web3.unlink}
+                >
+                  <DisconnectOutlined
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => unlink(item.url)}
+                  />
+                </Tooltip>,
+              ]}
+            >
+              <Link to={item.url}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                  <RiAccountBoxLine />
+                </IconContext.Provider>
+                {`${item.url}`}
+              </Link>
+            </List.Item>
+          )}
+        />
+      )}
+
+      <Title level={4} style={{ marginTop: 20 }}>
+        On-chain Backup{' '}
+      </Title>
 
       <InfoTable>
         <Descriptions.Item
@@ -243,58 +297,6 @@ export function Dashboard() {
         >
           <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
         </Button>
-      )}
-
-      <Title level={4}>
-        <WithIcon
-          after
-          icon={RiQuestionLine}
-          tooltip={tooltip.web3.linkedSection}
-        >
-          Linked Accumulate Accounts
-        </WithIcon>
-      </Title>
-
-      {!linkedAccounts ? (
-        <Skeleton />
-      ) : !linkedAccounts.length ? (
-        <Alert
-          type="info"
-          message={
-            <span>
-              {'To link an account, navigate to it and click '}
-              <LinkOutlined />
-            </span>
-          }
-        />
-      ) : (
-        <List
-          size="small"
-          bordered
-          dataSource={linkedAccounts}
-          renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Tooltip
-                  overlayClassName="explorer-tooltip"
-                  title={tooltip.web3.unlink}
-                >
-                  <DisconnectOutlined
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => unlink(item.url)}
-                  />
-                </Tooltip>,
-              ]}
-            >
-              <Link to={item.url}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiAccountBoxLine />
-                </IconContext.Provider>
-                {`${item.url}`}
-              </Link>
-            </List.Item>
-          )}
-        />
       )}
 
       {/* Modals */}

@@ -15,7 +15,7 @@ import { isRecordOf } from '../../utils/types';
 import { TokenAmount } from '../common/Amount';
 import { unwrapError } from '../common/ShowError';
 import { queryEffect } from '../common/query';
-import { InputTokenAccount } from './InputAccount';
+import { InputTokenAccount } from '../web3/InputAccount';
 import { Sign } from './Sign';
 
 const { Text, Paragraph } = Typography;

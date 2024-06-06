@@ -1,6 +1,6 @@
 import { LogoutOutlined } from '@ant-design/icons';
 import { useWeb3React } from '@web3-react/core';
-import { Button, Tooltip, message } from 'antd';
+import { Button, List, Modal, Tooltip, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { FaWallet } from 'react-icons/fa';
@@ -8,9 +8,8 @@ import { useHistory } from 'react-router-dom';
 
 import { tooltip } from '../../utils/lang';
 import { useShared } from '../common/Shared';
-import { Connect } from './Connect';
+import { Sign } from '../forms/Sign';
 import { Settings } from './Settings';
-import { Sign } from './Sign';
 import { Wallet } from './Wallet';
 import { Ethereum, isLedgerError } from './utils';
 
@@ -112,7 +111,7 @@ export function Login() {
       {/* Modals */}
       <Sign.WaitFor title="Login" closeWhenDone request={request} />
 
-      <Connect
+      <Login.Connect
         open={connectOpen}
         onCancel={() => setConnectOpen(false)}
         onSubmit={connect}
@@ -120,3 +119,42 @@ export function Login() {
     </>
   );
 }
+
+Login.Connect = function ({
+  open,
+  onSubmit,
+  onCancel,
+}: {
+  open: boolean;
+  onSubmit(): any;
+  onCancel(): any;
+}) {
+  return (
+    <Modal
+      title="Connect Wallet"
+      open={open}
+      onCancel={onCancel}
+      footer={false}
+    >
+      <List>
+        <List.Item>
+          <Button
+            block
+            shape="round"
+            size="large"
+            onClick={onSubmit}
+            disabled={!Ethereum}
+            children="MetaMask"
+          />
+        </List.Item>
+      </List>
+      <List>
+        <List.Item>
+          <Button block shape="round" size="large" disabled>
+            WalletConnect
+          </Button>
+        </List.Item>
+      </List>
+    </Modal>
+  );
+};

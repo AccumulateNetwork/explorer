@@ -16,9 +16,9 @@ import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account } from './Account';
-import { Wallet } from './Wallet';
-import { useWeb3 } from './useWeb3';
+import { Account } from '../web3/Account';
+import { Wallet } from '../web3/Wallet';
+import { useWeb3 } from '../web3/useWeb3';
 
 const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
