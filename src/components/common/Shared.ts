@@ -119,10 +119,10 @@ broadcast.as = function <C extends Ctor<{ asObject(): any }>>(ctor: C) {
     getAccessorMetadata(context).broadcast = true;
     return {
       set(value: any) {
-        if (!(value instanceof ctor)) {
+        if (value !== null && value !== undefined && !(value instanceof ctor)) {
           value = new ctor(value);
         }
-        bSet.call(this, target, context, value, (v) => v.asObject());
+        bSet.call(this, target, context, value, (v: any) => v?.asObject());
       },
     };
   };
