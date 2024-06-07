@@ -1,21 +1,6 @@
-import { toChecksumAddress } from 'ethereumjs-util';
-import newKeccak from 'keccak';
 import { ecdsaRecover } from 'secp256k1';
 
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
-
-function keccak(name: string): (msg: Uint8Array) => Uint8Array {
-  return (msg) => {
-    const hash = newKeccak(name);
-    hash.update(Buffer.from(msg));
-    return hash.digest();
-  };
-}
-
-export const keccak224 = keccak('keccak224');
-export const keccak256 = keccak('keccak256');
-export const keccak384 = keccak('keccak384');
-export const keccak512 = keccak('keccak512');
+import { Buffer, keccak256 } from 'accumulate.js/lib/common';
 
 export const Ethereum = window.ethereum;
 
@@ -66,12 +51,3 @@ export function recoverPublicKey(signature: Uint8Array, hash: Uint8Array) {
   // Remove leading '04'
   return publicKey;
 }
-
-export const truncateAddress = (address?: string) => {
-  if (!address) return 'No Account';
-  const match = address.match(
-    /^(0x[a-zA-Z0-9]{5})[a-zA-Z0-9]+([a-zA-Z0-9]{5})$/,
-  );
-  if (!match) return address;
-  return `${match[1]}…${match[2]}`;
-};

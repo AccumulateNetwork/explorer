@@ -59,9 +59,9 @@ export function Login() {
 
     const [publicKey] =
       (await Sign.waitFor(setRequest, () =>
-        Wallet.login(Ethereum.selectedAddress).catch((e) =>
-          Promise.reject(isLedgerError(e)),
-        ),
+        Wallet.login(Ethereum.selectedAddress)
+          .then((x) => x.publicKey)
+          .catch((e) => Promise.reject(isLedgerError(e))),
       )) || [];
 
     if (publicKey) {

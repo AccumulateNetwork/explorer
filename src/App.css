@@ -5,7 +5,10 @@
   --content-padding-top: 25px;
   --content-padding-bottom: 15px;
   --content-padding-right: 20px;
-  --content-padding-left: max(env(safe-area-inset-left), var(--content-padding-right));
+  --content-padding-left: max(
+    env(safe-area-inset-left),
+    var(--content-padding-right)
+  );
 }
 
 .react-icons {
@@ -794,7 +797,6 @@ header.web3 {
     width: 100vw;
   }
 }
-
 
 .web3-logout-button:not(:hover) {
   color: white;

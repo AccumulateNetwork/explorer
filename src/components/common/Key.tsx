@@ -18,6 +18,9 @@ type DisplayTypeArg =
 type DisplayType = SignatureType | 'hash' | 'plain';
 
 function parseType(type: DisplayTypeArg): DisplayType {
+  if (!type) {
+    return SignatureType.Unknown;
+  }
   if (typeof type === 'number') {
     return type;
   }

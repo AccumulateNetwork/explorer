@@ -11,12 +11,12 @@ import {
   Signer,
   URL,
 } from 'accumulate.js';
-import { Buffer, sha256 } from 'accumulate.js/lib/common';
+import { Buffer, keccak256, sha256 } from 'accumulate.js/lib/common';
 import { Signature, SignatureType, Transaction } from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
 
 import { Settings } from './Settings';
-import { Ethereum, hashMessage, keccak256, recoverPublicKey } from './utils';
+import { Ethereum, hashMessage, recoverPublicKey } from './utils';
 
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
@@ -55,7 +55,7 @@ export const Wallet = new (class Wallet {
     Settings.connected = null;
   }
 
-  async login(account: string): Promise<Uint8Array | undefined> {
+  async login(account: string): Promise<EthPublicKey | undefined> {
     if (!this.connected) {
       this.connect();
     }
@@ -66,8 +66,8 @@ export const Wallet = new (class Wallet {
       return;
     }
 
-    const publicKey = recoverPublicKey(signature, hashMessage(message));
-    if (ethAddress(publicKey).toLowerCase() !== account.toLowerCase()) {
+    const publicKey = EthPublicKey.recover(signature, hashMessage(message));
+    if (publicKey.ethereum.toLowerCase() !== account.toLowerCase()) {
       throw new Error('Failed to recover public key');
     }
 
@@ -174,6 +174,10 @@ export class Web3Signer extends BaseKey {
 }
 
 export class EthPublicKey extends PublicKeyAddress {
+  static recover(signature: Uint8Array, hash: Uint8Array) {
+    return new this(recoverPublicKey(signature, hash));
+  }
+
   constructor(publicKey: Uint8Array) {
     if (publicKey[0] != 0x04) {
       publicKey = Buffer.concat([new Uint8Array([0x04]), publicKey]);
@@ -184,34 +188,13 @@ export class EthPublicKey extends PublicKeyAddress {
   }
 
   get ethereum() {
-    return ethAddress(this.publicKey);
+    return toChecksumAddress(`${this}`);
   }
 
   get lite() {
-    return URL.parse(liteIDForEth(this.publicKey));
+    const eth = Buffer.from(this.publicKeyHash).toString('hex');
+    const hashHash = sha256(Buffer.from(eth));
+    const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
+    return URL.parse(`acc://${eth}${checkSum}`);
   }
-}
-
-function ethAddress(pub: Uint8Array | string) {
-  if (typeof pub === 'string') {
-    pub = Buffer.from(pub, 'hex');
-  }
-  if (pub[0] == 0x04) {
-    pub = pub.slice(1);
-  }
-  const hash = keccak256(pub);
-  const addr = '0x' + Buffer.from(hash.slice(-20)).toString('hex');
-  return toChecksumAddress(addr);
-}
-
-function liteIDForEth(publicKey: Uint8Array) {
-  if (publicKey[0] == 0x04) {
-    publicKey = publicKey.slice(1);
-  }
-  const ethHash = keccak256(publicKey).slice(-20);
-  const ethAddr = Buffer.from(ethHash).toString('hex');
-  const hashHash = sha256(Buffer.from(ethAddr));
-  const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
-
-  return `acc://${ethAddr}${checkSum}`;
 }
