@@ -1,23 +1,41 @@
 import { DownOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Form, FormInstance, Modal } from 'antd';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import {
+  Button,
+  Divider,
+  Dropdown,
+  Form,
+  FormInstance,
+  Modal,
+  Space,
+  Typography,
+} from 'antd';
+import React, { useEffect, useState } from 'react';
 
 import { URL } from 'accumulate.js';
-import { TransactionArgs } from 'accumulate.js/lib/core';
+import {
+  KeyPage,
+  LiteIdentity,
+  Transaction,
+  TransactionArgs,
+} from 'accumulate.js/lib/core';
 
 import { isLite } from '../../utils/url';
-import { Shared } from '../common/Network';
-import { useAsyncEffect } from '../common/useAsync';
+import { CreditAmount } from '../common/Amount';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/useWeb3';
 import { Sign } from './Sign';
+import { calculateTransactionFee } from './fees';
+
+const { Text } = Typography;
 
 export interface TxnFormProps {
   open: boolean;
-  signer?: Sign.Signer;
+  signer?: Signer;
   onCancel: () => any;
   onFinish: (ok: boolean) => any;
 }
+
+type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
 
 export function BaseTxnForm<Fields>({
   open,
@@ -40,8 +58,10 @@ export function BaseTxnForm<Fields>({
   const account = useWeb3();
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
-  const [signers, setSigners] = useState<Sign.Signer[]>([]);
-  const [selectedSigner, setSelectedSigner] = useState<Sign.Signer>(theSigner);
+  const [signers, setSigners] = useState<Signer[]>([]);
+  const [selectedSigner, setSelectedSigner] = useState<Signer>(theSigner);
+  const [fee, setFee] = useState(0);
+  const [balance, setBalance] = useState(null);
 
   useEffect(() => {
     setSigners([]);
@@ -49,11 +69,12 @@ export function BaseTxnForm<Fields>({
       return;
     }
 
-    const signers: Sign.Signer[] = [];
+    const signers: Signer[] = [];
     if (account.liteIdentity) {
       signers.push({
         signer: account.liteIdentity.url,
         signerVersion: 1,
+        account: account.liteIdentity,
       });
     }
 
@@ -70,6 +91,7 @@ export function BaseTxnForm<Fields>({
           signers.push({
             signer: page.url,
             signerVersion: page.version,
+            account: page,
           });
         }
       }
@@ -81,6 +103,23 @@ export function BaseTxnForm<Fields>({
       setSigners(signers);
     }
   }, [account]);
+
+  useEffect(() => {
+    if (!selectedSigner?.account) {
+      setBalance(null);
+    } else {
+      setBalance(selectedSigner.account.creditBalance);
+    }
+  }, [selectedSigner]);
+
+  const updateFee = (fields: Fields) => {
+    try {
+      setFee(calculateTransactionFee(new Transaction(makeTxn(fields))));
+    } catch (error) {
+      console.info(`Error while calculating fee`, error);
+      setFee(0);
+    }
+  };
 
   const isMounted = useIsMounted();
   const submit = async (fields: Fields) => {
@@ -114,12 +153,45 @@ export function BaseTxnForm<Fields>({
     return `Sign with ${u.toString().replace(/acc:\/\//, '')}`;
   };
 
+  const submitBtn = (
+    <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
+      <SignWith />
+    </Button>
+  );
+
+  const footer = (
+    <Space>
+      {signers?.length ? (
+        <Dropdown
+          menu={{
+            items: signers.map((x) => ({
+              label: `${x.signer}`,
+              key: `${x.signer}`,
+              onClick: () => setSelectedSigner(x),
+            })),
+          }}
+        >
+          {selectedSigner ? (
+            submitBtn
+          ) : (
+            <Button type="ghost" disabled>
+              Select signer
+              <DownOutlined />
+            </Button>
+          )}
+        </Dropdown>
+      ) : (
+        submitBtn
+      )}
+    </Space>
+  );
+
   return (
     <Modal
       title={title}
       open={open}
       onCancel={onCancel}
-      footer={false}
+      footer={footer}
       forceRender
       closable={true} // Always allow manually closing
       maskClosable={!isSigning}
@@ -130,38 +202,34 @@ export function BaseTxnForm<Fields>({
         requiredMark={false}
         disabled={isSigning}
         onFinish={submit}
-        onValuesChange={(_, v) => onValuesChange?.(v)}
+        onValuesChange={(_, v) => {
+          updateFee(v);
+          onValuesChange?.(v);
+        }}
       >
         {children}
 
-        <Form.Item>
-          {signers?.length ? (
-            <Dropdown
-              menu={{
-                items: signers.map((x) => ({
-                  label: `${x.signer}`,
-                  key: `${x.signer}`,
-                  onClick: () => setSelectedSigner(x),
-                })),
-              }}
-            >
-              {selectedSigner ? (
-                <Button htmlType="submit" type="primary" loading={isSigning}>
-                  <SignWith />
-                </Button>
+        {!!fee && (
+          <Space.Compact block>
+            <Form.Item label="Fee" style={{ flex: 1, marginBottom: 0 }}>
+              <Text type="secondary">
+                <CreditAmount type="secondary" amount={fee} />
+              </Text>
+            </Form.Item>
+
+            <Form.Item label="Balance" style={{ flex: 1, marginBottom: 0 }}>
+              {balance == null ? (
+                'Unknown'
               ) : (
-                <Button type="ghost" disabled>
-                  Select signer
-                  <DownOutlined />
-                </Button>
+                <CreditAmount
+                  type="secondary"
+                  amount={balance}
+                  style={balance < fee ? { color: 'red' } : {}}
+                />
               )}
-            </Dropdown>
-          ) : (
-            <Button htmlType="submit" type="primary" loading={isSigning}>
-              <SignWith />
-            </Button>
-          )}
-        </Form.Item>
+            </Form.Item>
+          </Space.Compact>
+        )}
       </Form>
 
       <Sign request={signRequest} />

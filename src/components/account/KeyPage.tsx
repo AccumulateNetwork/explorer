@@ -221,7 +221,7 @@ KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
               <Tag color="green">Web3</Tag>
             </Tooltip>
           </span>
-          <Key keyHash={entry.publicKeyHash} type="ETH" />
+          <Key keyHash={entry.publicKeyHash} type="eth" />
         </Row>
       ) : entry.publicKeyHash ? (
         <Key keyHash={entry.publicKeyHash} />

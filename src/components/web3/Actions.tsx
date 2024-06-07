@@ -120,6 +120,7 @@ export function Actions(props: { account: URL }) {
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
           }}
         />
       )}
@@ -133,6 +134,7 @@ export function Actions(props: { account: URL }) {
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
           }}
         />
       )}

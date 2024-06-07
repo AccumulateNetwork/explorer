@@ -113,6 +113,7 @@ export function SendTokens(
       />
       <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>
         <InputNumber
+          style={{ width: '100%' }}
           min={0}
           max={issuer && Number(from.balance) / 10 ** issuer.precision}
           addonAfter={issuer?.symbol || issuer?.url?.toString()}

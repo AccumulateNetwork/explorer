@@ -65,9 +65,7 @@ export function AddCredits(
   }, [from]);
 
   // Calculate the ACME amount
-  console.log('A', form.getFieldValue('oracle'));
   const changed = ({ oracle, credits }: Fields) => {
-    console.log('B', form.getFieldValue('oracle'));
     if (!oracle || isNaN(oracle)) {
       return;
     }

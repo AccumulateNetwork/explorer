@@ -1,7 +1,7 @@
 import { Spin, Typography } from 'antd';
+import { TextProps } from 'antd/lib/typography/Text';
 import React from 'react';
 
-import { URL } from 'accumulate.js';
 import {
   CreditRecipient,
   TokenIssuer,
@@ -85,6 +85,8 @@ export function Amount({
   className,
   debit = false,
   bare = false,
+  type,
+  style,
   digits = {},
 }: {
   amount: number;
@@ -92,6 +94,8 @@ export function Amount({
   className?: string;
   debit?: boolean;
   bare?: boolean;
+  type?: TextProps['type'];
+  style?: React.CSSProperties;
   digits?: {
     group?: boolean;
     min?: number;
@@ -124,7 +128,7 @@ export function Amount({
   }
   const color = debit ? 'hsl(0, 75%, 50%)' : null;
   return (
-    <Text className={className} style={{ color }}>
+    <Text className={className} type={type} style={{ color, ...style }}>
       {s}
     </Text>
   );
