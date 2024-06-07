@@ -1,4 +1,5 @@
 import { Alert, Input, Select, Skeleton, Typography } from 'antd';
+import { signTypedData } from 'eth-sig-util';
 import { useState } from 'react';
 import React from 'react';
 
@@ -10,6 +11,23 @@ import { useAsyncEffect } from './useAsync';
 
 const { Text } = Typography;
 
+type DisplayTypeArg =
+  | SignatureType
+  | ReturnType<typeof SignatureType.getName>
+  | 'hash'
+  | 'plain';
+type DisplayType = SignatureType | 'hash' | 'plain';
+
+function parseType(type: DisplayTypeArg): DisplayType {
+  if (typeof type === 'number') {
+    return type;
+  }
+  if (type === 'hash' || type === 'plain') {
+    return type;
+  }
+  return SignatureType.byName(type);
+}
+
 export default function ({
   publicKey,
   keyHash,
@@ -17,18 +35,10 @@ export default function ({
 }: {
   publicKey?: string | Uint8Array;
   keyHash?: string | Uint8Array;
-  type?: string | SignatureType;
+  type?: DisplayTypeArg;
 }) {
-  const initialType =
-    typeof props.type === 'number'
-      ? props.type
-      : typeof props.type === 'string'
-        ? SignatureType.byName(props.type)
-        : props.type === 'hex'
-          ? 'hex'
-          : SignatureType.Unknown;
-
-  const [type, setType] = useState<SignatureType | 'hex'>(initialType);
+  const initialType = parseType(props.type);
+  const [type, setType] = useState<DisplayType>(initialType);
   const [address, setAddress] = useState(null);
   const [error, setError] = useState(null);
 
@@ -41,10 +51,15 @@ export default function ({
 
   useAsyncEffect(
     async (mounted) => {
+      if (type === 'plain') {
+        setAddress(Buffer.from(publicKey).toString('hex'));
+        return;
+      }
+
       const hash = keyHash || (await sha256(publicKey));
       if (!mounted()) return;
 
-      if (type === 'hex') {
+      if (type === 'hash') {
         setAddress(hash.toString('hex'));
         return;
       }
@@ -86,7 +101,8 @@ export default function ({
               <Select.Option value={SignatureType.ETH}>ETH</Select.Option>
             )}
             <Select.Option value={SignatureType.Unknown}>Generic</Select.Option>
-            <Select.Option value="hex">Hash</Select.Option>
+            <Select.Option value="hash">Hash</Select.Option>
+            {publicKey && <Select.Option value="plain">Bytes</Select.Option>}
           </Select>
           <Text className="key-text" copyable>
             {address}
@@ -101,7 +117,7 @@ export default function ({
             onChange={setType}
           >
             <Select.Option value={SignatureType.Unknown}>Address</Select.Option>
-            <Select.Option value="hex">Hash</Select.Option>
+            <Select.Option value="hash">Hash</Select.Option>
             {Settings.enableDevMode && (
               <Select.Option value={SignatureType.ED25519}>
                 ED25519

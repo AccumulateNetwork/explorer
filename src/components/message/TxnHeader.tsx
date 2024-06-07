@@ -40,15 +40,6 @@ export function TxnHeader({
       <div style={{ marginBottom: '20px' }}>
         <Status record={record} />
 
-        {record.status === errors.Status.Pending && (
-          <Tag color="cyan" style={{ textTransform: 'uppercase' }}>
-            <IconContext.Provider
-              value={{ className: 'react-icons' }}
-            ></IconContext.Provider>
-            Multi-sig
-          </Tag>
-        )}
-
         {sigCount > 0 && (
           <Tag style={{ textTransform: 'uppercase' }}>
             Signatures: <strong>{sigCount}</strong>

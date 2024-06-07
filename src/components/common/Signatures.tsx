@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
+import Key from './Key';
 import { Shared } from './Network';
 
 const { Title, Text, Paragraph } = Typography;
@@ -16,7 +17,7 @@ const Signatures = (props) => {
 
   const [authorities, setAuthorities] = useState(null);
 
-  const { api, network } = useContext(Shared);
+  const { api } = useContext(Shared);
   const getAuthorities = async (scope) => {
     while (true) {
       const { account } = (await api.query(scope, {
@@ -154,12 +155,7 @@ const Signatures = (props) => {
           <Paragraph>
             {item.vote === 'reject' && <Tag color="red">Reject</Tag>}
             {item.vote === 'abstain' && <Tag color="yellow">Abstain</Tag>}
-            <Tag color="blue" style={{ textTransform: 'uppercase' }}>
-              {item.type}
-            </Tag>
-            <Text className="code" copyable>
-              {item.publicKey}
-            </Text>
+            <Key type={item.type} publicKey={item.publicKey} />
           </Paragraph>
         ) : null}
         {item.type &&
