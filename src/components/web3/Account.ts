@@ -22,15 +22,13 @@ export class Account {
     return Wallet.canEncrypt;
   }
 
-  static async for(publicKey: Uint8Array) {
+  static for(publicKey: Uint8Array) {
     const key = Buffer.from(publicKey).toString('hex');
     if (this.#for.has(key)) {
       return this.#for.get(key);
     }
 
-    const ethPub = new EthPublicKey(publicKey);
-    const offline = await OnlineStore.for(ethPub);
-    const inst = new this(ethPub, await ethPub.lite(), offline);
+    const inst = new this(publicKey);
     Account.#for.set(key, inst);
     return inst;
   }
@@ -44,11 +42,12 @@ export class Account {
   @broadcast.as(Linked) accessor linked: Linked | null;
 
   // TODO: this should be private, but that screws up the decorators
-  constructor(publicKey: EthPublicKey, liteIdUrl: URL, online: OnlineStore) {
-    this.publicKey = publicKey;
-    this.liteIdUrl = liteIdUrl;
-    this.online = online;
-    this.offline = new OfflineStore(publicKey.publicKey);
+  constructor(publicKey: Uint8Array) {
+    const ethPub = new EthPublicKey(publicKey);
+    this.publicKey = ethPub;
+    this.liteIdUrl = ethPub.lite;
+    this.online = new OnlineStore(ethPub);
+    this.offline = new OfflineStore(publicKey);
   }
 
   get store(): Store {

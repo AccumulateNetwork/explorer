@@ -1,5 +1,4 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
-import { message } from 'antd';
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
 import Driver from 'web3';
@@ -118,7 +117,7 @@ export const Wallet = new (class Wallet {
     opts: SignOptions & { publicKey: Uint8Array },
   ) {
     const key = new Web3Signer(opts.publicKey);
-    const signer = await Signer.forPage(opts.signer, key);
+    const signer = Signer.forPage(opts.signer, key);
     return await signer.sign(message, opts);
   }
 
@@ -168,8 +167,8 @@ export class Web3Signer extends BaseKey {
     signature: Signature,
     message: Uint8Array,
   ): Promise<Uint8Array> {
-    const sigMdHash = await sha256(encode(signature));
-    const hash = await sha256(Buffer.concat([sigMdHash, message]));
+    const sigMdHash = sha256(encode(signature));
+    const hash = sha256(Buffer.concat([sigMdHash, message]));
     return await Wallet.signEth(this.address, hash);
   }
 }
@@ -188,8 +187,8 @@ export class EthPublicKey extends PublicKeyAddress {
     return ethAddress(this.publicKey);
   }
 
-  async lite() {
-    return URL.parse(await liteIDForEth(this.publicKey));
+  get lite() {
+    return URL.parse(liteIDForEth(this.publicKey));
   }
 }
 
@@ -205,13 +204,13 @@ function ethAddress(pub: Uint8Array | string) {
   return toChecksumAddress(addr);
 }
 
-async function liteIDForEth(publicKey: Uint8Array) {
+function liteIDForEth(publicKey: Uint8Array) {
   if (publicKey[0] == 0x04) {
     publicKey = publicKey.slice(1);
   }
   const ethHash = keccak256(publicKey).slice(-20);
   const ethAddr = Buffer.from(ethHash).toString('hex');
-  const hashHash = await sha256(Buffer.from(ethAddr));
+  const hashHash = sha256(Buffer.from(ethAddr));
   const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
 
   return `acc://${ethAddr}${checkSum}`;

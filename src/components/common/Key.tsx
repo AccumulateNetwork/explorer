@@ -1,13 +1,12 @@
-import { Alert, Input, Select, Skeleton, Typography } from 'antd';
-import { signTypedData } from 'eth-sig-util';
-import { useState } from 'react';
+import { Input, Select, Skeleton, Typography } from 'antd';
+import { useEffect, useState } from 'react';
 import React from 'react';
 
-import { Address, sha256 } from 'accumulate.js';
+import { Address } from 'accumulate.js';
+import { sha256 } from 'accumulate.js/lib/common';
 import { SignatureType } from 'accumulate.js/lib/core';
 
 import { Settings } from '../explorer/Settings';
-import { useAsyncEffect } from './useAsync';
 
 const { Text } = Typography;
 
@@ -40,7 +39,6 @@ export default function ({
   const initialType = parseType(props.type);
   const [type, setType] = useState<DisplayType>(initialType);
   const [address, setAddress] = useState(null);
-  const [error, setError] = useState(null);
 
   if (typeof keyHash === 'string') {
     keyHash = Buffer.from(keyHash, 'hex');
@@ -49,34 +47,25 @@ export default function ({
     publicKey = Buffer.from(publicKey, 'hex');
   }
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (type === 'plain') {
-        setAddress(Buffer.from(publicKey).toString('hex'));
-        return;
-      }
+  useEffect(() => {
+    if (type === 'plain') {
+      setAddress(Buffer.from(publicKey).toString('hex'));
+      return;
+    }
 
-      const hash = keyHash || (await sha256(publicKey));
-      if (!mounted()) return;
+    const hash = keyHash || Buffer.from(sha256(publicKey));
+    if (type === 'hash') {
+      setAddress(hash.toString('hex'));
+      return;
+    }
 
-      if (type === 'hash') {
-        setAddress(hash.toString('hex'));
-        return;
-      }
-
-      const addr = await Address.fromKeyHash(type, hash);
-      const s = await addr.format();
-      if (!mounted()) return;
-      setAddress(s);
-    },
-    [keyHash, publicKey, type],
-  ).catch((error) => setError(`${error}`));
+    const addr = Address.fromKeyHash(type, hash);
+    setAddress(addr.toString());
+  }, [keyHash, publicKey, type]);
 
   return (
     <div>
-      {error ? (
-        <Alert message={error} type="error" showIcon />
-      ) : !address ? (
+      {!address ? (
         <Skeleton active title={true} paragraph={false} />
       ) : initialType !== SignatureType.Unknown ? (
         <Input.Group compact className={'key'}>

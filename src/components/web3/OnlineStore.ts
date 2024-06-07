@@ -1,8 +1,8 @@
 import nacl from 'tweetnacl';
 
-import { URL, sha256 } from 'accumulate.js';
+import { URL } from 'accumulate.js';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
-import { Buffer } from 'accumulate.js/lib/common';
+import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import {
   DataEntry,
   DataEntryType,
@@ -17,13 +17,6 @@ import { Store } from './Store';
 import { EthPublicKey, Wallet } from './Wallet';
 
 export class OnlineStore {
-  static async for(publicKey: EthPublicKey) {
-    const token = new Token(publicKey);
-    const hash = await sha256(await sha256(await token.for('backup')));
-    const url = URL.parse(`acc://${Buffer.from(hash).toString('hex')}`);
-    return new this(url, token);
-  }
-
   readonly url: URL;
   readonly #token: Token;
   #account?: LiteDataAccount;
@@ -31,9 +24,10 @@ export class OnlineStore {
   #raw?: DataEntry[];
   #entries?: Entry[];
 
-  private constructor(url: URL, token: Token) {
-    this.url = url;
-    this.#token = token;
+  constructor(publicKey: EthPublicKey) {
+    this.#token = new Token(publicKey);
+    const hash = sha256(sha256(this.#token.for('backup')));
+    this.url = URL.parse(`acc://${Buffer.from(hash).toString('hex')}`);
   }
 
   resetEntries() {
@@ -108,7 +102,7 @@ export class OnlineStore {
     }
 
     // Decrypt entries
-    const keyHash = (await sha256(this.#key)).toString('hex');
+    const keyHash = Buffer.from(sha256(this.#key)).toString('hex');
     const isMyKey = await this.#token.match(keyHash, 1);
     if (this.#raw && this.#key && !this.#entries) {
       this.#entries = await Promise.all(
@@ -124,7 +118,7 @@ export class OnlineStore {
 
     // Create the LDA
     if (!this.#account) {
-      const data = [new Uint8Array(), await this.#token.for('backup')];
+      const data = [new Uint8Array(), this.#token.for('backup')];
       const txn: TransactionArgs = {
         header: { principal: this.url },
         body: { type: 'writeData', entry: { type: 'doubleHash', data } },
@@ -166,28 +160,28 @@ class Entry {
     this.plain = plain;
   }
 
-  static async encrypt(token: Token, key: Uint8Array, plain: Store.Entry) {
-    const keyHash = await sha256(key);
+  static encrypt(token: Token, key: Uint8Array, plain: Store.Entry) {
+    const keyHash = sha256(key);
     const nonce = nacl.randomBytes(nacl.secretbox.nonceLength);
     const message = Buffer.from(JSON.stringify(plain), 'utf-8');
     const box = nacl.secretbox(message, nonce, key);
 
     const crypt = new DoubleHashDataEntry({
       data: [
-        await token.for('entry'),
-        await token.for(keyHash),
+        token.for('entry'),
+        token.for(keyHash),
         Buffer.concat([nonce, box]),
       ],
     });
 
-    const hash = Buffer.from(await crypt.hash()).toString('hex');
+    const hash = Buffer.from(crypt.hash()).toString('hex');
     return new this(hash, crypt, plain);
   }
 
-  static async decrypt(token: Token, key: Uint8Array, crypt: DataEntry) {
-    const keyHash = (await sha256(key)).toString('hex');
-    const isEntry = await token.match('entry', 0);
-    const isKey = await token.match(keyHash, 1);
+  static decrypt(token: Token, key: Uint8Array, crypt: DataEntry) {
+    const keyHash = Buffer.from(sha256(key)).toString('hex');
+    const isEntry = token.match('entry', 0);
+    const isKey = token.match(keyHash, 1);
 
     const parts = this.parts(crypt);
     if (parts.length != 3 || !isEntry(parts) || !isKey(parts)) {
@@ -201,7 +195,7 @@ class Entry {
       throw new Error('Not a valid encrypted entry for this key');
     }
 
-    const hash = Buffer.from(await crypt.hash()).toString('hex');
+    const hash = Buffer.from(crypt.hash()).toString('hex');
     const plain = JSON.parse(Buffer.from(raw).toString('utf-8'));
     return new this(hash, crypt, plain);
   }
@@ -236,7 +230,7 @@ class Token {
     return this.#publicKey.ethereum;
   }
 
-  async for(suffix: string | Uint8Array) {
+  for(suffix: string | Uint8Array) {
     if (typeof suffix !== 'string') {
       suffix = Buffer.from(suffix).toString('hex');
     }
@@ -245,15 +239,13 @@ class Token {
     }
 
     const addr = this.#publicKey;
-    const token = await sha256(
-      Buffer.from(`${await addr.format()}:${suffix}`, 'utf-8'),
-    );
+    const token = sha256(Buffer.from(`${addr}:${suffix}`, 'utf-8'));
     this.#cache[suffix] = token;
-    return token;
+    return Buffer.from(token);
   }
 
-  async match(suffix: string | Uint8Array, i: number) {
-    const token = (await this.for(suffix)).toString('hex');
+  match(suffix: string | Uint8Array, i: number) {
+    const token = this.for(suffix).toString('hex');
     return (e: DataEntry | Uint8Array[]) => Entry.partAsHex(e, i) === token;
   }
 }
@@ -264,7 +256,7 @@ class Key {
   @broadcast @stored static accessor #keys: Record<string, string> = {};
 
   static async decrypt(eth: string, crypt: DataEntry) {
-    const hash = Buffer.from(await crypt.hash()).toString('hex');
+    const hash = Buffer.from(crypt.hash()).toString('hex');
     if (hash in this.#keys) {
       return Buffer.from(this.#keys[hash], 'hex');
     }
@@ -287,7 +279,7 @@ class Key {
 
   static async generate(token: Token) {
     // Generate a new key using NaCl
-    const key = await nacl.randomBytes(nacl.secretbox.keyLength);
+    const key = nacl.randomBytes(nacl.secretbox.keyLength);
 
     // Encrypt it using Metamask
     const { nonce, ephemPublicKey, ciphertext } = await Wallet.encrypt(
@@ -296,8 +288,8 @@ class Key {
     );
 
     const data = [
-      await token.for('key'),
-      await token.for('eth_decrypt'),
+      token.for('key'),
+      token.for('eth_decrypt'),
       Buffer.from(nonce, 'base64'),
       Buffer.from(ephemPublicKey, 'base64'),
       Buffer.from(ciphertext, 'base64'),

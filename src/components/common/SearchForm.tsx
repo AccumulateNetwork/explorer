@@ -20,9 +20,9 @@ export function SearchForm({
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
 
-  async function generateLiteIdentity(publicKeyHash) {
+  function generateLiteIdentity(publicKeyHash) {
     const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
-    const checkSum = Buffer.from(await sha256(pkHash)).slice(28);
+    const checkSum = Buffer.from(sha256(pkHash)).slice(28);
     const authority = Buffer.from(Buffer.concat([pkHash, checkSum])).toString(
       'hex',
     );

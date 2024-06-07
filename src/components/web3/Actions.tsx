@@ -70,7 +70,6 @@ export function Actions(props: { account: URL }) {
       case AccountType.LiteTokenAccount:
         setItems([
           item({ label: 'Send tokens', open: 'sendTokens', from: acc.url }),
-          item({ label: 'Receive tokens', open: 'sendTokens', to: acc.url }),
           item({
             label: 'Purchase credits',
             open: 'addCredits',

@@ -10,37 +10,39 @@
     "@vitejs/plugin-react": "^4.3.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
-    "accumulate.js": "^0.10.10",
+    "accumulate.js": "^0.11.0",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
-    "eth-crypto": "^2.6.0",
     "eth-sig-util": "^3.0.1",
+    "ethereumjs-util": "^7.1.5",
     "factom": "^1.4.3",
-    "history": "^5.0.1",
     "js-base64": "^3.7.2",
+    "moment": "^2.30.1",
     "moment-timezone": "^0.5.34",
+    "rc-field-form": "^2.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-icons": "^4.2.0",
     "react-router-dom": "^5.3.0",
     "react-syntax-highlighter": "^15.5.0",
     "rxjs": "^7.8.1",
+    "secp256k1": "^5.0.0",
     "tweetnacl": "^1.0.3",
-    "web3": "^1.8.2"
+    "web3": "^1.8.2",
+    "webextension-polyfill": "^0.12.0"
   },
   "overrides": {
     "esbuild": "^0.21.0"
   },
   "devDependencies": {
-    "@ledgerhq/hw-transport": "^6.30.6",
+    "@babel/core": "^7.24.7",
+    "@babel/plugin-syntax-flow": "^7.24.7",
+    "@babel/plugin-transform-react-jsx": "^7.24.7",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react": "^18.3.3",
-    "eslint": "^8.0.0",
-    "eslint-config-react-app": "^7.0.1",
     "prettier": "^3.2.5",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11",
-    "vite-tsconfig-paths": "^4.3.2"
+    "vite": "^5.2.11"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9"
@@ -51,12 +53,6 @@
     "preview": "VITE_NETWORK=any vite build && vite preview",
     "format": "prettier -w src",
     "check:format": "prettier src"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "prettier": {
     "semi": true,
