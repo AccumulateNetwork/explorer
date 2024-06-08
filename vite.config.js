@@ -7,9 +7,9 @@ export default defineConfig({
     react({
       babel: {
         targets: [
-          'last 1 chrome version',
-          'last 1 firefox version',
-          'last 1 safari version',
+          'last 5 chrome version',
+          'last 5 firefox version',
+          'last 5 safari version',
         ],
         plugins: [
           ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
@@ -20,7 +20,7 @@ export default defineConfig({
 
   build: {
     outDir: 'build',
-    // sourcemap: 'inline',
+    sourcemap: 'inline',
   },
 
   server: {
