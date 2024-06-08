@@ -10,12 +10,14 @@ export function WithIcon({
   tooltip,
   children,
   style,
+  className,
 }: {
   icon: IconType | React.ReactNode;
   after?: boolean;
   tooltip?: React.ReactNode;
   children: React.ReactNode;
   style?: React.CSSProperties;
+  className?: string;
 }) {
   if (typeof icon === 'function') {
     const Icon = icon;
@@ -36,14 +38,14 @@ export function WithIcon({
 
   if (after) {
     return (
-      <Nobr style={style}>
+      <Nobr style={style} className={className}>
         {children} {icon}
       </Nobr>
     );
   }
 
   return (
-    <Nobr style={style}>
+    <Nobr style={style} className={className}>
       {icon} {children}
     </Nobr>
   );

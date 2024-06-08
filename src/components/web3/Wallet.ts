@@ -24,6 +24,10 @@ export const Wallet = new (class Wallet {
   #driver?: Driver;
   readonly connector = new InjectedConnector({});
 
+  get canConnect() {
+    return !!Ethereum;
+  }
+
   get connected() {
     return !!this.#driver;
   }

@@ -633,7 +633,7 @@ h4.ant-typography .count {
   line-height: normal;
 }
 
-@media only screen and (min-width: 950px) {
+@media only screen and (min-width: 600px) {
   .menu-right {
     display: flex !important;
   }

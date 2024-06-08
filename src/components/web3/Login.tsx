@@ -16,9 +16,8 @@ import { Ethereum, isLedgerError } from './utils';
 export function Login() {
   const history = useHistory();
   const [connected] = useShared(Settings, 'connected');
-  const [connectOpen, setConnectOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const { activate, deactivate } = useWeb3React();
-  const [request, setRequest] = useState<Sign.WaitForRequest<Uint8Array>>();
 
   // First load
   useEffect(() => {
@@ -31,7 +30,7 @@ export function Login() {
     if (connected) {
       history.push('/web3');
     } else {
-      setConnectOpen(true);
+      setOpen(true);
     }
   };
 
@@ -39,38 +38,6 @@ export function Login() {
     // setDashOpen(false);
     Wallet.disconnect();
     deactivate();
-  };
-
-  const connect = async () => {
-    if (!Ethereum) {
-      message.warning('Web3 browser extension not found');
-    }
-
-    setConnectOpen(false);
-    Wallet.connect('Web3');
-    activate(Wallet.connector);
-
-    if (!Ethereum.selectedAddress) {
-      return;
-    }
-    if (Settings.getKey(Ethereum.selectedAddress)) {
-      return;
-    }
-
-    const [publicKey] =
-      (await Sign.waitFor(setRequest, () =>
-        Wallet.login(Ethereum.selectedAddress)
-          .then((x) => x.publicKey)
-          .catch((e) => Promise.reject(isLedgerError(e))),
-      )) || [];
-
-    if (publicKey) {
-      Settings.putKey(Ethereum.selectedAddress, publicKey);
-      history.push('/web3');
-    } else {
-      deactivate();
-      Wallet.disconnect();
-    }
   };
 
   return (
@@ -108,53 +75,100 @@ export function Login() {
         />
       </Tooltip>
 
-      {/* Modals */}
-      <Sign.WaitFor title="Login" closeWhenDone request={request} />
-
-      <Login.Connect
-        open={connectOpen}
-        onCancel={() => setConnectOpen(false)}
-        onSubmit={connect}
+      <Login.Modal
+        open={open}
+        onCancel={() => setOpen(false)}
+        onFinish={() => setOpen(false)}
       />
     </>
   );
 }
 
-Login.Connect = function ({
+Login.Modal = function ({
   open,
-  onSubmit,
+  onFinish,
   onCancel,
 }: {
   open: boolean;
-  onSubmit(): any;
+  onFinish(): any;
   onCancel(): any;
 }) {
+  const history = useHistory();
+  const { activate, deactivate } = useWeb3React();
+  const [request, setRequest] = useState<Sign.WaitForRequest<Uint8Array>>();
+  const [pending, setPending] = useState(false);
+
+  const connect = async () => {
+    if (!Ethereum) {
+      message.warning('Web3 browser extension not found');
+    }
+
+    try {
+      setPending(true);
+      Wallet.connect('Web3');
+      activate(Wallet.connector);
+
+      if (!Ethereum.selectedAddress) {
+        onCancel();
+        return;
+      }
+      if (Settings.getKey(Ethereum.selectedAddress)) {
+        onFinish();
+        return;
+      }
+
+      const [publicKey] =
+        (await Sign.waitFor(setRequest, () =>
+          Wallet.login(Ethereum.selectedAddress)
+            .then((x) => x.publicKey)
+            .catch((e) => Promise.reject(isLedgerError(e))),
+        )) || [];
+
+      if (publicKey) {
+        Settings.putKey(Ethereum.selectedAddress, publicKey);
+        onFinish();
+        history.push('/web3');
+      } else {
+        deactivate();
+        Wallet.disconnect();
+        onCancel();
+      }
+    } finally {
+      setPending(false);
+    }
+  };
+
   return (
-    <Modal
-      title="Connect Wallet"
-      open={open}
-      onCancel={onCancel}
-      footer={false}
-    >
-      <List>
-        <List.Item>
-          <Button
-            block
-            shape="round"
-            size="large"
-            onClick={onSubmit}
-            disabled={!Ethereum}
-            children="MetaMask"
-          />
-        </List.Item>
-      </List>
-      <List>
-        <List.Item>
-          <Button block shape="round" size="large" disabled>
-            WalletConnect
-          </Button>
-        </List.Item>
-      </List>
-    </Modal>
+    <>
+      <Sign.WaitFor title="Login" closeWhenDone request={request} />
+
+      <Modal
+        title="Connect Wallet"
+        open={open}
+        onCancel={onCancel}
+        footer={false}
+      >
+        <List>
+          <List.Item>
+            <Button
+              block
+              shape="round"
+              size="large"
+              loading={pending}
+              onClick={connect}
+              disabled={!Ethereum}
+              children="MetaMask"
+            />
+          </List.Item>
+        </List>
+        <List>
+          <List.Item>
+            <Button block shape="round" size="large" disabled>
+              WalletConnect
+            </Button>
+          </List.Item>
+        </List>
+      </Modal>
+    </>
   );
 };

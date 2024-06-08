@@ -16,8 +16,6 @@ import { EthPublicKey, Wallet } from './Wallet';
 export class Account {
   static readonly #for = new Map<string, Account>();
 
-  @broadcast @stored static accessor #keys: Record<string, string> = {};
-
   static get supported() {
     return Wallet.canEncrypt;
   }

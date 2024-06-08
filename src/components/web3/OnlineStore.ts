@@ -220,7 +220,7 @@ class Entry {
 
 class Token {
   readonly #publicKey: EthPublicKey;
-  readonly #cache: Record<string, Uint8Array> = {};
+  readonly #cache: Record<string, Buffer> = {};
 
   constructor(publicKey: EthPublicKey) {
     this.#publicKey = publicKey;
@@ -239,9 +239,9 @@ class Token {
     }
 
     const addr = this.#publicKey;
-    const token = sha256(Buffer.from(`${addr}:${suffix}`, 'utf-8'));
+    const token = Buffer.from(sha256(Buffer.from(`${addr}:${suffix}`, 'utf-8')));
     this.#cache[suffix] = token;
-    return Buffer.from(token);
+    return token;
   }
 
   match(suffix: string | Uint8Array, i: number) {
