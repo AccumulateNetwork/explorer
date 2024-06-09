@@ -51,7 +51,7 @@ export function Dashboard() {
   const [connected] = useShared(Settings, 'connected');
   const [linked] = useShared(account, 'linked');
   const linkedAccounts = linked?.direct?.filter(
-    (x) => !account.liteIdUrl.equals(x.url),
+    (x) => !account?.liteIdUrl?.equals(x.url),
   );
 
   const [open, setOpen] = useState<
