@@ -151,14 +151,16 @@ export function TxnInfo({
           </Descriptions.Item>
         )}
 
-        <Descriptions.Item label={labelPrincipal}>
-          <Link to={txn.header.principal}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiAccountCircleLine />
-            </IconContext.Provider>
-            {txn.header.principal.toString()}
-          </Link>
-        </Descriptions.Item>
+        {txn.header?.principal && (
+          <Descriptions.Item label={labelPrincipal}>
+            <Link to={txn.header.principal}>
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiAccountCircleLine />
+              </IconContext.Provider>
+              {txn.header.principal.toString()}
+            </Link>
+          </Descriptions.Item>
+        )}
 
         {cause.length && (
           <Descriptions.Item label={labelCause}>
