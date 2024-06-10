@@ -1,7 +1,6 @@
 import { DownOutlined } from '@ant-design/icons';
 import {
   Button,
-  Divider,
   Dropdown,
   Form,
   FormInstance,
@@ -22,7 +21,7 @@ import {
 import { isLite } from '../../utils/url';
 import { CreditAmount } from '../common/Amount';
 import { useIsMounted } from '../common/useIsMounted';
-import { useWeb3 } from '../web3/useWeb3';
+import { useConnect } from '../web3';
 import { Sign } from './Sign';
 import { calculateTransactionFee } from './fees';
 
@@ -55,7 +54,7 @@ export function BaseTxnForm<Fields>({
   submit(_: Fields): TransactionArgs;
   onValuesChange?(_: Fields): void;
 } & TxnFormProps) {
-  const account = useWeb3();
+  const web3 = useConnect();
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
   const [signers, setSigners] = useState<Signer[]>([]);
@@ -65,23 +64,21 @@ export function BaseTxnForm<Fields>({
 
   useEffect(() => {
     setSigners([]);
-    if (theSigner || !account?.linked) {
+    if (theSigner || !web3?.linked) {
       return;
     }
 
     const signers: Signer[] = [];
-    if (account.liteIdentity) {
+    if (web3.liteIdentity) {
       signers.push({
-        signer: account.liteIdentity.url,
+        signer: web3.liteIdentity.url,
         signerVersion: 1,
-        account: account.liteIdentity,
+        account: web3.liteIdentity,
       });
     }
 
-    const ethKeyHash = account.publicKey.ethereum
-      .replace(/^0x/, '')
-      .toLowerCase();
-    for (const book of account.linked.books) {
+    const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
+    for (const book of web3.linked.books) {
       for (const page of book.pages) {
         const ok = page.keys.some(
           (entry) =>
@@ -102,7 +99,7 @@ export function BaseTxnForm<Fields>({
     } else {
       setSigners(signers);
     }
-  }, [account]);
+  }, [web3]);
 
   useEffect(() => {
     if (!selectedSigner?.account) {

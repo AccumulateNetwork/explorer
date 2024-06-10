@@ -18,7 +18,7 @@ import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { WithIcon } from '../common/WithIcon';
-import { useWeb3 } from '../web3/useWeb3';
+import { useConnect } from '../web3';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory } from './Directory';
@@ -31,8 +31,8 @@ export function Identity({
   record: AccountRecordOf<core.ADI | core.LiteIdentity>;
 }) {
   const { account } = record;
-  const web3 = useWeb3();
-  const isWeb3Lite = web3?.liteIdUrl?.equals(account.url);
+  const web3 = useConnect();
+  const isWeb3Lite = web3.publicKey?.lite?.equals(account.url);
 
   const isADI = account instanceof core.ADI;
   const typeStr = isADI ? (

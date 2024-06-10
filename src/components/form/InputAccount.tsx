@@ -18,7 +18,7 @@ import { Status } from 'accumulate.js/lib/errors';
 import { Ctor, isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { queryEffect } from '../common/query';
-import { useWeb3 } from '../web3/useWeb3';
+import { useConnect } from '../web3';
 import { debounce, formUtils } from './utils';
 
 interface InputAccountProps
@@ -43,7 +43,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
     placeholder,
     ...props
   }: InputAccountProps) => {
-    const web3 = useWeb3();
+    const web3 = useConnect();
     const form = Form.useFormInstance();
     const [url, setURL] = useState<string>();
     const { set, setError } = formUtils(form, props.name);

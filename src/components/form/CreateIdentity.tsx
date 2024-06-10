@@ -15,7 +15,7 @@ import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
 import { useIsMounted } from '../common/useIsMounted';
-import { useWeb3 } from '../web3/useWeb3';
+import { useConnect } from '../web3';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
 import { Sign } from './Sign';
@@ -28,7 +28,7 @@ interface Fields {
 
 export function CreateIdentity(props: TxnFormProps) {
   const [form] = Form.useForm<Fields>();
-  const web3 = useWeb3();
+  const web3 = useConnect();
   const { api } = useContext(Shared);
   const { setError, clearError, setValidating } = formUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);
@@ -92,16 +92,19 @@ export function CreateIdentity(props: TxnFormProps) {
       return;
     }
     if (ok) {
-      const ok = await web3.store.add((txn) => Sign.submit(setToSign, txn), {
-        type: 'link',
-        url: form.getFieldValue('url'),
-        accountType: 'identity',
-      });
+      const ok = await web3.dataStore.add(
+        (txn) => Sign.submit(setToSign, txn),
+        {
+          type: 'link',
+          url: form.getFieldValue('url'),
+          accountType: 'identity',
+        },
+      );
       if (!isMounted.current) {
         return;
       }
       if (ok) {
-        await web3.reload(api, 'entries', 'linked');
+        web3.reload({ dataStore: true });
       }
     }
     props.onFinish(ok);

@@ -14,8 +14,7 @@ import { Link } from '../common/Link';
 import { Shared } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account as Web3Account } from '../web3/Account';
-import { useWeb3 } from '../web3/useWeb3';
+import { useConnect } from '../web3';
 
 const { Title, Text } = Typography;
 
@@ -64,14 +63,6 @@ export function DataLedger({ scope }: { scope: URL }) {
     [scope.toString(), JSON.stringify(pagination), network.id],
   );
 
-  const web3 = useWeb3(
-    (a) =>
-      /^[0-9a-f]+$/i.test(scope?.authority) &&
-      a?.online?.url?.equals(scope) &&
-      !!a?.entries,
-    [`${scope}`],
-  );
-
   const columns = [
     {
       title: '#',
@@ -84,9 +75,7 @@ export function DataLedger({ scope }: { scope: URL }) {
     },
     {
       title: 'Entry Data',
-      render: (entry: DataTxnEntry) => (
-        <DataLedger.EntryData entry={entry} web3={web3} />
-      ),
+      render: (entry: DataTxnEntry) => <DataLedger.EntryData entry={entry} />,
     },
   ];
 
@@ -135,14 +124,9 @@ DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
   );
 };
 
-DataLedger.EntryData = function ({
-  entry,
-  web3,
-}: {
-  entry: DataTxnEntry;
-  web3: Web3Account;
-}) {
+DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
   const [hash, setHash] = useState<string>();
+  const web3 = useConnect();
 
   useAsyncEffect(
     async (mounted) => {
@@ -155,8 +139,8 @@ DataLedger.EntryData = function ({
     [entry],
   );
 
-  const storeEntry = web3?.online?.get(hash);
-  if (storeEntry) {
+  const storeEntry = web3.onlineStore?.get(hash);
+  if (storeEntry && web3.onlineStore.url.equals(entry.account)) {
     return (
       <Input.Group compact className="extid">
         <Text className="extid-type">Web3 Backup</Text>

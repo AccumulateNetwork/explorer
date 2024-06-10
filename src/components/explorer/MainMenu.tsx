@@ -14,11 +14,9 @@ import { Link } from 'react-router-dom';
 
 import Logo from '../common/Logo';
 import { Shared } from '../common/Network';
-import { useShared } from '../common/Shared';
 import networks, { Network } from '../common/networks';
-import { Login, Login as Web3Login } from '../web3/Login';
-import { Settings } from '../web3/Settings';
-import { Wallet } from '../web3/Wallet';
+import { useConnect } from '../web3';
+import Web3 from '../web3';
 
 export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
   const shared = useContext(Shared);
@@ -27,8 +25,7 @@ export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
   addEventListener('resize', () => setIsWide(window.innerWidth > 750));
 
   const history = useHistory();
-  const [web3Connected] = useShared(Settings, 'connected');
-  const [loginOpen, setLoginOpen] = useState(false);
+  const web3 = useConnect();
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
@@ -93,14 +90,14 @@ export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
       ),
     },
     !isWide &&
-      Wallet.canConnect && {
+      web3.canConnect && {
         key: 'web3',
-        label: `${Wallet.connected ? '' : 'Connect '}Web3 Wallet`,
+        label: `${web3.connected ? '' : 'Connect '}Web3 Wallet`,
         onClick: () => {
-          if (web3Connected) {
+          if (web3.connected) {
             history.push('/web3');
           } else {
-            setLoginOpen(true);
+            web3.connect().then(() => history.push('/web3'));
           }
         },
       },
@@ -155,7 +152,7 @@ export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
           items={items}
         />
         <div className="menu-right">
-          {!shared.network.mainnet && <Web3Login />}
+          {!shared.network.mainnet && <Web3.Login />}
           <Dropdown
             menu={{ items: networkMenuItems }}
             trigger={['click']}
@@ -200,13 +197,6 @@ export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
       >
         <MenuOutlined style={{ color: 'rgba(255, 255, 255, 0.65)' }} />
       </Dropdown>
-
-      {/* Modals */}
-      <Login.Modal
-        open={loginOpen}
-        onCancel={() => setLoginOpen(false)}
-        onFinish={() => setLoginOpen(false)}
-      />
     </Space.Compact>
   );
 }

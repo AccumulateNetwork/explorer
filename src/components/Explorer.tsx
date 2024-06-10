@@ -20,7 +20,7 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import { Dashboard as Web3Dashboard } from './web3/Dashboard';
+import web3 from './web3';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -54,55 +54,57 @@ export default function Explorer() {
 
   return (
     <Shared.Provider value={shared}>
-      <Router>
-        <ScrollToTop />
-        <Layout>
-          <Header className={shared.network.mainnet ? '' : 'testnet'}>
-            <MainMenu onSelectNetwork={onSelectNetwork} />
-          </Header>
+      <web3.Connect>
+        <Router>
+          <ScrollToTop />
+          <Layout>
+            <Header className={shared.network.mainnet ? '' : 'testnet'}>
+              <MainMenu onSelectNetwork={onSelectNetwork} />
+            </Header>
 
-          <Content>
-            <SearchForm searching={(x) => (searchDidLoad = x)} />
-            <Switch>
-              <Route exact path="/" children={<Blocks />} />
-              <Route path="/validators" children={<Validators />} />
-              <Route path="/tokens" children={<Tokens />} />
-              <Route path="/staking" children={<Staking />} />
-              <Route path="/favourites" children={<Favourites />} />
-              <Route path="/blocks" children={<MinorBlocks />} />
-              <Route path="/network" children={<Network />} />
-              <Route path="/settings" children={<Settings.Edit />} />
-              <Route path="/web3" children={<Web3Dashboard />} />
+            <Content>
+              <SearchForm searching={(x) => (searchDidLoad = x)} />
+              <Switch>
+                <Route exact path="/" children={<Blocks />} />
+                <Route path="/validators" children={<Validators />} />
+                <Route path="/tokens" children={<Tokens />} />
+                <Route path="/staking" children={<Staking />} />
+                <Route path="/favourites" children={<Favourites />} />
+                <Route path="/blocks" children={<MinorBlocks />} />
+                <Route path="/network" children={<Network />} />
+                <Route path="/settings" children={<Settings.Edit />} />
+                <Route path="/web3" children={<web3.Dashboard />} />
 
-              {!shared.network.mainnet && (
-                <Route exact path="/faucet" children={<Faucet />} />
-              )}
+                {!shared.network.mainnet && (
+                  <Route exact path="/faucet" children={<Faucet />} />
+                )}
 
-              <Route path={['/acc/:url+', '/tx/:hash+']}>
-                <Acc didLoad={(x) => searchDidLoad?.(x)} />
-              </Route>
+                <Route path={['/acc/:url+', '/tx/:hash+']}>
+                  <Acc didLoad={(x) => searchDidLoad?.(x)} />
+                </Route>
 
-              <Route path="/data/:url+" children={<Data />} />
-              <Route path="/block/:index" children={<Block />} />
+                <Route path="/data/:url+" children={<Data />} />
+                <Route path="/block/:index" children={<Block />} />
 
-              <Route children={<Error404 />} />
-            </Switch>
-          </Content>
+                <Route children={<Error404 />} />
+              </Switch>
+            </Content>
 
-          <Footer>
-            <p>&copy; Accumulate Network Explorer</p>
-            <p>
-              <Version />
-            </p>
-            <p>
-              <Text type="secondary">{shared.network.api[0]}</Text>
-            </p>
-            <p>
-              <a href="mailto:support@defidevs.io">support@defidevs.io</a>
-            </p>
-          </Footer>
-        </Layout>
-      </Router>
+            <Footer>
+              <p>&copy; Accumulate Network Explorer</p>
+              <p>
+                <Version />
+              </p>
+              <p>
+                <Text type="secondary">{shared.network.api[0]}</Text>
+              </p>
+              <p>
+                <a href="mailto:support@defidevs.io">support@defidevs.io</a>
+              </p>
+            </Footer>
+          </Layout>
+        </Router>
+      </web3.Connect>
     </Shared.Provider>
   );
 }

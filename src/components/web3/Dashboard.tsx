@@ -1,13 +1,8 @@
-import {
-  DisconnectOutlined,
-  LinkOutlined,
-  PlusCircleOutlined,
-} from '@ant-design/icons';
+import { DisconnectOutlined, LinkOutlined } from '@ant-design/icons';
 import {
   Alert,
   Button,
   Descriptions,
-  Divider,
   List,
   Skeleton,
   Tag,
@@ -38,20 +33,18 @@ import { AddCredits } from '../form/AddCredits';
 import { AddNote } from '../form/AddNote';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { Sign } from '../form/Sign';
+import { useWeb3 } from './Connect';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
-import { useWeb3 } from './useWeb3';
 
 const { Title, Text, Paragraph } = Typography;
 
 export function Dashboard() {
-  const account = useWeb3();
+  const web3 = useWeb3();
   const history = useHistory();
   const { api } = useContext(Shared);
-  const [connected] = useShared(Settings, 'connected');
-  const [linked] = useShared(account, 'linked');
-  const linkedAccounts = linked?.direct?.filter(
-    (x) => !account?.liteIdUrl?.equals(x.url),
+  const linkedAccounts = web3.linked?.direct?.filter(
+    (x) => !web3.publicKey?.lite?.equals(x.url),
   );
 
   const [open, setOpen] = useState<
@@ -65,23 +58,24 @@ export function Dashboard() {
   const enableBackups = async () => {
     setEnablingBackups(true);
     try {
-      await account.online.setup(api, sign);
+      await web3.onlineStore.setup(api, sign);
     } finally {
       setEnablingBackups(false);
     }
   };
 
   const unlink = async (url: URLArgs) => {
-    const ok = await account.store.add((txn) => Sign.submit(setToSign, txn), {
+    const ok = await web3.dataStore.add((txn) => Sign.submit(setToSign, txn), {
       type: 'unlink',
       url: `${url}`,
     });
     if (!ok) {
       return;
     }
-    await account.reload(api, 'entries', 'linked');
+    web3.reload({ dataStore: true });
   };
 
+  const [connected] = useShared(Settings, 'connected');
   useEffect(() => {
     if (!connected) {
       history.push('/');
@@ -93,12 +87,10 @@ export function Dashboard() {
   }
 
   const title = <Title level={2}>Web3 Wallet</Title>;
-  if (!account) {
+  if (!web3.connected) {
     return (
       <>
-        {title}
-
-        <Skeleton />
+        {title} <Skeleton />
       </>
     );
   }
@@ -117,7 +109,7 @@ export function Dashboard() {
             />
           }
         >
-          <Text copyable>{account.publicKey.ethereum}</Text>
+          <Text copyable>{web3.publicKey.ethereum}</Text>
         </Descriptions.Item>
 
         <Descriptions.Item
@@ -129,16 +121,16 @@ export function Dashboard() {
             />
           }
         >
-          <Text copyable={{ text: `${account.liteIdUrl}` }}>
-            {account.liteIdentity ? (
-              <Link to={account.liteIdUrl}>{`${account.liteIdUrl}`}</Link>
+          <Text copyable={{ text: `${web3.publicKey.lite}` }}>
+            {web3.liteIdentity ? (
+              <Link to={web3.publicKey.lite}>{`${web3.publicKey.lite}`}</Link>
             ) : (
-              `${account.liteIdUrl}`
+              `${web3.publicKey.lite}`
             )}
           </Text>
         </Descriptions.Item>
 
-        {account.liteIdentity && (
+        {web3.liteIdentity && (
           <Descriptions.Item
             label={
               <WithIcon
@@ -148,8 +140,8 @@ export function Dashboard() {
               />
             }
           >
-            {account.liteIdentity.creditBalance ? (
-              <CreditAmount amount={account.liteIdentity.creditBalance} />
+            {web3.liteIdentity.creditBalance ? (
+              <CreditAmount amount={web3.liteIdentity.creditBalance} />
             ) : (
               <Button
                 shape="round"
@@ -162,14 +154,14 @@ export function Dashboard() {
         )}
       </InfoTable>
 
-      {!account?.liteIdentity && (
+      {!web3?.liteIdentity && (
         <Alert
           type="warning"
           style={{ marginBottom: 20 }}
           message={
             <MissingLiteID.Create
-              eth={account.publicKey.ethereum}
-              lite={account.liteIdUrl}
+              eth={web3.publicKey.ethereum}
+              lite={web3.publicKey.lite}
             />
           }
         />
@@ -241,23 +233,27 @@ export function Dashboard() {
       </Title>
 
       <InfoTable>
-        <Descriptions.Item
-          label={
-            <WithIcon
-              icon={RiQuestionLine}
-              tooltip={tooltip.web3.backup}
-              children="Data Account"
-            />
-          }
-        >
-          <Text copyable={{ text: `${account.online.url}` }}>
-            {account.online.account ? (
-              <Link to={account.online.url}>{`${account.online.url}`}</Link>
-            ) : (
-              `${account.online.url}`
-            )}
-          </Text>
-        </Descriptions.Item>
+        {web3.onlineStore && (
+          <Descriptions.Item
+            label={
+              <WithIcon
+                icon={RiQuestionLine}
+                tooltip={tooltip.web3.backup}
+                children="Data Account"
+              />
+            }
+          >
+            <Text copyable={{ text: `${web3.onlineStore.url}` }}>
+              {web3.onlineStore.account ? (
+                <Link
+                  to={web3.onlineStore.url}
+                >{`${web3.onlineStore.url}`}</Link>
+              ) : (
+                `${web3.onlineStore.url}`
+              )}
+            </Text>
+          </Descriptions.Item>
+        )}
 
         <Descriptions.Item
           label={
@@ -265,20 +261,20 @@ export function Dashboard() {
               icon={RiQuestionLine}
               children="Status"
               tooltip={
-                account.online.account
+                web3.onlineStore?.account
                   ? tooltip.web3.backupsEnabled
                   : tooltip.web3.backupsDisabled
               }
             />
           }
         >
-          {account.online.account ? (
+          {web3.onlineStore?.account ? (
             <Tag color="blue">enabled</Tag>
           ) : (
             <Tooltip
               overlayClassName="explorer-tooltip"
               title={
-                account.liteIdentity
+                web3.liteIdentity
                   ? 'Purchase credits to enable this action'
                   : 'Create the lite identity and purchase credits to enable this action'
               }
@@ -287,9 +283,7 @@ export function Dashboard() {
                 shape="round"
                 type="primary"
                 onClick={enableBackups}
-                disabled={
-                  enablingBackups || !account?.liteIdentity?.creditBalance
-                }
+                disabled={enablingBackups || !web3?.liteIdentity?.creditBalance}
                 children="Enable"
               />
             </Tooltip>
@@ -302,7 +296,7 @@ export function Dashboard() {
           shape="round"
           type="primary"
           style={{ marginBottom: 20 }}
-          disabled={!account.online.canEncrypt}
+          disabled={!web3.onlineStore?.enabled}
           onClick={() => setOpen('addNote')}
         >
           <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
@@ -314,13 +308,13 @@ export function Dashboard() {
 
       {open === 'addCredits' && (
         <AddCredits
-          to={account?.liteIdUrl}
+          to={web3.publicKey.lite}
           open={open === 'addCredits'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => {
             if (ok) {
               try {
-                account.reload(api, 'liteIdentity');
+                web3.reload({ liteIdentity: true });
               } finally {
                 setOpen(null);
               }

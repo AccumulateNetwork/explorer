@@ -9,15 +9,15 @@ import { AccTitle } from '../common/AccTitle';
 import { Shared } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
-import { useWeb3 } from './useWeb3';
+import { useWeb3 } from './Connect';
 
 const { Paragraph, Text, Title } = Typography;
 
 export function MissingLiteID() {
-  const account = useWeb3();
+  const web3 = useWeb3();
 
   const title = 'Web3 Lite Identity';
-  if (!account?.liteIdUrl) {
+  if (!web3.publicKey?.lite) {
     return (
       <>
         <Title level={2}>{title}</Title>
@@ -28,12 +28,12 @@ export function MissingLiteID() {
 
   return (
     <div>
-      <AccTitle title={title} url={account.liteIdUrl} />
+      <AccTitle title={title} url={web3.publicKey.lite} />
 
       <Paragraph>
         <MissingLiteID.Create
-          eth={account.publicKey.ethereum}
-          lite={account.liteIdUrl}
+          eth={web3.publicKey.ethereum}
+          lite={web3.publicKey.lite}
         />
       </Paragraph>
     </div>

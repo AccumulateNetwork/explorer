@@ -16,9 +16,7 @@ import { Shared } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import { Account } from '../web3/Account';
-import { Wallet } from '../web3/Wallet';
-import { useWeb3 } from '../web3/useWeb3';
+import web3, { useConnect } from '../web3';
 
 const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
@@ -91,7 +89,7 @@ export function Sign({
   request: Sign.Request;
   title?: React.ReactNode;
 }) {
-  const account = useWeb3();
+  const web3 = useConnect();
   const { api } = useContext(Shared);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(false);
@@ -99,7 +97,7 @@ export function Sign({
 
   useAsyncEffect(
     async (mounted) => {
-      if (!request || !account || request.initiated) {
+      if (!request || !web3 || request.initiated) {
         return;
       }
 
@@ -109,7 +107,7 @@ export function Sign({
       setClosable(false);
       try {
         request.initiated = true;
-        if (await sign({ push, api, account, args, signer })) {
+        if (await sign({ push, api, web3: web3, args, signer })) {
           onFinish();
           return true;
         }
@@ -120,7 +118,7 @@ export function Sign({
         onCancel();
       }
     },
-    [request, account],
+    [request, web3],
   );
 
   const reverse = [];
@@ -283,31 +281,33 @@ async function sign({
   push,
   api,
   args,
-  account,
+  web3,
   signer,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
   api: JsonRpcClient;
-  account: Account;
+  web3: web3.Context;
   args: TransactionArgs;
   signer: Sign.Signer;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
   const txn = new Transaction(args);
-  const sig = await Wallet.signAccumulate(txn, {
-    publicKey: account.publicKey.publicKey,
-    timestamp: Date.now(),
-    ...(signer || {
-      signer: account.liteIdUrl,
-      signerVersion: 1,
-    }),
-  }).catch((error) => {
-    update(
-      <Failure>
-        <ShowError bare error={error} />
-      </Failure>,
-    );
-  });
+  const sig = await web3.driver.sign
+    .accumulate(txn, {
+      publicKey: web3.publicKey.publicKey,
+      timestamp: Date.now(),
+      ...(signer || {
+        signer: web3.publicKey.lite,
+        signerVersion: 1,
+      }),
+    })
+    .catch((error) => {
+      update(
+        <Failure>
+          <ShowError bare error={error} />
+        </Failure>,
+      );
+    });
   if (!sig || !sig.signature) {
     return false;
   }

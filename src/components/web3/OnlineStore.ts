@@ -1,3 +1,4 @@
+import { Context } from 'react';
 import nacl from 'tweetnacl';
 
 import { URL } from 'accumulate.js';
@@ -13,18 +14,20 @@ import {
 
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 import { fetchAccount, fetchDataEntries } from '../common/query';
+import { Driver, EthPublicKey } from './Driver';
 import { Store } from './Store';
-import { EthPublicKey, Wallet } from './Wallet';
 
 export class OnlineStore {
-  readonly url: URL;
+  readonly #driver: Driver;
   readonly #token: Token;
+  readonly url: URL;
   #account?: LiteDataAccount;
   #key?: Uint8Array;
   #raw?: DataEntry[];
   #entries?: Entry[];
 
-  constructor(publicKey: EthPublicKey) {
+  constructor(driver: Driver, publicKey: EthPublicKey) {
+    this.#driver = driver;
     this.#token = new Token(publicKey);
     const hash = sha256(sha256(this.#token.for('backup')));
     this.url = URL.parse(`acc://${Buffer.from(hash).toString('hex')}`);
@@ -39,7 +42,7 @@ export class OnlineStore {
     return this.#account;
   }
 
-  get canEncrypt() {
+  get enabled() {
     return !!this.#key;
   }
 
@@ -97,7 +100,7 @@ export class OnlineStore {
     if (this.#raw && !this.#key) {
       const keyCrypt = this.#raw.find((e) => isKey(e) && isEth(e));
       if (keyCrypt) {
-        this.#key = await Key.decrypt(this.#token.ethereum, keyCrypt);
+        this.#key = await Key.decrypt(this.#driver, this.#token, keyCrypt);
       }
     }
 
@@ -132,7 +135,7 @@ export class OnlineStore {
 
     // Generate and record a key
     if (!this.#key) {
-      const { key, data } = await Key.generate(this.#token);
+      const { key, data } = await Key.generate(this.#driver, this.#token);
       const txn: TransactionArgs = {
         header: { principal: this.url },
         body: { type: 'writeData', entry: { type: 'doubleHash', data } },
@@ -219,15 +222,16 @@ class Entry {
 }
 
 class Token {
-  readonly #publicKey: EthPublicKey;
+  static readonly #for: Record<string, Token> = {};
+  readonly publicKey: EthPublicKey;
   readonly #cache: Record<string, Buffer> = {};
 
   constructor(publicKey: EthPublicKey) {
-    this.#publicKey = publicKey;
-  }
-
-  get ethereum() {
-    return this.#publicKey.ethereum;
+    if (publicKey.ethereum in Token.#for) {
+      return Token.#for[publicKey.ethereum];
+    }
+    this.publicKey = publicKey;
+    Token.#for[publicKey.ethereum] = this;
   }
 
   for(suffix: string | Uint8Array) {
@@ -238,8 +242,10 @@ class Token {
       return this.#cache[suffix];
     }
 
-    const addr = this.#publicKey;
-    const token = Buffer.from(sha256(Buffer.from(`${addr}:${suffix}`, 'utf-8')));
+    const addr = this.publicKey;
+    const token = Buffer.from(
+      sha256(Buffer.from(`${addr}:${suffix}`, 'utf-8')),
+    );
     this.#cache[suffix] = token;
     return token;
   }
@@ -255,14 +261,14 @@ class Token {
 class Key {
   @broadcast @stored static accessor #keys: Record<string, string> = {};
 
-  static async decrypt(eth: string, crypt: DataEntry) {
+  static async decrypt(driver: Driver, token: Token, crypt: DataEntry) {
     const hash = Buffer.from(crypt.hash()).toString('hex');
     if (hash in this.#keys) {
       return Buffer.from(this.#keys[hash], 'hex');
     }
 
     const data = Entry.parts(crypt).slice(2);
-    const raw = await Wallet.decrypt(eth, {
+    const raw = await driver.decrypt(token.publicKey, {
       nonce: Buffer.from(data[0]).toString('base64'),
       ephemPublicKey: Buffer.from(data[1]).toString('base64'),
       ciphertext: Buffer.from(data[2]).toString('base64'),
@@ -277,13 +283,13 @@ class Key {
     return key;
   }
 
-  static async generate(token: Token) {
+  static async generate(driver: Driver, token: Token) {
     // Generate a new key using NaCl
     const key = nacl.randomBytes(nacl.secretbox.keyLength);
 
     // Encrypt it using Metamask
-    const { nonce, ephemPublicKey, ciphertext } = await Wallet.encrypt(
-      token.ethereum,
+    const { nonce, ephemPublicKey, ciphertext } = await driver.encrypt(
+      token.publicKey,
       JSON.stringify(Buffer.from(key).toString('hex')),
     );
 

@@ -18,8 +18,7 @@ import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
 import { SendTokens } from '../form/SendTokens';
-import * as web3 from './Account';
-import { useWeb3 } from './useWeb3';
+import { Context, useWeb3 } from './Connect';
 
 const { Text } = Typography;
 
@@ -144,7 +143,7 @@ export function Actions(props: { account: URL }) {
 
 async function getSigners(
   api: JsonRpcClient,
-  web3: web3.Account,
+  web3: Context,
   acc: core.Account,
 ) {
   const authorities = await resolveAuthorities(api, acc);
