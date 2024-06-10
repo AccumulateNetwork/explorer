@@ -1,4 +1,10 @@
-import { DownOutlined, MenuOutlined } from '@ant-design/icons';
+import Icon, {
+  BarsOutlined,
+  DownOutlined,
+  LogoutOutlined,
+  MenuOutlined,
+  UserSwitchOutlined,
+} from '@ant-design/icons';
 import { Badge, Button, Dropdown, Menu, MenuProps, Space } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
@@ -90,17 +96,37 @@ export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
       ),
     },
     !isWide &&
-      web3.canConnect && {
-        key: 'web3',
-        label: `${web3.connected ? '' : 'Connect '}Web3 Wallet`,
-        onClick: () => {
-          if (web3.connected) {
-            history.push('/web3');
-          } else {
-            web3.connect().then(() => history.push('/web3'));
+      web3.canConnect &&
+      (web3.connected
+        ? {
+            key: 'web3',
+            label: 'Web3 Wallet',
+            children: [
+              {
+                label: 'Open dashboard',
+                key: 'dashboard',
+                onClick: () => history.push('/web3'),
+                icon: <BarsOutlined />,
+              },
+              {
+                label: 'Switch account',
+                key: 'switch',
+                onClick: () => web3.switch(),
+                icon: <UserSwitchOutlined />,
+              },
+              {
+                label: 'Disconnect',
+                key: 'disconnect',
+                onClick: () => web3.disconnect(),
+                icon: <LogoutOutlined />,
+              },
+            ],
           }
-        },
-      },
+        : {
+            key: 'web3',
+            label: 'Connect Web3 Wallet',
+            onClick: () => web3.connect().then(() => history.push('/web3')),
+          }),
     {
       key: 'blocks',
       icon: isWide && <Icon icon={RiDashboardLine} />,

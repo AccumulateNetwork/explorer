@@ -27,10 +27,15 @@ interface ReloadRequest {
   dataStore?: boolean;
 }
 
+interface Request {
+  executed?: boolean;
+}
+
 export interface Context {
   connect: () => Promise<boolean>;
   disconnect: () => void;
   reload: (rq: ReloadRequest) => void;
+  switch: () => void;
 
   canConnect: boolean;
   connected: boolean;
@@ -47,6 +52,7 @@ const reactContext = createContext<Context>({
   connect: () => Promise.reject(),
   disconnect() {},
   reload() {},
+  switch() {},
   canConnect: Driver.canConnect,
   connected: false,
   driver: null,
@@ -123,6 +129,8 @@ export function Connect({ children }: { children: React.ReactNode }) {
     setDataStore(null);
     setOnlineStore(null);
     setLinked(null);
+    setWantSwitch(null);
+    Settings.account = null;
   };
 
   // Choose connection type
@@ -136,6 +144,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         const connector = new InjectedConnector({});
         activate(connector);
         setDriver(driver);
+        setWantSwitch(null);
         break;
       default:
         disconnect();
@@ -146,9 +155,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
   // Select an account
   const [account, setAccount] = useState<string>();
   const [accounts, setAccounts] = useState<string[]>();
+  const [wantSwitch, setWantSwitch] = useState<Request>();
 
   useAsyncEffect(
     async (mounted) => {
+      const switching = wantSwitch && !wantSwitch.executed;
+      if (switching) {
+        wantSwitch.executed = true;
+      }
       if (!driver) {
         return;
       }
@@ -159,7 +173,11 @@ export function Connect({ children }: { children: React.ReactNode }) {
       }
       setAccounts(accounts);
 
-      if (Settings.account && accounts.includes(Settings.account)) {
+      if (
+        !switching &&
+        Settings.account &&
+        accounts.includes(Settings.account)
+      ) {
         setAccount(Settings.account);
         return;
       }
@@ -171,14 +189,10 @@ export function Connect({ children }: { children: React.ReactNode }) {
           setAccount(accounts[0]);
           return;
         default:
-          if (wantConnect) {
-            setOpen('select');
-          } else {
-            disconnect();
-          }
+          setOpen('select');
       }
     },
-    [driver],
+    [driver, wantSwitch],
   );
 
   // Get public key
@@ -259,17 +273,16 @@ export function Connect({ children }: { children: React.ReactNode }) {
       const online = new OnlineStore(driver, pubKey);
       setOnlineStore(online);
 
-      const store = await online
-        .load(api)
-        .then(() => online)
-        .catch((err) => {
-          console.error(err);
-          return new OfflineStore(pubKey.publicKey);
-        });
+      await online.load(api).catch((err) => {
+        console.error(err);
+      });
       if (!mounted()) {
         return;
       }
-      setOnlineStore(online);
+
+      const store = online.enabled
+        ? online
+        : new OfflineStore(pubKey.publicKey);
       setDataStore(store);
 
       const linked = await Linked.load(api, [
@@ -295,6 +308,8 @@ export function Connect({ children }: { children: React.ReactNode }) {
         connect,
         disconnect,
         reload,
+        switch: () => setWantSwitch({}),
+
         canConnect: true,
         connected: !!pubKey,
         driver,
@@ -343,7 +358,13 @@ export function Connect({ children }: { children: React.ReactNode }) {
         <Modal
           title="Select account"
           open={open === 'select'}
-          onCancel={() => disconnect()}
+          onCancel={() => {
+            if (wantSwitch.executed) {
+              setOpen(null);
+            } else {
+              disconnect();
+            }
+          }}
           footer={false}
         >
           {accounts ? (
