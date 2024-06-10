@@ -1,35 +1,29 @@
-import { URL } from 'accumulate.js';
+import { URL, URLArgs } from 'accumulate.js';
 import {
-  ChainEntryRecord,
   JsonRpcClient,
+  Query,
+  QueryArgs,
   RangeOptions,
   RangeOptionsArgs,
   Record,
   RecordRange,
 } from 'accumulate.js/lib/api_v3';
 
-type Opts = {
-  // fromEnd?: boolean;
-};
-
-export class ChainFilter<R extends Record> {
+export class ChainFilter<R extends Record & { index?: number }> {
   readonly #scope: URL;
-  readonly #chain: string;
-  readonly #opts: Opts;
+  readonly #query: Query;
   readonly #api: JsonRpcClient;
-  readonly #filter: (r: ChainEntryRecord<R>) => boolean;
-  readonly #results = new RecordRange<ChainEntryRecord<R>>({ records: [] });
+  readonly #filter: (r: R) => boolean;
+  readonly #results = new RecordRange<R>({ records: [] });
 
   constructor(
     api: JsonRpcClient,
-    scope: URL,
-    chain: string,
-    opts: Opts,
-    filter: (r: ChainEntryRecord<R>) => boolean,
+    scope: URLArgs,
+    query: QueryArgs,
+    filter: (r: R) => boolean,
   ) {
-    this.#scope = scope;
-    this.#chain = chain;
-    this.#opts = opts;
+    this.#scope = URL.parse(scope);
+    this.#query = Query.fromObject(query);
     this.#api = api;
     this.#filter = filter;
   }
@@ -52,7 +46,7 @@ export class ChainFilter<R extends Record> {
       if (!r) break;
       records.push(r);
     }
-    return new RecordRange<ChainEntryRecord<R>>({
+    return new RecordRange<R>({
       start: range.start,
       records,
       total: this.#results.total,
@@ -72,16 +66,19 @@ export class ChainFilter<R extends Record> {
   async #getNext() {
     const maxCount = 50;
     if (this.#results.records.length == 0) {
-      const r = (await this.#api.query(this.#scope, {
-        queryType: 'chain',
-        name: this.#chain,
-        range: {
+      const r = (await this.#api.query(
+        this.#scope,
+        this.#makeQuery({
           start: 0,
           count: maxCount,
           fromEnd: true,
           expand: true,
-        },
-      })) as RecordRange<ChainEntryRecord<R>>;
+        }),
+      )) as unknown as RecordRange<R>;
+      if (!r.total) {
+        this.#results.total = 0;
+        return;
+      }
       if (!r.records) {
         r.records = [];
       }
@@ -91,7 +88,7 @@ export class ChainFilter<R extends Record> {
           this.#results.records.push(entry);
         }
       }
-      if (r.records.length < maxCount) {
+      if (r.start + r.records.length >= r.total) {
         this.#results.total = this.#results.records.length;
       }
       return;
@@ -110,15 +107,15 @@ export class ChainFilter<R extends Record> {
       count = end;
     }
 
-    const { records } = (await this.#api.query(this.#scope, {
-      queryType: 'chain',
-      name: 'main',
-      range: {
+    const { records } = (await this.#api.query(
+      this.#scope,
+      this.#makeQuery({
         start,
         count,
+        fromEnd: true,
         expand: true,
-      },
-    })) as RecordRange<ChainEntryRecord<R>>;
+      }),
+    )) as unknown as RecordRange<R>;
 
     for (const r of records.reverse()) {
       if (this.#filter(r)) {
@@ -128,5 +125,24 @@ export class ChainFilter<R extends Record> {
     if (start == 0) {
       this.#results.total = this.#results.records.length;
     }
+  }
+
+  #makeQuery(range: RangeOptionsArgs): any {
+    // Make a copy of the original arguments
+    const query = this.#query.copy();
+
+    // Find a property that is a range and modify it
+    for (const prop in query) {
+      if (query[prop] instanceof RangeOptions) {
+        query[prop] = new RangeOptions(range);
+        return query;
+      }
+    }
+
+    // If no range property is found, use 'range'
+    return Query.fromObject({
+      ...query.asObject(),
+      range,
+    } as any);
   }
 }

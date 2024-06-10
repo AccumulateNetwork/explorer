@@ -8,23 +8,29 @@ import {
 } from 'accumulate.js/lib/api_v3';
 
 import { ChainFilter } from './ChainFilter';
-import { TxnRecord, isRecordOfDataTxn } from './types';
+import { TxnEntry, TxnRecord, isRecordOfDataTxn } from './types';
 
 export class DataChain {
-  readonly #main: ChainFilter<TxnRecord>;
-  readonly #scratch: ChainFilter<TxnRecord>;
-  readonly #results = new RecordRange<ChainEntryRecord<TxnRecord>>({
-    records: [],
-  });
+  readonly #main: ChainFilter<TxnEntry>;
+  readonly #scratch: ChainFilter<TxnEntry>;
+  readonly #results = new RecordRange<TxnEntry>({ records: [] });
   readonly #start = { main: 0, scratch: 0 };
 
   constructor(scope: URL, api: JsonRpcClient) {
-    this.#main = new ChainFilter(api, scope, 'main', {}, (r) =>
-      isRecordOfDataTxn(r),
+    this.#main = new ChainFilter(
+      api,
+      scope,
+      { queryType: 'chain', name: 'main' },
+      (r) => isRecordOfDataTxn(r),
     );
-    this.#scratch = new ChainFilter(api, scope, 'scratch', {}, (r) => {
-      return isRecordOfDataTxn(r);
-    });
+    this.#scratch = new ChainFilter(
+      api,
+      scope,
+      { queryType: 'chain', name: 'scratch' },
+      (r) => {
+        return isRecordOfDataTxn(r);
+      },
+    );
   }
 
   get total() {
