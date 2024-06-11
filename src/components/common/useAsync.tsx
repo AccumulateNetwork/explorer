@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 export function useAsyncEffect<V>(
   effect: (isMounted: () => boolean) => V | Promise<V>,
-  inputs?: any[],
+  inputs: any[],
 ) {
   let resolve: () => void;
   let reject: (_?: any) => void;

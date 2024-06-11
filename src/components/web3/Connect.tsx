@@ -214,6 +214,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
       }
 
       if (!wantConnect) {
+        disconnect();
         return;
       }
 
@@ -256,7 +257,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         setLiteIdentity(r.account);
       }
     },
-    [pubKey?.lite, reloadLiteIdentity],
+    [`${pubKey?.lite}`, reloadLiteIdentity],
   );
 
   // Load the data store and linked accounts
