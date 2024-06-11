@@ -13,14 +13,14 @@ export class ChainFilter<R extends Record & { index?: number }> {
   readonly #scope: URL;
   readonly #query: Query;
   readonly #api: JsonRpcClient;
-  readonly #filter: (r: R) => boolean;
+  readonly #filter?: (r: R) => boolean;
   readonly #results = new RecordRange<R>({ records: [] });
 
   constructor(
     api: JsonRpcClient,
     scope: URLArgs,
     query: QueryArgs,
-    filter: (r: R) => boolean,
+    filter?: (r: R) => boolean,
   ) {
     this.#scope = URL.parse(scope);
     this.#query = Query.fromObject(query);
@@ -84,11 +84,13 @@ export class ChainFilter<R extends Record & { index?: number }> {
       }
 
       for (const entry of r.records.reverse()) {
-        if (this.#filter(entry)) {
+        if (!this.#filter || this.#filter(entry)) {
           this.#results.records.push(entry);
         }
       }
-      if (r.start + r.records.length >= r.total) {
+      if (!this.#filter) {
+        this.#results.total = r.total;
+      } else if (r.start + r.records.length >= r.total) {
         this.#results.total = this.#results.records.length;
       }
       return;
@@ -118,7 +120,7 @@ export class ChainFilter<R extends Record & { index?: number }> {
     )) as unknown as RecordRange<R>;
 
     for (const r of records.reverse()) {
-      if (this.#filter(r)) {
+      if (!this.#filter || this.#filter(r)) {
         this.#results.records.push(r);
       }
     }

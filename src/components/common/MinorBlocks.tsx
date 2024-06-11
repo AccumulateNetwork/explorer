@@ -1,36 +1,40 @@
 import {
-  Skeleton,
+  List,
   Table,
   TablePaginationConfig,
+  TableProps,
   Tooltip,
   Typography,
 } from 'antd';
 import moment from 'moment-timezone';
 import React, { useContext, useState } from 'react';
-import { IconContext } from 'react-icons';
-import { RiExchangeLine } from 'react-icons/ri';
-import { Link } from 'react-router-dom';
+import { IconContext, IconType } from 'react-icons';
+import { RiExchangeLine, RiShieldCheckLine } from 'react-icons/ri';
+import { TiAnchor } from 'react-icons/ti';
+import { Link as DomLink } from 'react-router-dom';
 
 import {
-  ErrorRecord,
+  BlockQueryArgsWithType,
+  ChainEntryRecord,
+  IndexEntryRecord,
   MinorBlockRecord,
-  RecordRange,
-  RecordType,
+  Record,
 } from 'accumulate.js/lib/api_v3';
 
+import { ChainFilter } from '../../utils/ChainFilter';
 import getBlockEntries from '../../utils/getBlockEntries';
 import { CompactList } from './CompactList';
 import Count from './Count';
+import { Link } from './Link';
 import { Shared } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;
 
-const MinorBlocks = (props) => {
-  //let type = props.type ? props.type : 'main'
+const MinorBlocks = () => {
   let header = 'Minor Blocks';
 
-  const [minorBlocks, setMinorBlocks] = useState(null);
+  const [minorBlocks, setMinorBlocks] = useState<MinorBlockRecord[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     pageSize: 10,
@@ -43,16 +47,16 @@ const MinorBlocks = (props) => {
   //let tz = moment.tz.guess();
   let utcOffset = moment().utcOffset() / 60;
 
-  const columns = [
+  const columns: TableProps<MinorBlockRecord>['columns'] = [
     {
       title: 'Block',
       className: 'code',
       width: 30,
-      render: (row) => {
+      render: (row: MinorBlockRecord) => {
         if (row) {
           return (
             <div>
-              <Link to={'/block/' + row.index}>{row.index}</Link>
+              <DomLink to={'/block/' + row.index}>{row.index}</DomLink>
             </div>
           );
         } else {
@@ -63,7 +67,7 @@ const MinorBlocks = (props) => {
     {
       title: 'Timestamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
       width: 225,
-      render: (row) => {
+      render: (row: MinorBlockRecord) => {
         if (row) {
           if (row.time) {
             return (
@@ -81,10 +85,10 @@ const MinorBlocks = (props) => {
     },
     {
       title: 'Transactions',
-      render: (row) => {
+      render: (row: MinorBlockRecord) => {
         if (row) {
           if (row?.entries) {
-            return <BlockTxs data={row.entries} />;
+            return <BlockTxs entries={row.entries?.records} />;
           } else {
             return <Text disabled>Empty block</Text>;
           }
@@ -98,7 +102,7 @@ const MinorBlocks = (props) => {
       className: 'code',
       width: 88,
       align: 'center',
-      render: (row) => {
+      render: (row: MinorBlockRecord) => {
         if (row) {
           if (row.entries?.records?.length) {
             return <Text>{row.entries.records.length}</Text>;
@@ -112,103 +116,130 @@ const MinorBlocks = (props) => {
     },
   ];
 
-  function BlockTxs(props) {
-    if (!props?.data?.records) return <Text disabled>Empty block</Text>;
+  const isAnchor = (e: ChainEntryRecord) =>
+    e.name == 'anchor-sequence' ||
+    /acc:\/\/(dn|bvn-\w+)\.acme\/anchors/i.test(e.account.toString());
+
+  function BlockTxs({ entries }: { entries: ChainEntryRecord[] | undefined }) {
+    if (!entries?.length) return <Text disabled>Empty block</Text>;
+
+    entries = [
+      ...entries.filter((x) => !isAnchor(x)),
+      ...entries.filter((x) => isAnchor(x)),
+    ];
+
     return (
       <CompactList
-        dataSource={props.data.records}
+        dataSource={entries}
         limit={5}
-        renderItem={(item: any) => (
-          <span key={item.entry}>
-            <Tooltip
-              overlayClassName="explorer-tooltip"
-              title={
-                item.name === 'main'
-                  ? 'transaction'
-                  : item.name === 'anchor-sequence'
-                    ? 'anchor'
-                    : item.name
-                      ? item.name
-                      : 'unknown'
-              }
-            >
-              <Link to={'/tx/' + item.entry}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiExchangeLine />
-                </IconContext.Provider>
-                {item.entry}
+        renderItem={(item: ChainEntryRecord) => {
+          let tooltip: string;
+          let Icon: IconType;
+          if (item.name == 'anchor-sequence') {
+            tooltip = 'anchor';
+            Icon = TiAnchor;
+          } else if (item.name == 'main') {
+            tooltip = 'transaction';
+            Icon = RiExchangeLine;
+          } else if (item.name == 'signature') {
+            tooltip = 'signature';
+            Icon = RiShieldCheckLine;
+          } else {
+            tooltip = item.name || 'unknown';
+            Icon = RiExchangeLine;
+          }
+
+          return (
+            <List.Item key={item.index} style={{ background: 'none' }}>
+              <Link
+                to={item.account.withTxID(item.entry)}
+                style={{ color: isAnchor(item) ? 'gray' : null }}
+              >
+                <Tooltip overlayClassName="explorer-tooltip" title={tooltip}>
+                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <Icon />
+                  </IconContext.Provider>
+                  <span>
+                    <code>{Buffer.from(item.entry).toString('hex')}</code>@
+                    {item.account.toString().replace(/^acc:\/\//, '')}
+                  </span>
+                </Tooltip>
               </Link>
-            </Tooltip>
-            <br />
-          </span>
-        )}
+            </List.Item>
+          );
+        }}
       />
     );
   }
 
-  const { api, network } = useContext(Shared);
+  const { api, network, onApiError } = useContext(Shared);
+  const [chain] = useState(
+    new ChainFilter<ChainEntryRecord<IndexEntryRecord>>(api, 'dn.acme/ledger', {
+      queryType: 'chain',
+      name: 'root-index',
+    }),
+  );
   useAsyncEffect(
     async (mounted) => {
       setTableIsLoading(true);
 
-      const r = await api.query('dn.acme', {
-        queryType: 'block',
-        minorRange: {
-          fromEnd: true,
-          count: pagination.pageSize,
-          start: (pagination.current - 1) * pagination.pageSize,
-        },
+      const { records: index = [] } = await chain.getRange({
+        count: pagination.pageSize,
+        start: (pagination.current - 1) * pagination.pageSize,
       });
+      const records = await api
+        .call(
+          index.map((x) => ({
+            method: 'query',
+            params: {
+              scope: 'dn.acme/ledger',
+              query: {
+                queryType: 'block',
+                minor: x.value.value.blockIndex,
+              } satisfies BlockQueryArgsWithType,
+            },
+          })),
+        )
+        .then((x) => x.map((y) => Record.fromObject(y) as MinorBlockRecord));
       if (!mounted()) {
         return;
       }
-      const { records = [] } = r;
       for (const block of records) {
         if (!block.entries?.records) continue;
         block.entries.records = getBlockEntries(block);
       }
-      records.reverse();
-      setMinorBlocks(records.map((r) => r.asObject()));
+
+      if (pagination.current == 1 && index.length > 0) {
+        setTotalEntries(index[0].value.value.blockIndex);
+      }
+
+      setMinorBlocks(records);
       setPagination({
         ...pagination,
-        total: r.total,
+        total: chain.total,
       });
-      setTotalEntries(r.total);
       setTableIsLoading(false);
     },
     [JSON.stringify(pagination), network.id],
-  );
+  ).catch(onApiError);
 
   return (
-    <div>
-      {props.url || 'acc://dn.acme' ? (
-        <div>
-          <Title level={3} style={{ marginTop: 30 }}>
-            {header}
-            <Count count={totalEntries ? totalEntries : 0} />
-          </Title>
+    <>
+      <Title level={3} style={{ marginTop: 30 }}>
+        {header}
+        <Count count={totalEntries ? totalEntries : 0} />
+      </Title>
 
-          <Table
-            dataSource={minorBlocks}
-            columns={columns as any}
-            pagination={pagination}
-            rowKey="index"
-            loading={tableIsLoading}
-            onChange={(p) => setPagination(p)}
-            scroll={{ x: 'max-content' }}
-          />
-        </div>
-      ) : (
-        <div>
-          <div>
-            <Title level={3}>{header}</Title>
-            <div className="skeleton-holder">
-              <Skeleton active />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Table
+        dataSource={minorBlocks}
+        columns={columns}
+        pagination={pagination}
+        rowKey="index"
+        loading={tableIsLoading}
+        onChange={(p) => setPagination(p)}
+        scroll={{ x: 'max-content' }}
+      />
+    </>
   );
 };
 

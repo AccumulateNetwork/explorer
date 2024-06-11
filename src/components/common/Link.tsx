@@ -9,11 +9,13 @@ export function Link({
   children,
   dataEntry,
   className,
+  style,
 }: {
   to: TxIDArgs;
   children: React.ReactNode;
   dataEntry?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const route = dataEntry ? 'data' : 'acc';
   if (typeof to === 'string' && /^[a-z]{64}$/i.test(to)) {
@@ -22,6 +24,7 @@ export function Link({
         to={`/${route}/${to}@unknown`}
         className={className}
         children={children}
+        style={style}
       />
     );
   }
@@ -39,6 +42,7 @@ export function Link({
       to={`/${route}/${s}`}
       className={className}
       children={children}
+      style={style}
     />
   );
 }
