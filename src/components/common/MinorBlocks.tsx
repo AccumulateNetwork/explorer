@@ -1,5 +1,6 @@
 import {
   List,
+  Switch,
   Table,
   TablePaginationConfig,
   TableProps,
@@ -34,6 +35,7 @@ const { Title, Text } = Typography;
 const MinorBlocks = () => {
   let header = 'Minor Blocks';
 
+  const [showAnchors, setShowAnchors] = useState(false);
   const [minorBlocks, setMinorBlocks] = useState<MinorBlockRecord[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
@@ -103,15 +105,13 @@ const MinorBlocks = () => {
       width: 88,
       align: 'center',
       render: (row: MinorBlockRecord) => {
-        if (row) {
-          if (row.entries?.records?.length) {
-            return <Text>{row.entries.records.length}</Text>;
-          } else {
-            return <Text disabled>—</Text>;
-          }
-        } else {
-          return <Text disabled>N/A</Text>;
+        if (!row.entries?.records) {
+          return <Text disabled>—</Text>;
         }
+        const { length } = showAnchors
+          ? row.entries.records
+          : row.entries.records.filter((x) => !isAnchor(x));
+        return <Text>{length}</Text>;
       },
     },
   ];
@@ -125,8 +125,10 @@ const MinorBlocks = () => {
 
     entries = [
       ...entries.filter((x) => !isAnchor(x)),
-      ...entries.filter((x) => isAnchor(x)),
+      ...(showAnchors ? entries.filter((x) => isAnchor(x)) : []),
     ];
+
+    if (!entries?.length) return <Text disabled>No transactions</Text>;
 
     return (
       <CompactList
@@ -228,6 +230,27 @@ const MinorBlocks = () => {
       <Title level={3} style={{ marginTop: 30 }}>
         {header}
         <Count count={totalEntries ? totalEntries : 0} />
+
+        <Tooltip
+          overlayClassName="explorer-tooltip"
+          title={showAnchors ? 'Hide anchors' : 'Show anchors'}
+        >
+          <Switch
+            style={{ marginLeft: 15 }}
+            checked={showAnchors}
+            onChange={setShowAnchors}
+            checkedChildren={
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiExchangeLine />
+              </IconContext.Provider>
+            }
+            unCheckedChildren={
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <TiAnchor />
+              </IconContext.Provider>
+            }
+          />
+        </Tooltip>
       </Title>
 
       <Table
