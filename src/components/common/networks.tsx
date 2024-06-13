@@ -1,8 +1,8 @@
 export interface Network {
   id: string;
   label: string;
-  mainnet: boolean;
-  explorer: string;
+  mainnet?: boolean;
+  explorer?: string;
   api: string[];
   metrics?: string;
 }
@@ -22,7 +22,6 @@ export const Mainnet: Network = {
 export const Kermit: Network = {
   id: 'kermit',
   label: 'Kermit Testnet',
-  mainnet: false,
   explorer: 'https://kermit.explorer.accumulatenetwork.io',
   api: [
     'https://kermit.accumulatenetwork.io',
@@ -33,12 +32,17 @@ export const Kermit: Network = {
 export const Fozzie: Network = {
   id: 'fozzie',
   label: 'Fozzie Testnet',
-  mainnet: false,
   explorer: 'https://fozzie.explorer.accumulatenetwork.io',
   api: ['https://fozzie.accumulatenetwork.io'],
 };
 
-const networks = { Mainnet, Kermit, Fozzie };
+const Local: Network = {
+  id: 'local',
+  label: 'Local Devnet',
+  api: ['http://127.0.1.1:26660'],
+};
+
+const networks = { Mainnet, Kermit, Fozzie, Local };
 
 export function getNetwork(s: string) {
   for (const network of Object.values(networks)) {
