@@ -1626,10 +1626,10 @@ accepts@~1.3.8:
     mime-types "~2.1.34"
     negotiator "0.6.3"
 
-accumulate.js@^0.11.2:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/accumulate.js/-/accumulate.js-0.11.2.tgz#37011ed0084dd8f9c5fd87ecf95d6047732e291d"
-  integrity sha512-BGZt7RFqGlQWhCO+vvYwcotKTPHx95zjYvv83OKYoAfHj9Uud3EwHFmnve5XuBipefFwoGwsaxycAPxpD8krew==
+accumulate.js@^0.11.3:
+  version "0.11.3"
+  resolved "https://registry.yarnpkg.com/accumulate.js/-/accumulate.js-0.11.3.tgz#577665c55185620d122514cf79bc455eb56beda6"
+  integrity sha512-L8urkkzFyBxf4GxGPtgOviydgt+t1lZ0taaCWLuKCorQtzEM4cWDhJj9ZLPsm2vclGn8rdLrWNnOWYJFze2zIA==
   dependencies:
     "@ledgerhq/logs" "^6.10.1"
     "@types/bip32" "^2.0.0"
