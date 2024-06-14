@@ -67,22 +67,25 @@ export function MainMenu({
     }
   }, []);
 
-  const networkMenuItems = Object.values(networks).map(
-    (item) =>
-      ({
+  const networkMenuItems: MenuProps['items'][0][] = shared.canChangeNetwork
+    ? Object.values(networks).map((item) => ({
         key: item.label,
-        label: shared.canChangeNetwork ? (
+        label: (
           <a onClick={() => onSelectNetwork(item)}>
-            <Badge status="success" text={item.label} />
-          </a>
-        ) : (
-          <a target="_blank" rel="noopener noreferrer" href={item.explorer}>
-            <Badge status="success" text={item.label} />
+            <Network.Status network={item} text={item.label} />
           </a>
         ),
-      }) as MenuProps['items'][0],
-  );
-
+      }))
+    : Object.values(networks)
+        .filter((item) => item.explorer)
+        .map((item) => ({
+          key: item.label,
+          label: (
+            <a target="_blank" rel="noopener noreferrer" href={item.explorer}>
+              <Network.Status network={item} text={item.label} />
+            </a>
+          ),
+        }));
   const Icon = ({ icon: Icon }: { icon: IconType }) => (
     <IconContext.Provider
       value={{ className: 'react-icons' }}
@@ -189,7 +192,10 @@ export function MainMenu({
             className="network-badge"
           >
             <Button ghost>
-              <Badge status="success" text={shared.network.label} />
+              <Network.Status
+                network={shared.network}
+                text={shared.network.label}
+              />
               <DownOutlined />
             </Button>
           </Dropdown>

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export function useAsyncEffect<V>(
   effect: (isMounted: () => boolean) => V | Promise<V>,
@@ -26,4 +26,22 @@ export function useAsyncEffect<V>(
   }, inputs);
 
   return promise;
+}
+
+export function useAsyncState<V>(
+  effect: () => Promise<V>,
+  dependencies: any[],
+  initial?: V,
+) {
+  const [value, setValue] = useState<V>(initial);
+
+  useAsyncEffect(async (mounted) => {
+    const v = await effect();
+    if (!mounted()) {
+      return;
+    }
+    setValue(v);
+  }, dependencies);
+
+  return [value];
 }

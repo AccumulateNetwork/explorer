@@ -9,7 +9,7 @@ export interface NetworkConfig {
 
 export const Mainnet: NetworkConfig = {
   id: 'mainnet',
-  label: 'Mainet',
+  label: 'Mainnet',
   mainnet: true,
   explorer: 'https://explorer.accumulatenetwork.io',
   api: [
