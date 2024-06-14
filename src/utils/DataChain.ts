@@ -20,13 +20,13 @@ export class DataChain {
     this.#main = new ChainFilter(
       api,
       scope,
-      { queryType: 'chain', name: 'main' },
+      { queryType: 'chain', name: 'main', range: { expand: true } },
       (r) => isRecordOfDataTxn(r),
     );
     this.#scratch = new ChainFilter(
       api,
       scope,
-      { queryType: 'chain', name: 'scratch' },
+      { queryType: 'chain', name: 'scratch', range: { expand: true } },
       (r) => {
         return isRecordOfDataTxn(r);
       },

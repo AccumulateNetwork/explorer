@@ -140,7 +140,7 @@ DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
   );
 
   const storeEntry = web3.onlineStore?.get(hash);
-  if (storeEntry && web3.onlineStore.url.equals(entry.account)) {
+  if (storeEntry && web3.onlineStore.url.equals(entry.value.id.account)) {
     return (
       <Input.Group compact className="extid">
         <Text className="extid-type">Web3 Backup</Text>

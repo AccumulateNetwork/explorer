@@ -72,7 +72,6 @@ export class ChainFilter<R extends Record & { index?: number }> {
           start: 0,
           count: maxCount,
           fromEnd: true,
-          expand: true,
         }),
       )) as unknown as RecordRange<R>;
       if (!r.total) {
@@ -136,7 +135,10 @@ export class ChainFilter<R extends Record & { index?: number }> {
     // Find a property that is a range and modify it
     for (const prop in query) {
       if (query[prop] instanceof RangeOptions) {
-        query[prop] = new RangeOptions(range);
+        query[prop] = new RangeOptions({
+          ...query[prop],
+          ...range,
+        });
         return query;
       }
     }
