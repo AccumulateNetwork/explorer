@@ -179,6 +179,7 @@ const MinorBlocks = () => {
     new ChainFilter<ChainEntryRecord<IndexEntryRecord>>(api, 'dn.acme/ledger', {
       queryType: 'chain',
       name: 'root-index',
+      range: { expand: true },
     }),
   );
   useAsyncEffect(
