@@ -3,7 +3,7 @@ import React from 'react';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
 import { Settings } from '../explorer/Settings';
-import { Network, getNetwork } from './networks';
+import { NetworkConfig, getNetwork } from './networks';
 
 type BroadcastMessage = DidChangeNetwork | DidChangeSetting;
 
@@ -26,12 +26,12 @@ export class Context {
   readonly canChangeNetwork = Context.canChangeNetwork;
 
   #onApiError?: (_: any) => void;
-  readonly #network?: Network;
+  readonly #network?: NetworkConfig;
   readonly #api?: JsonRpcClient;
 
   constructor(
     onApiError?: (_: any) => void,
-    name: string | Network = defaultNetworkName(),
+    name: string | NetworkConfig = defaultNetworkName(),
   ) {
     if (!name) {
       throw new Error(
@@ -81,7 +81,7 @@ export class Context {
   }
 }
 
-export const Shared = Object.assign(
+export const Network = Object.assign(
   React.createContext<Context>(new Context()),
   {
     Context,

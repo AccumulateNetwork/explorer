@@ -27,7 +27,7 @@ import getBlockEntries from '../../utils/getBlockEntries';
 import { CompactList } from './CompactList';
 import Count from './Count';
 import { Link } from './Link';
-import { Shared } from './Network';
+import { Network } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;
@@ -174,7 +174,7 @@ const MinorBlocks = () => {
     );
   }
 
-  const { api, network, onApiError } = useContext(Shared);
+  const { api, network, onApiError } = useContext(Network);
   const [chain] = useState(
     new ChainFilter<ChainEntryRecord<IndexEntryRecord>>(api, 'dn.acme/ledger', {
       queryType: 'chain',

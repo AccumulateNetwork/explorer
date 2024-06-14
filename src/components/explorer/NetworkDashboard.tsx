@@ -4,12 +4,12 @@ import React, { useContext, useEffect, useState } from 'react';
 
 import { RpcError } from 'accumulate.js/lib/api_v3';
 
-import { Shared } from '../common/Network';
+import { Network as NetworkCtx } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 
 const { Title, Text } = Typography;
 
-const Network = () => {
+export function NetworkDashboard() {
   const [error, setError] = useState(null);
   const [peers, setPeers] = useState([]);
   const [peerStatus, setPeerStatus] = useState({});
@@ -29,7 +29,7 @@ const Network = () => {
   // Fetch network global variables, such as partitions and validators. This
   // changes extremely infrequently so loading this once is sufficient.
   const [network, setNetwork] = useState(null);
-  const { api, network: apiNet } = useContext(Shared);
+  const { api, network: apiNet } = useContext(NetworkCtx);
   useAsyncEffect(async (mounted) => {
     const { network } = await api.networkStatus();
     if (!mounted()) {
@@ -362,6 +362,4 @@ const Network = () => {
       />
     </div>
   );
-};
-
-export default Network;
+}

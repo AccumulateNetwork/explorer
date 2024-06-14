@@ -24,12 +24,12 @@ import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
 import { InfoTable } from '../common/InfoTable';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 
 const { Title, Text } = Typography;
 
 const Staking = () => {
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
 
   const [stakers, setStakers] = useState(null);
   const [supply, setSupply] = useState(null);

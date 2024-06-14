@@ -53,7 +53,7 @@ import {
   totalAmount,
 } from '../common/Amount';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from '../message/Outputs';
 
@@ -71,7 +71,7 @@ export function Chain(props: {
   const { type } = props;
   const url = URL.parse(props.url);
 
-  const { api, network } = useContext(Shared);
+  const { api, network } = useContext(Network);
   const [managed] = useState(
     props.type === 'pending'
       ? new ManagedRange((range) =>

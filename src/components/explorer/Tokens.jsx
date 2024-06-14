@@ -6,12 +6,12 @@ import { RiEarthLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 
 const { Title, Paragraph, Text } = Typography;
 
 const Tokens = () => {
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
   const [tokens, setTokens] = useState(null);
   const [totalTokens, setTotalTokens] = useState(-1);
   const [tableIsLoading, setTableIsLoading] = useState(true);

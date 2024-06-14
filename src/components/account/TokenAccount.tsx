@@ -26,7 +26,7 @@ import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { queryEffect } from '../common/query';
 import { AccChains } from './AccChains';
@@ -53,7 +53,7 @@ export function TokenAccount({
     }
   });
 
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
   const getStakingInfo = async (url) => {
     if (!network.metrics) return;
 

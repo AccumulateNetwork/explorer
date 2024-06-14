@@ -1,4 +1,4 @@
-export interface Network {
+export interface NetworkConfig {
   id: string;
   label: string;
   mainnet?: boolean;
@@ -7,7 +7,7 @@ export interface Network {
   metrics?: string;
 }
 
-export const Mainnet: Network = {
+export const Mainnet: NetworkConfig = {
   id: 'mainnet',
   label: 'Mainet',
   mainnet: true,
@@ -19,7 +19,7 @@ export const Mainnet: Network = {
   metrics: 'https://metrics.accumulatenetwork.io/v1',
 };
 
-export const Kermit: Network = {
+export const Kermit: NetworkConfig = {
   id: 'kermit',
   label: 'Kermit Testnet',
   explorer: 'https://kermit.explorer.accumulatenetwork.io',
@@ -29,14 +29,14 @@ export const Kermit: Network = {
   ],
 };
 
-export const Fozzie: Network = {
+export const Fozzie: NetworkConfig = {
   id: 'fozzie',
   label: 'Fozzie Testnet',
   explorer: 'https://fozzie.explorer.accumulatenetwork.io',
   api: ['https://fozzie.accumulatenetwork.io'],
 };
 
-const Local: Network = {
+const Local: NetworkConfig = {
   id: 'local',
   label: 'Local Devnet',
   api: ['http://127.0.1.1:26660'],

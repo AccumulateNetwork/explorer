@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import MinorBlocks from './common/MinorBlocks';
-import { Shared } from './common/Network';
+import { Network } from './common/Network';
 import ScrollToTop from './common/ScrollToTop';
 import { SearchForm } from './common/SearchForm';
 import { Version } from './common/Version';
@@ -15,7 +15,7 @@ import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import { MainMenu } from './explorer/MainMenu';
-import Network from './explorer/Network';
+import { NetworkDashboard } from './explorer/NetworkDashboard';
 import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
@@ -30,14 +30,14 @@ export default function Explorer() {
     console.error(error);
     message.error('API call failed');
   };
-  const [shared, setShared] = useState(new Shared.Context(onApiError));
+  const [shared, setShared] = useState(new Network.Context(onApiError));
 
   // Run once
   useEffect(() => {
-    Shared.Context.onBroadcast((message) => {
+    Network.Context.onBroadcast((message) => {
       switch (message.type) {
         case 'didChangeNetwork':
-          setShared(new Shared.Context(onApiError, message.networkID));
+          setShared(new Network.Context(onApiError, message.networkID));
       }
     });
   }, []);
@@ -45,15 +45,15 @@ export default function Explorer() {
   let searchDidLoad;
 
   const onSelectNetwork = (item) => {
-    setShared(new Shared.Context(onApiError, item));
-    Shared.Context.postBroadcast({
+    setShared(new Network.Context(onApiError, item));
+    Network.Context.postBroadcast({
       type: 'didChangeNetwork',
       networkID: item.id,
     });
   };
 
   return (
-    <Shared.Provider value={shared}>
+    <Network.Provider value={shared}>
       <web3.Connect>
         <Router>
           <ScrollToTop />
@@ -71,7 +71,7 @@ export default function Explorer() {
                 <Route path="/staking" children={<Staking />} />
                 <Route path="/favourites" children={<Favourites />} />
                 <Route path="/blocks" children={<MinorBlocks />} />
-                <Route path="/network" children={<Network />} />
+                <Route path="/network" children={<NetworkDashboard />} />
                 <Route path="/settings" children={<Settings.Edit />} />
                 <Route path="/web3" children={<web3.Dashboard />} />
 
@@ -105,6 +105,6 @@ export default function Explorer() {
           </Layout>
         </Router>
       </web3.Connect>
-    </Shared.Provider>
+    </Network.Provider>
   );
 }

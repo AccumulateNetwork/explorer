@@ -8,7 +8,7 @@ import { AccountRecord } from 'accumulate.js/lib/api_v3';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import Key from './Key';
-import { Shared } from './Network';
+import { Network } from './Network';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -17,7 +17,7 @@ const Signatures = (props) => {
 
   const [authorities, setAuthorities] = useState(null);
 
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const getAuthorities = async (scope) => {
     while (true) {
       const { account } = (await api.query(scope, {

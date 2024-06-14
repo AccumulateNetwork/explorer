@@ -13,7 +13,7 @@ import {
 import { omit } from '../../utils/typemagic';
 import { ACME } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
@@ -39,7 +39,7 @@ export function AddCredits(
   const { setError, clearError } = formUtils(form);
 
   // Get the oracle
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   useAsyncEffect(async (mounted) => {
     clearError('oracle');
     try {

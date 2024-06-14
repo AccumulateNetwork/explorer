@@ -25,7 +25,7 @@ import tooltip from '../../utils/lang';
 import { CreditAmount } from '../common/Amount';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { Settings as MainSettings } from '../explorer/Settings';
@@ -42,7 +42,7 @@ const { Title, Text, Paragraph } = Typography;
 export function Dashboard() {
   const web3 = useWeb3();
   const history = useHistory();
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const linkedAccounts = web3.linked?.direct?.filter(
     (x) => !web3.publicKey?.lite?.equals(x.url),
   );

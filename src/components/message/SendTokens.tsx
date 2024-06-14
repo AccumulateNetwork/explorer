@@ -15,7 +15,7 @@ import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from './Outputs';
 import { TxnHeader } from './TxnHeader';
@@ -30,7 +30,7 @@ export function SendTokens({
   record: TxnRecord<core.SendTokens | core.IssueTokens>;
 }) {
   // Load the token issuer
-  const { api, network } = useContext(Shared);
+  const { api, network } = useContext(Network);
   const txn = record.message.transaction;
   const [issuer, setIssuer] = useState<core.TokenIssuer>();
   useAsyncEffect(

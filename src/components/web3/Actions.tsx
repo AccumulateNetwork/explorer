@@ -13,7 +13,7 @@ import {
   LiteIdentity,
 } from 'accumulate.js/lib/core';
 
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
@@ -79,7 +79,7 @@ export function Actions(props: { account: URL }) {
     }
   }, [acc]);
 
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   useAsyncEffect(
     async (mounted) => {
       setSigners([]);

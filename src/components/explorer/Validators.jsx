@@ -22,12 +22,12 @@ import { Link } from 'react-router-dom';
 import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 
 const { Title, Text } = Typography;
 
 const Validators = () => {
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
   const [validators, setValidators] = useState(null);
   const [totalValidators, setTotalValidators] = useState(-1);
   const [supply, setSupply] = useState(null);

@@ -15,7 +15,7 @@ import {
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { loadFavourites } from './../common/Favourites';
 import MinorBlocks from './../common/MinorBlocks';
 
@@ -49,7 +49,7 @@ const Blocks = () => {
     }
   };
 
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
   useEffect(() => {
     document.title = 'Blocks | Accumulate Explorer';
     if (network.mainnet) {

@@ -10,7 +10,7 @@ import { Link } from 'react-router-dom';
 import { TxID, URL } from 'accumulate.js';
 
 import tooltipDescs from '../../utils/lang';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
 
@@ -18,7 +18,7 @@ const { Text } = Typography;
 
 export function describeTimestamp(txid: string | URL | TxID) {
   const utcOffset = moment().utcOffset() / 60;
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
 
   const [ts, setTs] = useState(null);
   const [block, setBlock] = useState(null);

@@ -6,7 +6,7 @@ import { URL } from 'accumulate.js';
 import { Submission } from 'accumulate.js/lib/api_v3';
 
 import { AccTitle } from '../common/AccTitle';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
 import { useWeb3 } from './Connect';
@@ -41,7 +41,7 @@ export function MissingLiteID() {
 }
 
 MissingLiteID.Create = function ({ lite, eth }: { lite: URL; eth: string }) {
-  const { api, network } = useContext(Shared);
+  const { api, network } = useContext(Network);
   const [faucetRq, setFaucetRq] = useState<Sign.WaitForRequest<Submission>>();
 
   const clickFaucet: MouseEventHandler = (e) => {

@@ -40,7 +40,7 @@ import {
   isRecordOf,
   isRecordOfDataTxn,
 } from '../../utils/types';
-import { Shared } from './Network';
+import { Network } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 export function queryEffect(
@@ -207,7 +207,7 @@ export function queryEffect(
   query: QueryArgs,
   dependencies?: any[],
 ): QueryEffect<Record> {
-  const ctx = useContext(Shared);
+  const ctx = useContext(Network);
   return {
     then<T1>(effect?: Call<Record, T1>) {
       const node = new CallNode(effect);

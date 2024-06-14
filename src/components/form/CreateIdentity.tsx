@@ -10,7 +10,7 @@ import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
 import { omit } from '../../utils/typemagic';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
@@ -29,7 +29,7 @@ interface Fields {
 export function CreateIdentity(props: TxnFormProps) {
   const [form] = Form.useForm<Fields>();
   const web3 = useConnect();
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const { setError, clearError, setValidating } = formUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);
 

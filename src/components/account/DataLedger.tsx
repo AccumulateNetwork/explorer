@@ -11,7 +11,7 @@ import { DataTxnEntry, TxnEntry, dataEntryParts } from '../../utils/types';
 import { Content } from '../common/Content';
 import Count from '../common/Count';
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
 import { useConnect } from '../web3';
@@ -19,7 +19,7 @@ import { useConnect } from '../web3';
 const { Title, Text } = Typography;
 
 export function DataLedger({ scope }: { scope: URL }) {
-  const { api, network } = useContext(Shared);
+  const { api, network } = useContext(Network);
   const [dataChain] = useState(new DataChain(scope, api));
   const [entries, setEntries] = useState<TxnEntry[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);

@@ -4,7 +4,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { TxID } from 'accumulate.js';
 
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;
@@ -15,7 +15,7 @@ const Faucet = () => {
   const [txid, setTxid] = useState<TxID>(null);
   const [error, setError] = useState(null);
 
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const handleFaucet = async (url) => {
     setFaucetIsLoading(true);
     setTxid(null);

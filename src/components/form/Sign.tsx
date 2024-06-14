@@ -12,7 +12,7 @@ import { Transaction, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import { Link } from '../common/Link';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
@@ -90,7 +90,7 @@ export function Sign({
   title?: React.ReactNode;
 }) {
   const web3 = useConnect();
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(false);
   const [children, setChildren] = useState<React.ReactNode[]>();
@@ -152,7 +152,7 @@ Sign.WaitFor = function <T>({
   canCloseEarly?: boolean;
   closeWhenDone?: boolean;
 }) {
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(canCloseEarly);
   const [children, setChildren] = useState<React.ReactNode[]>();

@@ -19,13 +19,17 @@ import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 import Logo from '../common/Logo';
-import { Shared } from '../common/Network';
-import networks, { Network } from '../common/networks';
+import { Network } from '../common/Network';
+import networks, { NetworkConfig } from '../common/networks';
 import { useConnect } from '../web3';
 import Web3 from '../web3';
 
-export function MainMenu({ onSelectNetwork }: { onSelectNetwork(_: Network) }) {
-  const shared = useContext(Shared);
+export function MainMenu({
+  onSelectNetwork,
+}: {
+  onSelectNetwork(_: NetworkConfig);
+}) {
+  const shared = useContext(Network);
 
   const [isWide, setIsWide] = useState(window.innerWidth > 750);
   addEventListener('resize', () => setIsWide(window.innerWidth > 750));

@@ -6,7 +6,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
@@ -68,7 +68,7 @@ export function useWeb3() {
 }
 
 export function Connect({ children }: { children: React.ReactNode }) {
-  const { api } = useContext(Shared);
+  const { api } = useContext(Network);
   const { activate, deactivate } = useWeb3React();
 
   // Handle reload requests

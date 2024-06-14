@@ -14,7 +14,7 @@ import { AccTitle } from '../common/AccTitle';
 import { TokenAmount } from '../common/Amount';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
-import { Shared } from '../common/Network';
+import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
@@ -128,7 +128,7 @@ export function TokenIssuer({
 TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
   const [supply, setSupply] = useState(null);
 
-  const { network } = useContext(Shared);
+  const { network } = useContext(Network);
   const isACME = account.url.equals(ACME) && network.metrics;
   useEffect(() => {
     if (isACME) {
