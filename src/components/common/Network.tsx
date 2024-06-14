@@ -115,24 +115,30 @@ export function Status(props: {
     }
   }, [props.network?.id]);
 
+  const get = async <C extends Ctor<Account>>(
+    p: PartitionInfo,
+    path: string,
+    c: C,
+  ): Promise<LedgerInfo<InstanceType<C>>> => {
+    const u =
+      p.type === PartitionType.Directory ? DN : URL.parse(`bvn-${p.id}.acme`);
+    const r = await ctx.api.query(u.join(path));
+    if (!isRecordOf(r, c)) {
+      throw new Error(`${u}/${path} is not a ${c.name}`);
+    }
+
+    const ageSeconds = (Date.now() - (r.lastBlockTime?.getTime() || 0)) / 1000;
+    if (ageSeconds > 60) {
+      throw new Error(`Response is too old: ${r.lastBlockTime}`);
+    }
+
+    return { url: u, part: p, ledger: r.account };
+  };
+
   const [ok] = useAsyncState(async () => {
     if (!ctx) {
       return;
     }
-
-    const get = async <C extends Ctor<Account>>(
-      p: PartitionInfo,
-      path: string,
-      c: C,
-    ): Promise<LedgerInfo<InstanceType<C>>> => {
-      const u =
-        p.type === PartitionType.Directory ? DN : URL.parse(`bvn-${p.id}.acme`);
-      const r = await ctx.api.query(u.join(path));
-      if (!isRecordOf(r, c)) {
-        throw new Error(`${u}/${path} is not a ${c.name}`);
-      }
-      return { url: u, part: p, ledger: r.account };
-    };
 
     try {
       const { network } = await ctx.api.networkStatus({});
