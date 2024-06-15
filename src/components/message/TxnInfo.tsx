@@ -17,6 +17,7 @@ import { EntryHash } from '../common/EntryHash';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Status } from './Status';
 import { describeTimestamp } from './timestamp';
 
 const { Title, Text } = Typography;
@@ -184,6 +185,7 @@ export function TxnInfo({
               renderItem={(item) => (
                 <List.Item>
                   <TxnInfo.Related record={item} />
+                  <Status id={item.value} />
                 </List.Item>
               )}
             />

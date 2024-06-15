@@ -16,6 +16,7 @@ import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { Status } from './Status';
 import { describeTimestamp } from './timestamp';
 
 const { Title } = Typography;
@@ -137,6 +138,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
               renderItem={(item) => (
                 <List.Item>
                   <MsgInfo.Related record={item} />
+                  <Status id={item.value} />
                 </List.Item>
               )}
             />
