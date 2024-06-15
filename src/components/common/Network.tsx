@@ -178,7 +178,7 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[]) {
       ) {
         continue;
       }
-      const ba = b.ledger.sequence.find((x) => x.url.equals(a.url));
+      const ba = b.ledger.sequence?.find((x) => x.url.equals(a.url));
       if (
         !ba ||
         a.ledger.minorBlockSequenceNumber - ba.delivered > okThreshold
@@ -193,8 +193,8 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[]) {
 function syntheticOk(ledgers: LedgerInfo<SyntheticLedger>[]) {
   for (const a of ledgers) {
     for (const b of ledgers) {
-      const ab = a.ledger.sequence.find((x) => x.url.equals(b.url));
-      const ba = b.ledger.sequence.find((x) => x.url.equals(a.url));
+      const ab = a.ledger.sequence?.find((x) => x.url.equals(b.url));
+      const ba = b.ledger.sequence?.find((x) => x.url.equals(a.url));
       if (!ab && !ba) continue;
       if (!ab || !ba) return false;
       if (ab.produced - ba.delivered > okThreshold) {
