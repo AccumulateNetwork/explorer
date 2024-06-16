@@ -140,7 +140,7 @@ export function recipientsOfTx(
   switch (tx.body.type) {
     case TransactionType.SendTokens:
     case TransactionType.TransferCredits:
-      return tx.body.to;
+      return tx.body.to || [];
 
     case TransactionType.IssueTokens: {
       return [
@@ -152,7 +152,7 @@ export function recipientsOfTx(
               }),
             ]
           : []),
-        ...tx.body.to,
+        ...(tx.body.to || []),
       ];
     }
 
