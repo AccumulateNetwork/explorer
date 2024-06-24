@@ -42,7 +42,7 @@ interface BlockData {
 const MinorBlocks = () => {
   let header = 'Minor Blocks';
 
-  const [showAnchors, setShowAnchors] = useState(false);
+  const [showAnchors, setShowAnchors] = useState(true);
   const [minorBlocks, setMinorBlocks] = useState<BlockData[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
