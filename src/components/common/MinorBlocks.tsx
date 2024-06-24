@@ -22,7 +22,7 @@ import {
   Record,
 } from 'accumulate.js/lib/api_v3';
 
-import { ChainFilter } from '../../utils/ChainFilter';
+import { FilterRanger, Ranger, apiQuery } from '../../utils/Ranger';
 import getBlockEntries from '../../utils/getBlockEntries';
 import { CompactList } from './CompactList';
 import Count from './Count';
@@ -32,11 +32,18 @@ import { useAsyncEffect } from './useAsync';
 
 const { Title, Text } = Typography;
 
+interface BlockData {
+  chain: ChainEntryRecord<IndexEntryRecord>;
+  block: MinorBlockRecord;
+  transactions: ChainEntryRecord[];
+  anchors: ChainEntryRecord[];
+}
+
 const MinorBlocks = () => {
   let header = 'Minor Blocks';
 
   const [showAnchors, setShowAnchors] = useState(false);
-  const [minorBlocks, setMinorBlocks] = useState<MinorBlockRecord[]>(null);
+  const [minorBlocks, setMinorBlocks] = useState<BlockData[]>(null);
   const [tableIsLoading, setTableIsLoading] = useState(true);
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     pageSize: 10,
@@ -49,12 +56,12 @@ const MinorBlocks = () => {
   //let tz = moment.tz.guess();
   let utcOffset = moment().utcOffset() / 60;
 
-  const columns: TableProps<MinorBlockRecord>['columns'] = [
+  const columns: TableProps<BlockData>['columns'] = [
     {
       title: 'Block',
       className: 'code',
       width: 30,
-      render: (row: MinorBlockRecord) => {
+      render: ({ block: row }: BlockData) => {
         if (row) {
           return (
             <div>
@@ -69,7 +76,7 @@ const MinorBlocks = () => {
     {
       title: 'Timestamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
       width: 225,
-      render: (row: MinorBlockRecord) => {
+      render: ({ block: row }: BlockData) => {
         if (row) {
           if (row.time) {
             return (
@@ -87,16 +94,14 @@ const MinorBlocks = () => {
     },
     {
       title: 'Transactions',
-      render: (row: MinorBlockRecord) => {
-        if (row) {
-          if (row?.entries) {
-            return <BlockTxs entries={row.entries?.records} />;
-          } else {
-            return <Text disabled>Empty block</Text>;
-          }
-        } else {
+      render: (data: BlockData) => {
+        if (!data) {
           return <Text disabled>N/A</Text>;
         }
+        if (!data?.block.entries) {
+          return <Text disabled>Empty block</Text>;
+        }
+        return <BlockTxs data={data} />;
       },
     },
     {
@@ -104,29 +109,24 @@ const MinorBlocks = () => {
       className: 'code',
       width: 88,
       align: 'center',
-      render: (row: MinorBlockRecord) => {
-        if (!row.entries?.records) {
+      render: ({ block, anchors, transactions }: BlockData) => {
+        if (!block.entries?.records?.length) {
           return <Text disabled>—</Text>;
         }
-        const { length } = showAnchors
-          ? row.entries.records
-          : row.entries.records.filter((x) => !isAnchor(x));
-        return <Text>{length}</Text>;
+        return (
+          <Text>
+            {(showAnchors ? anchors.length : 0) + transactions.length}
+          </Text>
+        );
       },
     },
   ];
 
-  const isAnchor = (e: ChainEntryRecord) =>
-    e.name == 'anchor-sequence' ||
-    /acc:\/\/(dn|bvn-\w+)\.acme\/anchors/i.test(e.account.toString());
+  function BlockTxs({ data: { transactions, anchors } }: { data: BlockData }) {
+    if (!transactions.length && !anchors.length)
+      return <Text disabled>Empty block</Text>;
 
-  function BlockTxs({ entries }: { entries: ChainEntryRecord[] | undefined }) {
-    if (!entries?.length) return <Text disabled>Empty block</Text>;
-
-    entries = [
-      ...entries.filter((x) => !isAnchor(x)),
-      ...(showAnchors ? entries.filter((x) => isAnchor(x)) : []),
-    ];
+    const entries = showAnchors ? [...transactions, ...anchors] : transactions;
 
     if (!entries?.length) return <Text disabled>No transactions</Text>;
 
@@ -174,25 +174,45 @@ const MinorBlocks = () => {
     );
   }
 
-  const { api, network, onApiError } = useContext(Network);
-  const [chain] = useState(
-    new ChainFilter<ChainEntryRecord<IndexEntryRecord>>(api, 'dn.acme/ledger', {
-      queryType: 'chain',
-      name: 'root-index',
-      range: { expand: true },
-    }),
-  );
-  useAsyncEffect(
-    async (mounted) => {
-      setTableIsLoading(true);
+  const isAnchor = (e: ChainEntryRecord) =>
+    e.name == 'anchor-sequence' ||
+    /acc:\/\/(dn|bvn-\w+)\.acme\/anchors/i.test(e.account.toString());
 
-      const { records: index = [] } = await chain.getRange({
-        count: pagination.pageSize,
-        start: (pagination.current - 1) * pagination.pageSize,
-      });
+  const { api, network, onApiError } = useContext(Network);
+  const [blocks] = useState(() => {
+    const query = apiQuery<ChainEntryRecord<IndexEntryRecord>>(
+      api,
+      'dn.acme/ledger',
+      {
+        queryType: 'chain',
+        name: 'root-index',
+        range: { expand: true },
+      },
+    );
+    let total;
+    return new Ranger<BlockData>(async (range) => {
+      let { start, count } = range;
+      let fromEnd: boolean;
+      if (start == 0) {
+        fromEnd = true;
+      } else if (start > total) {
+        return { start: 0, total: total };
+      } else {
+        start = total - start - count;
+        if (start < 0) {
+          count += start;
+          start = 0;
+        }
+      }
+
+      const r = await query({ start, count, fromEnd });
+      total = r.total || 0;
+      if (!r.records) r.records = [];
+      r.records.reverse();
+
       const records = await api
         .call(
-          index.map((x) => ({
+          r.records.map((x) => ({
             method: 'query',
             params: {
               scope: 'dn.acme/ledger',
@@ -203,27 +223,69 @@ const MinorBlocks = () => {
             },
           })),
         )
-        .then((x) => x.map((y) => Record.fromObject(y) as MinorBlockRecord));
+        .then((x) =>
+          x.map((y, i) => {
+            const chain = r.records[i];
+            const block = Record.fromObject(y) as MinorBlockRecord;
+
+            let transactions: ChainEntryRecord[] = [];
+            let anchors: ChainEntryRecord[] = [];
+            if (block.entries?.records) {
+              block.entries.records = getBlockEntries(block);
+              transactions = block.entries.records.filter((r) => !isAnchor(r));
+              anchors = block.entries.records.filter((r) => isAnchor(r));
+            }
+
+            return {
+              chain,
+              block,
+              transactions,
+              anchors,
+            };
+          }),
+        );
+
+      return {
+        records,
+        total,
+        start: range.start,
+      };
+    });
+  });
+  const [txnBlocks] = useState(
+    new FilterRanger(
+      (range) => blocks.get(range),
+      (r) => r.transactions.length > 0,
+    ),
+  );
+  useAsyncEffect(
+    async (mounted) => {
+      setTableIsLoading(true);
+
+      const src = showAnchors ? blocks : txnBlocks;
+      const { records } = await src.get({
+        count: pagination.pageSize,
+        start: (pagination.current - 1) * pagination.pageSize,
+      });
       if (!mounted()) {
         return;
       }
-      for (const block of records) {
-        if (!block.entries?.records) continue;
-        block.entries.records = getBlockEntries(block);
-      }
 
-      if (pagination.current == 1 && index.length > 0) {
-        setTotalEntries(index[0].value.value.blockIndex);
+      if (pagination.current == 1 && records.length > 0) {
+        setTotalEntries(records[0].chain.value.value.blockIndex);
       }
 
       setMinorBlocks(records);
       setPagination({
         ...pagination,
-        total: chain.total,
+        total:
+          typeof src.total === 'number'
+            ? src.total
+            : (pagination.current + 1) * pagination.pageSize,
       });
       setTableIsLoading(false);
     },
-    [JSON.stringify(pagination), network.id],
+    [JSON.stringify(pagination), network.id, showAnchors],
   ).catch(onApiError);
 
   return (
@@ -258,7 +320,7 @@ const MinorBlocks = () => {
         dataSource={minorBlocks}
         columns={columns}
         pagination={pagination}
-        rowKey="index"
+        rowKey={(x) => x.chain.index}
         loading={tableIsLoading}
         onChange={(p) => setPagination(p)}
         scroll={{ x: 'max-content' }}
