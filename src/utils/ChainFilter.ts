@@ -55,7 +55,10 @@ export class ChainFilter<R extends Record & { index?: number }> {
 
   async getIndex(index: number) {
     while (index >= this.#results.records.length) {
-      if (typeof this.#results.total == 'number') {
+      if (
+        typeof this.#results.total == 'number' &&
+        index >= this.#results.total
+      ) {
         return null;
       }
       await this.#getNext();
@@ -113,7 +116,7 @@ export class ChainFilter<R extends Record & { index?: number }> {
       this.#makeQuery({
         start,
         count,
-        fromEnd: true,
+        fromEnd: false,
         expand: true,
       }),
     )) as unknown as RecordRange<R>;

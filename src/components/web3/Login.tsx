@@ -1,8 +1,4 @@
-import {
-  BarsOutlined,
-  LogoutOutlined,
-  UserSwitchOutlined,
-} from '@ant-design/icons';
+import { LogoutOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';

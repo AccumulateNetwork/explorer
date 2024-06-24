@@ -109,6 +109,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
     // Open the Connect Wallet modal
     setOpen('connect');
+    setConnected(null);
     return p;
   };
 
@@ -360,7 +361,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
           title="Select account"
           open={open === 'select'}
           onCancel={() => {
-            if (wantSwitch.executed) {
+            if (wantSwitch?.executed) {
               setOpen(null);
             } else {
               disconnect();
