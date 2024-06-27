@@ -1,0 +1,9 @@
+image: node:20
+
+pages:
+  script:
+    - yarn build
+    - mv build public
+  artifacts:
+    paths:
+      - public
