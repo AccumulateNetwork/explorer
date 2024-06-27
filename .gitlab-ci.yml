@@ -6,7 +6,7 @@ pages:
   script:
     - yarn install
     - yarn build
-    - mv build public
+    - mv build/* public
     - find public -type f
   artifacts:
     paths:
