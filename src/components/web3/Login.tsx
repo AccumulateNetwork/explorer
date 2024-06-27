@@ -5,7 +5,9 @@ import { IconContext } from 'react-icons';
 import { FaWallet } from 'react-icons/fa';
 import { useHistory } from 'react-router-dom';
 
-import { useWeb3 } from './Connect';
+import { useWeb3 } from './Context';
+
+export default Login;
 
 export function Login() {
   const history = useHistory();

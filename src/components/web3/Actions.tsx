@@ -18,7 +18,7 @@ import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
 import { SendTokens } from '../form/SendTokens';
-import { Context, useWeb3 } from './Connect';
+import { Context, useWeb3 } from './Context';
 
 const { Text } = Typography;
 
@@ -31,6 +31,8 @@ interface ToFrom {
   to?: URLArgs;
   from?: URLArgs;
 }
+
+export default Actions;
 
 export function Actions(props: { account: URL }) {
   type FormKey = 'addCredits' | 'sendTokens';

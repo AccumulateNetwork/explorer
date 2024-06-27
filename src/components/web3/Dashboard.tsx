@@ -33,11 +33,13 @@ import { AddCredits } from '../form/AddCredits';
 import { AddNote } from '../form/AddNote';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { Sign } from '../form/Sign';
-import { useWeb3 } from './Connect';
+import { useWeb3 } from './Context';
 import { MissingLiteID } from './MissingLiteID';
 import { Settings } from './Settings';
 
 const { Title, Text, Paragraph } = Typography;
+
+export default Dashboard;
 
 export function Dashboard() {
   const web3 = useWeb3();

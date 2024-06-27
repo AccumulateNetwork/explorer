@@ -14,14 +14,18 @@ import {
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
+import { lazy2 } from '../common/lazy2';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
-import { useConnect } from '../web3';
-import Web3 from '../web3';
+import { useWeb3 } from '../web3/Context';
 import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
+
+const Web3 = {
+  MissingLiteID: lazy2(() => import('../web3/MissingLiteID'), 'MissingLiteID'),
+};
 
 export function Acc({
   parentCallback,
@@ -30,7 +34,7 @@ export function Acc({
   parentCallback?: any;
   didLoad?: (_: any) => void;
 }) {
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);

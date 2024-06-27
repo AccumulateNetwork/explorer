@@ -15,7 +15,7 @@ import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
 import { useIsMounted } from '../common/useIsMounted';
-import { useConnect } from '../web3';
+import { useWeb3 } from '../web3/Context';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
 import { Sign } from './Sign';
@@ -28,7 +28,7 @@ interface Fields {
 
 export function CreateIdentity(props: TxnFormProps) {
   const [form] = Form.useForm<Fields>();
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const { api } = useContext(Network);
   const { setError, clearError, setValidating } = formUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);

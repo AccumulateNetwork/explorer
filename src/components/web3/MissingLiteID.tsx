@@ -9,7 +9,7 @@ import { AccTitle } from '../common/AccTitle';
 import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
-import { useWeb3 } from './Connect';
+import { useWeb3 } from './Context';
 
 const { Paragraph, Text, Title } = Typography;
 

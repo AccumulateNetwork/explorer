@@ -1,5 +1,6 @@
-import { Layout, Typography, message } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { LoadingOutlined } from '@ant-design/icons';
+import { Layout, Spin, Typography, message } from 'antd';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import MinorBlocks from './common/MinorBlocks';
@@ -7,23 +8,26 @@ import { Network } from './common/Network';
 import ScrollToTop from './common/ScrollToTop';
 import { SearchForm } from './common/SearchForm';
 import { Version } from './common/Version';
-import { Acc } from './explorer/Acc';
+import { lazy2 } from './common/lazy2';
 import Block from './explorer/Block';
 import Blocks from './explorer/Blocks';
-import { Data } from './explorer/Data';
+import Data from './explorer/Data';
 import Error404 from './explorer/Error404';
 import Faucet from './explorer/Faucet';
 import Favourites from './explorer/Favourites';
 import { MainMenu } from './explorer/MainMenu';
-import { NetworkDashboard } from './explorer/NetworkDashboard';
+import NetworkDashboard from './explorer/NetworkDashboard';
 import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import web3 from './web3';
+import { Connect } from './web3/Connect';
+import Dashboard from './web3/Dashboard';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
+
+const Acc = lazy2(() => import('./explorer/Acc'), 'Acc');
 
 export default function Explorer() {
   const onApiError = (error) => {
@@ -52,9 +56,16 @@ export default function Explorer() {
     });
   };
 
+  const Loading = () => (
+    <Spin
+      tip="Loading..."
+      indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />}
+    />
+  );
+
   return (
     <Network.Provider value={shared}>
-      <web3.Connect>
+      <Connect>
         <Router>
           <ScrollToTop />
           <Layout>
@@ -64,30 +75,32 @@ export default function Explorer() {
 
             <Content>
               <SearchForm searching={(x) => (searchDidLoad = x)} />
-              <Switch>
-                <Route exact path="/" children={<Blocks />} />
-                <Route path="/validators" children={<Validators />} />
-                <Route path="/tokens" children={<Tokens />} />
-                <Route path="/staking" children={<Staking />} />
-                <Route path="/favourites" children={<Favourites />} />
-                <Route path="/blocks" children={<MinorBlocks />} />
-                <Route path="/network" children={<NetworkDashboard />} />
-                <Route path="/settings" children={<Settings.Edit />} />
-                <Route path="/web3" children={<web3.Dashboard />} />
+              <Suspense fallback={<Loading />}>
+                <Switch>
+                  <Route exact path="/" children={<Blocks />} />
+                  <Route path="/validators" children={<Validators />} />
+                  <Route path="/tokens" children={<Tokens />} />
+                  <Route path="/staking" children={<Staking />} />
+                  <Route path="/favourites" children={<Favourites />} />
+                  <Route path="/blocks" children={<MinorBlocks />} />
+                  <Route path="/network" children={<NetworkDashboard />} />
+                  <Route path="/settings" children={<Settings.Edit />} />
+                  <Route path="/web3" children={<Dashboard />} />
 
-                {!shared.network.mainnet && (
-                  <Route exact path="/faucet" children={<Faucet />} />
-                )}
+                  {!shared.network.mainnet && (
+                    <Route exact path="/faucet" children={<Faucet />} />
+                  )}
 
-                <Route path={['/acc/:url+', '/tx/:hash+']}>
-                  <Acc didLoad={(x) => searchDidLoad?.(x)} />
-                </Route>
+                  <Route path={['/acc/:url+', '/tx/:hash+']}>
+                    <Acc didLoad={(x) => searchDidLoad?.(x)} />
+                  </Route>
 
-                <Route path="/data/:url+" children={<Data />} />
-                <Route path="/block/:index" children={<Block />} />
+                  <Route path="/data/:url+" children={<Data />} />
+                  <Route path="/block/:index" children={<Block />} />
 
-                <Route children={<Error404 />} />
-              </Switch>
+                  <Route children={<Error404 />} />
+                </Switch>
+              </Suspense>
             </Content>
 
             <Footer>
@@ -104,7 +117,7 @@ export default function Explorer() {
             </Footer>
           </Layout>
         </Router>
-      </web3.Connect>
+      </Connect>
     </Network.Provider>
   );
 }

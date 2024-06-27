@@ -21,6 +21,8 @@ import Error404 from './Error404';
 
 const { Title } = Typography;
 
+export default Data;
+
 export function Data() {
   // Return 404 if url is not a valid URL or transaction hash
   const params = useParams<{ url: string }>();

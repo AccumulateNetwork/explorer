@@ -18,9 +18,31 @@ export default defineConfig({
     }),
   ],
 
+  //build.rollupOptions.output.manualChunks
   build: {
     outDir: 'build',
-    sourcemap: 'inline',
+    sourcemap: true,
+    chunkSizeWarningLimit: 2048,
+
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-sdk': ['accumulate.js'],
+          'vendor-antd': ['antd', '@ant-design/icons', 'rc-field-form'],
+          'vendor-highlight': ['react-syntax-highlighter'],
+          'vendor-factom': ['factom'],
+          'vendor-web3-main': ['web3'],
+          'vendor-web3-other': [
+            '@metamask/providers',
+            '@web3-react/core',
+            '@web3-react/injected-connector',
+            'eth-sig-util',
+            'ethereumjs-util',
+            'secp256k1',
+          ],
+        },
+      },
+    },
   },
 
   server: {

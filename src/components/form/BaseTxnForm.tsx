@@ -21,7 +21,7 @@ import {
 import { isLite } from '../../utils/url';
 import { CreditAmount } from '../common/Amount';
 import { useIsMounted } from '../common/useIsMounted';
-import { useConnect } from '../web3';
+import { useWeb3 } from '../web3/Context';
 import { Sign } from './Sign';
 import { calculateTransactionFee } from './fees';
 
@@ -54,7 +54,7 @@ export function BaseTxnForm<Fields>({
   submit(_: Fields): TransactionArgs;
   onValuesChange?(_: Fields): void;
 } & TxnFormProps) {
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
   const [signers, setSigners] = useState<Signer[]>([]);

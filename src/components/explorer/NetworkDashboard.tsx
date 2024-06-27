@@ -9,6 +9,8 @@ import { useAsyncEffect } from '../common/useAsync';
 
 const { Title, Text } = Typography;
 
+export default NetworkDashboard;
+
 export function NetworkDashboard() {
   const [error, setError] = useState(null);
   const [peers, setPeers] = useState([]);

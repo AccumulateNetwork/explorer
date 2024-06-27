@@ -14,7 +14,7 @@ import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
-import { useConnect } from '../web3';
+import { useWeb3 } from '../web3/Context';
 
 const { Title, Text } = Typography;
 
@@ -126,7 +126,7 @@ DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
 
 DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
   const [hash, setHash] = useState<string>();
-  const web3 = useConnect();
+  const web3 = useWeb3();
 
   useAsyncEffect(
     async (mounted) => {

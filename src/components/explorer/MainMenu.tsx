@@ -1,11 +1,11 @@
-import Icon, {
+import {
   BarsOutlined,
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
   UserSwitchOutlined,
 } from '@ant-design/icons';
-import { Badge, Button, Dropdown, Menu, MenuProps, Space } from 'antd';
+import { Button, Dropdown, Menu, MenuProps, Space } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import {
@@ -21,8 +21,8 @@ import { Link } from 'react-router-dom';
 import Logo from '../common/Logo';
 import { Network } from '../common/Network';
 import networks, { NetworkConfig } from '../common/networks';
-import { useConnect } from '../web3';
-import Web3 from '../web3';
+import { useWeb3 } from '../web3/Context';
+import { Login } from '../web3/Login';
 
 export function MainMenu({
   onSelectNetwork,
@@ -35,7 +35,7 @@ export function MainMenu({
   addEventListener('resize', () => setIsWide(window.innerWidth > 750));
 
   const history = useHistory();
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
@@ -185,7 +185,7 @@ export function MainMenu({
           items={items}
         />
         <div className="menu-right">
-          {!shared.network.mainnet && <Web3.Login />}
+          {!shared.network.mainnet && <Login />}
           <Dropdown
             menu={{ items: networkMenuItems }}
             trigger={['click']}

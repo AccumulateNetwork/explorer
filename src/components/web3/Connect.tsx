@@ -11,6 +11,7 @@ import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Sign } from '../form/Sign';
+import { Context, Provider, ReloadRequest } from './Context';
 import { Driver, EthPublicKey } from './Driver';
 import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
@@ -18,53 +19,14 @@ import { OnlineStore } from './OnlineStore';
 import { Settings } from './Settings';
 import { Store } from './Store';
 
+export default Connect;
+
 interface ConnectRequest {
   resolve: (ok: boolean) => void;
 }
 
-interface ReloadRequest {
-  liteIdentity?: boolean;
-  dataStore?: boolean;
-}
-
 interface Request {
   executed?: boolean;
-}
-
-export interface Context {
-  connect: () => Promise<boolean>;
-  disconnect: () => void;
-  reload: (rq: ReloadRequest) => void;
-  switch: () => void;
-
-  canConnect: boolean;
-  connected: boolean;
-
-  driver: Driver | null;
-  publicKey: EthPublicKey | null;
-  liteIdentity: LiteIdentity | null;
-  dataStore: Store | null;
-  onlineStore: OnlineStore | null;
-  linked: Linked | null;
-}
-
-const reactContext = createContext<Context>({
-  connect: () => Promise.reject(),
-  disconnect() {},
-  reload() {},
-  switch() {},
-  canConnect: Driver.canConnect,
-  connected: false,
-  driver: null,
-  publicKey: null,
-  liteIdentity: null,
-  dataStore: null,
-  onlineStore: null,
-  linked: null,
-});
-
-export function useWeb3() {
-  return useContext(reactContext);
 }
 
 export function Connect({ children }: { children: React.ReactNode }) {
@@ -305,7 +267,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
   // Render
   return (
-    <reactContext.Provider
+    <Provider
       value={{
         connect,
         disconnect,
@@ -386,6 +348,6 @@ export function Connect({ children }: { children: React.ReactNode }) {
           )}
         </Modal>
       )}
-    </reactContext.Provider>
+    </Provider>
   );
 }

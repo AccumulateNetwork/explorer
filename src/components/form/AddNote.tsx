@@ -2,7 +2,7 @@ import { Button, Form, Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
 import { useIsMounted } from '../common/useIsMounted';
-import { useConnect } from '../web3';
+import { useWeb3 } from '../web3/Context';
 import { TxnFormProps } from './BaseTxnForm';
 import { Sign } from './Sign';
 
@@ -11,7 +11,7 @@ interface Fields {
 }
 
 export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const [form] = Form.useForm<Fields>();
   const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);

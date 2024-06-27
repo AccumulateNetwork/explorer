@@ -16,7 +16,8 @@ import { Network } from '../common/Network';
 import { ShowError } from '../common/ShowError';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
-import web3, { useConnect } from '../web3';
+import * as web3 from '../web3/Context';
+import { useWeb3 } from '../web3/Context';
 
 const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
@@ -89,7 +90,7 @@ export function Sign({
   request: Sign.Request;
   title?: React.ReactNode;
 }) {
-  const web3 = useConnect();
+  const web3 = useWeb3();
   const { api } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(false);
