@@ -1,7 +1,10 @@
 image: node:20
 
 pages:
+  variables:
+    VITE_NETWORK: kermit
   script:
+    - yarn install
     - yarn build
     - mv build public
   artifacts:
