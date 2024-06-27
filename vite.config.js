@@ -27,6 +27,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
+          preload: ['./src/preload.js'],
           'vendor-sdk': ['accumulate.js'],
           'vendor-antd': ['antd', '@ant-design/icons', 'rc-field-form'],
           'vendor-highlight': ['react-syntax-highlighter'],
