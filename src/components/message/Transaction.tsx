@@ -8,7 +8,7 @@ import { core } from 'accumulate.js';
 import { TxnRecord, isRecordOf, isRecordOfDataTxn } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { InfoTable } from '../common/InfoTable';
-import Signatures from '../common/Signatures';
+import { Signatures } from '../common/Signatures';
 import { describeProperty } from '../common/properties';
 import { AddCredits } from './AddCredits';
 import { Deposit } from './Deposit';
@@ -29,10 +29,7 @@ export function Transaction({ record }: { record: TxnRecord }) {
       <Show record={record} />
 
       {record.signatures?.records?.length && (
-        <Signatures
-          transaction={txn.asObject()}
-          data={record.signatures.asObject().records}
-        />
+        <Signatures transaction={txn} signatures={record.signatures.records} />
       )}
     </div>
   );

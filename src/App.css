@@ -965,3 +965,7 @@ header.web3 {
 .compact-list .ant-list-item {
   padding: 0px !important;
 }
+
+.validator-signatures .ant-list-item {
+  padding: 8px 16px !important;
+}

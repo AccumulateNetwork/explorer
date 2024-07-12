@@ -1,8 +1,8 @@
 import { Alert, Skeleton, Typography } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
-import { useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 import { URL, errors } from 'accumulate.js';
 import {
@@ -10,7 +10,10 @@ import {
   MessageRecord,
   RecordType,
 } from 'accumulate.js/lib/api_v3';
+import { TransactionType } from 'accumulate.js/lib/core';
+import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 
+import { isRecordOf } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
@@ -35,6 +38,7 @@ export function Acc({
   didLoad?: (_: any) => void;
 }) {
   const web3 = useWeb3();
+  const history = useHistory();
   const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
@@ -57,6 +61,25 @@ export function Acc({
       return r;
     })
     .finally((x) => didLoad?.(x));
+
+  // If the record is Sequenced(Transaction(Anchor)), redirect to the
+  // transaction
+  useEffect(() => {
+    if (
+      record &&
+      isRecordOf(record, SequencedMessage) &&
+      record.message.message.type === MessageType.Transaction &&
+      (record.message.message.transaction.body.type ===
+        TransactionType.DirectoryAnchor ||
+        record.message.message.transaction.body.type ===
+          TransactionType.BlockValidatorAnchor) &&
+      record.produced?.records?.length == 1
+    ) {
+      history.replace(
+        `/acc/${record.produced.records[0].value.toString().replace(/^acc:\/\//, '')}`,
+      );
+    }
+  }, [record]);
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
     if (web3.publicKey?.lite?.equals(url)) {
