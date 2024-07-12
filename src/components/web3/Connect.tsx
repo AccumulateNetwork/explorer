@@ -99,8 +99,43 @@ export function Connect({ children }: { children: React.ReactNode }) {
   // Choose connection type
   const [connected, setConnected] = useShared(Settings, 'connected');
   const [driver, setDriver] = useState<Driver>(null);
+  const [isLocked, setIsLocked] = useState<boolean>(null);
 
   useEffect(() => {
+    let mounted = true;
+
+    const update = async () => {
+      try {
+        if (window.ethereum?.isMetaMask) {
+          const ok = await window.ethereum._metamask.isUnlocked();
+          if (mounted) {
+            setIsLocked(!ok);
+          }
+        } else {
+          setIsLocked(false);
+        }
+      } catch (error) {
+        console.warn(error);
+        if (mounted) {
+          setIsLocked(false);
+        }
+      }
+    };
+
+    update();
+    setInterval(update, 1000);
+
+    return () => {
+      mounted = false;
+    };
+  });
+
+  useEffect(() => {
+    // If the wallet is locked, don't connect unless the user is actively asking
+    // to
+    if (typeof isLocked !== 'boolean' || (isLocked && !wantConnect)) {
+      return;
+    }
     switch (connected) {
       case 'Web3':
         const driver = new Driver(window.ethereum);
@@ -110,10 +145,12 @@ export function Connect({ children }: { children: React.ReactNode }) {
         setWantSwitch(null);
         break;
       default:
-        disconnect();
+        if (!wantConnect) {
+          disconnect();
+        }
         break;
     }
-  }, [connected]);
+  }, [connected, isLocked, wantConnect]);
 
   // Select an account
   const [account, setAccount] = useState<string>();
