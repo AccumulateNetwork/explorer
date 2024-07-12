@@ -64,6 +64,57 @@ export class Driver {
     delete encrypted.version;
     return encrypted;
   }
+
+  async switchChains() {
+    const { ethereum } = window;
+
+    try {
+      // Attempt to switch to Accumulate
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x119' }],
+      });
+    } catch (error) {
+      if (typeof error === 'object' && 'code' in error && error.code === 4902) {
+        // Chain doesn't exist
+      } else {
+        console.warn(error);
+        return;
+      }
+    }
+
+    try {
+      // Add Accumulate
+      await ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            blockExplorerUrls: ['https://explorer.accumulatenetwork.io/'],
+            iconUrls: [
+              'https://explorer.accumulatenetwork.io/static/media/logo.64085dfd.svg',
+            ],
+            nativeCurrency: {
+              name: 'ACME',
+              symbol: 'ACME',
+              decimals: 18, // MetaMask won't allow any value except 18 - WTF?
+            },
+            rpcUrls: ['https://mainnet.accumulatenetwork.io/eth'],
+            chainId: '0x119',
+            chainName: 'Accumulate',
+          },
+        ],
+      });
+
+      // Switch to the new chain
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0x119' }],
+      });
+    } catch (error) {
+      console.warn(error);
+      return;
+    }
+  }
 }
 
 class Sign {

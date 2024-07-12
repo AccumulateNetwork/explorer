@@ -143,6 +143,9 @@ export function Connect({ children }: { children: React.ReactNode }) {
         activate(connector);
         setDriver(driver);
         setWantSwitch(null);
+
+        // Attempt to switch the chain to Accumulate (asynchronously)
+        // driver.switchChains();
         break;
       default:
         if (!wantConnect) {
