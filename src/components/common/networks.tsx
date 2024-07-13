@@ -4,6 +4,7 @@ export interface NetworkConfig {
   mainnet?: boolean;
   explorer?: string;
   api: string[];
+  eth?: string[];
   metrics?: string;
 }
 
@@ -48,7 +49,8 @@ export const Fozzie: NetworkConfig = {
 const Local: NetworkConfig = {
   id: 'local',
   label: 'Local Devnet',
-  api: ['http://127.0.1.1:26660'],
+  api: ['http://localhost:26660'],
+  eth: ['http://localhost:26660/eth'],
 };
 
 const networks = { Mainnet, MainnetBeta, Kermit, Fozzie, Local };

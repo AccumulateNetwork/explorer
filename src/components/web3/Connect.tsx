@@ -1,7 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { Button, List, Modal, Select, Skeleton } from 'antd';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
@@ -11,7 +11,7 @@ import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { Sign } from '../form/Sign';
-import { Context, Provider, ReloadRequest } from './Context';
+import { Provider, ReloadRequest } from './Context';
 import { Driver, EthPublicKey } from './Driver';
 import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
@@ -30,7 +30,7 @@ interface Request {
 }
 
 export function Connect({ children }: { children: React.ReactNode }) {
-  const { api } = useContext(Network);
+  const { api, network } = useContext(Network);
   const { activate, deactivate } = useWeb3React();
 
   // Handle reload requests
@@ -145,7 +145,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         setWantSwitch(null);
 
         // Attempt to switch the chain to Accumulate (asynchronously)
-        // driver.switchChains();
+        driver.switchChains(network);
         break;
       default:
         if (!wantConnect) {
@@ -153,7 +153,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         }
         break;
     }
-  }, [connected, isLocked, wantConnect]);
+  }, [connected, isLocked, wantConnect, network]);
 
   // Select an account
   const [account, setAccount] = useState<string>();

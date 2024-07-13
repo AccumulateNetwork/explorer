@@ -16,6 +16,8 @@ import { Buffer, keccak256, sha256 } from 'accumulate.js/lib/common';
 import { Signature, SignatureType, Transaction } from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
 
+import { NetworkConfig } from '../common/networks';
+
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
 export class Driver {
@@ -65,14 +67,34 @@ export class Driver {
     return encrypted;
   }
 
-  async switchChains() {
+  async switchChains(network: NetworkConfig) {
     const { ethereum } = window;
+
+    if (!network?.eth?.length) {
+      return;
+    }
+
+    const chainId = await fetch(`${network.eth[0]}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_chainId',
+        params: {},
+      }),
+    })
+      .then((r) => r.json())
+      .then((r) => r.result)
+      .catch((e) => (console.warn(e), null));
+    if (typeof chainId !== 'string') {
+      return;
+    }
 
     try {
       // Attempt to switch to Accumulate
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x119' }],
+        params: [{ chainId }],
       });
     } catch (error) {
       if (typeof error === 'object' && 'code' in error && error.code === 4902) {
@@ -89,7 +111,9 @@ export class Driver {
         method: 'wallet_addEthereumChain',
         params: [
           {
-            blockExplorerUrls: ['https://explorer.accumulatenetwork.io/'],
+            blockExplorerUrls: [
+              network.explorer || 'https://explorer.accumulatenetwork.io',
+            ],
             iconUrls: [
               'https://explorer.accumulatenetwork.io/static/media/logo.64085dfd.svg',
             ],
@@ -98,9 +122,9 @@ export class Driver {
               symbol: 'ACME',
               decimals: 18, // MetaMask won't allow any value except 18 - WTF?
             },
-            rpcUrls: ['https://mainnet.accumulatenetwork.io/eth'],
-            chainId: '0x119',
-            chainName: 'Accumulate',
+            rpcUrls: network.eth,
+            chainId,
+            chainName: `Accumulate ${network.label}`,
           },
         ],
       });
@@ -108,7 +132,7 @@ export class Driver {
       // Switch to the new chain
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x119' }],
+        params: [{ chainId }],
       });
     } catch (error) {
       console.warn(error);
