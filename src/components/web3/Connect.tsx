@@ -225,7 +225,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
       const message = 'Login to Accumulate';
       const [signature] =
         (await Sign.waitFor(setRequest, () =>
-          driver.sign.eth(account, message, true),
+          driver.signEthMessage(account, message),
         )) || [];
       if (!mounted()) {
         return;

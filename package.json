@@ -10,7 +10,7 @@
     "@sentry/browser": "^8.8.0",
     "@web3-react/core": "^6.1.9",
     "@web3-react/injected-connector": "^6.0.7",
-    "accumulate.js": "^0.11.3",
+    "accumulate.js": "^0.11.7",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "eth-sig-util": "^3.0.1",
@@ -28,7 +28,7 @@
     "rxjs": "^7.8.1",
     "secp256k1": "^5.0.0",
     "tweetnacl": "^1.0.3",
-    "web3": "^1.8.2"
+    "web3": "^4.11.0"
   },
   "overrides": {
     "esbuild": "^0.21.0"

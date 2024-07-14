@@ -11,7 +11,6 @@ import {
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
-import { ColdObservable } from 'rxjs/internal/testing/ColdObservable';
 
 import { URL, URLArgs, core, messaging } from 'accumulate.js';
 import {
@@ -19,7 +18,6 @@ import {
   MessageRecord,
   SignatureSetRecord,
 } from 'accumulate.js/lib/api_v3';
-import { sha256 } from 'accumulate.js/lib/common';
 import {
   AccountAuthOperationType,
   AccountType,
@@ -28,7 +26,6 @@ import {
   TransactionType,
   VoteType,
 } from 'accumulate.js/lib/core';
-import { encode } from 'accumulate.js/lib/encoding';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { SigRecord, isRecordOf } from '../../utils/types';
@@ -38,9 +35,6 @@ import { Network } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 const { Title, Text, Paragraph } = Typography;
-
-type KeySignature = Extract<core.Signature, { publicKey?: Uint8Array }>;
-type UserSignature = KeySignature | core.DelegatedSignature;
 
 export function Signatures(props: {
   transaction: core.Transaction;
@@ -128,7 +122,7 @@ export function Signatures(props: {
     }
   };
 
-  const signatures: UserSignature[] = [];
+  const signatures: core.UserSignature[] = [];
   const blockAnchors: MessageRecord<BlockAnchor>[] = [];
   let principalSigs: MessageRecord[] = [];
   for (const set of props.signatures) {
@@ -243,7 +237,7 @@ function Validators({
   const didSign = Object.fromEntries(
     signatures
       .filter(
-        (x): x is MessageRecord<BlockAnchor & { signature: KeySignature }> =>
+        (x): x is MessageRecord<BlockAnchor & { signature: core.KeySignature }> =>
           'publicKey' in x.message.signature,
       )
       .map((x) => [
@@ -500,7 +494,7 @@ Signature.Key = function ({
   signature,
 }: {
   level?: number;
-  signature: KeySignature;
+  signature: core.KeySignature;
 }) {
   return (
     <div className={level ? 'subsignature' : null}>
