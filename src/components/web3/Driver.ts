@@ -163,7 +163,7 @@ export class Driver {
   async signEthTypedData(account: string, message: Eip712TypedData) {
     try {
       const sig = await this.web3.eth.signTypedData(account, message);
-      return sig && Buffer.from(sig.replace(/^0x/, ''), 'hex');
+      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
     } catch (error) {
       this.#checkError(error);
     }
@@ -174,13 +174,27 @@ export class Driver {
       const hashStr = '0x' + Buffer.from(hash).toString('hex');
       const sig = await this.web3.eth.sign(hashStr, account);
       const str = typeof sig === 'string' ? sig : sig.signature;
-      return str && Buffer.from(str.replace(/^0x/, ''), 'hex');
+      return Buffer.from(str.replace(/^0x/, ''), 'hex');
     } catch (error) {
       this.#checkError(error);
     }
   }
 
   #checkError(error) {
+    if (typeof error !== 'object') {
+      throw error;
+    }
+
+    if (
+      ('code' in error && error.code === 4001) ||
+      ('cause' in error &&
+        typeof error.cause === 'object' &&
+        'code' in error.cause &&
+        error.cause.code === 4001)
+    ) {
+      return; // User rejected the request
+    }
+
     // Extract the Ledger error
     if (error.message.startsWith('Ledger device: ')) {
       const i = error.message.indexOf('\n');
