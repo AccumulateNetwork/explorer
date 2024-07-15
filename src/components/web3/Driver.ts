@@ -36,6 +36,7 @@ type EncryptedData = Omit<EthEncryptedData, 'version'>;
 export interface TypedDataMessage {
   domain: ethers.TypedDataDomain;
   types: Record<string, ethers.TypedDataField[]>;
+  primaryType: string;
   message: Record<string, any>;
 }
 
@@ -388,10 +389,56 @@ class AccKey extends BaseKey {
         ),
       );
 
+    // Convert strings to Uint8Array to make ethers happy
+    typedData.message = conditionTypedData(
+      typedData.message,
+      typedData.primaryType,
+      typedData.types,
+    );
+
     // Verify the result matches the request?
 
     return this.#sign(typedData);
   }
+}
+
+function conditionTypedData(
+  value: any,
+  type: string,
+  types: Record<string, ethers.TypedDataField[]>,
+) {
+  if (type === 'bytes' || type === 'bytes32' || type === 'address') {
+    if (typeof value !== 'string') {
+      return value;
+    }
+    if (value === '' || value === '0x') {
+      return new Uint8Array();
+    }
+    return Buffer.from(value.replace(/^0x/, ''), 'hex');
+  }
+
+  if (!(type in types) || !value || typeof value !== 'object') {
+    return value;
+  }
+
+  for (const field of types[type]) {
+    if (!(field.name in value)) {
+      continue;
+    }
+    if (field.type.endsWith('[]')) {
+      const type = field.type.replace(/\[\]$/, '');
+      value[field.name] = value[field.name].map((x) =>
+        conditionTypedData(x, type, types),
+      );
+    } else {
+      value[field.name] = conditionTypedData(
+        value[field.name],
+        field.type,
+        types,
+      );
+    }
+  }
+  return value;
 }
 
 function hashMessage(message: Uint8Array | string) {
