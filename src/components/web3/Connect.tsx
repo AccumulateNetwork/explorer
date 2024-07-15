@@ -1,5 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
-import { InjectedConnector } from '@web3-react/injected-connector';
 import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -114,8 +112,6 @@ const SelectAccount =
 
 export function Connect({ children }: { children: React.ReactNode }) {
   const { api, network } = useContext(Network);
-  const { activate, deactivate } = useWeb3React();
-
   const [connected, setConnected] = useShared(Settings, 'connected');
   const [account, setAccount] = useShared(Settings, 'account');
 
@@ -213,7 +209,6 @@ export function Connect({ children }: { children: React.ReactNode }) {
       switch (connected) {
         case 'Web3':
           driver = new Driver(window.ethereum);
-          activate(new InjectedConnector({}));
           break;
 
         default:
@@ -228,9 +223,11 @@ export function Connect({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Switch the chain to Accumulate and load accounts
+    // Request permissions and the list of accounts
+    const accounts = await driver.web3.eth.requestAccounts();
+
+    // Switch the chain to Accumulate
     await driver.switchChains(network);
-    const accounts = await driver.web3.eth.getAccounts();
     if (!mounted()) {
       return;
     }
@@ -402,7 +399,6 @@ export function Connect({ children }: { children: React.ReactNode }) {
         reload: () => makeRequest('reload'),
 
         disconnect() {
-          deactivate();
           request?.resolve(false);
           setModal(null);
 

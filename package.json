@@ -8,8 +8,6 @@
     "@babel/plugin-proposal-decorators": "^7.24.6",
     "@metamask/providers": "^17.0.0",
     "@sentry/browser": "^8.8.0",
-    "@web3-react/core": "^6.1.9",
-    "@web3-react/injected-connector": "^6.0.7",
     "accumulate.js": "^0.11.7",
     "antd": "^4.16.13",
     "axios": "^0.21.4",

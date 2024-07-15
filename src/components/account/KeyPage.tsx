@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core';
 import { Descriptions, List, Row, Tag, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
@@ -22,6 +21,7 @@ import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
+import { useWeb3 } from '../web3/Context';
 import { AccChains } from './AccChains';
 import { describeParent } from './parent';
 
@@ -190,11 +190,11 @@ KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
 };
 
 KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
-  const { account: eth } = useWeb3React();
+  const web3 = useWeb3();
   const isETH =
-    eth &&
+    web3.publicKey &&
     entry.publicKeyHash &&
-    eth.replace(/^0x/, '').toLowerCase() ==
+    web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase() ==
       Buffer.from(entry.publicKeyHash).toString('hex');
 
   return (
