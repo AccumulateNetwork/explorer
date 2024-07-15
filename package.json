@@ -49,7 +49,8 @@
   },
   "scripts": {
     "start": "VITE_NETWORK=any vite dev",
-    "build": "tsc && vite build",
+    "check": "tsc",
+    "build": "vite build",
     "preview": "VITE_NETWORK=any vite build && vite preview",
     "format": "prettier -w src",
     "check:format": "prettier src"
