@@ -37,6 +37,7 @@ export const Kermit: NetworkConfig = {
     'https://kermit.accumulatenetwork.io',
     'https://testnet.accumulatenetwork.io',
   ],
+  eth: ['https://kermit.accumulatenetwork.io/eth'],
 };
 
 export const Fozzie: NetworkConfig = {
