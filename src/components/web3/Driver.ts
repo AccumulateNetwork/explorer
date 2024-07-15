@@ -1,3 +1,4 @@
+import type { MetaMaskInpageProvider } from '@metamask/providers';
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { ethers } from 'ethers';
@@ -23,6 +24,12 @@ import {
 import { encode } from 'accumulate.js/lib/encoding';
 
 import { NetworkConfig } from '../common/networks';
+
+declare global {
+  interface Window {
+    ethereum?: ethers.Eip1193Provider & MetaMaskInpageProvider;
+  }
+}
 
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
@@ -56,14 +63,12 @@ export class Driver {
     return accounts.map((x) => x.address);
   }
 
-  async switchChains(network: NetworkConfig) {
-    const { ethereum } = window;
-
+  static async getChainID(network: NetworkConfig): Promise<string> {
     if (!network?.eth?.length) {
       return;
     }
 
-    const chainId = await fetch(network.eth[0], {
+    return await fetch(network.eth[0], {
       method: 'POST',
       body: JSON.stringify({
         jsonrpc: '2.0',
@@ -80,6 +85,12 @@ export class Driver {
         return r.result;
       })
       .catch((e) => (console.warn(e), null));
+  }
+
+  async switchChains(network: NetworkConfig) {
+    const { ethereum } = window;
+
+    const chainId = Driver.getChainID(network);
     if (typeof chainId !== 'string') {
       return;
     }

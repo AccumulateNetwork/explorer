@@ -1,4 +1,5 @@
 import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
+import { ethers } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
@@ -14,6 +15,7 @@ import { OfflineStore } from './OfflineStore';
 import { OnlineStore } from './OnlineStore';
 import { Settings } from './Settings';
 import { Store } from './Store';
+import { useWalletConnect } from './WalletConnect';
 
 export default Connect;
 
@@ -70,29 +72,38 @@ const Processing = (_: Resolver) => (
   />
 );
 
-const SelectDriver = ({ resolve }: Resolver<typeof Settings.connected>) => (
-  <div>
-    <List>
-      <List.Item>
-        <Button
-          block
-          shape="round"
-          size="large"
-          disabled={!window.ethereum}
-          children="MetaMask"
-          onClick={() => resolve('Web3')}
-        />
-      </List.Item>
-    </List>
-    <List>
-      <List.Item>
-        <Button block shape="round" size="large" disabled>
-          WalletConnect
-        </Button>
-      </List.Item>
-    </List>
-  </div>
-);
+const SelectDriver =
+  ({ walletConnect }: { walletConnect: boolean }) =>
+  ({ resolve }: Resolver<typeof Settings.connected>) => (
+    <div>
+      <List>
+        <List.Item>
+          <Button
+            block
+            shape="round"
+            size="large"
+            disabled={!window.ethereum}
+            onClick={() => resolve('Web3')}
+          >
+            MetaMask
+          </Button>
+        </List.Item>
+      </List>
+      <List>
+        <List.Item>
+          <Button
+            block
+            shape="round"
+            size="large"
+            disabled={!walletConnect}
+            onClick={() => resolve('WalletConnect')}
+          >
+            WalletConnect
+          </Button>
+        </List.Item>
+      </List>
+    </div>
+  );
 
 const SelectAccount =
   ({ accounts }: { accounts: string[] }) =>
@@ -112,6 +123,7 @@ const SelectAccount =
 
 export function Connect({ children }: { children: React.ReactNode }) {
   const { api, network } = useContext(Network);
+  const [walletConnect] = useWalletConnect();
   const [connected, setConnected] = useShared(Settings, 'connected');
   const [account, setAccount] = useShared(Settings, 'account');
 
@@ -198,7 +210,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     if (!connected) {
       connected = await showModal<typeof Settings.connected>({
         title: 'Connect',
-        children: SelectDriver,
+        children: SelectDriver({ walletConnect: !!walletConnect }),
       });
       if (!mounted() || !connected) {
         return packState(false);
@@ -208,7 +220,35 @@ export function Connect({ children }: { children: React.ReactNode }) {
     if (!driver) {
       switch (connected) {
         case 'Web3':
-          driver = new Driver(window.ethereum);
+          driver = new Driver(window.ethereum as any);
+          break;
+
+        case 'WalletConnect':
+          if (!walletConnect) {
+            return;
+          }
+          let provider = walletConnect.getWalletProvider();
+          if (provider) {
+            driver = new Driver(provider);
+            break;
+          }
+          if (request.action === 'init') {
+            return;
+          }
+
+          provider = await new Promise<ethers.Eip1193Provider>(async (r, j) => {
+            let unsub: () => void;
+            unsub = walletConnect.subscribeProvider(({ provider, error }) => {
+              unsub();
+              if (error) {
+                j(error);
+              } else {
+                r(provider);
+              }
+            });
+            await walletConnect.open();
+          });
+          driver = new Driver(provider);
           break;
 
         default:
@@ -370,6 +410,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
           ok,
         } = r;
         request?.resolve(ok);
+        walletConnect?.disconnect();
         setModal(null);
         setConnected(connected);
         setAccount(account);
@@ -388,7 +429,15 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [request, connected, driver, network, account, pubKey?.ethereum]);
+  }, [
+    request,
+    connected,
+    driver,
+    network,
+    account,
+    pubKey?.ethereum,
+    walletConnect,
+  ]);
 
   // Render
   return (

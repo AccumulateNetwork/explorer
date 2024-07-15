@@ -33,8 +33,8 @@ export default defineConfig({
           'vendor-highlight': ['react-syntax-highlighter'],
           'vendor-factom': ['factom'],
           'vendor-web3': [
+            '@web3modal/ethers',
             'ethers',
-            '@metamask/providers',
             'eth-sig-util',
             'ethereumjs-util',
             'secp256k1',

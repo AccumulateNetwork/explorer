@@ -1,6 +1,6 @@
 import { broadcast, prefix, storage, stored } from '../common/Shared';
 
-type ConnectedType = 'Web3' | null;
+type ConnectedType = 'Web3' | 'WalletConnect' | null;
 
 export const Settings = new (
   @storage(localStorage)
