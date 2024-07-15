@@ -30,6 +30,17 @@ const Web3 = {
   MissingLiteID: lazy2(() => import('../web3/MissingLiteID'), 'MissingLiteID'),
 };
 
+function tryParseURL(s: string) {
+  try {
+    return URL.parse(s);
+  } catch (error) {
+    return new URL({
+      scheme: 'acc',
+      hostname: s,
+    } as any);
+  }
+}
+
 export function Acc({
   parentCallback,
   didLoad,
@@ -44,7 +55,7 @@ export function Acc({
   const [error, setError] = useState(null);
 
   const params = useParams<{ hash: string; url: string }>();
-  const url = URL.parse(
+  const url = tryParseURL(
     params.hash ? `${params.hash}@unknown` : `${params.url}`,
   );
   document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
