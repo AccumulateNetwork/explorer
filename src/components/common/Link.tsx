@@ -6,27 +6,20 @@ import { TxID, TxIDArgs, URL } from 'accumulate.js';
 
 export function Link({
   to,
-  children,
   dataEntry,
-  className,
-  style,
+  ...props
 }: {
   to: TxIDArgs;
   children: React.ReactNode;
   dataEntry?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  target?: string;
+  rel?: string;
 }) {
   const route = dataEntry ? 'data' : 'acc';
   if (typeof to === 'string' && /^[a-z]{64}$/i.test(to)) {
-    return (
-      <RouterLink
-        to={`/${route}/${to}@unknown`}
-        className={className}
-        children={children}
-        style={style}
-      />
-    );
+    return <RouterLink to={`/${route}/${to}@unknown`} {...props} />;
   }
 
   let url: URL;
@@ -37,12 +30,5 @@ export function Link({
   }
 
   const s = url.toString().replace(/^acc:\/\//, '');
-  return (
-    <RouterLink
-      to={`/${route}/${s}`}
-      className={className}
-      children={children}
-      style={style}
-    />
-  );
+  return <RouterLink to={`/${route}/${s}`} {...props} />;
 }

@@ -1,4 +1,8 @@
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  CloseOutlined,
+  InfoCircleTwoTone,
+} from '@ant-design/icons';
 import {
   Alert,
   List,
@@ -6,6 +10,7 @@ import {
   Table,
   TableProps,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
@@ -122,7 +127,7 @@ export function Signatures(props: {
     }
   };
 
-  const signatures: core.UserSignature[] = [];
+  const signatures: SigRecord<core.UserSignature>[] = [];
   const blockAnchors: MessageRecord<BlockAnchor>[] = [];
   let principalSigs: MessageRecord[] = [];
   for (const set of props.signatures) {
@@ -142,12 +147,11 @@ export function Signatures(props: {
         continue;
       }
 
-      const { signature } = sig.message;
       if (
-        signature instanceof core.DelegatedSignature ||
-        'publicKey' in signature
+        sig.message.signature instanceof core.DelegatedSignature ||
+        'publicKey' in sig.message.signature
       ) {
-        signatures.push(signature);
+        signatures.push(sig as SigRecord<core.UserSignature>);
       }
     }
   }
@@ -237,7 +241,9 @@ function Validators({
   const didSign = Object.fromEntries(
     signatures
       .filter(
-        (x): x is MessageRecord<BlockAnchor & { signature: core.KeySignature }> =>
+        (
+          x,
+        ): x is MessageRecord<BlockAnchor & { signature: core.KeySignature }> =>
           'publicKey' in x.message.signature,
       )
       .map((x) => [
@@ -293,7 +299,7 @@ function Required({
   principalSigs,
 }: {
   authorities: URL[];
-  signatures: core.Signature[];
+  signatures: SigRecord[];
   principalSigs: MessageRecord[];
 }) {
   const signatureAuthority = (signature: core.Signature) => {
@@ -309,7 +315,9 @@ function Required({
   };
 
   const signaturesForAuthority = (authority: URL) => {
-    return signatures.filter((x) => signatureAuthority(x).equals(authority));
+    return signatures.filter((x) =>
+      signatureAuthority(x.message.signature).equals(authority),
+    );
   };
 
   const creditPayments = principalSigs.filter(
@@ -317,7 +325,10 @@ function Required({
       isRecordOf(x, messaging.CreditPayment),
   );
   const otherSigs = signatures.filter(
-    (x) => !authorities.some((y) => signatureAuthority(x).equals(y)),
+    (x) =>
+      !authorities.some((y) =>
+        signatureAuthority(x.message.signature).equals(y),
+      ),
   );
 
   type Item = 'credits' | 'other' | URL;
@@ -475,14 +486,25 @@ function Signature({
   );
 }
 
-Signature.List = function (props: ListProps<core.Signature>) {
+Signature.List = function (props: ListProps<SigRecord>) {
   return (
     <List
       {...props}
       size="small"
-      renderItem={(signature) => (
-        <List.Item>
-          <Signature signature={signature} />
+      renderItem={(r) => (
+        <List.Item
+          actions={[
+            <Link to={r.id} target="_blank">
+              <Tooltip
+                overlayClassName="explorer-tooltip"
+                title={'Inspect signature'}
+              >
+                <InfoCircleTwoTone />
+              </Tooltip>
+            </Link>,
+          ]}
+        >
+          <Signature signature={r.message.signature} />
         </List.Item>
       )}
     />
