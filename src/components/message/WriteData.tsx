@@ -7,6 +7,7 @@ import {
   RiInformationLine,
 } from 'react-icons/ri';
 
+import { URL } from 'accumulate.js';
 import { TransactionType } from 'accumulate.js/lib/core';
 
 import { DataTxnRecord, dataEntryParts } from '../../utils/types';
@@ -22,8 +23,6 @@ const { Title } = Typography;
 
 export function WriteData({ record }: { record: DataTxnRecord }) {
   const txn = record.message.transaction;
-  const scratch = 'scratch' in txn.body && txn.body.scratch;
-  const writeToState = 'writeToState' in txn.body && txn.body.writeToState;
   return (
     <>
       <AccTitle title="Transaction" url={record.id} />
@@ -53,6 +52,23 @@ export function WriteData({ record }: { record: DataTxnRecord }) {
         </>
       )}
 
+      <Entries record={record} />
+    </>
+  );
+}
+
+const DN_NETWORK = URL.parse('dn.acme/network');
+
+function Entries({ record }: { record: DataTxnRecord }) {
+  const txn = record.message.transaction;
+  if (txn.header.principal.equals(DN_NETWORK)) {
+    // TODO Decode network updates like acc://61041b67e9d9a78ed2a9c76dc9874b74120234c3b6d5be2a6514fb1070226d59@dn.acme/network
+  }
+
+  const scratch = 'scratch' in txn.body && txn.body.scratch;
+  const writeToState = 'writeToState' in txn.body && txn.body.writeToState;
+  return (
+    <>
       <Title level={4}>
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <RiFileList2Line />
