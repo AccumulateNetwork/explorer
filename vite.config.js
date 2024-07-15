@@ -32,8 +32,8 @@ export default defineConfig({
           'vendor-antd': ['antd', '@ant-design/icons', 'rc-field-form'],
           'vendor-highlight': ['react-syntax-highlighter'],
           'vendor-factom': ['factom'],
+          'vendor-walletconnect': ['@web3modal/ethers'],
           'vendor-web3': [
-            '@web3modal/ethers',
             'ethers',
             'eth-sig-util',
             'ethereumjs-util',
