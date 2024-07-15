@@ -1,4 +1,3 @@
-import { Context } from 'react';
 import nacl from 'tweetnacl';
 
 import { URL } from 'accumulate.js';

@@ -223,8 +223,11 @@ export function Connect({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Request permissions and the list of accounts
-    const accounts = await driver.web3.eth.requestAccounts();
+    // Request permissions
+    await driver.connect();
+
+    // List accounts
+    const accounts = await driver.listAccounts();
 
     // Switch the chain to Accumulate
     await driver.switchChains(network);

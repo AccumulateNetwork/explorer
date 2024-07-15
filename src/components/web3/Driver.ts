@@ -1,13 +1,11 @@
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
+import { ethers } from 'ethers';
 import { ecdsaRecover } from 'secp256k1';
-import Web3 from 'web3';
-import type { Eip712TypedData, SupportedProviders } from 'web3-types';
 
 import {
   BaseKey,
   PublicKeyAddress,
-  PublicKeyHashAddress,
   SignOptions,
   Signable,
   Signer,
@@ -28,6 +26,12 @@ import { NetworkConfig } from '../common/networks';
 
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
 
+export interface TypedDataMessage {
+  domain: ethers.TypedDataDomain;
+  types: Record<string, ethers.TypedDataField[]>;
+  message: Record<string, any>;
+}
+
 export class Driver {
   static get canConnect() {
     return !!window.ethereum;
@@ -37,40 +41,19 @@ export class Driver {
     return window.ethereum?.isMetaMask;
   }
 
-  readonly web3: Web3;
+  readonly #web3: ethers.BrowserProvider;
 
-  constructor(provider: SupportedProviders) {
-    this.web3 = new Web3(provider);
+  constructor(provider: ethers.Eip1193Provider) {
+    this.#web3 = new ethers.BrowserProvider(provider);
   }
 
-  async decrypt(publicKey: EthPublicKey, data: EncryptedData): Promise<string> {
-    if (!Driver.canEncrypt) {
-      throw new Error('Encryption not supported for current Web3 connector');
-    }
-
-    const s = JSON.stringify({
-      version: 'x25519-xsalsa20-poly1305',
-      ...data,
-    });
-    const message = '0x' + Buffer.from(s).toString('hex');
-    return (await window.ethereum.request({
-      method: 'eth_decrypt',
-      params: [message, publicKey.ethereum],
-    })) as string;
+  async connect() {
+    await this.#web3.getSigner();
   }
 
-  async encrypt(publicKey: EthPublicKey, data: string): Promise<EncryptedData> {
-    if (!Driver.canEncrypt) {
-      throw new Error('Encryption not supported for current Web3 connector');
-    }
-
-    const key = (await window.ethereum.request({
-      method: 'eth_getEncryptionPublicKey',
-      params: [publicKey.ethereum],
-    })) as string;
-    const encrypted = encrypt(key, { data }, 'x25519-xsalsa20-poly1305');
-    delete encrypted.version;
-    return encrypted;
+  async listAccounts() {
+    const accounts = await this.#web3.listAccounts();
+    return accounts.map((x) => x.address);
   }
 
   async switchChains(network: NetworkConfig) {
@@ -153,16 +136,22 @@ export class Driver {
 
   async signEthMessage(account: string, message: string) {
     try {
-      const sig = await this.web3.eth.personal.sign(message, account, '');
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer.signMessage(message);
       return Buffer.from(sig.replace(/^0x/, ''), 'hex');
     } catch (error) {
       this.#checkError(error);
     }
   }
 
-  async signEthTypedData(account: string, message: Eip712TypedData) {
+  async signEthTypedData(
+    account: string,
+    { domain, types, message }: TypedDataMessage,
+  ) {
     try {
-      const sig = await this.web3.eth.signTypedData(account, message);
+      delete types.EIP712Domain;
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer.signTypedData(domain, types, message);
       return Buffer.from(sig.replace(/^0x/, ''), 'hex');
     } catch (error) {
       this.#checkError(error);
@@ -171,10 +160,9 @@ export class Driver {
 
   async signEthBlind(account: string, hash: Uint8Array) {
     try {
-      const hashStr = '0x' + Buffer.from(hash).toString('hex');
-      const sig = await this.web3.eth.sign(hashStr, account);
-      const str = typeof sig === 'string' ? sig : sig.signature;
-      return Buffer.from(str.replace(/^0x/, ''), 'hex');
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer._legacySignMessage(hash);
+      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
     } catch (error) {
       this.#checkError(error);
     }
@@ -235,6 +223,36 @@ export class Driver {
     const signer = Signer.forPage(opts.signer, key);
     return signer.sign(message, opts);
   }
+
+  async decrypt(publicKey: EthPublicKey, data: EncryptedData): Promise<string> {
+    if (!Driver.canEncrypt) {
+      throw new Error('Encryption not supported for current Web3 connector');
+    }
+
+    const s = JSON.stringify({
+      version: 'x25519-xsalsa20-poly1305',
+      ...data,
+    });
+    const message = '0x' + Buffer.from(s).toString('hex');
+    return (await window.ethereum.request({
+      method: 'eth_decrypt',
+      params: [message, publicKey.ethereum],
+    })) as string;
+  }
+
+  async encrypt(publicKey: EthPublicKey, data: string): Promise<EncryptedData> {
+    if (!Driver.canEncrypt) {
+      throw new Error('Encryption not supported for current Web3 connector');
+    }
+
+    const key = (await window.ethereum.request({
+      method: 'eth_getEncryptionPublicKey',
+      params: [publicKey.ethereum],
+    })) as string;
+    const encrypted = encrypt(key, { data }, 'x25519-xsalsa20-poly1305');
+    delete encrypted.version;
+    return encrypted;
+  }
 }
 
 export class EthPublicKey extends PublicKeyAddress {
@@ -272,12 +290,12 @@ export class EthPublicKey extends PublicKeyAddress {
 
 class AccKey extends BaseKey {
   readonly #network: NetworkConfig;
-  readonly #sign: (_: Uint8Array | Eip712TypedData) => Promise<Uint8Array>;
+  readonly #sign: (_: Uint8Array | TypedDataMessage) => Promise<Uint8Array>;
 
   constructor(
     publicKey: EthPublicKey,
     network: NetworkConfig,
-    sign: (_: Uint8Array | Eip712TypedData) => Promise<Uint8Array>,
+    sign: (_: Uint8Array | TypedDataMessage) => Promise<Uint8Array>,
   ) {
     super(publicKey);
     this.#network = network;
@@ -334,7 +352,7 @@ class AccKey extends BaseKey {
       return await this.#sign(hash);
     }
 
-    const typedData: Eip712TypedData = await fetch(this.#network.eth[0], {
+    const typedData: TypedDataMessage = await fetch(this.#network.eth[0], {
       method: 'POST',
       body: JSON.stringify({
         jsonrpc: '2.0',

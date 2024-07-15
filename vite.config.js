@@ -32,11 +32,9 @@ export default defineConfig({
           'vendor-antd': ['antd', '@ant-design/icons', 'rc-field-form'],
           'vendor-highlight': ['react-syntax-highlighter'],
           'vendor-factom': ['factom'],
-          'vendor-web3-main': ['web3'],
-          'vendor-web3-other': [
+          'vendor-web3': [
+            'ethers',
             '@metamask/providers',
-            '@web3-react/core',
-            '@web3-react/injected-connector',
             'eth-sig-util',
             'ethereumjs-util',
             'secp256k1',
