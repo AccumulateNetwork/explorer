@@ -1,7 +1,7 @@
 import { useWeb3React } from '@web3-react/core';
 import { InjectedConnector } from '@web3-react/injected-connector';
 import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
@@ -9,7 +9,6 @@ import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
-import { useAsyncEffect } from '../common/useAsync';
 import { Provider } from './Context';
 import { Driver, EthPublicKey } from './Driver';
 import { Linked } from './Linked';
@@ -147,236 +146,249 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return p;
   };
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (!request || request.executed) {
+  interface ConnectionState {
+    connected: typeof Settings.connected;
+    account: string;
+    driver: Driver;
+    pubKey: EthPublicKey;
+    liteIdentity: LiteIdentity;
+    dataStore: Store;
+    onlineStore: OnlineStore;
+    linked: Linked;
+  }
+
+  const connect = async ({
+    mounted,
+    connected,
+    account,
+    driver,
+    pubKey,
+    liteIdentity,
+    dataStore,
+    onlineStore,
+    linked,
+  }: ConnectionState & { mounted(): boolean }): Promise<
+    (ConnectionState & { ok: boolean }) | undefined
+  > => {
+    const packState = (ok: boolean) => ({
+      connected,
+      account,
+      driver,
+      pubKey,
+      liteIdentity,
+      dataStore,
+      onlineStore,
+      linked,
+      ok,
+    });
+
+    // [Page load] Don't prompt the user to unlock the wallet
+    if (request.action === 'init' && window.ethereum?.isMetaMask) {
+      if (!(await window.ethereum._metamask.isUnlocked())) {
         return;
       }
-      if (
-        request.action !== 'init' &&
-        request.action !== 'connect' &&
-        request.action !== 'switch'
-      ) {
-        return;
-      }
+    }
 
-      // [Page load] Don't prompt the user to unlock the wallet
-      if (request.action === 'init' && window.ethereum?.isMetaMask) {
-        if (!(await window.ethereum._metamask.isUnlocked())) {
-          return;
-        }
-      }
-
-      if (!mounted()) {
-        return;
-      }
-
-      // [Page load] Don't prompt the user to select a driver
-      if (request.action === 'init' && !connected) {
-        request.resolve(false);
-        return;
-      }
-
-      // Select a driver
-      if (!connected) {
-        const connected = await showModal<typeof Settings.connected>({
-          title: 'Connect',
-          children: SelectDriver,
-        });
-        if (!mounted()) {
-          return;
-        }
-        if (!connected) {
-          request.resolve(false);
-          setModal(null);
-          return;
-        }
-
-        setConnected(connected);
-        return; // -> React
-      }
-
-      if (!driver) {
-        switch (connected) {
-          case 'Web3':
-            const driver = new Driver(window.ethereum);
-            const connector = new InjectedConnector({});
-            activate(connector);
-            setDriver(driver);
-            if (request.action !== 'init') {
-              showModal({
-                title: 'Logging in',
-                children: Processing,
-              });
-            }
-            return; // -> React
-
-          default:
-            throw new Error(`Invalid driver type ${connected}`);
-        }
-      }
-
-      // Switch the chain to Accumulate and load accounts
-      await driver.switchChains(network);
-      const accounts = await driver.web3.eth.getAccounts();
-      if (!mounted()) {
-        return;
-      }
-
-      // If there's only one account, select it
-      if (
-        request.action !== 'switch' &&
-        accounts.length === 1 &&
-        account !== accounts[0]
-      ) {
-        setAccount(accounts[0]);
-        return; // -> React
-      }
-
-      // [Page load] Don't prompt the user to select an account
-      const didSelectAccount =
-        request.args.oldAccount !== account &&
-        account &&
-        accounts.includes(account);
-      if (request.action === 'init' && !didSelectAccount) {
-        request.resolve(false);
-        return;
-      }
-
-      // Select an account
-      if (
-        !didSelectAccount ||
-        (request.args.mustLogIn && accounts.length > 1)
-      ) {
-        const account = await showModal<string>({
-          title: 'Select an account',
-          children: SelectAccount({ accounts }),
-        });
-        if (!mounted()) {
-          return;
-        }
-        if (!account) {
-          request.resolve(false);
-          setModal(null);
-          return;
-        }
-
-        request.args.mustLogIn = false;
-        setAccount(account);
-        return; // -> React
-      }
-
-      // Check for a known public key
-      const didRecoverPubKey =
-        pubKey?.ethereum &&
-        pubKey.ethereum.toLowerCase() === account.toLowerCase();
-      if (!didRecoverPubKey) {
-        const storedKey = Settings.getKey(account);
-        if (storedKey) {
-          setPubKey(new EthPublicKey(storedKey));
-          setRequest(new ActionRequest('reload'));
-          setModal(null);
-          request.resolve(true);
-          return;
-        }
-      }
-
-      // [Page load] Don't prompt the user to login
-      if (request.action === 'init' && !didRecoverPubKey) {
-        request.resolve(false);
-        return;
-      }
-
-      // Recover the public key
-      if (!didRecoverPubKey) {
-        showModal({
-          title: 'Logging in',
-          children: Processing,
-        });
-
-        const message = 'Login to Accumulate';
-        const signature = await driver.signEthMessage(account, message);
-        if (!mounted()) {
-          return;
-        }
-        if (!signature) {
-          request.resolve(false);
-          setModal(null);
-          return;
-        }
-
-        const pubKey = EthPublicKey.recover(signature, message);
-        if (pubKey.ethereum.toLowerCase() !== account.toLowerCase()) {
-          throw new Error('Failed to recover public key');
-        }
-
-        Settings.putKey(account, pubKey.publicKey);
-        setPubKey(pubKey);
-        setRequest(new ActionRequest('reload'));
-      }
-
-      setModal(null);
-      request.resolve(true);
-    },
-    [request, connected, driver, network, account, pubKey?.ethereum],
-  ).catch((e) => {
-    console.error(e);
-    request?.resolve(false);
-  });
-
-  // Load account data
-  const loadLiteIdentity = async (mounted: () => boolean) => {
-    const r = await api.query(pubKey.lite).catch(isErrorRecord);
     if (!mounted()) {
       return;
     }
-    if (isRecordOf(r, LiteIdentity)) {
-      setLiteIdentity(r.account);
+
+    // [Page load] Don't prompt the user to select a driver
+    if (request.action === 'init' && !connected) {
+      return packState(false);
     }
-  };
 
-  const loadDataStore = async (mounted: () => boolean) => {
-    const online = new OnlineStore(driver, pubKey);
-    setOnlineStore(online);
+    // Select a driver
+    if (!connected) {
+      connected = await showModal<typeof Settings.connected>({
+        title: 'Connect',
+        children: SelectDriver,
+      });
+      if (!mounted() || !connected) {
+        return packState(false);
+      }
+    }
 
-    await online.load(api).catch((err) => {
+    if (!driver) {
+      switch (connected) {
+        case 'Web3':
+          driver = new Driver(window.ethereum);
+          activate(new InjectedConnector({}));
+          break;
+
+        default:
+          throw new Error(`Invalid driver type ${connected}`);
+      }
+    }
+
+    if (request.action !== 'init') {
+      showModal({
+        title: 'Logging in',
+        children: Processing,
+      });
+    }
+
+    // Switch the chain to Accumulate and load accounts
+    await driver.switchChains(network);
+    const accounts = await driver.web3.eth.getAccounts();
+    if (!mounted()) {
+      return;
+    }
+
+    // If there's only one account, select it
+    if (
+      request.action !== 'switch' &&
+      accounts.length === 1 &&
+      account !== accounts[0]
+    ) {
+      account = accounts[0];
+    }
+
+    // [Page load] Don't prompt the user to select an account
+    const didSelectAccount =
+      request.args.oldAccount !== account &&
+      account &&
+      accounts.includes(account);
+    if (request.action === 'init' && !didSelectAccount) {
+      return packState(false);
+    }
+
+    // Select an account
+    if (!didSelectAccount || (request.args.mustLogIn && accounts.length > 1)) {
+      account = await showModal<string>({
+        title: 'Select an account',
+        children: SelectAccount({ accounts }),
+      });
+      if (!mounted() || !account) {
+        return packState(false);
+      }
+    }
+
+    // Check for a known public key
+    if (pubKey?.ethereum?.toLowerCase() !== account.toLowerCase()) {
+      const storedKey = Settings.getKey(account);
+      if (storedKey) {
+        pubKey = new EthPublicKey(storedKey);
+      }
+    }
+
+    // [Page load] Don't prompt the user to login
+    if (request.action === 'init' && !pubKey) {
+      return packState(false);
+    }
+
+    // Recover the public key
+    if (!pubKey) {
+      showModal({
+        title: 'Logging in',
+        children: Processing,
+      });
+
+      const message = 'Login to Accumulate';
+      const signature = await driver.signEthMessage(account, message);
+      if (!mounted()) {
+        return;
+      }
+      if (!signature) {
+        if (request.args.oldAccount) {
+          account = request.args.oldAccount;
+        }
+        return packState(false);
+      }
+
+      pubKey = EthPublicKey.recover(signature, message);
+      if (pubKey.ethereum.toLowerCase() !== account.toLowerCase()) {
+        throw new Error('Failed to recover public key');
+      }
+
+      Settings.putKey(account, pubKey.publicKey);
+    }
+
+    // Load account data
+    const lda = await api.query(pubKey.lite).catch(isErrorRecord);
+    if (!mounted()) {
+      return;
+    }
+    if (isRecordOf(lda, LiteIdentity)) {
+      liteIdentity = lda.account;
+    }
+
+    onlineStore = new OnlineStore(driver, pubKey);
+    await onlineStore.load(api).catch((err) => {
       console.error(err);
     });
     if (!mounted()) {
       return;
     }
 
-    const store = online.enabled ? online : new OfflineStore(pubKey.publicKey);
-    setDataStore(store);
-
-    const linked = await Linked.load(api, [
+    dataStore = onlineStore.enabled
+      ? onlineStore
+      : new OfflineStore(pubKey.publicKey);
+    linked = await Linked.load(api, [
       {
         type: 'link',
         accountType: 'identity',
         url: `${pubKey.lite}`,
       },
-      ...store,
+      ...dataStore,
     ]);
-    if (!mounted()) {
-      return;
-    }
-    setLinked(linked);
+
+    return packState(true);
   };
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (request?.action !== 'reload' || request.executed || !pubKey) {
-        return;
-      }
+  useEffect(() => {
+    let mounted = true;
 
-      await Promise.all([loadLiteIdentity(mounted), loadDataStore(mounted)]);
-      request.resolve(true);
-    },
-    [`${pubKey?.lite}`, request],
-  ).catch((e) => {
-    console.error(e);
-    request?.resolve(false);
-  });
+    if (!request || request.executed) {
+      return;
+    }
+
+    connect({
+      connected,
+      account,
+      driver,
+      pubKey,
+      liteIdentity,
+      dataStore,
+      onlineStore,
+      linked,
+      mounted: () => mounted,
+    })
+      .then((r) => {
+        if (!mounted || !r) {
+          return;
+        }
+        const {
+          connected,
+          account,
+          driver,
+          pubKey,
+          liteIdentity,
+          dataStore,
+          onlineStore,
+          linked,
+          ok,
+        } = r;
+        request?.resolve(ok);
+        setModal(null);
+        setConnected(connected);
+        setAccount(account);
+        setDriver(driver);
+        setPubKey(pubKey);
+        setLiteIdentity(liteIdentity);
+        setDataStore(dataStore);
+        setOnlineStore(onlineStore);
+        setLinked(linked);
+      })
+      .catch((e) => {
+        console.error(e);
+        request?.resolve(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [request, connected, driver, network, account, pubKey?.ethereum]);
 
   // Render
   return (
