@@ -90,7 +90,7 @@ export class Driver {
   async switchChains(network: NetworkConfig) {
     const { ethereum } = window;
 
-    const chainId = Driver.getChainID(network);
+    const chainId = await Driver.getChainID(network);
     if (typeof chainId !== 'string') {
       return;
     }
