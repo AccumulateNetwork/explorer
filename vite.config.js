@@ -18,7 +18,6 @@ export default defineConfig({
     }),
   ],
 
-  //build.rollupOptions.output.manualChunks
   build: {
     outDir: 'build',
     sourcemap: true,
