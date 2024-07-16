@@ -224,30 +224,12 @@ export function Connect({ children }: { children: React.ReactNode }) {
           break;
 
         case 'WalletConnect':
-          if (!walletConnect) {
-            return;
-          }
-          let provider = walletConnect.getWalletProvider();
-          if (provider) {
-            driver = new Driver(provider);
-            break;
-          }
-          if (request.action === 'init') {
-            return;
-          }
-
-          provider = await new Promise<ethers.Eip1193Provider>(async (r, j) => {
-            let unsub: () => void;
-            unsub = walletConnect.subscribeProvider(({ provider, error }) => {
-              unsub();
-              if (error) {
-                j(error);
-              } else {
-                r(provider);
-              }
-            });
-            await walletConnect.open();
+          const provider = await walletConnect?.connect({
+            headless: request.action === 'init',
           });
+          if (!provider) {
+            return packState(false);
+          }
           driver = new Driver(provider);
           break;
 
@@ -376,6 +358,23 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return packState(true);
   };
 
+  const disconnect = () => {
+    walletConnect?.disconnect();
+    request?.resolve(false);
+    setModal(null);
+
+    setConnected(null);
+    setAccount(null);
+
+    setDriver(null);
+    setPubKey(null);
+
+    setLiteIdentity(null);
+    setDataStore(null);
+    setOnlineStore(null);
+    setLinked(null);
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -409,17 +408,22 @@ export function Connect({ children }: { children: React.ReactNode }) {
           linked,
           ok,
         } = r;
-        request?.resolve(ok);
-        walletConnect?.disconnect();
-        setModal(null);
-        setConnected(connected);
-        setAccount(account);
-        setDriver(driver);
-        setPubKey(pubKey);
-        setLiteIdentity(liteIdentity);
-        setDataStore(dataStore);
-        setOnlineStore(onlineStore);
-        setLinked(linked);
+
+        if (!ok && request.action === 'connect') {
+          // If the user cancels an explict connection request, reset
+          disconnect();
+        } else {
+          request?.resolve(ok);
+          setModal(null);
+          setConnected(connected);
+          setAccount(account);
+          setDriver(driver);
+          setPubKey(pubKey);
+          setLiteIdentity(liteIdentity);
+          setDataStore(dataStore);
+          setOnlineStore(onlineStore);
+          setLinked(linked);
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -450,17 +454,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         switch: () => makeRequest('switch', { oldAccount: account }),
         reload: () => makeRequest('reload'),
 
-        disconnect() {
-          request?.resolve(false);
-          setModal(null);
-
-          setConnected(null);
-          setAccount(null);
-
-          setDriver(null);
-          setPubKey(null);
-        },
-
+        disconnect,
         canConnect: true,
         connected: !!pubKey,
         driver,
@@ -478,7 +472,10 @@ export function Connect({ children }: { children: React.ReactNode }) {
           {...modal}
           open={!!modal}
           footer={false}
-          onCancel={() => modal.resolve()}
+          onCancel={() => {
+            modal.resolve();
+            setModal(null);
+          }}
           children={modal.children({
             resolve: (v) => {
               modal.resolve(v);
