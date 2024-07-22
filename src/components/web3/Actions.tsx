@@ -37,8 +37,6 @@ interface ToFrom {
   from?: URLArgs;
 }
 
-export default Actions;
-
 export function Actions(props: { account: URL }) {
   type FormKey = 'addCredits' | 'sendTokens';
   const web3 = useWeb3();

@@ -7,16 +7,12 @@ import { Account, AccountType } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
 import { Sign } from '../form/Sign';
+import { Actions as Web3Actions } from '../web3/Actions';
 import { useWeb3 } from '../web3/Context';
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';
 import { useShared } from './Shared';
-import { lazy2 } from './lazy2';
 
 const { Title } = Typography;
-
-const web3 = {
-  Actions: lazy2(() => import('../web3/Actions'), 'Actions'),
-};
 
 export function AccTitle({
   title,
@@ -57,7 +53,7 @@ export function AccTitle({
         {!url.username && (
           <>
             <span style={{ flex: 1 }} />
-            <web3.Actions account={url} />
+            <Web3Actions account={url} />
           </>
         )}
       </Title>

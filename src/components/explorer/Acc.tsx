@@ -17,18 +17,14 @@ import { isRecordOf } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { RawData } from '../common/RawData';
-import { lazy2 } from '../common/lazy2';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
 import { useWeb3 } from '../web3/Context';
+import { MissingLiteID } from '../web3/MissingLiteID';
 import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
-
-const Web3 = {
-  MissingLiteID: lazy2(() => import('../web3/MissingLiteID'), 'MissingLiteID'),
-};
 
 function tryParseURL(s: string) {
   try {
@@ -94,7 +90,7 @@ export function Acc({
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
     if (web3.publicKey?.lite?.equals(url)) {
-      return <Web3.MissingLiteID />;
+      return <MissingLiteID />;
     }
     return <Error404 />;
   }
