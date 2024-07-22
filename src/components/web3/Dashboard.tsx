@@ -84,122 +84,42 @@ export function Dashboard() {
     }
   }, [connected]);
 
-  if (!connected) {
-    return false;
-  }
-
-  const title = <Title level={2}>Web3 Wallet</Title>;
   if (!web3.connected) {
-    return (
-      <>
-        {title} <Skeleton />
-      </>
-    );
+    return false;
   }
 
   return (
     <>
-      {title}
-
-      <InfoTable>
-        <Descriptions.Item
-          label={
-            <WithIcon
-              icon={RiQuestionLine}
-              tooltip={tooltip.web3.ethereumAddress}
-              children="Ethereum Address"
-            />
-          }
-        >
-          <Text copyable>{web3.publicKey.ethereum}</Text>
-        </Descriptions.Item>
-
-        <Descriptions.Item
-          label={
-            <WithIcon
-              icon={RiQuestionLine}
-              tooltip={tooltip.web3.liteIdentity}
-              children="Lite Identity"
-            />
-          }
-        >
-          <Text copyable={{ text: `${web3.publicKey.lite}` }}>
-            {web3.liteIdentity ? (
-              <Link to={web3.publicKey.lite}>{`${web3.publicKey.lite}`}</Link>
-            ) : (
-              `${web3.publicKey.lite}`
-            )}
-          </Text>
-        </Descriptions.Item>
-
-        {web3.liteIdentity && (
-          <Descriptions.Item
-            label={
-              <WithIcon
-                icon={RiQuestionLine}
-                tooltip={tooltip.creditBalance}
-                children="Credits"
-              />
-            }
-          >
-            {web3.liteIdentity.creditBalance ? (
-              <CreditAmount amount={web3.liteIdentity.creditBalance} />
-            ) : (
-              <Button
-                shape="round"
-                type="primary"
-                onClick={() => setOpen('addCredits')}
-                children="Purchase"
-              />
-            )}
-          </Descriptions.Item>
-        )}
-      </InfoTable>
-
-      {!web3?.liteIdentity && (
-        <Alert
-          type="warning"
-          style={{ marginBottom: 20 }}
-          message={
-            <MissingLiteID.Create
-              eth={web3.publicKey.ethereum}
-              lite={web3.publicKey.lite}
-            />
-          }
-        />
-      )}
-
       <Title level={4}>
         <WithIcon
-          after
-          icon={RiQuestionLine}
+          icon={<LinkOutlined style={{ color: '#1890ff' }} />}
           tooltip={tooltip.web3.linkedSection}
         >
-          Linked Accumulate Accounts
+          Linked Accounts
         </WithIcon>
       </Title>
-
-      <Paragraph>
-        <Button
-          shape="round"
-          type="primary"
-          onClick={() => setOpen('createIdentity')}
-          children="Create ADI"
-        />
-      </Paragraph>
 
       {!linkedAccounts ? (
         <Skeleton />
       ) : !linkedAccounts.length ? (
-        <Alert
-          type="info"
-          message={
-            <span>
-              {'To link an account, navigate to it and click '}
-              <LinkOutlined />
-            </span>
-          }
-        />
+        <>
+          <Alert
+            type="info"
+            message={
+              <span>
+                {'To link an account, navigate to it and click '}
+                <LinkOutlined />
+                {'or '}
+                <Button
+                  shape="round"
+                  size="small"
+                  onClick={() => setOpen('createIdentity')}
+                  children="Create an ADI"
+                />
+              </span>
+            }
+          />
+        </>
       ) : (
         <List
           size="small"

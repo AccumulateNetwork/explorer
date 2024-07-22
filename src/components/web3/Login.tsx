@@ -19,12 +19,17 @@ export function Login() {
     </IconContext.Provider>
   );
 
+  const goToWallet = () =>
+    history.push(
+      `/acc/${web3.liteIdentity.url.toString().replace(/^acc:\/\//, '')}`,
+    );
+
   if (!web3.connected) {
     return (
       <Button
         shape="circle"
         type="default"
-        onClick={() => web3.connect().then(() => history.push('/web3'))}
+        onClick={() => web3.connect().then((ok) => ok && goToWallet())}
         style={{ marginRight: '1em' }}
         icon={<Icon />}
       />
@@ -56,7 +61,7 @@ export function Login() {
           shape="circle"
           type="primary"
           style={{ marginRight: '1em' }}
-          onClick={() => history.push('/web3')}
+          onClick={goToWallet}
           icon={<Icon />}
         />
       </Dropdown>

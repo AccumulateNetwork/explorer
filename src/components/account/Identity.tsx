@@ -19,9 +19,10 @@ import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { WithIcon } from '../common/WithIcon';
 import { useWeb3 } from '../web3/Context';
+import { Dashboard } from '../web3/Dashboard';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
-import { Directory } from './Directory';
+import { Directory as Web3Directory } from './Directory';
 
 const { Title, Text } = Typography;
 
@@ -39,6 +40,14 @@ export function Identity({
     'ADI'
   ) : (
     <EnumValue type={AccountType} value={account.type} />
+  );
+
+  const labelType = (
+    <WithIcon
+      icon={RiQuestionLine}
+      tooltip={tooltipDescs.acctType}
+      children="Type"
+    />
   );
 
   const labelETH = (
@@ -71,27 +80,20 @@ export function Identity({
         url={account.url}
         linkable={account}
         title={
-          isWeb3Lite
-            ? 'Web3 Lite Identity'
-            : isADI
-              ? 'Identity'
-              : 'Lite Identity'
+          isWeb3Lite ? 'Web3 Wallet' : isADI ? 'Identity' : 'Lite Identity'
         }
       />
-
-      {/* Account type */}
-      <InfoTable>
-        <Descriptions.Item label="Type">{typeStr}</Descriptions.Item>
-      </InfoTable>
 
       {/* General info like the URL and ADI */}
       <Title level={4}>
         <IconContext.Provider value={{ className: 'react-icons' }}>
           <RiInformationLine />
         </IconContext.Provider>
-        {typeStr} Info
+        Account Info
       </Title>
       <InfoTable>
+        <Descriptions.Item label={labelType}>{typeStr}</Descriptions.Item>
+
         {isWeb3Lite && (
           <Descriptions.Item label={labelETH}>
             <Text copyable>{web3.publicKey.ethereum}</Text>
@@ -109,6 +111,12 @@ export function Identity({
         )}
       </InfoTable>
 
+      {isWeb3Lite && (
+        <div style={{ marginBottom: 30 }}>
+          <Dashboard />
+        </div>
+      )}
+
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />
 
@@ -121,7 +129,7 @@ export function Identity({
         <Count count={record?.directory?.total || 0} />
       </Title>
 
-      <Directory record={record} />
+      <Web3Directory record={record} />
 
       {/* Chains and pending transactions */}
       <AccChains account={account.url} />

@@ -1,4 +1,5 @@
 export const tooltip = {
+  acctType: 'The Accumulate account type',
   tokenAcctUrl:
     "The URL of the token account, where an account's balances and transactions are organized for a particular token",
   tokenUrl: 'The URL of the token',

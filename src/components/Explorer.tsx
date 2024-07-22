@@ -22,7 +22,6 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
 import { Connect } from './web3/Connect';
-import Dashboard from './web3/Dashboard';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -85,7 +84,6 @@ export default function Explorer() {
                   <Route path="/blocks" children={<MinorBlocks />} />
                   <Route path="/network" children={<NetworkDashboard />} />
                   <Route path="/settings" children={<Settings.Edit />} />
-                  <Route path="/web3" children={<Dashboard />} />
 
                   {!shared.network.mainnet && (
                     <Route exact path="/faucet" children={<Faucet />} />

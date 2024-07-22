@@ -1,5 +1,4 @@
 import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
-import { ethers } from 'ethers';
 import React, { useContext, useEffect, useState } from 'react';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
