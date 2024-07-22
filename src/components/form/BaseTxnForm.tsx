@@ -10,27 +10,25 @@ import {
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 
-import { SignerWithVersion, URL } from 'accumulate.js';
-import { AccountRecord, RecordType } from 'accumulate.js/lib/api_v3';
+import { URL } from 'accumulate.js';
+import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
-  Account,
   KeyPage,
   LiteIdentity,
   Transaction,
   TransactionArgs,
 } from 'accumulate.js/lib/core';
 
-import { isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { CreditAmount } from '../common/Amount';
 import { Network } from '../common/Network';
-import { queryEffect } from '../common/query';
+import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
 import { Sign } from './Sign';
 import { calculateTransactionFee } from './fees';
-import { SignerSpec, getSigners } from './utils';
+import { getSigners } from './utils';
 
 const { Text } = Typography;
 
@@ -62,29 +60,28 @@ export function BaseTxnForm<Fields>({
   onValuesChange?(_: Fields): void;
 } & TxnFormProps) {
   const web3 = useWeb3();
-  const { api } = useContext(Network);
+  const { api, onApiError } = useContext(Network);
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
   const [signers, setSigners] = useState<Signer[]>([]);
   const [selectedSigner, setSelectedSigner] = useState<Signer>(theSigner);
   const [principal, setPrincipal] = useState<URL>();
-  const [principalAccount, setPrincipalAccount] = useState<Account>();
   const [principalSigners, setPrincipalSigners] = useState<Signer[]>();
   const [fee, setFee] = useState(0);
   const [balance, setBalance] = useState(null);
 
-  queryEffect(principal).then((r) => {
-    if (r.recordType === RecordType.Account) {
-      setPrincipalAccount(r.account);
-    }
-  });
-
   useAsyncEffect(
     async (mounted) => {
-      if (!principalAccount) {
+      if (!principal) {
         return;
       }
-      const signers = await getSigners(api, web3, principalAccount);
+
+      const r = await api.query(principal).catch(isErrorRecord);
+      if (r.recordType !== RecordType.Account) {
+        return;
+      }
+
+      const signers = await getSigners(api, web3, r.account);
       if (!mounted()) {
         return;
       }
@@ -98,8 +95,8 @@ export function BaseTxnForm<Fields>({
         ),
       );
     },
-    [principalAccount],
-  );
+    [principal],
+  ).catch((err) => onApiError(err));
 
   useEffect(() => {
     setSigners([]);

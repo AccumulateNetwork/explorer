@@ -38,7 +38,9 @@ export function SendTokens(
   const { setError, clearError } = formUtils(form);
 
   const submit = ({ from, to, amount }: Fields): TransactionArgs => {
-    amount *= 10 ** issuer?.precision;
+    if (amount && issuer) {
+      amount *= 10 ** issuer.precision;
+    }
     return {
       header: {
         principal: from?.url,
@@ -115,7 +117,7 @@ export function SendTokens(
         <InputNumber
           style={{ width: '100%' }}
           min={0}
-          max={issuer && Number(from.balance) / 10 ** issuer.precision}
+          max={issuer && from && Number(from.balance) / 10 ** issuer.precision}
           addonAfter={issuer?.symbol || issuer?.url?.toString()}
         />
       </Form.Item>

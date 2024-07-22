@@ -135,11 +135,13 @@ export function formUtils<Fields>(
     form.setFields([{ name, ...data }]);
 
     // Workaround for https://github.com/ant-design/ant-design/issues/23782
-    (form as any).getInternalHooks('RC_FORM_INTERNAL_HOOKS').dispatch({
-      type: 'updateValue',
-      namePath: [name],
-      value: data.value,
-    });
+    if ('value' in data) {
+      (form as any).getInternalHooks('RC_FORM_INTERNAL_HOOKS').dispatch({
+        type: 'updateValue',
+        namePath: [name],
+        value: data.value,
+      });
+    }
   };
 
   const setError = (name: NamePath<Fields>, error: any) => {

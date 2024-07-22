@@ -69,6 +69,7 @@ export function Actions(props: { account: URL }) {
       case AccountType.LiteTokenAccount:
         setItems([
           item({ label: 'Send tokens', open: 'sendTokens', from: acc.url }),
+          item({ label: 'Receive tokens', open: 'sendTokens', to: acc.url }),
           item({
             label: 'Purchase credits',
             open: 'addCredits',
@@ -78,6 +79,16 @@ export function Actions(props: { account: URL }) {
         break;
 
       case AccountType.LiteIdentity:
+        setItems([
+          item({
+            label: 'Purchase credits',
+            open: 'addCredits',
+            to: acc.url,
+          }),
+        ]);
+        break;
+
+      case AccountType.KeyPage:
         setItems([
           item({
             label: 'Purchase credits',
