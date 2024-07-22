@@ -50,12 +50,8 @@ export function AccTitle({
             <Link account={linkable} />
           </span>
         )}
-        {!url.username && (
-          <>
-            <span style={{ flex: 1 }} />
-            <Web3Actions account={url} />
-          </>
-        )}
+        <span style={{ flex: 1 }} />
+        {!url.username && <Web3Actions account={url} />}
       </Title>
       <Title
         level={4}

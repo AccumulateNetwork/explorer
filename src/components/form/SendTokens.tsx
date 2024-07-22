@@ -38,14 +38,14 @@ export function SendTokens(
   const { setError, clearError } = formUtils(form);
 
   const submit = ({ from, to, amount }: Fields): TransactionArgs => {
-    amount *= 10 ** issuer.precision;
+    amount *= 10 ** issuer?.precision;
     return {
       header: {
-        principal: from.url,
+        principal: from?.url,
       },
       body: {
         type: 'sendTokens',
-        to: [{ url: to.url, amount }],
+        to: [{ url: to?.url, amount }],
       },
     };
   };
