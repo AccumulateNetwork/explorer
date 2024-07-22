@@ -1,4 +1,9 @@
-import { PlayCircleTwoTone } from '@ant-design/icons';
+import {
+  PropertySafetyTwoTone,
+  SendOutlined,
+  TransactionOutlined,
+  WalletTwoTone,
+} from '@ant-design/icons';
 import { Dropdown, DropdownProps, Typography } from 'antd';
 import { MenuItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useContext, useEffect, useState } from 'react';
@@ -105,9 +110,12 @@ export function Actions(props: { account: URL }) {
   return (
     <>
       <Dropdown className="web3-actions" menu={{ items }}>
-        <PlayCircleTwoTone
-          style={{ cursor: 'pointer' }}
-          twoToneColor="#60b820"
+        <SendOutlined
+          style={{
+            cursor: 'pointer',
+            color: 'hsl(40, 100%, 47.5%)',
+            // transform: 'rotate(-30deg)',
+          }}
         />
       </Dropdown>
 

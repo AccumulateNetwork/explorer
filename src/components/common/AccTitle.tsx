@@ -47,9 +47,19 @@ export function AccTitle({
 
   return (
     <div>
-      <Title level={2} key="main">
-        {title} {linkable && <Link account={linkable} />}
-        {!url.username && <web3.Actions account={url} />}
+      <Title level={2} key="main" className="accountTitle">
+        {title}{' '}
+        {linkable && (
+          <span style={{ marginLeft: '10px' }}>
+            <Link account={linkable} />
+          </span>
+        )}
+        {!url.username && (
+          <>
+            <span style={{ flex: 1 }} />
+            <web3.Actions account={url} />
+          </>
+        )}
       </Title>
       <Title
         level={4}
