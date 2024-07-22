@@ -238,11 +238,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (request.action !== 'init') {
-      showModal({
-        title: 'Logging in',
-        children: Processing,
-      });
+    switch (request.action) {
+      case 'connect':
+      case 'switch':
+        showModal({
+          title: 'Connecting',
+          children: Processing,
+        });
+        break;
     }
 
     // Request permissions
@@ -336,11 +339,13 @@ export function Connect({ children }: { children: React.ReactNode }) {
     }
 
     onlineStore = new OnlineStore(driver, pubKey);
-    await onlineStore.load(api).catch((err) => {
-      console.error(err);
-    });
-    if (!mounted()) {
-      return;
+    if (Driver.canEncrypt) {
+      await onlineStore.load(api).catch((err) => {
+        console.error(err);
+      });
+      if (!mounted()) {
+        return;
+      }
     }
 
     dataStore = onlineStore.enabled

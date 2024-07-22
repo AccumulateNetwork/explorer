@@ -46,7 +46,8 @@ export class Driver {
   }
 
   static get canEncrypt() {
-    return window.ethereum?.isMetaMask;
+    return false;
+    // return window.ethereum?.isMetaMask;
   }
 
   readonly #web3: ethers.BrowserProvider;

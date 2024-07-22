@@ -230,7 +230,7 @@ export function Dashboard() {
         />
       )}
 
-      <Title level={4} style={{ marginTop: 20 }}>
+      {/* <Title level={4} style={{ marginTop: 20 }}>
         On-chain Backup{' '}
       </Title>
 
@@ -303,7 +303,7 @@ export function Dashboard() {
         >
           <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
         </Button>
-      )}
+      )} */}
 
       {/* Modals */}
       <Sign request={toSign} />
