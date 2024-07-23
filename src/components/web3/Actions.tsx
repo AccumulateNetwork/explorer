@@ -11,11 +11,13 @@ import {
   KeySpec,
   LiteIdentity,
 } from 'accumulate.js/lib/core';
+import { open } from 'accumulate.js/lib/ledger/hw';
 
 import { Network } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
+import { CreateIdentity } from '../form/CreateIdentity';
 import { SendTokens } from '../form/SendTokens';
 import { getSigners } from '../form/utils';
 import { useWeb3 } from './Context';
@@ -32,8 +34,8 @@ interface ToFrom {
   from?: URL;
 }
 
-export function Actions(props: { account: URL }) {
-  type FormKey = 'addCredits' | 'sendTokens';
+export function Actions({ account: accountUrl }: { account: URL }) {
+  type FormKey = 'addCredits' | 'sendTokens' | 'createIdentity';
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
@@ -41,7 +43,7 @@ export function Actions(props: { account: URL }) {
   const [toFrom, setToFrom] = useState<ToFrom>({});
   const [open, setOpen] = useState<FormKey>();
 
-  queryEffect(props.account).then((r) => {
+  queryEffect(accountUrl).then((r) => {
     if (r.recordType === RecordType.Account) {
       setAcc(r.account);
     }
@@ -84,6 +86,10 @@ export function Actions(props: { account: URL }) {
             label: 'Purchase credits',
             open: 'addCredits',
             to: acc.url,
+          }),
+          item({
+            label: 'Create an ADI',
+            open: 'createIdentity',
           }),
         ]);
         break;
@@ -167,6 +173,19 @@ export function Actions(props: { account: URL }) {
               account: signer,
             }
           }
+        />
+      )}
+
+      {open === 'createIdentity' && (
+        <CreateIdentity
+          open={open === 'createIdentity'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
+          }}
         />
       )}
     </>

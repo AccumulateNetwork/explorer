@@ -93,6 +93,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       }
 
       if (!isRecordOf(r, ...(types as any))) {
+        // TODO: Fix this error message
         setError(`${url} is not a token account`);
         return;
       }

@@ -13,7 +13,6 @@ import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
-import { AddCredits } from '../form/AddCredits';
 import { AddNote } from '../form/AddNote';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { Sign } from '../form/Sign';
@@ -30,9 +29,7 @@ export function Dashboard() {
     (x) => !web3.publicKey?.lite?.equals(x.url),
   );
 
-  const [open, setOpen] = useState<
-    'addCredits' | 'addNote' | 'createIdentity'
-  >();
+  const [open, setOpen] = useState<'addNote' | 'createIdentity'>();
   const [toSign, setToSign] = useState<Sign.Request>();
   const sign = (txn: TransactionArgs, signer?: Sign.Signer) =>
     Sign.submit(setToSign, txn, signer);
@@ -209,23 +206,6 @@ export function Dashboard() {
       {/* Modals */}
       <Sign request={toSign} />
 
-      {open === 'addCredits' && (
-        <AddCredits
-          to={web3.publicKey.lite}
-          open={open === 'addCredits'}
-          onCancel={() => setOpen(null)}
-          onFinish={(ok) => {
-            if (ok) {
-              try {
-                web3.reload({ liteIdentity: true });
-              } finally {
-                setOpen(null);
-              }
-            }
-          }}
-        />
-      )}
-
       {open === 'addNote' && (
         <AddNote
           open={open === 'addNote'}
@@ -234,11 +214,16 @@ export function Dashboard() {
         />
       )}
 
-      {open === 'createIdentity' && (
+      {open === 'createIdentity' && web3.liteIdentity && (
         <CreateIdentity
           open={open === 'createIdentity'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
+          signer={{
+            signer: web3.liteIdentity.url,
+            signerVersion: 1,
+            account: web3.liteIdentity,
+          }}
         />
       )}
     </>
