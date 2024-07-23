@@ -18,6 +18,7 @@ import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
 import { CreateIdentity } from '../form/CreateIdentity';
+import { CreateSubADI } from '../form/CreateSubADI';
 import { SendTokens } from '../form/SendTokens';
 import { getSigners } from '../form/utils';
 import { useWeb3 } from './Context';
@@ -35,7 +36,11 @@ interface ToFrom {
 }
 
 export function Actions({ account: accountUrl }: { account: URL }) {
-  type FormKey = 'addCredits' | 'sendTokens' | 'createIdentity';
+  type FormKey =
+    | 'addCredits'
+    | 'sendTokens'
+    | 'createIdentity'
+    | 'createSubADI';
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
@@ -90,6 +95,16 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           item({
             label: 'Create an ADI',
             open: 'createIdentity',
+          }),
+        ]);
+        break;
+
+      case AccountType.Identity:
+        setItems([
+          item({
+            label: 'Create a sub-ADI',
+            open: 'createSubADI',
+            from: acc.url,
           }),
         ]);
         break;
@@ -181,6 +196,20 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           open={open === 'createIdentity'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
+          }}
+        />
+      )}
+
+      {open === 'createSubADI' && (
+        <CreateSubADI
+          open={open === 'createSubADI'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          parent={toFrom.from}
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
