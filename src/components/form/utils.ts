@@ -169,8 +169,9 @@ export function formUtils<Fields>(
 
 export function useFormWatchEffect<F, K extends keyof F>(
   form: FormInstance<F>,
-  key: K,
+  key: K | K[],
   effect: (value: F[K], mounted: () => boolean) => void | Promise<void>,
+  dependencies: any[] = [],
   debounceTime = 200,
 ) {
   effect = debounce(effect, debounceTime);
@@ -181,14 +182,15 @@ export function useFormWatchEffect<F, K extends keyof F>(
     return () => {
       mounted = false;
     };
-  }, [value]);
+  }, [value, ...dependencies]);
 }
 
 export function useFormWatchMemo<F, K extends keyof F, V>(
   form: FormInstance<F>,
   key: K,
   factory: (value: F[K]) => V,
+  dependencies: any[] = [],
 ) {
   const value = Form.useWatch(key, form);
-  return useMemo(() => factory(value), [value]);
+  return useMemo(() => factory(value), [value, ...dependencies]);
 }

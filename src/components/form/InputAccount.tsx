@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { URL, URLArgs, errors } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
+  ADI,
   Account,
   KeyBook,
   KeyPage,
@@ -30,6 +31,7 @@ interface InputAccountProps
   placeholder?: string;
 }
 
+export const InputIdentity = newFor(ADI);
 export const InputTokenAccount = newFor(LiteTokenAccount, TokenAccount);
 export const InputCreditRecipient = newFor(LiteIdentity, KeyPage);
 export const InputAuthority = newFor(KeyBook);
@@ -112,6 +114,30 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       setAllOpts(opts);
     }, [web3?.linked?.all]);
 
+    const input = readOnly ? (
+      <Input
+        value={initialValue && `${initialValue}`}
+        readOnly={readOnly}
+        onChange={(e) => slowValueChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    ) : !baseOpts?.length ? (
+      <Input
+        readOnly={readOnly}
+        onChange={(e) => slowValueChange(e.target.value)}
+        placeholder={placeholder}
+      />
+    ) : (
+      <Select
+        showSearch
+        options={allOpts}
+        filterOption={(s, opt) => opt.value.toString().includes(s)}
+        placeholder={placeholder}
+        onSearch={(s) => setAllOpts([{ label: s, value: s }, ...baseOpts])}
+        onSelect={setURL}
+      />
+    );
+
     const slowValueChange = debounce(setURL, 200);
     return (
       <Form.Item
@@ -130,34 +156,14 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
           return { value };
         }}
       >
-        <Space.Compact block>
-          {readOnly ? (
-            <Input
-              value={initialValue && `${initialValue}`}
-              readOnly={readOnly}
-              onChange={(e) => slowValueChange(e.target.value)}
-              placeholder={placeholder}
-            />
-          ) : !baseOpts?.length ? (
-            <Input
-              readOnly={readOnly}
-              onChange={(e) => slowValueChange(e.target.value)}
-              placeholder={placeholder}
-            />
-          ) : (
-            <Select
-              showSearch
-              options={allOpts}
-              filterOption={(s, opt) => opt.value.toString().includes(s)}
-              placeholder={placeholder}
-              onSearch={(s) =>
-                setAllOpts([{ label: s, value: s }, ...baseOpts])
-              }
-              onSelect={setURL}
-            />
-          )}
-          {after}
-        </Space.Compact>
+        {after ? (
+          <Space.Compact block>
+            {input}
+            {after}
+          </Space.Compact>
+        ) : (
+          input
+        )}
       </Form.Item>
     );
   };

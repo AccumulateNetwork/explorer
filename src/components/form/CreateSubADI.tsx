@@ -1,20 +1,11 @@
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Divider,
-  Form,
-  Input,
-  Space,
-  Switch,
-  Tabs,
-  Typography,
-} from 'antd';
-import React, { useContext, useMemo, useState } from 'react';
+import { Button, Divider, Form, Input, Space, Tabs } from 'antd';
+import React, { useContext, useState } from 'react';
 import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL, URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
+import { ADI, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
@@ -23,14 +14,13 @@ import { Network } from '../common/Network';
 import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
-import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
-import { InputAuthority } from './InputAccount';
-import { Sign } from './Sign';
+import { InputAuthority, InputIdentity } from './InputAccount';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {
+  parent: ADI;
   name: string;
   authorities: KeyBook[];
 }
@@ -42,11 +32,11 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
   const { setError, clearError, setValidating } = formUtils(form);
   const [owner, setOwner] = useState<'external' | 'parent' | 'self'>('parent');
 
-  const submit = ({ name, authorities }: Fields): TransactionArgs => {
-    const url = `${props.parent}/${name}`;
+  const submit = ({ parent, name, authorities }: Fields): TransactionArgs => {
+    const url = `${parent.url}/${name}`;
     return {
       header: {
-        principal: props.parent,
+        principal: parent.url,
       },
       body: {
         type: 'createIdentity',
@@ -60,38 +50,44 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
   };
 
   // Validate the ADI URL
-  useFormWatchEffect(form, 'name', async (name, mounted) => {
-    if (!name) {
-      return;
-    }
+  const parent = Form.useWatch('parent', form);
+  useFormWatchEffect(
+    form,
+    'name',
+    async (name, mounted) => {
+      if (!name || !parent) {
+        return;
+      }
 
-    let url: URL;
-    try {
-      url = URL.parse(`${props.parent}/${name}`);
-    } catch (error) {
-      setError('name', `Invalid URL: ${unwrapError(error)}`);
-      return;
-    }
+      let url: URL;
+      try {
+        url = URL.parse(`${parent.url}/${name}`);
+      } catch (error) {
+        setError('name', `Invalid URL: ${unwrapError(error)}`);
+        return;
+      }
 
-    if (name.includes('/')) {
-      setError('name', `URL must not contain /`);
-      return;
-    }
+      if (name.includes('/')) {
+        setError('name', `URL must not contain /`);
+        return;
+      }
 
-    clearError('name');
-    setValidating('name', true);
-    const r = await api.query(url).catch(isErrorRecord);
-    if (!mounted()) {
-      return;
-    }
+      clearError('name');
+      setValidating('name', true);
+      const r = await api.query(url).catch(isErrorRecord);
+      if (!mounted()) {
+        return;
+      }
 
-    setValidating('name', false);
-    if (r.recordType !== RecordType.Error) {
-      setError('name', `${url} already exists`);
-    } else if (r.value.code !== Status.NotFound) {
-      setError('name', r.value);
-    }
-  });
+      setValidating('name', false);
+      if (r.recordType !== RecordType.Error) {
+        setError('name', `${url} already exists`);
+      } else if (r.value.code !== Status.NotFound) {
+        setError('name', r.value);
+      }
+    },
+    [`${parent?.url}`],
+  );
 
   return (
     <BaseTxnForm
@@ -101,15 +97,26 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
       submit={submit}
     >
       <Form.Item
-        name="name"
-        rules={[{ required: true }]}
         label={
           <WithIcon after icon={RiQuestionLine} tooltip={tooltip.form.adiUrl}>
             URL
           </WithIcon>
         }
       >
-        <Input addonBefore={`${props.parent}/`} />
+        <Space.Compact block>
+          <InputIdentity
+            name="parent"
+            noStyle
+            readOnly={!!props.parent}
+            initialValue={props.parent}
+            rules={[{ required: true }]}
+            style={{ flexShrink: props.parent ? 2 : null }}
+          />
+
+          <Form.Item noStyle name="name" rules={[{ required: true }]}>
+            <Input addonBefore="/" />
+          </Form.Item>
+        </Space.Compact>
       </Form.Item>
 
       <Divider />
@@ -144,7 +151,7 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
             ),
             children: (
               <Form.Item label="Owner">
-                <Input readOnly value={`${props.parent}`} />
+                <Input readOnly value={parent && `${parent?.url}`} />
               </Form.Item>
             ),
           },
@@ -175,7 +182,8 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
                     value={useFormWatchMemo(
                       form,
                       'name',
-                      (name) => name && `${props.parent}/${name}/book`,
+                      (name) => parent && name && `${parent?.url}/${name}/book`,
+                      [`${parent?.url}`],
                     )}
                   />
                 </Form.Item>
