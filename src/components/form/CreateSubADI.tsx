@@ -110,7 +110,7 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
             readOnly={!!props.parent}
             initialValue={props.parent}
             rules={[{ required: true }]}
-            style={{ flexShrink: props.parent ? 2 : null }}
+            style={{ flexShrink: 2 }}
           />
 
           <Form.Item noStyle name="name" rules={[{ required: true }]}>

@@ -16,6 +16,7 @@ import {
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
+import { omit } from '../../utils/typemagic';
 import { Ctor, isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { queryEffect } from '../common/query';
@@ -120,12 +121,14 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         readOnly={readOnly}
         onChange={(e) => slowValueChange(e.target.value)}
         placeholder={placeholder}
+        style={!after && props.style}
       />
     ) : !baseOpts?.length ? (
       <Input
         readOnly={readOnly}
         onChange={(e) => slowValueChange(e.target.value)}
         placeholder={placeholder}
+        style={!after && props.style}
       />
     ) : (
       <Select
@@ -135,13 +138,14 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         placeholder={placeholder}
         onSearch={(s) => setAllOpts([{ label: s, value: s }, ...baseOpts])}
         onSelect={setURL}
+        style={!after && props.style}
       />
     );
 
     const slowValueChange = debounce(setURL, 200);
     return (
       <Form.Item
-        {...props}
+        {...omit(props, 'style')}
         initialValue={initialValue && `${initialValue}`}
         normalize={(value) => {
           if (typeof value === 'string') {
@@ -157,7 +161,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         }}
       >
         {after ? (
-          <Space.Compact block>
+          <Space.Compact block style={props.style}>
             {input}
             {after}
           </Space.Compact>
