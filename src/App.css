@@ -1,8 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
-@import '~antd/dist/antd.css';
+@import 'antd/dist/antd.css';
+
+:root {
+  --content-padding-top: 25px;
+  --content-padding-bottom: 15px;
+  --content-padding-right: 20px;
+  --content-padding-left: max(
+    env(safe-area-inset-left),
+    var(--content-padding-right)
+  );
+}
 
 .react-icons {
   vertical-align: middle;
+}
+
+w3m-modal {
+  z-index: 2000;
+}
+
+.accountTitle {
+  display: flex;
+}
+
+input:read-only {
+  background-color: hsla(0, 0%, 0%, 0.04);
+  cursor: not-allowed;
 }
 
 .loader {
@@ -13,6 +36,41 @@
   right: 0;
   margin: auto !important;
   height: 42px;
+}
+
+section.ant-layout {
+  align-items: center;
+}
+
+header {
+  width: 100vw;
+  padding: 0;
+  margin: 0;
+}
+
+header.testnet,
+header.testnet > .ant-menu {
+  background-color: #402152;
+}
+
+main {
+  padding-top: var(--content-padding-top);
+  padding-right: var(--content-padding-right);
+  padding-bottom: var(--content-padding-bottom);
+  padding-left: var(--content-padding-left);
+  margin: 0;
+}
+
+@media screen and (min-width: 1600px) {
+  main {
+    width: 1600px;
+  }
+}
+
+@media (max-width: 1599px), not screen {
+  main {
+    width: 100vw;
+  }
 }
 
 .logo {
@@ -50,7 +108,7 @@
 }
 
 .ant-descriptions-item-content {
-  background: #FFF;
+  background: #fff;
 }
 
 .stats .react-icons {
@@ -76,12 +134,13 @@
 }
 
 .stats .code {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
 }
 
 .stats .ant-card-body {
   padding: 18px 24px 16px;
-  color: rgba(0,0,0,0.45);
+  color: rgba(0, 0, 0, 0.45);
   min-height: 121px;
 }
 
@@ -90,7 +149,7 @@
 }
 
 .stats small {
-  color: rgba(0,0,0,0.25);
+  color: rgba(0, 0, 0, 0.25);
 }
 
 .stats .ant-skeleton-content .ant-skeleton-title {
@@ -142,13 +201,22 @@
 }
 
 .skeleton-holder {
-  background: #FFF;
+  background: #fff;
   padding: 12px;
   border-color: #f0f0f0;
   margin-bottom: 25px;
 }
 
-h2.ant-typography, h4.ant-typography:not(.ant-typography-secondary) {
+.web3-actions {
+  margin-left: 10px;
+}
+
+.ant-dropdown-menu-title-content > .ant-btn-link {
+  padding: 0;
+}
+
+h2.ant-typography,
+h4.ant-typography:not(.ant-typography-secondary) {
   color: #000 !important;
 }
 
@@ -169,7 +237,7 @@ h4.ant-typography .react-icons {
 
 h4.ant-typography .react-icons-tooltip {
   margin-left: 6px;
-  color: rgba(0,0,0,0.4);
+  color: rgba(0, 0, 0, 0.4);
   vertical-align: middle;
   font-size: 75%;
 }
@@ -178,15 +246,18 @@ h4.ant-typography .react-icons.react-icons-eblocks {
   margin-right: 8px;
 }
 
-h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
-  background: rgba(255,255,255,0.85);
+h1.ant-typography .count,
+.ant-typography .count,
+h4.ant-typography .count {
+  background: rgba(255, 255, 255, 0.85);
   color: rgba(0, 0, 0, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
   display: inline-block;
   vertical-align: middle;
   margin-top: -3px;
   margin-left: 12px;
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
   font-weight: normal;
   padding: 5px 8px;
   font-size: 14px;
@@ -195,11 +266,15 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .ant-list .ant-list-item {
-  background: #FFF;
+  background: #fff;
   padding: 16px !important;
 }
 
-.ant-list .ant-list-item pre, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane pre, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane .content, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane pre, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane .content {
+.ant-list .ant-list-item pre,
+.entry-content .ant-tabs-top-content > .ant-tabs-tabpane pre,
+.entry-content .ant-tabs-top-content > .ant-tabs-tabpane .content,
+.anchor-info .ant-tabs-top-content > .ant-tabs-tabpane pre,
+.anchor-info .ant-tabs-top-content > .ant-tabs-tabpane .content {
   margin: 0;
   width: 100%;
   box-shadow: 0 0 0 1px #f0f0f0 !important;
@@ -207,14 +282,18 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   padding: 7px;
 }
 
-.ant-list .ant-list-item code, .entry-content .ant-tabs-top-content > .ant-tabs-tabpane code, .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane code {
+.ant-list .ant-list-item code,
+.entry-content .ant-tabs-top-content > .ant-tabs-tabpane code,
+.anchor-info .ant-tabs-top-content > .ant-tabs-tabpane code {
   margin: 0;
   width: 100%;
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace !important;
 }
 
-.ant-list .code {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+.ant-typography.code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace !important;
 }
 
 .ant-descriptions .ant-descriptions-item-content .ant-typography:last-child {
@@ -251,18 +330,23 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   font-size: 13px;
 }
 
-.ant-table .ant-table-row .code, .ant-descriptions .code {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+.ant-table .ant-table-row .code,
+.ant-descriptions .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
 }
 
-.ant-table .ant-table-row .react-icons, .ant-descriptions .react-icons, .ant-list .react-icons, .heights .react-icons {
+.ant-table .ant-table-row .react-icons,
+.ant-descriptions .react-icons,
+.ant-list .react-icons,
+.heights .react-icons {
   margin-right: 5px;
   opacity: 0.5;
   margin-top: -2px;
 }
 
 .ant-table .ant-table-footer {
-  background: #FFF;
+  background: #fff;
   padding: 12px;
 }
 
@@ -271,7 +355,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   padding-right: calc(2em + 28px);
 }
 
-.ant-list .react-icons, .featured .react-icons {
+.ant-list .react-icons,
+.featured .react-icons {
   margin-top: -2px;
 }
 
@@ -279,7 +364,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   border: 1px solid #f0f0f0;
 }
 
-.ant-list div.ant-typography:last-child, .ant-table-cell div.ant-typography:last-child {
+.ant-list div.ant-typography:last-child,
+.ant-table-cell div.ant-typography:last-child {
   margin-bottom: 0;
 }
 
@@ -291,8 +377,14 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   color: #52c41a;
 }
 
-.footer p {
+.ant-layout-footer p {
   margin-bottom: 4px;
+}
+
+.ant-layout-footer {
+  display: flex;
+  align-items: center;
+  flex-flow: column;
 }
 
 .extid {
@@ -318,7 +410,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   padding: 7px 11px 6px;
 }
 
-.extids .extid-ASCII .ant-typography, .extids .extid-empty {
+.extids .extid-ASCII .ant-typography,
+.extids .extid-empty {
   padding-top: 6px !important;
   padding-bottom: 7px !important;
 }
@@ -331,7 +424,19 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   height: 33px !important;
 }
 
-.extid .extid-text, .extid .extid-type {
+.extid-json {
+  padding: 0 !important;
+}
+
+.extid-json pre {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: none !important;
+}
+
+.extid .extid-text,
+.extid .extid-type {
   font-size: 13px !important;
 }
 
@@ -341,12 +446,14 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   max-width: calc(100% - 89px);
 }
 
-.extid.extid-Base64 .extid-text:not(.extid-empty), .extid.extid-Hex .extid-text:not(.extid-empty) {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
+.extid.extid-Base64 .extid-text:not(.extid-empty),
+.extid.extid-Hex .extid-text:not(.extid-empty) {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace !important;
 }
 
 .extid .extid-text {
-  background: #FFF;
+  background: #fff;
   border-style: solid;
   border-width: 1px;
   border-color: #d9d9d9;
@@ -358,15 +465,43 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   border-left-width: 0 !important;
 }
 
-.extid .extid-type.ant-typography, .extid .extid-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-ASCII, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:not(.ant-radio-button-wrapper-disabled)::before {
+.extid .extid-type.ant-typography,
+.extid .extid-type .ant-select-selector,
+.type-radio .ant-radio-button-wrapper-checked.type-ASCII,
+.type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover,
+.type-radio
+  .ant-radio-button-wrapper-checked.type-ASCII:not(
+    .ant-radio-button-wrapper-disabled
+  )::before {
   background: #001529 !important;
   border: 1px solid #001529 !important;
-  color: #FFF !important;
+  color: #fff !important;
 }
 
-.extid-Base64 .extid-type.ant-typography, .extid-Base64 .extid-type .ant-select-selector, .extid-Hex .extid-type.ant-typography, .extid-Hex .extid-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-Base64, .type-radio .ant-radio-button-wrapper-checked.type-Hex, .type-radio .ant-radio-button-wrapper-checked.type-JSON, .type-radio .ant-radio-button-wrapper-checked.type-Base64:hover, .type-radio .ant-radio-button-wrapper-checked.type-Hex:hover, .type-radio .ant-radio-button-wrapper-checked.type-JSON:hover, .type-radio .ant-radio-button-wrapper-checked.type-Base64:not(.ant-radio-button-wrapper-disabled)::before, .type-radio .ant-radio-button-wrapper-checked.type-Hex:not(.ant-radio-button-wrapper-disabled)::before, .type-radio .ant-radio-button-wrapper-checked.type-JSON:not(.ant-radio-button-wrapper-disabled)::before {
+.extid-Base64 .extid-type.ant-typography,
+.extid-Base64 .extid-type .ant-select-selector,
+.extid-Hex .extid-type.ant-typography,
+.extid-Hex .extid-type .ant-select-selector,
+.type-radio .ant-radio-button-wrapper-checked.type-Base64,
+.type-radio .ant-radio-button-wrapper-checked.type-Hex,
+.type-radio .ant-radio-button-wrapper-checked.type-JSON,
+.type-radio .ant-radio-button-wrapper-checked.type-Base64:hover,
+.type-radio .ant-radio-button-wrapper-checked.type-Hex:hover,
+.type-radio .ant-radio-button-wrapper-checked.type-JSON:hover,
+.type-radio
+  .ant-radio-button-wrapper-checked.type-Base64:not(
+    .ant-radio-button-wrapper-disabled
+  )::before,
+.type-radio
+  .ant-radio-button-wrapper-checked.type-Hex:not(
+    .ant-radio-button-wrapper-disabled
+  )::before,
+.type-radio
+  .ant-radio-button-wrapper-checked.type-JSON:not(
+    .ant-radio-button-wrapper-disabled
+  )::before {
   background: #1a7eea !important;
-  border-color:  #1a7eea !important;
+  border-color: #1a7eea !important;
 }
 
 .extid.extid-compact .extid-type {
@@ -386,7 +521,14 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   font-size: 13px !important;
 }
 
-.key .key-type.ant-typography, .key .key-type .ant-select-selector, .type-radio .ant-radio-button-wrapper-checked.type-ASCII, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover, .type-radio .ant-radio-button-wrapper-checked.type-ASCII:not(.ant-radio-button-wrapper-disabled)::before {
+.key .key-type.ant-typography,
+.key .key-type .ant-select-selector,
+.type-radio .ant-radio-button-wrapper-checked.type-ASCII,
+.type-radio .ant-radio-button-wrapper-checked.type-ASCII:hover,
+.type-radio
+  .ant-radio-button-wrapper-checked.type-ASCII:not(
+    .ant-radio-button-wrapper-disabled
+  )::before {
   background: #e6f7ff !important;
   border: 1px solid #91d5ff !important;
   color: #096dd9 !important;
@@ -403,8 +545,9 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .key .key-text {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace !important;
-  background: #FFF;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace !important;
+  background: #fff;
   word-break: break-all;
   overflow: hidden;
 }
@@ -418,11 +561,11 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .type-radio .ant-radio-button-wrapper-checked:hover {
-  color: #FFFFFF !important;
+  color: #ffffff !important;
 }
 
 .extid .ant-select-arrow {
-  color: rgba(255,255,255,0.5) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .extid-tag {
@@ -434,13 +577,14 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   opacity: 0.5;
 }
 
-.entry-content .ant-tabs-bar, .anchor-info .ant-tabs-bar {
+.entry-content .ant-tabs-bar,
+.anchor-info .ant-tabs-bar {
   display: none !important;
 }
 
 .entry-content {
   padding: 16px !important;
-  background: #FFF !important;
+  background: #fff !important;
 }
 
 .entry-content pre {
@@ -449,15 +593,20 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 
 .anchor-info .ant-tabs {
   padding: 1px !important;
-  background: #FFF !important;
+  background: #fff !important;
 }
 
-.entry-content .ant-tabs-top-content.ant-tabs-content-animated, .entry-content .ant-tabs-bottom-content.ant-tabs-content-animated, .anchor-info .ant-tabs-top-content.ant-tabs-content-animated, .anchor-info .ant-tabs-bottom-content.ant-tabs-content-animated {
+.entry-content .ant-tabs-top-content.ant-tabs-content-animated,
+.entry-content .ant-tabs-bottom-content.ant-tabs-content-animated,
+.anchor-info .ant-tabs-top-content.ant-tabs-content-animated,
+.anchor-info .ant-tabs-bottom-content.ant-tabs-content-animated {
   transition: none !important;
 }
 
-.entry-content .code, .anchor-info .code {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+.entry-content .code,
+.anchor-info .code {
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
 }
 
 .ant-menu .ant-menu-item .react-icons {
@@ -479,36 +628,38 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-right: 7px;
 }
 
-.ant-menu .ant-menu-item .nav-text, .ant-menu .ant-menu-submenu-title {
+.ant-menu .ant-menu-item .nav-text,
+.ant-menu .ant-menu-submenu-title {
   text-transform: uppercase;
 }
 
-.network-badge {
+.menu-right {
   display: none !important;
   position: absolute !important;
   top: 16px;
   right: 22px;
+  line-height: normal;
 }
 
-@media only screen and (min-width: 950px) {
-  .network-badge {
-    display: block !important;
+@media only screen and (min-width: 600px) {
+  .menu-right {
+    display: flex !important;
   }
 }
 
 .network-badge {
-  background: rgba(255,255,255,0.08) !important;
-  border-color: rgba(255,255,255,0.2) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
   padding-left: 12px !important;
   padding-right: 10px !important;
 }
 
 .network-badge .anticon-down {
-  color: rgba(255,255,255,0.5) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .network-badge .ant-badge-status-text {
-  color: #FFF;
+  color: #fff;
 }
 
 .network-badge .ant-badge-status-dot {
@@ -545,7 +696,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-right: 3px;
 }
 
-.ant-table .align-top, .ant-descriptions .align-top {
+.ant-table .align-top,
+.ant-descriptions .align-top {
   vertical-align: top;
 }
 
@@ -600,11 +752,12 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   padding: 0 !important;
 }
 
-.ant-rate.acc-fav .ant-rate-star-zero .ant-rate-star-second, .ant-rate.acc-fav .ant-rate-star-focused .ant-rate-star-second  {
+.ant-rate.acc-fav .ant-rate-star-zero .ant-rate-star-second,
+.ant-rate.acc-fav .ant-rate-star-focused .ant-rate-star-second {
   color: rgba(24, 144, 255, 0.4);
 }
 
-.ant-rate.acc-fav .ant-rate-star-full .ant-rate-star-second  {
+.ant-rate.acc-fav .ant-rate-star-full .ant-rate-star-second {
   color: #1890ff;
 }
 
@@ -616,13 +769,45 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   padding-bottom: 0 !important;
 }
 
+header.web3 {
+  padding: 0;
+  height: unset;
+  line-height: unset;
+}
+
 .web3-module {
-  margin-bottom: 20px;
-  margin-top: -25px;
-  margin-left: -20px;
-  margin-right: -20px;
   background: #d6e4ff;
-  padding: 10px 20px 0px 20px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  flex-flow: column;
+}
+
+.web3-register-book {
+  display: flex;
+  align-items: center;
+}
+
+.web3-module > .account {
+  padding: 0;
+  padding-right: var(--content-padding-right);
+  padding-left: var(--content-padding-left);
+}
+
+@media screen and (min-width: 1600px) {
+  .web3-module > .account {
+    width: 1600px;
+  }
+}
+
+@media (max-width: 1599px), not screen {
+  .web3-module > .account {
+    width: 100vw;
+  }
+}
+
+.web3-logout-button:not(:hover) {
+  color: white;
 }
 
 .web3-module.connected {
@@ -650,10 +835,6 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 
 .web3-module .ant-typography {
   margin-bottom: 0 !important;
-}
-
-.web3-module .login .ant-col {
-  margin-bottom: 10px;
 }
 
 .web3-module .account .account-connected {
@@ -699,7 +880,7 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .web3-module .account .card-container .ant-tabs-content-holder {
-  background: #FFFFFF;
+  background: #ffffff;
   padding: 12px 15px;
 }
 
@@ -708,11 +889,22 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-left: 5px;
 }
 
-.web3-module .account .card-container .ant-tabs-nav .ant-badge .ant-badge-count {
+.web3-module
+  .account
+  .card-container
+  .ant-tabs-nav
+  .ant-badge
+  .ant-badge-count {
   background: #8c8c8c;
 }
 
-.web3-module .account .card-container .ant-tabs-nav .ant-tabs-tab-active .ant-badge .ant-badge-count {
+.web3-module
+  .account
+  .card-container
+  .ant-tabs-nav
+  .ant-tabs-tab-active
+  .ant-badge
+  .ant-badge-count {
   background: #1890ff;
 }
 
@@ -731,7 +923,8 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 }
 
 .web3-module .account .card-container .code {
-  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', Monaco, Menlo, Consolas, 'Courier New',
+    monospace;
 }
 
 .ant-modal-content .ant-divider {
@@ -743,7 +936,10 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   margin-bottom: 0;
 }
 
-.ant-modal-content .ant-form .ant-form-item.text-row .ant-form-item-control-input {
+.ant-modal-content
+  .ant-form
+  .ant-form-item.text-row
+  .ant-form-item-control-input {
   min-height: auto;
 }
 
@@ -755,7 +951,9 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
   background-color: hsl(8, 100%, 97%);
 }
 
-.ant-table-row.node-details.node-error + .ant-table-expanded-row > .ant-table-cell {
+.ant-table-row.node-details.node-error
+  + .ant-table-expanded-row
+  > .ant-table-cell {
   background-color: hsl(8, 100%, 95%);
 }
 
@@ -766,4 +964,16 @@ h1.ant-typography .count, .ant-typography .count, h4.ant-typography .count {
 
 .node-details .node-error-icon {
   color: #ff4d4f;
+}
+
+.info-table .ant-descriptions-item-label {
+  width: 20em;
+}
+
+.compact-list .ant-list-item {
+  padding: 0px !important;
+}
+
+.validator-signatures .ant-list-item {
+  padding: 8px 16px !important;
 }

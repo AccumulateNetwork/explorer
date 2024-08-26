@@ -1,0 +1,13 @@
+image: node:20
+
+pages:
+  variables:
+    VITE_NETWORK: any
+  script:
+    - yarn install
+    - yarn build
+    - mv build/* public
+    - find public -type f
+  artifacts:
+    paths:
+      - public
