@@ -27,17 +27,15 @@ export function AccTitle({
     url = url.asUrl();
   }
 
-  const [isFav, setIsFav] = useState<number | null>(null);
-
-  useEffect(() => {
-    isFavourite(url.toString()) ? setIsFav(1) : setIsFav(0);
-  }, [url.toString()]);
+  const [isFav, setIsFav] = useState<boolean>(isFavourite(`${url}`));
 
   const handleFavChange = (e) => {
     if (e === 0) {
-      removeFavourite(url.toString());
+      removeFavourite(`${url}`);
+      setIsFav(false);
     } else {
-      addFavourite(url.toString());
+      addFavourite(`${url}`);
+      setIsFav(true);
     }
   };
 
@@ -60,12 +58,12 @@ export function AccTitle({
         style={{ marginTop: '-10px' }}
         copyable={{ text: url.toString() }}
       >
-        {!url.username && typeof isFav === 'number' && (
+        {!url.username && (
           <Rate
             className={'acc-fav'}
             count={1}
-            defaultValue={isFav}
-            value={isFav}
+            defaultValue={isFav ? 1 : 0}
+            value={isFav ? 1 : 0}
             onChange={(e) => {
               handleFavChange(e);
             }}
@@ -94,7 +92,7 @@ function Link({ account }: { account: Account }) {
     }
   };
 
-  if (!web3) {
+  if (!web3?.connected) {
     return false;
   }
 
