@@ -4,32 +4,11 @@ import { Base64 } from 'js-base64';
 import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
+type ContentType = 'Text' | 'JSON' | 'Base64' | 'Hex';
+
 const { Option } = Select;
 const { Text } = Typography;
-
-function isWhitespace(x: number) {
-  switch (x) {
-    case 0x9:
-    case 0xa:
-    case 0xd:
-    case 0x20:
-      return true;
-  }
-  return false;
-}
-
-function isPrintable(x: number) {
-  // Non-ASCII
-  if (x > 0x7e) return false;
-
-  // Regular characters
-  if (x > 0x20) return true;
-
-  // Whitespace
-  return isWhitespace(x);
-}
-
-type ContentType = 'ASCII' | 'JSON' | 'Base64' | 'Hex';
+const utf8 = new TextDecoder('utf8', { fatal: true });
 
 export function Content(props: {
   children: string | Uint8Array;
@@ -48,25 +27,25 @@ export function Content(props: {
   const text64 = Base64.fromUint8Array(bytes);
 
   // Use states because that should limit how often React re-executes this code
-  const [type, setType] = useState(props.type || 'ASCII');
+  const [type, setType] = useState(props.type || 'Text');
   const [textJSON, setTextJSON] = useState(null);
   useEffect(() => {
     if (props.type) {
       return;
     }
 
-    // TODO: check for valid utf-8 strings
-    if (bytes.every(isWhitespace)) {
-      // All whitespace
-      setType('Hex');
-    } else if (!bytes.every(isPrintable)) {
-      // Has non-printable characters
-      setType('Hex');
-    } else if (!props.compact) {
+    try {
+      utf8.decode(bytes);
       try {
         setTextJSON(JSON.stringify(JSON.parse(textRaw), null, 4));
         setType('JSON');
-      } catch (_) {}
+      } catch (_) {
+        // Not valid JSON
+        setType('Text');
+      }
+    } catch (_) {
+      // Not valid UTF-8
+      setType('Hex');
     }
   }, [`${props.children}`, props.type]);
 
@@ -78,7 +57,7 @@ export function Content(props: {
       case 'Base64':
         setCurrent(text64);
         break;
-      case 'ASCII':
+      case 'Text':
         setCurrent(textRaw);
         break;
       case 'JSON':
@@ -118,16 +97,16 @@ export function Content(props: {
 
     switch (type) {
       case 'JSON':
-        setType('ASCII');
+        setType('Text');
         break;
-      case 'ASCII':
+      case 'Text':
         setType('Base64');
         break;
       case 'Base64':
         setType('Hex');
         break;
       case 'Hex':
-        setType(textJSON ? 'JSON' : 'ASCII');
+        setType(textJSON ? 'JSON' : 'Text');
         break;
       default:
         break;
@@ -177,7 +156,7 @@ export function Content(props: {
       {!props.compact ? (
         <Select value={type} className="extid-type" onChange={handleChange}>
           {textJSON && <Option value="JSON">JSON</Option>}
-          <Option value="ASCII">ASCII</Option>
+          <Option value="Text">Text</Option>
           <Option value="Base64">Base64</Option>
           <Option value="Hex">Hex</Option>
         </Select>
@@ -203,7 +182,7 @@ Content.Render = function ({
           <SyntaxHighlighter language="json">{text}</SyntaxHighlighter>
         </Text>
       );
-    case 'ASCII':
+    case 'Text':
       break;
     default:
       return <Text {...attrs}>{text}</Text>;
