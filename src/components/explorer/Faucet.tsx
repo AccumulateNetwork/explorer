@@ -1,34 +1,30 @@
 import { Alert, Form, Input, Typography } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, {
+  MouseEventHandler,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
 import { TxID } from 'accumulate.js';
+import { Submission } from 'accumulate.js/lib/api_v3';
 
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
+import { Sign } from '../form/Sign';
 
 const { Title, Paragraph } = Typography;
 const { Search } = Input;
 
 const Faucet = () => {
-  const [faucetForm] = Form.useForm();
-  const [faucetIsLoading, setFaucetIsLoading] = useState(false);
-  const [txid, setTxid] = useState<TxID>(null);
-  const [error, setError] = useState(null);
+  const [form] = Form.useForm();
+  const [rq, setRq] = useState<Sign.WaitForRequest<Submission>>();
+  Sign.waitFor;
 
   const { api } = useContext(Network);
-  const handleFaucet = async (url) => {
-    setFaucetIsLoading(true);
-    setTxid(null);
-    setError(null);
-
-    const response = await api.faucet(url);
-    if (response && response?.status?.txID) {
-      setTxid(response.status.txID);
-    } else {
-      setError('Unable to fund ' + url);
-    }
-
-    setFaucetIsLoading(false);
+  const submit = async (url?: string) => {
+    if (!url) return;
+    await Sign.waitFor(setRq, () => api.faucet(url, { token: 'ACME' }));
   };
 
   useEffect(() => {
@@ -42,38 +38,19 @@ const Faucet = () => {
         <Alert message="This is the testnet faucet" type="info" showIcon />
       </Paragraph>
       <Paragraph>
-        <Form form={faucetForm} initialValues={{ search: '' }}>
+        <Form form={form} initialValues={{ search: '' }}>
           <Search
             placeholder="Enter token account"
             allowClear
             enterButton="Get ACME"
             size="large"
-            onSearch={(value) => {
-              if (value !== '') {
-                handleFaucet(value);
-              }
-            }}
-            loading={faucetIsLoading}
+            onSearch={submit}
             spellCheck={false}
             autoComplete="off"
-            disabled={faucetIsLoading}
           />
         </Form>
       </Paragraph>
-      {txid ? (
-        <div>
-          <Alert
-            type="success"
-            message={<Link to={txid}>{txid.toString()}</Link>}
-            showIcon
-          />
-        </div>
-      ) : null}
-      {error ? (
-        <div>
-          <Alert type="error" message={error} showIcon />
-        </div>
-      ) : null}
+      <Sign.WaitFor title="Faucet" canCloseEarly request={rq} />
     </div>
   );
 };
