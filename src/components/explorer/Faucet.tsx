@@ -19,7 +19,6 @@ const { Search } = Input;
 const Faucet = () => {
   const [form] = Form.useForm();
   const [rq, setRq] = useState<Sign.WaitForRequest<Submission>>();
-  Sign.waitFor;
 
   const { api } = useContext(Network);
   const submit = async (url?: string) => {
