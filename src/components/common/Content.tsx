@@ -4,6 +4,8 @@ import { Base64 } from 'js-base64';
 import React, { useEffect, useState } from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 
+import { Link } from './Link';
+
 type ContentType = 'Text' | 'JSON' | 'Base64' | 'Hex';
 
 const { Option } = Select;
@@ -137,7 +139,7 @@ export function Content(props: {
   const content = (
     <Content.Render
       className="extid-text"
-      copyable={!props.compact}
+      copyable={props.compact ? false : { text: current }}
       as={type}
       text={props.compact ? currentShort : current}
     />
@@ -203,17 +205,27 @@ Content.Render = function ({
     const m = linkRegex.exec(text);
     if (!m?.[0]?.length) {
       push(text);
+      text = '';
       break;
     }
     if (m.index > 0) {
       push(text.substring(0, m.index));
     }
-    push(
-      <a href={m[0]} target="_blank" rel="noopener noreferrer">
-        {m[0]}
-      </a>,
-    );
+    if (m[1] === 'acc') {
+      push(<Link to={m[0]}>{m[0]}</Link>);
+    } else {
+      push(
+        <a href={m[0]} target="_blank" rel="noopener noreferrer">
+          {m[0]}
+        </a>,
+      );
+    }
     text = text.substring(m.index + m[0].length);
   }
-  return <Text {...attrs}>{children}</Text>;
+  return (
+    <Text {...attrs}>
+      {children}
+      {text}
+    </Text>
+  );
 };
