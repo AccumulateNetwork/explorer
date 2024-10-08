@@ -9,25 +9,15 @@ import { RecordType } from 'accumulate.js/lib/api_v3';
 import Count from '../common/Count';
 import { queryEffect } from '../common/query';
 import { Chain } from './Chain';
+import { Pending } from './Pending';
 
 const { Title } = Typography;
 
 export function AccChains({ account }: { account: URLArgs }) {
-  const [pendingCount, setPendingCount] = useState(null);
   const [count, setCount] = useState({
     main: null,
     scratch: null,
     signature: null,
-  });
-
-  queryEffect(account, {
-    queryType: 'pending',
-    range: { count: 0 },
-  }).then((r) => {
-    if (r.recordType !== RecordType.Range) {
-      return;
-    }
-    setPendingCount(r.total);
   });
 
   queryEffect(account, { queryType: 'chain' }).then((r) => {
@@ -50,18 +40,7 @@ export function AccChains({ account }: { account: URLArgs }) {
 
   return (
     <div>
-      {(pendingCount === null || pendingCount > 0) && (
-        <div>
-          <Title level={4} style={{ marginTop: 30 }}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiTimerLine />
-            </IconContext.Provider>
-            Pending
-            <Count count={pendingCount} />
-          </Title>
-          <Chain url={account} type="pending" />
-        </div>
-      )}
+      <Pending url={account} />
 
       <Title level={4} style={{ marginTop: 30 }}>
         <IconContext.Provider value={{ className: 'react-icons' }}>
