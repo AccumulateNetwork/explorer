@@ -1,6 +1,6 @@
 import { Skeleton, Table, TablePaginationConfig, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -58,20 +58,24 @@ export function Chain(props: {
   const url = URL.parse(props.url);
 
   const { api, network } = useContext(Network);
-  const [managed] = useState(
-    new ManagedRange(
-      (range) =>
-        api.query(url, {
-          queryType: 'chain',
-          name: props.type,
-          range: {
-            expand: true,
-            ...range,
-          },
-        }) as Promise<RecordRange<ChainRecord>>,
-      true,
-    ),
-  );
+  const [managed, setManaged] = useState<ManagedRange<ChainRecord>>(null);
+
+  useEffect(() => {
+    setManaged(
+      new ManagedRange(
+        (range) =>
+          api.query(url, {
+            queryType: 'chain',
+            name: props.type,
+            range: {
+              expand: true,
+              ...range,
+            },
+          }) as Promise<RecordRange<ChainRecord>>,
+        true,
+      ),
+    );
+  }, [`${props.url}`, network.id]);
 
   const [txChain, setTxChain] = useState<ChainRecord[]>(null);
   const [account, setAccount] = useState<
@@ -118,13 +122,14 @@ export function Chain(props: {
         setIssuer(r2.account);
       }
     },
-    [props.url.toString(), network.id],
+    [`${props.url}`, network.id],
   );
 
   useAsyncEffect(
     async (mounted) => {
       setTableIsLoading(true);
       try {
+        if (!managed) return;
         const response = await managed.getPage(pagination);
         if (!mounted()) return;
 
@@ -138,7 +143,7 @@ export function Chain(props: {
         setTableIsLoading(false);
       }
     },
-    [props.url, JSON.stringify(pagination), network.id],
+    [managed, JSON.stringify(pagination), network.id],
   );
 
   const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [

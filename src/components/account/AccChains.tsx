@@ -20,15 +20,6 @@ export function AccChains({ account }: { account: URLArgs }) {
     signature: null,
   });
 
-  queryEffect(account, {
-    queryType: 'pending',
-    range: { count: 0 },
-  }).then((r) => {
-    if (r.recordType !== RecordType.Range) {
-      return;
-    }
-  });
-
   queryEffect(account, { queryType: 'chain' }).then((r) => {
     if (r.recordType !== RecordType.Range) {
       return;
