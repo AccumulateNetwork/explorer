@@ -34,6 +34,7 @@ import {
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { SigRecord, isRecordOf } from '../../utils/types';
+import { CreditAmount } from './Amount';
 import Key from './Key';
 import { Link } from './Link';
 import { Network } from './Network';
@@ -353,7 +354,11 @@ function Required({
             (sum, x) => sum + x.message.paid,
             0,
           );
-          return <span>{paid * 1e-2} paid</span>;
+          return (
+            <span>
+              <CreditAmount amount={paid} /> paid
+            </span>
+          );
         }
         if (authority === 'other') {
           return <span>{otherSigs.length} signature(s)</span>;
@@ -434,7 +439,7 @@ function Required({
         <div>
           {creditPayments.map((x) => (
             <div key={`${x.id}`}>
-              {x.message.paid * 1e-2} paid by{' '}
+              <CreditAmount amount={x.message.paid} /> paid by{' '}
               <Link to={x.message.payer}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                   <RiAccountCircleLine />
