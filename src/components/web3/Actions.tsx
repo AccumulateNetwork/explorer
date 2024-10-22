@@ -11,7 +11,6 @@ import {
   KeySpec,
   LiteIdentity,
 } from 'accumulate.js/lib/core';
-import { open } from 'accumulate.js/lib/ledger/hw';
 
 import { Network } from '../common/Network';
 import { queryEffect } from '../common/query';

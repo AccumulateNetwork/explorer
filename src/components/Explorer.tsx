@@ -1,6 +1,6 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Layout, Spin, Typography, message } from 'antd';
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import MinorBlocks from './common/MinorBlocks';

@@ -207,7 +207,7 @@ export class Driver {
 
     // Parse the status code
     if ('statusCode' in error) {
-      // eslint-disable-next-line default-case
+       
       switch (error.statusCode) {
         case 0x6d02:
         case 0x6511:

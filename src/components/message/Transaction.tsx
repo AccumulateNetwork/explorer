@@ -1,4 +1,4 @@
-import { Descriptions, Typography } from 'antd';
+import { Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';

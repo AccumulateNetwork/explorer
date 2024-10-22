@@ -259,7 +259,7 @@ const Staking = () => {
     getSupply(network, setSupply, setAPR);
     getStakers();
     fetchLiquidStakingInfo();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>

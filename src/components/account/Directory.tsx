@@ -1,5 +1,4 @@
 import { Table, TablePaginationConfig } from 'antd';
-import row from 'antd/lib/row';
 import { useState } from 'react';
 import React from 'react';
 import { IconContext } from 'react-icons';

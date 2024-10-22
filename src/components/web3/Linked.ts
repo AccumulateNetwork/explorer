@@ -16,10 +16,8 @@ import {
   LiteIdentity,
   LiteIdentityArgs,
   LiteTokenAccount,
-  LiteTokenAccountArgs,
   LiteTokenAccountArgsWithType,
   TokenAccount,
-  TokenAccountArgs,
   TokenAccountArgsWithType,
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';

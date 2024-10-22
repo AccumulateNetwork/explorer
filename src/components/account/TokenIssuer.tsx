@@ -134,7 +134,7 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
     if (isACME) {
       getSupply(network, setSupply);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const title = (
     <Title level={4}>

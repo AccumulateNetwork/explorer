@@ -1,6 +1,6 @@
 import { LinkOutlined } from '@ant-design/icons';
 import { Rate, Tooltip, Typography } from 'antd';
-import React, { lazy, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { TxID, URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';

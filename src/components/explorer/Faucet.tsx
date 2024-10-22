@@ -1,15 +1,12 @@
 import { Alert, Form, Input, Typography } from 'antd';
 import React, {
-  MouseEventHandler,
   useContext,
   useEffect,
   useState,
 } from 'react';
 
-import { TxID } from 'accumulate.js';
 import { Submission } from 'accumulate.js/lib/api_v3';
 
-import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Sign } from '../form/Sign';
 

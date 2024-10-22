@@ -158,7 +158,7 @@ export function Signatures(props: {
   }
 
   useEffect(() => {
-    getAllAuthorities(); // eslint-disable-next-line react-hooks/exhaustive-deps
+    getAllAuthorities();
   }, []);
 
   return (

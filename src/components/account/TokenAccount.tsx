@@ -72,7 +72,7 @@ export function TokenAccount({
 
   useEffect(() => {
     getStakingInfo(account.url);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const labelURL = (
     <span>

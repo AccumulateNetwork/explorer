@@ -1,7 +1,7 @@
 import { Typography } from 'antd';
 import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
-import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
+import { RiExchangeLine, RiShieldCheckLine } from 'react-icons/ri';
 
 import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
