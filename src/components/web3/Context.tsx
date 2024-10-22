@@ -8,7 +8,7 @@ import type { OnlineStore } from './OnlineStore';
 import type { Store } from './Store';
 
 export interface Context {
-  connect: () => Promise<boolean>;
+  connect: () => Promise<Context | null>;
   disconnect: () => void;
   reload: (rq: ReloadRequest) => void;
   switch: () => void;

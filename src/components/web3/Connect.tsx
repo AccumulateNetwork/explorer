@@ -7,7 +7,7 @@ import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
-import { Provider } from './Context';
+import { Context, Provider } from './Context';
 import { Driver, EthPublicKey } from './Driver';
 import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
@@ -28,14 +28,14 @@ interface ActionArgs {
 class ActionRequest {
   readonly action: Action;
   readonly args: ActionArgs;
-  readonly result: Promise<boolean>;
-  #resolve: (ok: boolean) => void;
+  readonly result: Promise<Context | null>;
+  #resolve: (ok: Context | null) => void;
   #executed = false;
 
   constructor(action: Action, args: ActionArgs = {}) {
     this.action = action;
     this.args = args;
-    this.result = new Promise<boolean>((resolve) => {
+    this.result = new Promise<Context | null>((resolve) => {
       this.#resolve = (ok) => {
         resolve(ok);
         this.#executed = true;
@@ -43,7 +43,7 @@ class ActionRequest {
     });
   }
 
-  resolve(ok: boolean) {
+  resolve(ok: Context | null) {
     this.#resolve(ok);
   }
 
@@ -120,23 +120,51 @@ const SelectAccount =
     </Select>
   );
 
+interface ConnectionState {
+  driver?: Driver;
+  pubKey?: EthPublicKey;
+  liteIdentity?: LiteIdentity;
+  dataStore?: Store;
+  onlineStore?: OnlineStore;
+  linked?: Linked;
+}
+
+interface SharedState {
+  connected: typeof Settings.connected;
+  account: string;
+}
+
 export function Connect({ children }: { children: React.ReactNode }) {
   const { api, network } = useContext(Network);
   const [walletConnect] = useWalletConnect();
   const [connected, setConnected] = useShared(Settings, 'connected');
   const [account, setAccount] = useShared(Settings, 'account');
 
+  const [state, setState] = useState<ConnectionState>({});
+
+  const newContext = (s: ConnectionState & SharedState): Context => ({
+    connect: () =>
+      makeRequest('connect', {
+        mustLogIn: !(s.account && Settings.getKey(s.account)),
+      }),
+    switch: () => makeRequest('switch', { oldAccount: s.account }),
+    reload: () => makeRequest('reload'),
+
+    disconnect,
+    canConnect: true,
+    connected: !!s.pubKey,
+    driver: s.driver,
+    publicKey: s.pubKey,
+    liteIdentity: s.liteIdentity,
+    dataStore: s.dataStore,
+    onlineStore: s.onlineStore,
+    linked: s.linked,
+  });
+
   const [modal, setModal] = useState<ModalOptions>(null);
   const [request, setRequest] = useState<ActionRequest>(
     new ActionRequest('init'),
   );
-
-  const [driver, setDriver] = useState<Driver>(null);
-  const [pubKey, setPubKey] = useState<EthPublicKey>();
-  const [liteIdentity, setLiteIdentity] = useState<LiteIdentity>();
-  const [dataStore, setDataStore] = useState<Store>();
-  const [onlineStore, setOnlineStore] = useState<OnlineStore>();
-  const [linked, setLinked] = useState<Linked>();
 
   const makeRequest = (action: Action, args: ActionArgs = {}) => {
     const r = new ActionRequest(action, args);
@@ -153,17 +181,6 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return p;
   };
 
-  interface ConnectionState {
-    connected: typeof Settings.connected;
-    account: string;
-    driver: Driver;
-    pubKey: EthPublicKey;
-    liteIdentity: LiteIdentity;
-    dataStore: Store;
-    onlineStore: OnlineStore;
-    linked: Linked;
-  }
-
   const connect = async ({
     mounted,
     connected,
@@ -174,8 +191,8 @@ export function Connect({ children }: { children: React.ReactNode }) {
     dataStore,
     onlineStore,
     linked,
-  }: ConnectionState & { mounted(): boolean }): Promise<
-    (ConnectionState & { ok: boolean }) | undefined
+  }: ConnectionState & SharedState & { mounted(): boolean }): Promise<
+    (ConnectionState & SharedState & { ok: boolean }) | undefined
   > => {
     const packState = (ok: boolean) => ({
       connected,
@@ -335,6 +352,9 @@ export function Connect({ children }: { children: React.ReactNode }) {
     }
     if (isRecordOf(lda, LiteIdentity)) {
       liteIdentity = lda.account;
+    } else {
+      // Use a placeholder so that the dashboard works
+      liteIdentity = new LiteIdentity({ url: pubKey.lite });
     }
 
     onlineStore = new OnlineStore(driver, pubKey);
@@ -364,19 +384,12 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
   const disconnect = () => {
     walletConnect?.disconnect();
-    request?.resolve(false);
+    request?.resolve(null);
     setModal(null);
 
     setConnected(null);
     setAccount(null);
-
-    setDriver(null);
-    setPubKey(null);
-
-    setLiteIdentity(null);
-    setDataStore(null);
-    setOnlineStore(null);
-    setLinked(null);
+    setState({});
   };
 
   useEffect(() => {
@@ -387,14 +400,9 @@ export function Connect({ children }: { children: React.ReactNode }) {
     }
 
     connect({
+      ...state,
       connected,
       account,
-      driver,
-      pubKey,
-      liteIdentity,
-      dataStore,
-      onlineStore,
-      linked,
       mounted: () => mounted,
     })
       .then((r) => {
@@ -417,21 +425,24 @@ export function Connect({ children }: { children: React.ReactNode }) {
           // If the user cancels an explict connection request, reset
           disconnect();
         } else {
-          request?.resolve(ok);
+          const state = {
+            driver,
+            pubKey,
+            liteIdentity,
+            dataStore,
+            onlineStore,
+            linked,
+          };
           setModal(null);
           setConnected(connected);
           setAccount(account);
-          setDriver(driver);
-          setPubKey(pubKey);
-          setLiteIdentity(liteIdentity);
-          setDataStore(dataStore);
-          setOnlineStore(onlineStore);
-          setLinked(linked);
+          setState(state);
+          request?.resolve(newContext({ ...state, connected, account }));
         }
       })
       .catch((e) => {
         console.error(e);
-        request?.resolve(false);
+        request?.resolve(null);
       });
 
     return () => {
@@ -440,35 +451,16 @@ export function Connect({ children }: { children: React.ReactNode }) {
   }, [
     request,
     connected,
-    driver,
+    state.driver,
     network,
     account,
-    pubKey?.ethereum,
+    state.pubKey?.ethereum,
     walletConnect,
   ]);
 
   // Render
   return (
-    <Provider
-      value={{
-        connect: () =>
-          makeRequest('connect', {
-            mustLogIn: !(account && Settings.getKey(account)),
-          }),
-        switch: () => makeRequest('switch', { oldAccount: account }),
-        reload: () => makeRequest('reload'),
-
-        disconnect,
-        canConnect: true,
-        connected: !!pubKey,
-        driver,
-        publicKey: pubKey,
-        liteIdentity,
-        dataStore,
-        onlineStore,
-        linked,
-      }}
-    >
+    <Provider value={newContext({ ...state, connected, account })}>
       {children}
 
       {modal && (
