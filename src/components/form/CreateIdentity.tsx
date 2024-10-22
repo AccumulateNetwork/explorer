@@ -1,11 +1,11 @@
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Form, Input, Space, Switch, Typography } from 'antd';
-import React, { useContext, useMemo, useState } from 'react';
+import { Button, Divider, Form, Input, Space, Switch } from 'antd';
+import React, { useContext, useState } from 'react';
 import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
+import { KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
@@ -34,6 +34,12 @@ export function CreateIdentity(props: TxnFormProps) {
   const [externallyOwned, setExternallyOwned] = useState(false);
 
   const submit = ({ url, authorities }: Fields): TransactionArgs => {
+    if (!url) url = null;
+
+    // To avoid reporting a fee of 400 credits when the form is first opened,
+    // use a fake URL for the key book if url is unset and externallyOwned is
+    // unset.
+
     return {
       header: {
         principal: url,
@@ -41,7 +47,7 @@ export function CreateIdentity(props: TxnFormProps) {
       body: {
         type: 'createIdentity',
         url,
-        keyBookUrl: externallyOwned ? null : `${url}/book`,
+        keyBookUrl: externallyOwned ? null : url ? `${url}/book` : 'fake',
         keyHash: externallyOwned ? null : web3.publicKey.publicKeyHash,
         authorities: externallyOwned ? authorities?.map((x) => x.url) : null,
       },

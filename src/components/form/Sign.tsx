@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert, Modal, Spin } from 'antd';
 import React, { useContext, useState } from 'react';
 
-import { SignOptions, TxID, network } from 'accumulate.js';
+import { SignOptions, TxID } from 'accumulate.js';
 import {
   JsonRpcClient,
   MessageRecord,
@@ -381,6 +381,14 @@ async function waitFor({
   for (let i = 0; i < waitLimit; i++) {
     try {
       const r = (await api.query(txid)) as MessageRecord;
+      if (
+        r.status === Status.NotAllowed &&
+        r.error?.message?.endsWith('has not been initiated')
+      ) {
+        // This is a bug in the protocol - ignore it
+        console.debug('Ignoring suspected bad status', r);
+        return true;
+      }
       if (r.status >= 400) {
         replace(
           <Failure>

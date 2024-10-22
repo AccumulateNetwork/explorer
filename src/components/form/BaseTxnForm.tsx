@@ -1,4 +1,4 @@
-import { DownOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Dropdown,
@@ -6,6 +6,7 @@ import {
   FormInstance,
   Modal,
   Space,
+  Tooltip,
   Typography,
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
@@ -13,19 +14,22 @@ import React, { useContext, useEffect, useState } from 'react';
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
+  FeeSchedule,
   KeyPage,
   LiteIdentity,
   Transaction,
   TransactionArgs,
 } from 'accumulate.js/lib/core';
 
+import { isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { CreditAmount } from '../common/Amount';
 import { Network } from '../common/Network';
-import { isErrorRecord } from '../common/query';
+import { isErrorRecord, queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
+import { AddCredits } from './AddCredits';
 import { Sign } from './Sign';
 import { calculateTransactionFee } from './fees';
 import { getSigners } from './utils';
@@ -68,7 +72,10 @@ export function BaseTxnForm<Fields>({
   const [principal, setPrincipal] = useState<URL>();
   const [principalSigners, setPrincipalSigners] = useState<Signer[]>();
   const [fee, setFee] = useState(0);
+  const [feeSchedule, setFeeSchedule] = useState<FeeSchedule>();
   const [balance, setBalance] = useState(null);
+
+  const [buyingCredits, setBuyingCredits] = useState(false);
 
   useAsyncEffect(
     async (mounted) => {
@@ -97,6 +104,12 @@ export function BaseTxnForm<Fields>({
     },
     [principal],
   ).catch((err) => onApiError(err));
+
+  useAsyncEffect(async (isMounted) => {
+    const { globals } = await api.networkStatus({ partition: 'Directory' });
+    if (!isMounted()) return;
+    setFeeSchedule(globals.feeSchedule);
+  }, []);
 
   useEffect(() => {
     setSigners([]);
@@ -146,11 +159,23 @@ export function BaseTxnForm<Fields>({
     }
   }, [web3, principalSigners]);
 
+  // Reload the signer after buying credits
+  queryEffect(selectedSigner?.account?.url, undefined, [buyingCredits]).then(
+    (r) => {
+      if (isRecordOf(r, KeyPage, LiteIdentity)) {
+        setSelectedSigner({
+          ...selectedSigner,
+          account: r.account,
+        });
+      }
+    },
+  );
+
   useEffect(() => {
     if (!selectedSigner?.account) {
       setBalance(null);
     } else {
-      setBalance(selectedSigner.account.creditBalance);
+      setBalance(selectedSigner.account.creditBalance || 0);
     }
   }, [selectedSigner]);
 
@@ -158,13 +183,16 @@ export function BaseTxnForm<Fields>({
     try {
       const txn = new Transaction(makeTxn(fields));
       setPrincipal(txn.header?.principal);
-      setFee(calculateTransactionFee(txn));
+      setFee(calculateTransactionFee(txn, feeSchedule));
     } catch (error) {
       console.info(`Error while calculating fee`, error);
       setPrincipal(null);
       setFee(0);
     }
   };
+
+  // Initialize the fee
+  useEffect(() => updateFromTxn(form.getFieldsValue()), [form, feeSchedule]);
 
   const isMounted = useIsMounted();
   const submit = async (fields: Fields) => {
@@ -198,11 +226,18 @@ export function BaseTxnForm<Fields>({
     return `Sign with ${u.toString().replace(/acc:\/\//, '')}`;
   };
 
-  const submitBtn = (
-    <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
-      <SignWith />
-    </Button>
-  );
+  const submitBtn =
+    fee && balance != null && balance < fee ? (
+      <Tooltip title="Insufficient balance">
+        <Button type="primary" disabled>
+          <SignWith />
+        </Button>
+      </Tooltip>
+    ) : (
+      <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
+        <SignWith />
+      </Button>
+    );
 
   const footer = (
     <Space>
@@ -273,6 +308,29 @@ export function BaseTxnForm<Fields>({
                 />
               )}
             </Form.Item>
+
+            {balance != null && balance < fee && (
+              <Form.Item label="&nbsp;">
+                <Tooltip title="Purchase credits">
+                  <Button
+                    shape="circle"
+                    size="small"
+                    style={{
+                      borderRadius: '50%', // Override Space.Compact styling
+                    }}
+                    onClick={() => setBuyingCredits(true)}
+                  >
+                    <PlusOutlined />
+                  </Button>
+                </Tooltip>
+                <AddCredits
+                  to={selectedSigner.account.url}
+                  open={buyingCredits}
+                  onCancel={() => setBuyingCredits(false)}
+                  onFinish={(ok) => ok && setBuyingCredits(false)}
+                />
+              </Form.Item>
+            )}
           </Space.Compact>
         )}
       </Form>
