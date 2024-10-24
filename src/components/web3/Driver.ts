@@ -207,7 +207,6 @@ export class Driver {
 
     // Parse the status code
     if ('statusCode' in error) {
-       
       switch (error.statusCode) {
         case 0x6d02:
         case 0x6511:
@@ -294,10 +293,19 @@ export class EthPublicKey extends PublicKeyAddress {
   }
 
   get lite() {
-    const eth = Buffer.from(this.publicKeyHash).toString('hex');
-    const hashHash = sha256(Buffer.from(eth));
+    return EthPublicKey.liteFromHash(this.publicKeyHash);
+  }
+
+  static liteFromHash(hash: Uint8Array | string) {
+    if (typeof hash !== 'string') {
+      hash = Buffer.from(hash).toString('hex');
+    } else if (hash.startsWith('0x')) {
+      hash = hash.substring(2);
+    }
+    hash = hash.toLowerCase();
+    const hashHash = sha256(Buffer.from(hash));
     const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
-    return URL.parse(`acc://${eth}${checkSum}`);
+    return URL.parse(`acc://${hash}${checkSum}`);
   }
 }
 
