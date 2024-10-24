@@ -33,7 +33,9 @@ export function Identity({
 }) {
   const { account } = record;
   const web3 = useWeb3();
-  const isWeb3Lite = web3.publicKey?.lite?.equals(account.url);
+  const web3Account = web3.accounts.find((x) =>
+    x.liteIdentity.url.equals(account.url),
+  );
 
   const isADI = account instanceof core.ADI;
   const typeStr = isADI ? (
@@ -80,7 +82,7 @@ export function Identity({
         url={account.url}
         linkable={account}
         title={
-          isWeb3Lite ? 'Web3 Wallet' : isADI ? 'Identity' : 'Lite Identity'
+          web3Account ? 'Web3 Wallet' : isADI ? 'Identity' : 'Lite Identity'
         }
       />
 
@@ -94,9 +96,9 @@ export function Identity({
       <InfoTable>
         <Descriptions.Item label={labelType}>{typeStr}</Descriptions.Item>
 
-        {isWeb3Lite && (
+        {web3Account && (
           <Descriptions.Item label={labelETH}>
-            <Text copyable>{web3.publicKey.ethereum}</Text>
+            <Text copyable>{web3Account.address}</Text>
           </Descriptions.Item>
         )}
 
@@ -111,9 +113,9 @@ export function Identity({
         )}
       </InfoTable>
 
-      {isWeb3Lite && (
+      {web3Account && (
         <div style={{ marginBottom: 30 }}>
-          <Dashboard />
+          <Dashboard account={web3Account} />
         </div>
       )}
 

@@ -16,33 +16,20 @@ import { WithIcon } from '../common/WithIcon';
 import { AddNote } from '../form/AddNote';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { Sign } from '../form/Sign';
-import { useWeb3 } from './Context';
+import { Context, useWeb3 } from './Context';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
 
-export function Dashboard() {
+export function Dashboard({ account }: { account: Context.Account }) {
   const web3 = useWeb3();
   const history = useHistory();
-  const { api } = useContext(Network);
-  const linkedAccounts = web3.linked?.direct?.filter(
-    (x) => !web3.publicKey?.lite?.equals(x.url),
+  const linkedAccounts = account.linked?.direct?.filter(
+    (x) => !account.publicKey?.lite?.equals(x.url),
   );
 
-  const [open, setOpen] = useState<'addNote' | 'createIdentity'>();
+  const [open, setOpen] = useState<'createIdentity'>();
   const [toSign, setToSign] = useState<Sign.Request>();
-  const sign = (txn: TransactionArgs, signer?: Sign.Signer) =>
-    Sign.submit(setToSign, txn, signer);
-
-  const [enablingBackups, setEnablingBackups] = useState(false);
-  const enableBackups = async () => {
-    setEnablingBackups(true);
-    try {
-      await web3.onlineStore.setup(api, sign);
-    } finally {
-      setEnablingBackups(false);
-    }
-  };
 
   const unlink = async (url: URLArgs) => {
     const ok = await web3.dataStore.add((txn) => Sign.submit(setToSign, txn), {
@@ -128,101 +115,18 @@ export function Dashboard() {
         />
       )}
 
-      {/* <Title level={4} style={{ marginTop: 20 }}>
-        On-chain Backup{' '}
-      </Title>
-
-      <InfoTable>
-        {web3.onlineStore && (
-          <Descriptions.Item
-            label={
-              <WithIcon
-                icon={RiQuestionLine}
-                tooltip={tooltip.web3.backup}
-                children="Data Account"
-              />
-            }
-          >
-            <Text copyable={{ text: `${web3.onlineStore.url}` }}>
-              {web3.onlineStore.account ? (
-                <Link
-                  to={web3.onlineStore.url}
-                >{`${web3.onlineStore.url}`}</Link>
-              ) : (
-                `${web3.onlineStore.url}`
-              )}
-            </Text>
-          </Descriptions.Item>
-        )}
-
-        <Descriptions.Item
-          label={
-            <WithIcon
-              icon={RiQuestionLine}
-              children="Status"
-              tooltip={
-                web3.onlineStore?.account
-                  ? tooltip.web3.backupsEnabled
-                  : tooltip.web3.backupsDisabled
-              }
-            />
-          }
-        >
-          {web3.onlineStore?.account ? (
-            <Tag color="blue">enabled</Tag>
-          ) : (
-            <Tooltip
-              overlayClassName="explorer-tooltip"
-              title={
-                web3.liteIdentity
-                  ? 'Purchase credits to enable this action'
-                  : 'Create the lite identity and purchase credits to enable this action'
-              }
-            >
-              <Button
-                shape="round"
-                type="primary"
-                onClick={enableBackups}
-                disabled={enablingBackups || !web3?.liteIdentity?.creditBalance}
-                children="Enable"
-              />
-            </Tooltip>
-          )}
-        </Descriptions.Item>
-      </InfoTable>
-
-      {MainSettings.enableDevMode && (
-        <Button
-          shape="round"
-          type="primary"
-          style={{ marginBottom: 20 }}
-          disabled={!web3.onlineStore?.enabled}
-          onClick={() => setOpen('addNote')}
-        >
-          <WithIcon icon={RiAddCircleFill}>Add note</WithIcon>
-        </Button>
-      )} */}
-
       {/* Modals */}
       <Sign request={toSign} />
 
-      {open === 'addNote' && (
-        <AddNote
-          open={open === 'addNote'}
-          onCancel={() => setOpen(null)}
-          onFinish={(ok) => ok && setOpen(null)}
-        />
-      )}
-
-      {open === 'createIdentity' && web3.liteIdentity && (
+      {open === 'createIdentity' && account.exists && (
         <CreateIdentity
           open={open === 'createIdentity'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
           signer={{
-            signer: web3.liteIdentity.url,
+            signer: account.liteIdentity.url,
             signerVersion: 1,
-            account: web3.liteIdentity,
+            account: account.liteIdentity,
           }}
         />
       )}

@@ -18,10 +18,10 @@ import { useWalletConnect } from './WalletConnect';
 
 export default Connect;
 
-type Action = 'init' | 'connect' | 'switch' | 'reload';
+type Action = 'init' | 'connect' | 'reload';
 
 interface ActionArgs {
-  oldAccount?: string;
+  // oldAccount?: string;
   mustLogIn?: boolean;
 }
 
@@ -122,43 +122,34 @@ const SelectAccount =
 
 interface ConnectionState {
   driver?: Driver;
-  pubKey?: EthPublicKey;
-  liteIdentity?: LiteIdentity;
   dataStore?: Store;
   onlineStore?: OnlineStore;
-  linked?: Linked;
+  accounts: Context.Account[];
 }
 
 interface SharedState {
   connected: typeof Settings.connected;
-  account: string;
+  activeAccounts: string[];
 }
 
 export function Connect({ children }: { children: React.ReactNode }) {
   const { api, network } = useContext(Network);
   const [walletConnect] = useWalletConnect();
   const [connected, setConnected] = useShared(Settings, 'connected');
-  const [account, setAccount] = useShared(Settings, 'account');
+  const [activeAccounts, setActiveAccounts] = useShared(Settings, 'accounts');
+  const [state, setState] = useState<ConnectionState>({ accounts: [] });
 
-  const [state, setState] = useState<ConnectionState>({});
-
-  const newContext = (s: ConnectionState & SharedState): Context => ({
+  const newContext = (s: ConnectionState): Context => ({
     connect: () =>
       makeRequest('connect', {
-        mustLogIn: !(s.account && Settings.getKey(s.account)),
+        mustLogIn: !s.accounts.some((x) => Settings.getKey(x.address)),
       }),
-    switch: () => makeRequest('switch', { oldAccount: s.account }),
     reload: () => makeRequest('reload'),
 
     disconnect,
     canConnect: true,
-    connected: !!s.pubKey,
-    driver: s.driver,
-    publicKey: s.pubKey,
-    liteIdentity: s.liteIdentity,
-    dataStore: s.dataStore,
-    onlineStore: s.onlineStore,
-    linked: s.linked,
+    connected: s.accounts.some((x) => x.publicKey),
+    ...s,
   });
 
   const [modal, setModal] = useState<ModalOptions>(null);
@@ -184,25 +175,21 @@ export function Connect({ children }: { children: React.ReactNode }) {
   const connect = async ({
     mounted,
     connected,
-    account,
+    activeAccounts,
     driver,
-    pubKey,
-    liteIdentity,
     dataStore,
     onlineStore,
-    linked,
+    accounts,
   }: ConnectionState & SharedState & { mounted(): boolean }): Promise<
     (ConnectionState & SharedState & { ok: boolean }) | undefined
   > => {
     const packState = (ok: boolean) => ({
       connected,
-      account,
       driver,
-      pubKey,
-      liteIdentity,
       dataStore,
       onlineStore,
-      linked,
+      accounts,
+      activeAccounts,
       ok,
     });
 
@@ -256,7 +243,6 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
     switch (request.action) {
       case 'connect':
-      case 'switch':
         showModal({
           title: 'Connecting',
           children: Processing,
@@ -268,7 +254,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     await driver.connect();
 
     // List accounts
-    const accounts = await driver.listAccounts();
+    const ethAccounts = await driver.listAccounts();
 
     // Switch the chain to Accumulate
     await driver.switchChains(network);
@@ -276,108 +262,140 @@ export function Connect({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // If there's only one account, select it
-    if (
-      request.action !== 'switch' &&
-      accounts.length === 1 &&
-      account !== accounts[0]
-    ) {
-      account = accounts[0];
+    // Sync accounts
+    for (const address of [
+      ...(await driver.listAccounts()),
+      ...activeAccounts,
+    ]) {
+      const lcaddr = address.toLowerCase();
+      let account = accounts.find((x) => x.address.toLowerCase() == lcaddr);
+      if (!account) {
+        account = {
+          active: false,
+          exists: false,
+          address,
+          liteIdentity: new LiteIdentity({
+            url: EthPublicKey.liteFromHash(address),
+          }),
+        };
+        accounts.push(account);
+      }
+
+      account.active = activeAccounts.some((x) => x.toLowerCase() == lcaddr);
     }
 
-    // [Page load] Don't prompt the user to select an account
-    const didSelectAccount =
-      request.args.oldAccount !== account &&
-      account &&
-      accounts.includes(account);
-    if (request.action === 'init' && !didSelectAccount) {
-      return packState(false);
-    }
-
-    // Select an account
-    if (!didSelectAccount || (request.args.mustLogIn && accounts.length > 1)) {
-      account = await showModal<string>({
-        title: 'Select an account',
-        children: SelectAccount({ accounts }),
-      });
-      if (!mounted() || !account) {
+    if (accounts.length === 1) {
+      // If there's only one account, activate it
+      accounts[0].active = true;
+    } else if (!accounts.some((x) => x.active)) {
+      // [Page load] Don't prompt the user to select an account
+      if (request.action === 'init') {
         return packState(false);
       }
-    }
 
-    // Check for a known public key
-    if (pubKey?.ethereum?.toLowerCase() !== account.toLowerCase()) {
-      const storedKey = Settings.getKey(account);
-      if (storedKey) {
-        pubKey = new EthPublicKey(storedKey);
-      }
-    }
-
-    // [Page load] Don't prompt the user to login
-    if (request.action === 'init' && !pubKey) {
-      return packState(false);
-    }
-
-    // Recover the public key
-    if (!pubKey) {
-      showModal({
-        title: 'Logging in',
-        children: Processing,
-      });
-
-      const message = 'Login to Accumulate';
-      const signature = await driver.signEthMessage(account, message);
-      if (!mounted()) {
-        return;
-      }
-      if (!signature) {
-        if (request.args.oldAccount) {
-          account = request.args.oldAccount;
+      // Select an account
+      if (request.args.mustLogIn) {
+        const selected = await showModal<string>({
+          title: 'Select an account',
+          children: SelectAccount({ accounts: ethAccounts }),
+        });
+        if (!mounted() || !selected) {
+          return packState(false);
         }
-        return packState(false);
+        const account = accounts.find(
+          (x) => x.address.toLowerCase() === selected.toLowerCase(),
+        );
+        if (!account) {
+          return packState(false);
+        }
+        account.active = true;
+      }
+    }
+
+    // For each active account
+    for (const account of accounts) {
+      if (!account.active) return;
+
+      // Check for a known public key
+      if (
+        account.publicKey?.ethereum?.toLowerCase() !==
+        account.address.toLowerCase()
+      ) {
+        const storedKey = Settings.getKey(account.address);
+        if (storedKey) {
+          account.publicKey = new EthPublicKey(storedKey);
+        }
       }
 
-      pubKey = EthPublicKey.recover(signature, message);
-      if (pubKey.ethereum.toLowerCase() !== account.toLowerCase()) {
-        throw new Error('Failed to recover public key');
+      // [Page load] Don't prompt the user to login
+      if (request.action === 'init' && !account.publicKey) {
+        account.active = false;
+        continue;
       }
 
-      Settings.putKey(account, pubKey.publicKey);
-    }
+      // Recover the public key
+      if (!account.publicKey) {
+        showModal({
+          title: 'Logging in',
+          children: Processing,
+        });
 
-    // Load account data
-    const lda = await api.query(pubKey.lite).catch(isErrorRecord);
-    if (!mounted()) {
-      return;
-    }
-    if (isRecordOf(lda, LiteIdentity)) {
-      liteIdentity = lda.account;
-    } else {
-      // Use a placeholder so that the dashboard works
-      liteIdentity = new LiteIdentity({ url: pubKey.lite });
-    }
+        const message = 'Login to Accumulate';
+        const signature = await driver.signEthMessage(account.address, message);
+        if (!mounted()) {
+          return;
+        }
+        if (!signature) {
+          account.active = false;
+          continue;
+        }
 
-    onlineStore = new OnlineStore(driver, pubKey);
-    if (Driver.canEncrypt) {
-      await onlineStore.load(api).catch((err) => {
-        console.error(err);
-      });
+        account.publicKey = EthPublicKey.recover(signature, message);
+        if (
+          account.publicKey.ethereum.toLowerCase() !==
+          account.address.toLowerCase()
+        ) {
+          throw new Error('Failed to recover public key');
+        }
+
+        Settings.putKey(account.address, account.publicKey.publicKey);
+      }
+
+      // Load account data
+      const lda = await api.query(account.publicKey.lite).catch(isErrorRecord);
       if (!mounted()) {
         return;
       }
+      if (isRecordOf(lda, LiteIdentity)) {
+        account.exists = true;
+        account.liteIdentity = lda.account;
+      } else {
+        // Use a placeholder so that the dashboard works
+        account.exists = false;
+        account.liteIdentity = new LiteIdentity({
+          url: account.publicKey.lite,
+        });
+      }
+    }
+    if (!accounts.some((x) => x.active)) {
+      return packState(false);
     }
 
-    dataStore = onlineStore.enabled
-      ? onlineStore
-      : new OfflineStore(pubKey.publicKey);
-    linked = await Linked.load(api, [
-      {
-        type: 'link',
-        accountType: 'identity',
-        url: `${pubKey.lite}`,
-      },
-      ...dataStore,
-    ]);
+    // Load linked accounts
+    dataStore = new OfflineStore(Buffer.from('wallet', 'utf-8'));
+    await Promise.all(
+      accounts.map(
+        async (x) =>
+          (x.linked = await Linked.load(api, [
+            {
+              type: 'link',
+              accountType: 'identity',
+              url: `${x.publicKey.lite}`,
+            },
+            ...dataStore,
+          ])),
+      ),
+    );
 
     return packState(true);
   };
@@ -388,8 +406,8 @@ export function Connect({ children }: { children: React.ReactNode }) {
     setModal(null);
 
     setConnected(null);
-    setAccount(null);
-    setState({});
+    setActiveAccounts([]);
+    setState({ accounts: [] });
   };
 
   useEffect(() => {
@@ -402,42 +420,32 @@ export function Connect({ children }: { children: React.ReactNode }) {
     connect({
       ...state,
       connected,
-      account,
+      activeAccounts,
       mounted: () => mounted,
     })
       .then((r) => {
         if (!mounted || !r) {
           return;
         }
-        const {
-          connected,
-          account,
-          driver,
-          pubKey,
-          liteIdentity,
-          dataStore,
-          onlineStore,
-          linked,
-          ok,
-        } = r;
+        const { connected, driver, dataStore, onlineStore, accounts, ok } = r;
 
         if (!ok && request.action === 'connect') {
-          // If the user cancels an explict connection request, reset
+          // If the user cancels an explicit connection request, reset
           disconnect();
         } else {
           const state = {
             driver,
-            pubKey,
-            liteIdentity,
             dataStore,
             onlineStore,
-            linked,
+            accounts,
           };
           setModal(null);
           setConnected(connected);
-          setAccount(account);
+          setActiveAccounts(
+            accounts.filter((x) => x.active).map((x) => x.address),
+          );
           setState(state);
-          request?.resolve(newContext({ ...state, connected, account }));
+          request?.resolve(newContext(state));
         }
       })
       .catch((e) => {
@@ -453,14 +461,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
     connected,
     state.driver,
     network,
-    account,
-    state.pubKey?.ethereum,
+    activeAccounts.join('|'),
+    state.accounts.map((x) => x.address).join('|'),
     walletConnect,
   ]);
 
   // Render
   return (
-    <Provider value={newContext({ ...state, connected, account })}>
+    <Provider value={newContext(state)}>
       {children}
 
       {modal && (

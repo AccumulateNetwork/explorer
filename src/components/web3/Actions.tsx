@@ -138,7 +138,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
   useAsyncEffect(
     async (mounted) => {
       setSigners([]);
-      if (!web3?.linked || !acc) {
+      if (!acc || !web3.accounts.some((x) => x.linked)) {
         return;
       }
       const signers = await getSigners(api, web3, acc);

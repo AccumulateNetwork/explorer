@@ -79,7 +79,7 @@ export function AccTitle({
 function Link({ account }: { account: Account }) {
   const web3 = useWeb3();
   const [toSign, setToSign] = useState<Sign.Request>();
-  const [linked] = useShared(web3, 'linked');
+  // const [linked] = useShared(web3, 'linked');
 
   const link = async () => {
     const ok = await web3.dataStore?.add((txn) => Sign.submit(setToSign, txn), {
@@ -96,20 +96,20 @@ function Link({ account }: { account: Account }) {
     return false;
   }
 
-  if (!linked?.all?.some((x) => account.url.equals(x.url))) {
-    return (
-      <>
-        <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.link}>
-          <LinkOutlined
-            style={{ color: 'lightgray', cursor: 'pointer' }}
-            onClick={link}
-          />
-        </Tooltip>
+  // if (!linked?.all?.some((x) => account.url.equals(x.url))) {
+  //   return (
+  //     <>
+  //       <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.link}>
+  //         <LinkOutlined
+  //           style={{ color: 'lightgray', cursor: 'pointer' }}
+  //           onClick={link}
+  //         />
+  //       </Tooltip>
 
-        <Sign title={`Linking ${account.url}`} request={toSign} />
-      </>
-    );
-  }
+  //       <Sign title={`Linking ${account.url}`} request={toSign} />
+  //     </>
+  //   );
+  // }
 
   return (
     <Tooltip overlayClassName="explorer-tooltip" title={tooltip.web3.linked}>

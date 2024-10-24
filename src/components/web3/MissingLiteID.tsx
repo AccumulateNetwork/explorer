@@ -12,27 +12,15 @@ import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
-import { useWeb3 } from './Context';
+import { Context, useWeb3 } from './Context';
 import { Dashboard as Web3Dashboard } from './Dashboard';
 
 const { Paragraph, Text, Title } = Typography;
 
-export function MissingLiteID() {
-  const web3 = useWeb3();
-
-  const title = 'Web3 Wallet';
-  if (!web3.publicKey?.lite) {
-    return (
-      <>
-        <Title level={2}>{title}</Title>
-        <Skeleton />
-      </>
-    );
-  }
-
+export function MissingLiteID({ account }: { account: Context.Account }) {
   return (
     <div>
-      <AccTitle title={title} url={web3.publicKey.lite} />
+      <AccTitle title="Web3 Wallet" url={account.publicKey.lite} />
 
       <InfoTable>
         <Descriptions.Item
@@ -44,7 +32,7 @@ export function MissingLiteID() {
             />
           }
         >
-          <Text copyable>{web3.publicKey.ethereum}</Text>
+          <Text copyable>{account.publicKey.ethereum}</Text>
         </Descriptions.Item>
 
         <Descriptions.Item
@@ -56,11 +44,13 @@ export function MissingLiteID() {
             />
           }
         >
-          <Text copyable={{ text: `${web3.publicKey.lite}` }}>
-            {web3.liteIdentity ? (
-              <Link to={web3.publicKey.lite}>{`${web3.publicKey.lite}`}</Link>
+          <Text copyable={{ text: `${account.publicKey.lite}` }}>
+            {account.liteIdentity ? (
+              <Link
+                to={account.publicKey.lite}
+              >{`${account.publicKey.lite}`}</Link>
             ) : (
-              `${web3.publicKey.lite}`
+              `${account.publicKey.lite}`
             )}
           </Text>
         </Descriptions.Item>
@@ -71,14 +61,14 @@ export function MissingLiteID() {
           type="warning"
           message={
             <MissingLiteID.Create
-              eth={web3.publicKey.ethereum}
-              lite={web3.publicKey.lite}
+              eth={account.publicKey.ethereum}
+              lite={account.publicKey.lite}
             />
           }
         />
       </Paragraph>
 
-      <Web3Dashboard />
+      <Web3Dashboard account={account} />
     </div>
   );
 }

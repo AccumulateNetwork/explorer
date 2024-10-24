@@ -22,6 +22,7 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
 import { Connect } from './web3/Connect';
+import { Wallet } from './web3/Wallet';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -87,6 +88,10 @@ export default function Explorer() {
 
                   {!shared.network.mainnet && (
                     <Route exact path="/faucet" children={<Faucet />} />
+                  )}
+
+                  {shared.network.wallet && (
+                    <Route exact path="/wallet" children={<Wallet />} />
                   )}
 
                   <Route path={['/acc/:url+', '/tx/:hash+']}>

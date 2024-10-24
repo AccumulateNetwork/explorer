@@ -89,8 +89,9 @@ export function Acc({
   }, [record]);
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
-    if (web3.publicKey?.lite?.equals(url)) {
-      return <MissingLiteID />;
+    const account = web3.accounts.find((x) => x.liteIdentity.url.equals(url));
+    if (account) {
+      return <MissingLiteID account={account} />;
     }
     return <Error404 />;
   }
