@@ -49,7 +49,9 @@ export function CreateIdentity(props: TxnFormProps) {
         url,
         keyBookUrl: externallyOwned ? null : url ? `${url}/book` : 'fake',
         keyHash: externallyOwned ? null : web3.publicKey.publicKeyHash,
-        authorities: externallyOwned ? authorities?.map((x) => x.url) : null,
+        authorities: externallyOwned
+          ? authorities?.filter((x) => x).map((x) => x.url)
+          : null,
       },
     };
   };

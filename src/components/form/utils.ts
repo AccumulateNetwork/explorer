@@ -169,13 +169,33 @@ export function formUtils<Fields>(
 
 export function useFormWatchEffect<F, K extends keyof F>(
   form: FormInstance<F>,
-  key: K | K[],
+  key: K,
   effect: (value: F[K], mounted: () => boolean) => void | Promise<void>,
+  dependencies?: any[],
+  debounceTime?: number,
+);
+export function useFormWatchEffect<F, K extends Array<keyof F>>(
+  form: FormInstance<F>,
+  key: K,
+  effect: (
+    value: Pick<F, K[number]>,
+    mounted: () => boolean,
+  ) => void | Promise<void>,
+  dependencies?: any[],
+  debounceTime?: number,
+);
+export function useFormWatchEffect<F, K extends keyof F | Array<keyof F>>(
+  form: FormInstance<F>,
+  key: K,
+  effect: (value: unknown, mounted: () => boolean) => void | Promise<void>,
   dependencies: any[] = [],
   debounceTime = 200,
 ) {
   effect = debounce(effect, debounceTime);
-  const value = Form.useWatch(key, form);
+  const value =
+    key instanceof Array
+      ? Object.fromEntries(key.map((x) => [x, Form.useWatch(x, form)]))
+      : Form.useWatch(key, form);
   useEffect(() => {
     let mounted = true;
     effect(value, () => mounted); // May be async

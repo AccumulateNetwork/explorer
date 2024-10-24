@@ -44,7 +44,9 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
         keyBookUrl: owner === 'self' ? `${url}/book` : null,
         keyHash: owner === 'self' ? web3.publicKey.publicKeyHash : null,
         authorities:
-          owner === 'external' ? authorities?.map((x) => x.url) : null,
+          owner === 'external'
+            ? authorities?.filter((x) => x).map((x) => x.url)
+            : null,
       },
     };
   };

@@ -121,14 +121,14 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         readOnly={readOnly}
         onChange={(e) => slowValueChange(e.target.value)}
         placeholder={placeholder}
-        style={!after && props.style}
+        style={after ? null : props.style}
       />
     ) : !baseOpts?.length ? (
       <Input
         readOnly={readOnly}
         onChange={(e) => slowValueChange(e.target.value)}
         placeholder={placeholder}
-        style={!after && props.style}
+        style={after ? null : props.style}
       />
     ) : (
       <Select
@@ -138,7 +138,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         placeholder={placeholder}
         onSearch={(s) => setAllOpts([{ label: s, value: s }, ...baseOpts])}
         onSelect={setURL}
-        style={!after && props.style}
+        style={after ? null : props.style}
       />
     );
 

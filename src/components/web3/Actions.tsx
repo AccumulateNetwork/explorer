@@ -16,8 +16,10 @@ import { Network } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
+import { CreateDataAccount } from '../form/CreateDataAccount';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { CreateSubADI } from '../form/CreateSubADI';
+import { CreateTokenAccount } from '../form/CreateTokenAccount';
 import { SendTokens } from '../form/SendTokens';
 import { getSigners } from '../form/utils';
 import { useWeb3 } from './Context';
@@ -39,7 +41,9 @@ export function Actions({ account: accountUrl }: { account: URL }) {
     | 'addCredits'
     | 'sendTokens'
     | 'createIdentity'
-    | 'createSubADI';
+    | 'createSubADI'
+    | 'createTokenAccount'
+    | 'createDataAccount';
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
@@ -103,6 +107,16 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           item({
             label: 'Create a sub-ADI',
             open: 'createSubADI',
+            from: acc.url,
+          }),
+          item({
+            label: 'Create a token account',
+            open: 'createTokenAccount',
+            from: acc.url,
+          }),
+          item({
+            label: 'Create a data account',
+            open: 'createDataAccount',
             from: acc.url,
           }),
         ]);
@@ -209,6 +223,34 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
           parent={toFrom.from}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
+          }}
+        />
+      )}
+
+      {open === 'createTokenAccount' && (
+        <CreateTokenAccount
+          open={open === 'createTokenAccount'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          identity={toFrom.from}
+          signer={{
+            signer: signer.url,
+            signerVersion: signer instanceof KeyPage ? signer.version : 1,
+            account: signer,
+          }}
+        />
+      )}
+
+      {open === 'createDataAccount' && (
+        <CreateDataAccount
+          open={open === 'createDataAccount'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          identity={toFrom.from}
           signer={{
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
