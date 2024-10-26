@@ -16,9 +16,9 @@ import {
 import { SplitFirst, curryFirst } from '../../utils/typemagic';
 import { unwrapError } from '../common/ShowError';
 import { Context } from '../web3/Context';
+import { TxnForm } from './BaseTxnForm';
 
-export interface SignerSpec {
-  signer: KeyPage | LiteIdentity;
+export interface SignerSpec extends TxnForm.Signer {
   entry: KeySpec;
 }
 
@@ -29,34 +29,59 @@ export async function getSigners(
 ): Promise<SignerSpec[]> {
   const authorities = await resolveAuthorities(api, account);
   if (!authorities) {
-    return;
+    return [];
   }
 
-  const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
-  return [
-    ...(authorities.some(({ url }) => web3?.liteIdentity?.url.equals(url))
-      ? [
-          {
-            signer: web3.liteIdentity,
-            entry: new KeySpec({ publicKeyHash: ethKeyHash }),
-          },
-        ]
-      : []),
-    ...(web3?.linked?.books || [])
-      .filter(({ book }) => authorities.some(({ url }) => book.url.equals(url)))
-      .flatMap(({ pages }) => pages)
-      .flatMap((page) =>
-        page.keys.flatMap((entry) => ({ signer: page, entry })),
-      )
-      .filter(
-        ({ entry }) =>
-          Buffer.from(entry.publicKeyHash).toString('hex') === ethKeyHash,
-      ),
-  ];
+  // Lite identities
+  const specs: SignerSpec[] = [];
+  for (const account of web3.accounts) {
+    if (
+      account.exists &&
+      authorities.some((x) => account.liteIdentity.url!.equals(x.url!))
+    ) {
+      specs.push({
+        signer: account.liteIdentity.url!,
+        signerVersion: 1,
+        account: account.liteIdentity,
+        key: account,
+        entry: new KeySpec({
+          publicKeyHash: account.address.replace(/^0x/, '').toLowerCase(),
+        }),
+      });
+    }
+  }
+
+  // Key books
+  const keys = new Map(
+    web3.accounts.map((x) => [x.address.replace(/^0x/, '').toLowerCase(), x]),
+  );
+  for (const linked of web3.linked?.books || []) {
+    if (!authorities.some((x) => linked.book.url!.equals(x.url!))) continue;
+    for (const page of linked.pages) {
+      for (const entry of page.keys!) {
+        if (!entry) continue;
+        const hash = Buffer.from(entry.publicKeyHash!).toString('hex');
+        const key = keys.get(hash);
+        if (key)
+          specs.push({
+            signer: page.url!,
+            signerVersion: page.version!,
+            entry,
+            key,
+            account: page,
+          });
+      }
+    }
+  }
+
+  return specs;
 }
 
-async function resolveAuthorities(api: JsonRpcClient, account: Account) {
-  const s = account.url.toString().replace(/^acc:\/\//, '');
+async function resolveAuthorities(
+  api: JsonRpcClient,
+  account: Account,
+): Promise<false | AuthorityEntry[]> {
+  const s = account.url!.toString().replace(/^acc:\/\//, '');
   const i = s.lastIndexOf('/');
   switch (account.type) {
     case AccountType.KeyPage:
@@ -72,7 +97,7 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
     case AccountType.KeyBook:
     case AccountType.DataAccount:
       if (account.authorities?.length) {
-        return account.authorities;
+        return account.authorities.filter((x) => !!x);
       }
       if (i < 0) {
         return false;
@@ -81,10 +106,10 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
       if (r.recordType !== RecordType.Account) {
         return false;
       }
-      return resolveAuthorities(api, r.account);
+      return resolveAuthorities(api, r.account!);
 
     case AccountType.LiteTokenAccount:
-      return [new AuthorityEntry({ url: account.url.authority })];
+      return [new AuthorityEntry({ url: account.url!.authority })];
     case AccountType.LiteIdentity:
       return [new AuthorityEntry({ url: account.url })];
     default:
@@ -96,7 +121,7 @@ export function debounce<I extends Array<any>>(
   cb: (..._: I) => void | Promise<void>,
   time: number,
 ): (..._: I) => void | Promise<void> {
-  let id;
+  let id: NodeJS.Timeout;
   return useCallback((...args) => {
     clearTimeout(id);
     id = setTimeout(() => cb(...args), time);

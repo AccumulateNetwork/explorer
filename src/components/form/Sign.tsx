@@ -24,11 +24,14 @@ const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
 
 export declare namespace Sign {
-  type Signer = SignOptions;
+  type Signer = SignOptions & {
+    key: web3.Context.Account;
+  };
 
   interface Request {
     args: TransactionArgs;
     signer?: Signer;
+    key: web3.Context.Account;
     onFinish(): any;
     onCancel(): any;
     initiated?: boolean;
@@ -45,50 +48,42 @@ export declare namespace Sign {
 Sign.submit = (
   set: (_: Sign.Request) => void,
   args: TransactionArgs,
+  key: web3.Context.Account,
   signer?: Sign.Signer,
 ) => {
-  let resolve: (_: boolean) => void;
-  const promise = new Promise<boolean>((r) => {
-    resolve = r;
+  return new Promise<boolean>((resolve) => {
+    set({
+      args,
+      signer,
+      key,
+      onFinish() {
+        resolve(true);
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
   });
-
-  set({
-    args,
-    signer,
-    onFinish() {
-      resolve(true);
-    },
-    onCancel() {
-      resolve(false);
-    },
-  });
-  return promise;
 };
 
 Sign.waitFor = function <T>(
   set: (_: Sign.WaitForRequest<T>) => void,
   submit: () => Promise<T | T[]>,
 ) {
-  let resolve: (_: T[] | null) => void;
-  const promise = new Promise<T[] | null>((r) => {
-    resolve = r;
+  return new Promise<T[] | null>((r) => {
+    set({
+      submit,
+      onFinish: r,
+      onCancel: () => r(null),
+    });
   });
-
-  set({
-    submit,
-    onFinish: resolve,
-    onCancel() {
-      resolve(null);
-    },
-  });
-  return promise;
 };
 
 export function Sign({
   request,
   title = 'Signing',
 }: {
-  request: Sign.Request;
+  request?: Sign.Request;
   title?: React.ReactNode;
 }) {
   const web3 = useWeb3();
@@ -103,13 +98,13 @@ export function Sign({
         return;
       }
 
-      const { args, signer, onCancel, onFinish } = request;
+      const { args, signer, key, onCancel, onFinish } = request;
       const push = newMutableChildren(mounted, setChildren);
       setOpen(true);
       setClosable(false);
       try {
         request.initiated = true;
-        if (await sign({ push, api, web3, args, signer, network })) {
+        if (await sign({ push, api, web3, args, signer, key, network })) {
           onFinish();
           return true;
         }
@@ -149,7 +144,7 @@ Sign.WaitFor = function <T>({
   canCloseEarly,
   closeWhenDone,
 }: {
-  request: Sign.WaitForRequest<T>;
+  request: Sign.WaitForRequest<T> | undefined;
   title: React.ReactNode;
   canCloseEarly?: boolean;
   closeWhenDone?: boolean;
@@ -211,7 +206,7 @@ Sign.WaitFor = function <T>({
                 r instanceof TxID || r instanceof Submission,
             )
             .map((r) => {
-              const txid = r instanceof TxID ? r : r.status.txID;
+              const txid = r instanceof TxID ? r : r.status!.txID!;
               return waitFor({ api, push, seen, txid });
             }),
         );
@@ -257,7 +252,7 @@ function newMutableChildren(
   let children: React.ReactNode[] = [];
   setChildren([]);
   const push = (n: React.ReactNode) => {
-    if (!mounted) {
+    if (!mounted()) {
       return (_: React.ReactNode) => {};
     }
 
@@ -269,7 +264,7 @@ function newMutableChildren(
       children = children.map((m, j) =>
         j === i ? <span key={`${i}`}>{n}</span> : m,
       );
-      if (!mounted) {
+      if (!mounted()) {
         return;
       }
       setChildren(children);
@@ -285,23 +280,48 @@ async function sign({
   args,
   web3,
   signer,
+  key,
   network,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
   api: JsonRpcClient;
   web3: web3.Context;
   args: TransactionArgs;
-  signer: Sign.Signer;
   network: NetworkConfig;
+  key: web3.Context.Account;
+  signer?: Sign.Signer;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
+  if (!key.publicKey) {
+    const ok = await web3
+      .login(key)
+      .then(() => true)
+      .catch((error) => {
+        update(
+          <Failure>
+            <ShowError bare error={error} />
+          </Failure>,
+        );
+        return false;
+      });
+    if (!ok) return false;
+    if (!key.publicKey) {
+      update(
+        <Failure>
+          <ShowError bare error={new Error('Unable to login')} />
+        </Failure>,
+      );
+      return false;
+    }
+  }
+
   const txn = new Transaction(args);
-  const sig = await web3.driver
-    .signAccumulate(network, txn, {
-      publicKey: web3.publicKey.publicKey,
+  const sig = await web3
+    .driver!.signAccumulate(network, txn, {
+      publicKey: key.publicKey.publicKey,
       timestamp: Date.now(),
       ...(signer || {
-        signer: web3.publicKey.lite,
+        signer: key.liteIdentity.url!,
         signerVersion: 1,
       }),
     })
@@ -331,7 +351,7 @@ async function sign({
       );
     });
   if (!results) {
-    return;
+    return false;
   }
   update(<Success>Submitted</Success>);
 
@@ -346,12 +366,12 @@ async function sign({
     }
   }
   if (!results.every((x) => x.success)) {
-    return;
+    return false;
   }
 
   const seen = new Set<string>();
   const ok = await Promise.all(
-    results.map((r) => waitFor({ api, push, seen, txid: r.status.txID })),
+    results.map((r) => waitFor({ api, push, seen, txid: r.status!.txID! })),
   );
   return ok.every((x) => x);
 }
@@ -389,7 +409,7 @@ async function waitFor({
         console.debug('Ignoring suspected bad status', r);
         return true;
       }
-      if (r.status >= 400) {
+      if (r.status! >= 400) {
         replace(
           <Failure>
             <Link to={txid}>
@@ -416,7 +436,7 @@ async function waitFor({
 
       const ok = await Promise.all(
         r.produced.records.map((r) =>
-          waitFor({ push, api, seen, txid: r.value }),
+          waitFor({ push, api, seen, txid: r!.value! }),
         ),
       );
       return ok.every((x) => x);

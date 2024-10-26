@@ -1,4 +1,4 @@
-import { Alert, Button, Descriptions, Skeleton, Typography } from 'antd';
+import { Alert, Button, Descriptions, Typography } from 'antd';
 import React, { MouseEventHandler, useContext, useState } from 'react';
 import { RiExternalLinkLine, RiQuestionLine } from 'react-icons/ri';
 
@@ -12,15 +12,15 @@ import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
-import { Context, useWeb3 } from './Context';
+import { Context } from './Context';
 import { Dashboard as Web3Dashboard } from './Dashboard';
 
-const { Paragraph, Text, Title } = Typography;
+const { Paragraph, Text } = Typography;
 
 export function MissingLiteID({ account }: { account: Context.Account }) {
   return (
     <div>
-      <AccTitle title="Web3 Wallet" url={account.publicKey.lite} />
+      <AccTitle title="Web3 Wallet" url={account.liteIdentity.url!} />
 
       <InfoTable>
         <Descriptions.Item
@@ -32,7 +32,7 @@ export function MissingLiteID({ account }: { account: Context.Account }) {
             />
           }
         >
-          <Text copyable>{account.publicKey.ethereum}</Text>
+          <Text copyable>{account.address}</Text>
         </Descriptions.Item>
 
         <Descriptions.Item
@@ -44,14 +44,8 @@ export function MissingLiteID({ account }: { account: Context.Account }) {
             />
           }
         >
-          <Text copyable={{ text: `${account.publicKey.lite}` }}>
-            {account.liteIdentity ? (
-              <Link
-                to={account.publicKey.lite}
-              >{`${account.publicKey.lite}`}</Link>
-            ) : (
-              `${account.publicKey.lite}`
-            )}
+          <Text copyable={{ text: `${account.liteIdentity.url!}` }}>
+            {`${account.liteIdentity.url!}`}
           </Text>
         </Descriptions.Item>
       </InfoTable>
@@ -61,8 +55,8 @@ export function MissingLiteID({ account }: { account: Context.Account }) {
           type="warning"
           message={
             <MissingLiteID.Create
-              eth={account.publicKey.ethereum}
-              lite={account.publicKey.lite}
+              eth={account.address}
+              lite={account.liteIdentity.url!}
             />
           }
         />

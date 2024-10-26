@@ -6,7 +6,7 @@ import { RiAccountBoxLine } from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 
 import { URLArgs } from 'accumulate.js';
-import { TransactionArgs } from 'accumulate.js/lib/core';
+import { LiteIdentity, TransactionArgs } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
 import { Link } from '../common/Link';
@@ -24,15 +24,14 @@ const { Title } = Typography;
 export function Dashboard({ account }: { account: Context.Account }) {
   const web3 = useWeb3();
   const history = useHistory();
-  const linkedAccounts = account.linked?.direct?.filter(
-    (x) => !account.publicKey?.lite?.equals(x.url),
+  const linkedAccounts = web3.linked?.direct?.filter(
+    (x) => !(x instanceof LiteIdentity),
   );
 
   const [open, setOpen] = useState<'createIdentity'>();
-  const [toSign, setToSign] = useState<Sign.Request>();
 
   const unlink = async (url: URLArgs) => {
-    const ok = await web3.dataStore.add((txn) => Sign.submit(setToSign, txn), {
+    const ok = await web3.dataStore.add({
       type: 'unlink',
       url: `${url}`,
     });
@@ -116,8 +115,6 @@ export function Dashboard({ account }: { account: Context.Account }) {
       )}
 
       {/* Modals */}
-      <Sign request={toSign} />
-
       {open === 'createIdentity' && account.exists && (
         <CreateIdentity
           open={open === 'createIdentity'}
@@ -127,6 +124,7 @@ export function Dashboard({ account }: { account: Context.Account }) {
             signer: account.liteIdentity.url,
             signerVersion: 1,
             account: account.liteIdentity,
+            key: account,
           }}
         />
       )}

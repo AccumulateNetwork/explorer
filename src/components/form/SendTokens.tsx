@@ -16,7 +16,7 @@ import { omit } from '../../utils/typemagic';
 import { isRecordOf } from '../../utils/types';
 import { TokenAmount } from '../common/Amount';
 import { queryEffect } from '../common/query';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputTokenAccount } from './InputAccount';
 import { formUtils } from './utils';
 
@@ -32,7 +32,7 @@ export function SendTokens(
   props: {
     from?: URLArgs;
     to?: URLArgs;
-  } & TxnFormProps,
+  } & TxnForm.Props,
 ) {
   const [form] = Form.useForm<Fields>();
   const { setError, clearError } = formUtils(form);

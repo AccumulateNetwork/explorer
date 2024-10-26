@@ -8,7 +8,7 @@ import { ADI, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import tooltip from '../../utils/lang';
 import { omit } from '../../utils/typemagic';
 import { WithIcon } from '../common/WithIcon';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InheritedAuthorities } from './InheritedAuthorities';
 import { InputAuthorities } from './InputAuthorities';
 import { InputNewAccount } from './InputNewAccount';
@@ -22,7 +22,7 @@ interface Fields {
 export function CreateDataAccount(
   props: {
     identity?: URLArgs;
-  } & TxnFormProps,
+  } & TxnForm.Props,
 ) {
   const [form] = Form.useForm<Fields>();
   const [externallyOwned, setExternallyOwned] = useState(false);

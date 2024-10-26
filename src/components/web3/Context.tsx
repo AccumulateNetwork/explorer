@@ -9,17 +9,21 @@ import type { Store } from './Store';
 
 export namespace Context {
   export interface Account {
-    active: boolean;
     address: string;
     liteIdentity: LiteIdentity;
     exists: boolean;
     publicKey?: EthPublicKey;
-    linked?: Linked;
+
+    /**
+     * This is a copy of {@link Context.driver} for convenience.
+     */
+    driver: Driver;
   }
 }
 
 export interface Context {
-  connect: () => Promise<Context | null>;
+  connect: () => Promise<Context>;
+  login: (_: Context.Account) => Promise<Context>;
   disconnect: () => void;
   reload: (rq: ReloadRequest) => void;
 
@@ -30,6 +34,7 @@ export interface Context {
   dataStore?: Store;
   onlineStore?: OnlineStore;
   accounts: Context.Account[];
+  linked?: Linked;
 }
 
 export interface ReloadRequest {
@@ -39,13 +44,11 @@ export interface ReloadRequest {
 
 const reactContext = createContext<Context>({
   connect: () => Promise.reject(),
+  login: () => Promise.reject(),
   disconnect() {},
   reload() {},
   canConnect: false,
   connected: false,
-  driver: null,
-  dataStore: null,
-  onlineStore: null,
   accounts: [],
 });
 

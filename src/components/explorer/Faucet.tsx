@@ -1,9 +1,5 @@
 import { Alert, Form, Input, Typography } from 'antd';
-import React, {
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { Submission } from 'accumulate.js/lib/api_v3';
 
