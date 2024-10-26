@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
-import { useEffectDebug } from '../../utils/debug';
 import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
@@ -381,7 +380,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     request?.reject(new Error('Disconnected'));
   };
 
-  useEffectDebug(() => {
+  useEffect(() => {
     let mounted = true;
 
     if (!request || request.executed) {
