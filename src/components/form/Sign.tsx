@@ -93,10 +93,14 @@ export function Sign({
   const [children, setChildren] = useState<React.ReactNode[]>();
 
   useAsyncEffect(
-    async (mounted) => {
+    async (mounted, onDismount) => {
       if (!request || !web3 || request.initiated) {
         return;
       }
+
+      onDismount(() => {
+        console.log('dismount');
+      });
 
       const { args, signer, key, onCancel, onFinish } = request;
       const push = newMutableChildren(mounted, setChildren);

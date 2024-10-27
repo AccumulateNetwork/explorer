@@ -2,6 +2,7 @@ import { Button, List, Modal, ModalProps, Skeleton } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
+import { network } from 'accumulate.js';
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
@@ -20,25 +21,34 @@ import { Store } from './Store';
 
 export default Connect;
 
-type Action = 'init' | 'connect' | 'login' | 'reload';
-
-interface ActionArgs {
-  // oldAccount?: string;
-  mustLogIn?: boolean;
-  account?: Context.Account;
+interface Init {
+  type: 'init';
 }
+
+interface Connect {
+  type: 'connect';
+}
+
+interface Reload {
+  type: 'reload';
+}
+
+interface Login {
+  type: 'login';
+  account: Context.Account;
+}
+
+type Action = Init | Connect | Reload | Login;
 
 class ActionRequest {
   readonly action: Action;
-  readonly args: ActionArgs;
   readonly result: Promise<Context>;
   #resolve: (ok: Context) => void = () => {};
   #reject: (reason: Error) => void = () => {};
   #executed = false;
 
-  constructor(action: Action, args: ActionArgs = {}) {
+  constructor(action: Action) {
     this.action = action;
-    this.args = args;
     this.result = new Promise<Context>((resolve, reject) => {
       this.#resolve = (ok) => {
         resolve(ok);
@@ -142,18 +152,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return (s: ConnectionState): Context =>
       (context = Object.assign(
         context || {
+          connect: () => makeRequest({ type: 'connect' }),
+          reload: () => makeRequest({ type: 'reload' }),
           login: (account: Context.Account) =>
-            makeRequest('login', { account }),
-          reload: () => makeRequest('reload'),
+            makeRequest({ type: 'login', account }),
           disconnect,
           canConnect: true,
         },
         {
-          connect: () =>
-            makeRequest('connect', {
-              mustLogIn: !s.accounts.some((x) => Settings.getKey(x.address)),
-            }),
-
           connected: !!s.driver,
           ...s,
         },
@@ -162,11 +168,11 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
   const [modal, setModal] = useState<ModalOptions | null>(null);
   const [request, setRequest] = useState<ActionRequest>(
-    new ActionRequest('init'),
+    new ActionRequest({ type: 'init' }),
   );
 
-  const makeRequest = (action: Action, args: ActionArgs = {}) => {
-    const r = new ActionRequest(action, args);
+  const makeRequest = (action: Action) => {
+    const r = new ActionRequest(action);
     setRequest(r);
     return r.result;
   };
@@ -212,7 +218,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     ];
 
     // [Page load] Don't prompt the user to unlock the wallet
-    if (request.action === 'init' && window.ethereum?.isMetaMask) {
+    if (request.action.type === 'init' && window.ethereum?.isMetaMask) {
       if (!(await window.ethereum._metamask.isUnlocked())) {
         return packState(false);
       }
@@ -223,7 +229,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     }
 
     // [Page load] Don't prompt the user to select a driver
-    if (request.action === 'init' && !connected) {
+    if (request.action.type === 'init' && !connected) {
       return packState(false);
     }
 
@@ -246,7 +252,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
         // case 'WalletConnect':
         //   const provider = await walletConnect?.connect({
-        //     headless: request.action === 'init',
+        //     headless: request.action.type === 'init',
         //   });
         //   if (!provider) {
         //     return packState(false);
@@ -259,10 +265,16 @@ export function Connect({ children }: { children: React.ReactNode }) {
       }
     }
 
-    switch (request.action) {
+    switch (request.action.type) {
       case 'connect':
         showModal({
           title: 'Connecting',
+          children: Processing,
+        });
+        break;
+      case 'login':
+        showModal({
+          title: 'Signing in',
           children: Processing,
         });
         break;
@@ -299,7 +311,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
 
     // Load account data
     for (const account of accounts) {
-      if (account.exists && request.action != 'reload') {
+      if (account.exists && request.action.type != 'reload') {
         continue;
       }
       const lda = await api
@@ -314,8 +326,8 @@ export function Connect({ children }: { children: React.ReactNode }) {
       }
     }
 
-    if (request.action === 'login' && request.args.account) {
-      const { account } = request.args;
+    if (request.action.type === 'login') {
+      const { account } = request.action;
 
       // Check for a known public key
       if (
@@ -331,7 +343,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
       // Recover the public key
       if (!account.publicKey) {
         showModal({
-          title: 'Logging in',
+          title: `Signing in with ${account.address}`,
           children: Processing,
         });
         const message = 'Login to Accumulate';
@@ -399,7 +411,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
         }
 
         const [state, { connected }, ok] = r;
-        if (!ok && request.action === 'connect') {
+        if (!ok && request.action.type === 'connect') {
           // If the user cancels an explicit connection request, reset
           disconnect();
         } else {
