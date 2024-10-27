@@ -2,12 +2,12 @@ import { Button, List, Modal, ModalProps, Skeleton } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-import { network } from 'accumulate.js';
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
+import { ShowError } from '../common/ShowError';
 import { isErrorRecord } from '../common/query';
 import { Context, Provider } from './Context';
 import { Driver, EthPublicKey } from './Driver';
@@ -425,6 +425,12 @@ export function Connect({ children }: { children: React.ReactNode }) {
       })
       .catch((e: Error) => {
         console.error(e);
+        if (request.action.type !== 'init') {
+          showModal({
+            title: 'Connect',
+            children: () => <ShowError error={e} />,
+          });
+        }
         request?.reject(e);
       });
 

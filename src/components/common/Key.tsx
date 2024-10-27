@@ -62,7 +62,8 @@ export default function ({
       return;
     }
 
-    const addr = Address.fromKeyHash(type, hash);
+    const keyType = type === SignatureType.TypedData ? SignatureType.ETH : type;
+    const addr = Address.fromKeyHash(keyType, hash);
     setAddress(addr.toString());
   }, [keyHash, publicKey, type]);
 

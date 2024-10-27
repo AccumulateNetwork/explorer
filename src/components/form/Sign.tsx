@@ -277,7 +277,7 @@ function useMutableChildren(): [
     };
   };
 
-  return [children, setChildren, push];
+  return [children, (x) => (setChildren(x), (children = x)), push];
 }
 
 async function sign({
