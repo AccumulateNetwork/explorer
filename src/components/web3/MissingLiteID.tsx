@@ -8,7 +8,6 @@ import { Submission } from 'accumulate.js/lib/api_v3';
 import tooltip from '../../utils/lang';
 import { AccTitle } from '../common/AccTitle';
 import { InfoTable } from '../common/InfoTable';
-import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';

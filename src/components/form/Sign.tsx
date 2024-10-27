@@ -1,6 +1,6 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Alert, Modal, Spin } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 
 import { SignOptions, TxID } from 'accumulate.js';
 import {
@@ -112,13 +112,6 @@ export function Sign({
       onCancel();
     }
   }, [request, web3]);
-
-  useEffect(() => {
-    console.log('create Sign');
-    return () => {
-      console.log('destroy Sign');
-    };
-  }, []);
 
   const reverse = [];
   if (children?.length) {

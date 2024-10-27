@@ -246,7 +246,13 @@ export function BaseTxnForm<Fields>({
         </Button>
       </Tooltip>
     ) : (
-      <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
+      <Button
+        type="primary"
+        loading={isSigning}
+        onClick={() => {
+          form.submit();
+        }}
+      >
         <SignWith />
       </Button>
     );

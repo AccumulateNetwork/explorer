@@ -6,7 +6,6 @@ import { TxID, URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
-import { Sign } from '../form/Sign';
 import { Actions as Web3Actions } from '../web3/Actions';
 import { useWeb3 } from '../web3/Context';
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';

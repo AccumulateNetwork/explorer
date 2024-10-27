@@ -3,7 +3,6 @@ import {
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
-  UserSwitchOutlined,
 } from '@ant-design/icons';
 import { Button, Dropdown, Menu, MenuProps, Space } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';

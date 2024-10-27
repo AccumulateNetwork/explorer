@@ -18,7 +18,6 @@ import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
 import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
-import { Sign } from './Sign';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {

@@ -22,6 +22,7 @@ import { CreateIdentity } from '../form/CreateIdentity';
 import { CreateSubADI } from '../form/CreateSubADI';
 import { CreateTokenAccount } from '../form/CreateTokenAccount';
 import { SendTokens } from '../form/SendTokens';
+import { WriteData } from '../form/WriteData';
 import { getSigners } from '../form/utils';
 import { useWeb3 } from './Context';
 
@@ -41,6 +42,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
   type FormKey =
     | 'addCredits'
     | 'sendTokens'
+    | 'writeData'
     | 'createIdentity'
     | 'createSubADI'
     | 'createTokenAccount'
@@ -88,6 +90,13 @@ export function Actions({ account: accountUrl }: { account: URL }) {
             open: 'addCredits',
             from: acc.url,
           }),
+        ]);
+        break;
+
+      case AccountType.DataAccount:
+      case AccountType.LiteDataAccount:
+        setItems([
+          item({ label: 'Write data', open: 'writeData', to: acc.url }),
         ]);
         break;
 
@@ -180,6 +189,16 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
           signer={acc && toFrom.from?.equals(acc.url!) ? signer : undefined}
+        />
+      )}
+
+      {open === 'writeData' && (
+        <WriteData
+          {...toFrom}
+          open={open === 'writeData'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          signer={acc && toFrom.to?.equals(acc.url!) ? signer : undefined}
         />
       )}
 

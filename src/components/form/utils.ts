@@ -1,16 +1,17 @@
-import { Form, FormInstance } from 'antd';
+import { Form } from 'antd';
 import { NamePath } from 'antd/lib/form/interface';
-import { FieldContext } from 'rc-field-form';
-import { useCallback, useContext, useEffect, useMemo } from 'react';
+import {
+  type FormInstance,
+  type InternalFormInstance,
+} from 'rc-field-form/es/interface';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { JsonRpcClient, RecordType } from 'accumulate.js/lib/api_v3';
 import {
   Account,
   AccountType,
   AuthorityEntry,
-  KeyPage,
   KeySpec,
-  LiteIdentity,
 } from 'accumulate.js/lib/core';
 
 import { SplitFirst, curryFirst } from '../../utils/typemagic';
@@ -131,6 +132,11 @@ export function debounce<I extends Array<any>>(
 type FieldData = Omit<Parameters<FormInstance['setFields']>[0][0], 'name'>;
 
 interface FormUtils<Fields> {
+  get(name: NamePath<Fields>): {
+    value: any;
+    error: string[];
+    warning: string[];
+  };
   set(name: NamePath<Fields>, data: FieldData): void;
   setError(field: NamePath<Fields>, error: any): void;
   clearError(field: NamePath<Fields>): void;
@@ -152,11 +158,24 @@ export function formUtils<Fields>(
   form: FormInstance<Fields>,
   name?: NamePath<Fields>,
 ) {
-  const { prefixName } = useContext(FieldContext);
+  const _name = (name: NamePath<Fields>): NamePath<Fields> => {
+    const { prefixName } = form as unknown as InternalFormInstance;
+    if (!prefixName) return name;
+    if (name instanceof Array)
+      return [...prefixName, ...name] as NamePath<Fields>;
+    return [...prefixName, name] as NamePath<Fields>;
+  };
+
+  const get = (name: NamePath<Fields>) => {
+    name = _name(name);
+    const value = form.getFieldValue(name);
+    const error = form.getFieldError(name);
+    const warning = form.getFieldWarning(name);
+    return { value, error, warning };
+  };
+
   const set = (name: NamePath<Fields>, data: FieldData) => {
-    if (prefixName) {
-      name = [...prefixName, name] as NamePath<Fields>;
-    }
+    name = _name(name);
     form.setFields([{ name, ...data }]);
 
     // Workaround for https://github.com/ant-design/ant-design/issues/23782
@@ -182,9 +201,10 @@ export function formUtils<Fields>(
   };
 
   if (arguments.length == 1) {
-    return { set, setError, clearError, setValidating };
+    return { get, set, setError, clearError, setValidating };
   }
   return {
+    get: curryFirst(get)(name),
     set: curryFirst(set)(name),
     setError: curryFirst(setError)(name),
     clearError: curryFirst(clearError)(name),

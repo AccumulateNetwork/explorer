@@ -1,21 +1,18 @@
 import { DisconnectOutlined, LinkOutlined } from '@ant-design/icons';
 import { Alert, Button, List, Skeleton, Tooltip, Typography } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 
 import { URLArgs } from 'accumulate.js';
-import { LiteIdentity, TransactionArgs } from 'accumulate.js/lib/core';
+import { LiteIdentity } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
 import { Link } from '../common/Link';
-import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
-import { AddNote } from '../form/AddNote';
 import { CreateIdentity } from '../form/CreateIdentity';
-import { Sign } from '../form/Sign';
 import { Context, useWeb3 } from './Context';
 import { Settings } from './Settings';
 
