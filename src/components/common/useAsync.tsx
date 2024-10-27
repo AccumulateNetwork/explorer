@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
 
 export function useAsyncEffect<V>(
-  effect: (isMounted: () => boolean) => V | Promise<V>,
+  effect: (
+    isMounted: () => boolean,
+    onDismount: (_: () => void) => void,
+  ) => V | Promise<V>,
   inputs: any[],
 ) {
   let resolve: () => void;
@@ -10,10 +13,14 @@ export function useAsyncEffect<V>(
 
   useEffect(function () {
     let mounted = true;
+    const onDismount: (() => void)[] = [];
 
     (async () => {
       try {
-        await effect(() => mounted);
+        await effect(
+          () => mounted,
+          (fn) => onDismount.push(fn),
+        );
         resolve();
       } catch (error) {
         reject(error);
@@ -22,6 +29,7 @@ export function useAsyncEffect<V>(
 
     return function () {
       mounted = false;
+      onDismount.forEach((x) => x());
     };
   }, inputs);
 

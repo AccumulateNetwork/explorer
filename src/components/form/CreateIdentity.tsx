@@ -16,9 +16,8 @@ import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
-import { Sign } from './Sign';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {
@@ -26,12 +25,13 @@ interface Fields {
   authorities: KeyBook[];
 }
 
-export function CreateIdentity(props: TxnFormProps) {
+export function CreateIdentity(props: TxnForm.Props) {
   const [form] = Form.useForm<Fields>();
   const web3 = useWeb3();
   const { api } = useContext(Network);
   const { setError, clearError, setValidating } = formUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);
+  const [signer, setSigner] = useState<TxnForm.Signer>();
 
   const submit = ({ url, authorities }: Fields): TransactionArgs => {
     if (!url) url = null;
@@ -48,7 +48,9 @@ export function CreateIdentity(props: TxnFormProps) {
         type: 'createIdentity',
         url,
         keyBookUrl: externallyOwned ? null : url ? `${url}/book` : 'fake',
-        keyHash: externallyOwned ? null : web3.publicKey.publicKeyHash,
+        keyHash: externallyOwned
+          ? null
+          : signer?.key.address.replace(/^0x/, ''),
         authorities: externallyOwned
           ? authorities?.filter((x) => x).map((x) => x.url)
           : null,
@@ -94,20 +96,16 @@ export function CreateIdentity(props: TxnFormProps) {
   });
 
   const isMounted = useIsMounted();
-  const [toSign, setToSign] = useState<Sign.Request>();
   const onFinish = async (ok: boolean) => {
     if (!isMounted.current) {
       return;
     }
     if (ok) {
-      const ok = await web3.dataStore.add(
-        (txn) => Sign.submit(setToSign, txn),
-        {
-          type: 'link',
-          url: form.getFieldValue('url'),
-          accountType: 'identity',
-        },
-      );
+      const ok = await web3.dataStore.add({
+        type: 'link',
+        url: form.getFieldValue('url'),
+        accountType: 'identity',
+      });
       if (!isMounted.current) {
         return;
       }
@@ -125,6 +123,7 @@ export function CreateIdentity(props: TxnFormProps) {
       form={form}
       submit={submit}
       onFinish={onFinish}
+      onSignerChange={(s) => setSigner(s)}
     >
       <Form.Item
         name="url"
@@ -182,7 +181,7 @@ export function CreateIdentity(props: TxnFormProps) {
           />
         }
       >
-        <Input readOnly value={web3?.publicKey?.ethereum} />
+        <Input readOnly value={signer?.key.address} />
       </Form.Item>
 
       <Form.Item label="Authorities" hidden={!externallyOwned}>
@@ -214,8 +213,6 @@ export function CreateIdentity(props: TxnFormProps) {
           )}
         />
       </Form.Item>
-
-      <Sign title={`Linking ${form.getFieldValue('url')}`} request={toSign} />
     </BaseTxnForm>
   );
 }

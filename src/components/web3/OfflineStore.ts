@@ -3,7 +3,7 @@ import { Store } from './Store';
 
 @prefix('web3:store')
 @storage(localStorage)
-export class OfflineStore {
+export class OfflineStore implements Store {
   @broadcast @stored static accessor #entries: Record<string, Store.Entry[]> =
     {};
 
@@ -17,7 +17,7 @@ export class OfflineStore {
     yield* OfflineStore.#entries[this.#account] || [];
   }
 
-  add(_: Store.Sign, entry: Store.Entry) {
+  add(entry: Store.Entry) {
     const e = OfflineStore.#entries[this.#account] || [];
     OfflineStore.#entries = {
       ...OfflineStore.#entries,

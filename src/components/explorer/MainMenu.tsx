@@ -3,7 +3,6 @@ import {
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
-  UserSwitchOutlined,
 } from '@ant-design/icons';
 import { Button, Dropdown, Menu, MenuProps, Space } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
@@ -107,19 +106,13 @@ export function MainMenu({
       (web3.connected
         ? {
             key: 'web3',
-            label: 'Web3 Wallet',
+            label: 'Wallet',
             children: [
               {
                 label: 'Open dashboard',
                 key: 'dashboard',
-                onClick: () => history.push('/web3'),
+                onClick: () => history.push('/wallet'),
                 icon: <BarsOutlined />,
-              },
-              {
-                label: 'Switch account',
-                key: 'switch',
-                onClick: () => web3.switch(),
-                icon: <UserSwitchOutlined />,
               },
               {
                 label: 'Disconnect',
@@ -132,7 +125,7 @@ export function MainMenu({
         : {
             key: 'web3',
             label: 'Connect Web3 Wallet',
-            onClick: () => web3.connect().then(() => history.push('/web3')),
+            onClick: () => web3.connect().then(() => history.push('/wallet')),
           }),
     {
       key: 'blocks',
@@ -185,7 +178,7 @@ export function MainMenu({
           items={items}
         />
         <div className="menu-right">
-          {!shared.network.mainnet && <Login />}
+          {shared.network.wallet && <Login />}
           <Dropdown
             menu={{ items: networkMenuItems }}
             trigger={['click']}

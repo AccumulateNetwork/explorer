@@ -15,7 +15,7 @@ import { ACME } from '../../utils/url';
 import { TokenAmount } from '../common/Amount';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
 import { formUtils } from './utils';
 
@@ -33,7 +33,7 @@ export function AddCredits(
   props: {
     from?: URLArgs;
     to?: URLArgs;
-  } & TxnFormProps,
+  } & TxnForm.Props,
 ) {
   const [form] = Form.useForm<Fields>();
   const { setError, clearError } = formUtils(form);

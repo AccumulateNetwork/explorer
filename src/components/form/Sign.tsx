@@ -17,6 +17,7 @@ import { ShowError } from '../common/ShowError';
 import { NetworkConfig } from '../common/networks';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import { useIsMounted } from '../common/useIsMounted';
 import * as web3 from '../web3/Context';
 import { useWeb3 } from '../web3/Context';
 
@@ -24,11 +25,13 @@ const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
 
 export declare namespace Sign {
-  type Signer = SignOptions;
+  type Signer = SignOptions & {
+    key: web3.Context.Account;
+  };
 
   interface Request {
     args: TransactionArgs;
-    signer?: Signer;
+    signer: Signer;
     onFinish(): any;
     onCancel(): any;
     initiated?: boolean;
@@ -45,83 +48,70 @@ export declare namespace Sign {
 Sign.submit = (
   set: (_: Sign.Request) => void,
   args: TransactionArgs,
-  signer?: Sign.Signer,
+  signer: Sign.Signer,
 ) => {
-  let resolve: (_: boolean) => void;
-  const promise = new Promise<boolean>((r) => {
-    resolve = r;
+  return new Promise<boolean>((resolve) => {
+    set({
+      args,
+      signer,
+      onFinish() {
+        resolve(true);
+      },
+      onCancel() {
+        resolve(false);
+      },
+    });
   });
-
-  set({
-    args,
-    signer,
-    onFinish() {
-      resolve(true);
-    },
-    onCancel() {
-      resolve(false);
-    },
-  });
-  return promise;
 };
 
 Sign.waitFor = function <T>(
   set: (_: Sign.WaitForRequest<T>) => void,
   submit: () => Promise<T | T[]>,
 ) {
-  let resolve: (_: T[] | null) => void;
-  const promise = new Promise<T[] | null>((r) => {
-    resolve = r;
+  return new Promise<T[] | null>((r) => {
+    set({
+      submit,
+      onFinish: r,
+      onCancel: () => r(null),
+    });
   });
-
-  set({
-    submit,
-    onFinish: resolve,
-    onCancel() {
-      resolve(null);
-    },
-  });
-  return promise;
 };
 
 export function Sign({
   request,
   title = 'Signing',
 }: {
-  request: Sign.Request;
+  request?: Sign.Request;
   title?: React.ReactNode;
 }) {
   const web3 = useWeb3();
   const { api, network } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(false);
-  const [children, setChildren] = useState<React.ReactNode[]>();
+  const [children, setChildren, pushChild] = useMutableChildren();
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (!request || !web3 || request.initiated) {
+  useAsyncEffect(async () => {
+    if (!request || !web3 || request.initiated) {
+      return;
+    }
+
+    const { args, signer, onCancel, onFinish } = request;
+    setOpen(true);
+    setClosable(false);
+    setChildren([]);
+    try {
+      request.initiated = true;
+      if (await sign({ push: pushChild, api, web3, args, signer, network })) {
+        onFinish();
         return;
       }
-
-      const { args, signer, onCancel, onFinish } = request;
-      const push = newMutableChildren(mounted, setChildren);
-      setOpen(true);
-      setClosable(false);
-      try {
-        request.initiated = true;
-        if (await sign({ push, api, web3, args, signer, network })) {
-          onFinish();
-          return true;
-        }
-      } catch (error) {
-        push(<ShowError error={error} />);
-      } finally {
-        setClosable(true);
-        onCancel();
-      }
-    },
-    [request, web3],
-  );
+    } catch (error) {
+      pushChild(<ShowError error={error} />);
+    } finally {
+      setClosable(true);
+      onCancel();
+    }
+  }, [request, web3]);
 
   const reverse = [];
   if (children?.length) {
@@ -149,7 +139,7 @@ Sign.WaitFor = function <T>({
   canCloseEarly,
   closeWhenDone,
 }: {
-  request: Sign.WaitForRequest<T>;
+  request: Sign.WaitForRequest<T> | undefined;
   title: React.ReactNode;
   canCloseEarly?: boolean;
   closeWhenDone?: boolean;
@@ -157,78 +147,75 @@ Sign.WaitFor = function <T>({
   const { api } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(canCloseEarly);
-  const [children, setChildren] = useState<React.ReactNode[]>();
+  const [children, setChildren, pushChild] = useMutableChildren();
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (!request || request.initiated) {
+  useAsyncEffect(async () => {
+    if (!request || request.initiated) {
+      return;
+    }
+
+    const { submit, onCancel, onFinish } = request;
+    setOpen(true);
+    setClosable(canCloseEarly);
+    setChildren([]);
+    try {
+      request.initiated = true;
+      let update = pushChild(<Pending>Submitting</Pending>);
+      let results = await submit().catch((error) => {
+        update(
+          <Failure>
+            <ShowError bare error={error} />
+          </Failure>,
+        );
+      });
+      if (!results) {
+        return;
+      }
+      if (!(results instanceof Array)) {
+        results = [results];
+      }
+      update(<Success>Submitted</Success>);
+
+      let ok = true;
+      for (const r of results) {
+        if (!(r instanceof Submission) || r.success) {
+          continue;
+        }
+        ok = false;
+        if (r.status?.error) {
+          pushChild(<ShowError error={r.status.error} />);
+        } else {
+          pushChild(<ShowError error={r.message} />);
+        }
+      }
+      if (!ok) {
         return;
       }
 
-      const { submit, onCancel, onFinish } = request;
-      const push = newMutableChildren(mounted, setChildren);
-      setOpen(true);
-      setClosable(canCloseEarly);
-      try {
-        request.initiated = true;
-        let update = push(<Pending>Submitting</Pending>);
-        let results = await submit().catch((error) => {
-          update(
-            <Failure>
-              <ShowError bare error={error} />
-            </Failure>,
-          );
-        });
-        if (!results) {
-          return;
-        }
-        if (!(results instanceof Array)) {
-          results = [results];
-        }
-        update(<Success>Submitted</Success>);
+      const seen = new Set<string>();
+      await Promise.all(
+        (results as any[])
+          .filter(
+            (r): r is TxID | Submission =>
+              r instanceof TxID || r instanceof Submission,
+          )
+          .map((r) => {
+            const txid = r instanceof TxID ? r : r.status!.txID!;
+            return waitFor({ api, push: pushChild, seen, txid });
+          }),
+      );
 
-        let ok = true;
-        for (const r of results) {
-          if (!(r instanceof Submission) || r.success) {
-            continue;
-          }
-          ok = false;
-          if (r.status?.error) {
-            push(<ShowError error={r.status.error} />);
-          } else {
-            push(<ShowError error={r.message} />);
-          }
-        }
-        if (!ok) {
-          return;
-        }
-
-        const seen = new Set<string>();
-        await Promise.all(
-          (results as any[])
-            .filter(
-              (r): r is TxID | Submission =>
-                r instanceof TxID || r instanceof Submission,
-            )
-            .map((r) => {
-              const txid = r instanceof TxID ? r : r.status.txID;
-              return waitFor({ api, push, seen, txid });
-            }),
-        );
-
-        onFinish(results);
-        if (closeWhenDone) {
-          setOpen(false);
-        }
-      } catch (error) {
-        push(<ShowError error={error} />);
-      } finally {
-        setClosable(true);
-        onCancel();
+      onFinish(results);
+      if (closeWhenDone) {
+        setOpen(false);
       }
-    },
-    [request],
-  );
+    } catch (error) {
+      pushChild(<ShowError error={error} />);
+    } finally {
+      setClosable(true);
+      onCancel();
+    }
+  }, [request]);
 
   const reverse = [];
   if (children?.length) {
@@ -250,14 +237,16 @@ Sign.WaitFor = function <T>({
   );
 };
 
-function newMutableChildren(
-  mounted: () => boolean,
-  setChildren: (_: React.ReactNode[]) => any,
-) {
-  let children: React.ReactNode[] = [];
-  setChildren([]);
+function useMutableChildren(): [
+  React.ReactNode[],
+  (_: React.ReactNode[]) => void,
+  (_: React.ReactNode) => (_: React.ReactNode) => void,
+] {
+  let [children, setChildren] = useState<React.ReactNode[]>([]);
+  const isMounted = useIsMounted();
+
   const push = (n: React.ReactNode) => {
-    if (!mounted) {
+    if (!isMounted.current) {
       return (_: React.ReactNode) => {};
     }
 
@@ -269,14 +258,14 @@ function newMutableChildren(
       children = children.map((m, j) =>
         j === i ? <span key={`${i}`}>{n}</span> : m,
       );
-      if (!mounted) {
+      if (!isMounted.current) {
         return;
       }
       setChildren(children);
     };
   };
 
-  return push;
+  return [children, (x) => (setChildren(x), (children = x)), push];
 }
 
 async function sign({
@@ -291,17 +280,40 @@ async function sign({
   api: JsonRpcClient;
   web3: web3.Context;
   args: TransactionArgs;
-  signer: Sign.Signer;
   network: NetworkConfig;
+  signer: Sign.Signer;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
+  if (!signer.key.publicKey) {
+    const ok = await web3
+      .login(signer.key)
+      .then(() => true)
+      .catch((error) => {
+        update(
+          <Failure>
+            <ShowError bare error={error} />
+          </Failure>,
+        );
+        return false;
+      });
+    if (!ok) return false;
+    if (!signer.key.publicKey) {
+      update(
+        <Failure>
+          <ShowError bare error={new Error('Unable to login')} />
+        </Failure>,
+      );
+      return false;
+    }
+  }
+
   const txn = new Transaction(args);
-  const sig = await web3.driver
-    .signAccumulate(network, txn, {
-      publicKey: web3.publicKey.publicKey,
+  const sig = await web3
+    .driver!.signAccumulate(network, txn, {
+      publicKey: signer.key.publicKey.publicKey,
       timestamp: Date.now(),
       ...(signer || {
-        signer: web3.publicKey.lite,
+        signer: signer.key.liteIdentity.url!,
         signerVersion: 1,
       }),
     })
@@ -331,7 +343,7 @@ async function sign({
       );
     });
   if (!results) {
-    return;
+    return false;
   }
   update(<Success>Submitted</Success>);
 
@@ -346,12 +358,12 @@ async function sign({
     }
   }
   if (!results.every((x) => x.success)) {
-    return;
+    return false;
   }
 
   const seen = new Set<string>();
   const ok = await Promise.all(
-    results.map((r) => waitFor({ api, push, seen, txid: r.status.txID })),
+    results.map((r) => waitFor({ api, push, seen, txid: r.status!.txID! })),
   );
   return ok.every((x) => x);
 }
@@ -389,7 +401,7 @@ async function waitFor({
         console.debug('Ignoring suspected bad status', r);
         return true;
       }
-      if (r.status >= 400) {
+      if (r.status! >= 400) {
         replace(
           <Failure>
             <Link to={txid}>
@@ -416,7 +428,7 @@ async function waitFor({
 
       const ok = await Promise.all(
         r.produced.records.map((r) =>
-          waitFor({ push, api, seen, txid: r.value }),
+          waitFor({ push, api, seen, txid: r!.value! }),
         ),
       );
       return ok.every((x) => x);

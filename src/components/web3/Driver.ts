@@ -187,13 +187,14 @@ export class Driver {
     }
 
     if (
-      ('code' in error && error.code === 4001) ||
-      ('cause' in error &&
-        typeof error.cause === 'object' &&
-        'code' in error.cause &&
-        error.cause.code === 4001)
+      'code' in error &&
+      typeof error.code === 'string' &&
+      error.code === 'ACTION_REJECTED' &&
+      'reason' in error &&
+      typeof error.reason === 'string' &&
+      error.reason === 'rejected'
     ) {
-      return; // User rejected the request
+      throw new Error('Canceled');
     }
 
     // Extract the Ledger error

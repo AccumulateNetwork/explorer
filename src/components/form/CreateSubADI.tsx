@@ -15,7 +15,7 @@ import { unwrapError } from '../common/ShowError';
 import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
 import { useWeb3 } from '../web3/Context';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputAuthority, InputIdentity } from './InputAccount';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
@@ -25,12 +25,13 @@ interface Fields {
   authorities: KeyBook[];
 }
 
-export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
+export function CreateSubADI(props: { parent: URLArgs } & TxnForm.Props) {
   const [form] = Form.useForm<Fields>();
   const web3 = useWeb3();
   const { api } = useContext(Network);
   const { setError, clearError, setValidating } = formUtils(form);
   const [owner, setOwner] = useState<'external' | 'parent' | 'self'>('parent');
+  const [signer, setSigner] = useState<TxnForm.Signer>();
 
   const submit = ({ parent, name, authorities }: Fields): TransactionArgs => {
     const url = `${parent.url}/${name}`;
@@ -42,7 +43,8 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
         type: 'createIdentity',
         url,
         keyBookUrl: owner === 'self' ? `${url}/book` : null,
-        keyHash: owner === 'self' ? web3.publicKey.publicKeyHash : null,
+        keyHash:
+          owner === 'self' ? signer?.key.address.replace(/^0x/, '') : null,
         authorities:
           owner === 'external'
             ? authorities?.filter((x) => x).map((x) => x.url)
@@ -200,7 +202,7 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
                     />
                   }
                 >
-                  <Input readOnly value={web3?.publicKey?.ethereum} />
+                  <Input readOnly value={signer?.key.address} />
                 </Form.Item>
               </>
             ),

@@ -6,7 +6,6 @@ import { TxID, URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
-import { Sign } from '../form/Sign';
 import { Actions as Web3Actions } from '../web3/Actions';
 import { useWeb3 } from '../web3/Context';
 import { addFavourite, isFavourite, removeFavourite } from './Favourites';
@@ -78,11 +77,10 @@ export function AccTitle({
 
 function Link({ account }: { account: Account }) {
   const web3 = useWeb3();
-  const [toSign, setToSign] = useState<Sign.Request>();
   const [linked] = useShared(web3, 'linked');
 
   const link = async () => {
-    const ok = await web3.dataStore?.add((txn) => Sign.submit(setToSign, txn), {
+    const ok = await web3.dataStore?.add({
       type: 'link',
       url: `${account.url}`,
       accountType: AccountType.getName(account.type) as any,
@@ -105,8 +103,6 @@ function Link({ account }: { account: Account }) {
             onClick={link}
           />
         </Tooltip>
-
-        <Sign title={`Linking ${account.url}`} request={toSign} />
       </>
     );
   }

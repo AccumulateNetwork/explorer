@@ -1,11 +1,13 @@
-import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
+import { Button, List, Modal, ModalProps, Skeleton } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
 import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
+import { ShowError } from '../common/ShowError';
 import { isErrorRecord } from '../common/query';
 import { Context, Provider } from './Context';
 import { Driver, EthPublicKey } from './Driver';
@@ -14,37 +16,56 @@ import { OfflineStore } from './OfflineStore';
 import { OnlineStore } from './OnlineStore';
 import { Settings } from './Settings';
 import { Store } from './Store';
-import { useWalletConnect } from './WalletConnect';
+
+// import { useWalletConnect } from './WalletConnect';
 
 export default Connect;
 
-type Action = 'init' | 'connect' | 'switch' | 'reload';
-
-interface ActionArgs {
-  oldAccount?: string;
-  mustLogIn?: boolean;
+interface Init {
+  type: 'init';
 }
+
+interface Connect {
+  type: 'connect';
+}
+
+interface Reload {
+  type: 'reload';
+}
+
+interface Login {
+  type: 'login';
+  account: Context.Account;
+}
+
+type Action = Init | Connect | Reload | Login;
 
 class ActionRequest {
   readonly action: Action;
-  readonly args: ActionArgs;
-  readonly result: Promise<Context | null>;
-  #resolve: (ok: Context | null) => void;
+  readonly result: Promise<Context>;
+  #resolve: (ok: Context) => void = () => {};
+  #reject: (reason: Error) => void = () => {};
   #executed = false;
 
-  constructor(action: Action, args: ActionArgs = {}) {
+  constructor(action: Action) {
     this.action = action;
-    this.args = args;
-    this.result = new Promise<Context | null>((resolve) => {
+    this.result = new Promise<Context>((resolve, reject) => {
       this.#resolve = (ok) => {
         resolve(ok);
         this.#executed = true;
       };
+      this.#reject = (reason) => {
+        reject(reason);
+      };
     });
   }
 
-  resolve(ok: Context | null) {
+  resolve(ok: Context) {
     this.#resolve(ok);
+  }
+
+  reject(reason: Error) {
+    this.#reject(reason);
   }
 
   get executed() {
@@ -104,70 +125,54 @@ const SelectDriver =
     </div>
   );
 
-const SelectAccount =
-  ({ accounts }: { accounts: string[] }) =>
-  ({ resolve }: Resolver<string>) => (
-    <Select
-      style={{ width: '100%' }}
-      placeholder="Select an account"
-      onSelect={(x) => resolve(x)}
-    >
-      {accounts.map((x) => (
-        <Select.Option key={x} value={x}>
-          {x}
-        </Select.Option>
-      ))}
-    </Select>
-  );
-
 interface ConnectionState {
   driver?: Driver;
-  pubKey?: EthPublicKey;
-  liteIdentity?: LiteIdentity;
   dataStore?: Store;
   onlineStore?: OnlineStore;
+  accounts: Context.Account[];
   linked?: Linked;
 }
 
 interface SharedState {
   connected: typeof Settings.connected;
-  account: string;
+  activeAccounts: string[];
 }
 
 export function Connect({ children }: { children: React.ReactNode }) {
   const { api, network } = useContext(Network);
-  const [walletConnect] = useWalletConnect();
+  // const [walletConnect] = useWalletConnect();
+  const walletConnect: unknown = undefined;
   const [connected, setConnected] = useShared(Settings, 'connected');
-  const [account, setAccount] = useShared(Settings, 'account');
+  const [activeAccounts, setActiveAccounts] = useShared(Settings, 'accounts');
+  const [state, setState] = useState<ConnectionState>({ accounts: [] });
 
-  const [state, setState] = useState<ConnectionState>({});
+  const newContext = (() => {
+    // Reassign properties of Context but do not recreate it
+    let context: Context;
+    return (s: ConnectionState): Context =>
+      (context = Object.assign(
+        context || {
+          connect: () => makeRequest({ type: 'connect' }),
+          reload: () => makeRequest({ type: 'reload' }),
+          login: (account: Context.Account) =>
+            makeRequest({ type: 'login', account }),
+          disconnect,
+          canConnect: true,
+        },
+        {
+          connected: !!s.driver,
+          ...s,
+        },
+      ));
+  })();
 
-  const newContext = (s: ConnectionState & SharedState): Context => ({
-    connect: () =>
-      makeRequest('connect', {
-        mustLogIn: !(s.account && Settings.getKey(s.account)),
-      }),
-    switch: () => makeRequest('switch', { oldAccount: s.account }),
-    reload: () => makeRequest('reload'),
-
-    disconnect,
-    canConnect: true,
-    connected: !!s.pubKey,
-    driver: s.driver,
-    publicKey: s.pubKey,
-    liteIdentity: s.liteIdentity,
-    dataStore: s.dataStore,
-    onlineStore: s.onlineStore,
-    linked: s.linked,
-  });
-
-  const [modal, setModal] = useState<ModalOptions>(null);
+  const [modal, setModal] = useState<ModalOptions | null>(null);
   const [request, setRequest] = useState<ActionRequest>(
-    new ActionRequest('init'),
+    new ActionRequest({ type: 'init' }),
   );
 
-  const makeRequest = (action: Action, args: ActionArgs = {}) => {
-    const r = new ActionRequest(action, args);
+  const makeRequest = (action: Action) => {
+    const r = new ActionRequest(action);
     setRequest(r);
     return r.result;
   };
@@ -175,50 +180,56 @@ export function Connect({ children }: { children: React.ReactNode }) {
   const showModal = <T extends unknown>(
     props: Omit<ModalOptions<T>, 'resolve'>,
   ) => {
-    let resolve: (_: T) => void;
-    const p = new Promise<T>((r) => (resolve = r));
-    setModal({ ...props, resolve });
-    return p;
+    return new Promise<T>((r) =>
+      setModal({
+        ...props,
+        resolve: r,
+      }),
+    );
   };
 
   const connect = async ({
     mounted,
     connected,
-    account,
+    activeAccounts,
     driver,
-    pubKey,
-    liteIdentity,
     dataStore,
-    onlineStore,
     linked,
+    onlineStore,
+    accounts,
   }: ConnectionState & SharedState & { mounted(): boolean }): Promise<
-    (ConnectionState & SharedState & { ok: boolean }) | undefined
+    [ConnectionState, SharedState, boolean]
   > => {
-    const packState = (ok: boolean) => ({
-      connected,
-      account,
-      driver,
-      pubKey,
-      liteIdentity,
-      dataStore,
-      onlineStore,
-      linked,
+    const packState = (
+      ok: boolean,
+    ): [ConnectionState, SharedState, boolean] => [
+      {
+        driver,
+        dataStore,
+        linked,
+        onlineStore,
+        accounts,
+      },
+      {
+        connected,
+        activeAccounts,
+      },
       ok,
-    });
+    ];
 
     // [Page load] Don't prompt the user to unlock the wallet
-    if (request.action === 'init' && window.ethereum?.isMetaMask) {
+    if (request.action.type === 'init' && window.ethereum?.isMetaMask) {
       if (!(await window.ethereum._metamask.isUnlocked())) {
-        return;
+        return packState(false);
       }
     }
 
     if (!mounted()) {
-      return;
+      return packState(false);
     }
 
     // [Page load] Don't prompt the user to select a driver
-    if (request.action === 'init' && !connected) {
+    if (request.action.type === 'init' && !connected) {
       return packState(false);
     }
 
@@ -239,26 +250,31 @@ export function Connect({ children }: { children: React.ReactNode }) {
           driver = new Driver(window.ethereum as any);
           break;
 
-        case 'WalletConnect':
-          const provider = await walletConnect?.connect({
-            headless: request.action === 'init',
-          });
-          if (!provider) {
-            return packState(false);
-          }
-          driver = new Driver(provider);
-          break;
+        // case 'WalletConnect':
+        //   const provider = await walletConnect?.connect({
+        //     headless: request.action.type === 'init',
+        //   });
+        //   if (!provider) {
+        //     return packState(false);
+        //   }
+        //   driver = new Driver(provider);
+        //   break;
 
         default:
           throw new Error(`Invalid driver type ${connected}`);
       }
     }
 
-    switch (request.action) {
+    switch (request.action.type) {
       case 'connect':
-      case 'switch':
         showModal({
           title: 'Connecting',
+          children: Processing,
+        });
+        break;
+      case 'login':
+        showModal({
+          title: 'Signing in',
           children: Processing,
         });
         break;
@@ -268,114 +284,97 @@ export function Connect({ children }: { children: React.ReactNode }) {
     await driver.connect();
 
     // List accounts
-    const accounts = await driver.listAccounts();
+    const ethAccounts = await driver.listAccounts();
 
     // Switch the chain to Accumulate
     await driver.switchChains(network);
     if (!mounted()) {
-      return;
-    }
-
-    // If there's only one account, select it
-    if (
-      request.action !== 'switch' &&
-      accounts.length === 1 &&
-      account !== accounts[0]
-    ) {
-      account = accounts[0];
-    }
-
-    // [Page load] Don't prompt the user to select an account
-    const didSelectAccount =
-      request.args.oldAccount !== account &&
-      account &&
-      accounts.includes(account);
-    if (request.action === 'init' && !didSelectAccount) {
       return packState(false);
     }
 
-    // Select an account
-    if (!didSelectAccount || (request.args.mustLogIn && accounts.length > 1)) {
-      account = await showModal<string>({
-        title: 'Select an account',
-        children: SelectAccount({ accounts }),
-      });
-      if (!mounted() || !account) {
-        return packState(false);
+    // Sync accounts
+    for (const address of [...ethAccounts, ...activeAccounts]) {
+      const lcaddr = address.toLowerCase();
+      let account = accounts.find((x) => x.address.toLowerCase() == lcaddr);
+      if (!account) {
+        account = {
+          exists: false,
+          driver,
+          address,
+          liteIdentity: new LiteIdentity({
+            url: EthPublicKey.liteFromHash(address),
+          }),
+        };
+        accounts.push(account);
       }
-    }
-
-    // Check for a known public key
-    if (pubKey?.ethereum?.toLowerCase() !== account.toLowerCase()) {
-      const storedKey = Settings.getKey(account);
-      if (storedKey) {
-        pubKey = new EthPublicKey(storedKey);
-      }
-    }
-
-    // [Page load] Don't prompt the user to login
-    if (request.action === 'init' && !pubKey) {
-      return packState(false);
-    }
-
-    // Recover the public key
-    if (!pubKey) {
-      showModal({
-        title: 'Logging in',
-        children: Processing,
-      });
-
-      const message = 'Login to Accumulate';
-      const signature = await driver.signEthMessage(account, message);
-      if (!mounted()) {
-        return;
-      }
-      if (!signature) {
-        if (request.args.oldAccount) {
-          account = request.args.oldAccount;
-        }
-        return packState(false);
-      }
-
-      pubKey = EthPublicKey.recover(signature, message);
-      if (pubKey.ethereum.toLowerCase() !== account.toLowerCase()) {
-        throw new Error('Failed to recover public key');
-      }
-
-      Settings.putKey(account, pubKey.publicKey);
     }
 
     // Load account data
-    const lda = await api.query(pubKey.lite).catch(isErrorRecord);
-    if (!mounted()) {
-      return;
-    }
-    if (isRecordOf(lda, LiteIdentity)) {
-      liteIdentity = lda.account;
-    } else {
-      // Use a placeholder so that the dashboard works
-      liteIdentity = new LiteIdentity({ url: pubKey.lite });
-    }
-
-    onlineStore = new OnlineStore(driver, pubKey);
-    if (Driver.canEncrypt) {
-      await onlineStore.load(api).catch((err) => {
-        console.error(err);
-      });
+    for (const account of accounts) {
+      if (account.exists && request.action.type != 'reload') {
+        continue;
+      }
+      const lda = await api
+        .query(account.liteIdentity.url!)
+        .catch(isErrorRecord);
       if (!mounted()) {
-        return;
+        return packState(false);
+      }
+      if (isRecordOf(lda, LiteIdentity)) {
+        account.exists = true;
+        account.liteIdentity = lda.account!;
       }
     }
 
-    dataStore = onlineStore.enabled
-      ? onlineStore
-      : new OfflineStore(pubKey.publicKey);
+    if (request.action.type === 'login') {
+      const { account } = request.action;
+
+      // Check for a known public key
+      if (
+        account.publicKey?.ethereum?.toLowerCase() !==
+        account.address.toLowerCase()
+      ) {
+        const storedKey = Settings.getKey(account.address);
+        if (storedKey) {
+          account.publicKey = new EthPublicKey(storedKey);
+        }
+      }
+
+      // Recover the public key
+      if (!account.publicKey) {
+        showModal({
+          title: `Signing in with ${account.address}`,
+          children: Processing,
+        });
+        const message = 'Login to Accumulate';
+        const signature = await driver.signEthMessage(account.address, message);
+        if (!mounted()) {
+          return packState(false);
+        }
+        if (!signature) {
+          return packState(false);
+        }
+        account.publicKey = EthPublicKey.recover(signature, message);
+        if (
+          account.publicKey.ethereum.toLowerCase() !==
+          account.address.toLowerCase()
+        ) {
+          throw new Error('Failed to recover public key');
+        }
+        Settings.putKey(account.address, account.publicKey.publicKey);
+      }
+    }
+
+    // Load linked accounts
+    dataStore = new OfflineStore(Buffer.from('wallet', 'utf-8'));
     linked = await Linked.load(api, [
-      {
-        type: 'link',
-        accountType: 'identity',
-        url: `${pubKey.lite}`,
-      },
+      ...accounts.map(
+        (x): Store.Entry => ({
+          type: 'link',
+          accountType: 'identity',
+          url: `${x.liteIdentity.url}`,
+        }),
+      ),
       ...dataStore,
     ]);
 
@@ -383,13 +382,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
   };
 
   const disconnect = () => {
-    walletConnect?.disconnect();
-    request?.resolve(null);
-    setModal(null);
-
-    setConnected(null);
-    setAccount(null);
-    setState({});
+    // walletConnect?.disconnect();
+    ReactDOM.unstable_batchedUpdates(() => {
+      setModal(null);
+      setConnected(null);
+      setActiveAccounts([]);
+      setState({ accounts: [] });
+    });
+    request?.reject(new Error('Disconnected'));
   };
 
   useEffect(() => {
@@ -402,47 +402,36 @@ export function Connect({ children }: { children: React.ReactNode }) {
     connect({
       ...state,
       connected,
-      account,
+      activeAccounts,
       mounted: () => mounted,
     })
       .then((r) => {
-        if (!mounted || !r) {
+        if (!mounted) {
           return;
         }
-        const {
-          connected,
-          account,
-          driver,
-          pubKey,
-          liteIdentity,
-          dataStore,
-          onlineStore,
-          linked,
-          ok,
-        } = r;
 
-        if (!ok && request.action === 'connect') {
-          // If the user cancels an explict connection request, reset
+        const [state, { connected }, ok] = r;
+        if (!ok && request.action.type === 'connect') {
+          // If the user cancels an explicit connection request, reset
           disconnect();
         } else {
-          const state = {
-            driver,
-            pubKey,
-            liteIdentity,
-            dataStore,
-            onlineStore,
-            linked,
-          };
-          setModal(null);
-          setConnected(connected);
-          setAccount(account);
-          setState(state);
-          request?.resolve(newContext({ ...state, connected, account }));
+          ReactDOM.unstable_batchedUpdates(() => {
+            setModal(null);
+            setConnected(connected);
+            setState(state);
+          });
+          request?.resolve(newContext(state));
         }
       })
-      .catch((e) => {
+      .catch((e: Error) => {
         console.error(e);
-        request?.resolve(null);
+        if (request.action.type !== 'init') {
+          showModal({
+            title: 'Connect',
+            children: () => <ShowError error={e} />,
+          });
+        }
+        request?.reject(e);
       });
 
     return () => {
@@ -453,14 +442,14 @@ export function Connect({ children }: { children: React.ReactNode }) {
     connected,
     state.driver,
     network,
-    account,
-    state.pubKey?.ethereum,
+    activeAccounts.join('|'),
+    state.accounts.map((x) => x.address).join('|'),
     walletConnect,
   ]);
 
   // Render
   return (
-    <Provider value={newContext({ ...state, connected, account })}>
+    <Provider value={newContext(state)}>
       {children}
 
       {modal && (

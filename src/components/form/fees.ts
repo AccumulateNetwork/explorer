@@ -80,7 +80,8 @@ export function calculateTransactionFee(
       return 0;
 
     case TransactionType.WriteData: {
-      let fee = oversize * (txn.body.scratch ? generalTiny : generalSmall);
+      let fee =
+        (oversize + 1) * (txn.body.scratch ? generalTiny : generalSmall);
       if (txn.body.writeToState) {
         fee *= 2;
       }

@@ -7,6 +7,7 @@ import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   ADI,
   Account,
+  DataAccount,
   KeyBook,
   KeyPage,
   LiteDataAccount,
@@ -32,12 +33,25 @@ interface InputAccountProps
   placeholder?: string;
 }
 
-export const InputIdentity = newFor(ADI);
-export const InputTokenAccount = newFor(LiteTokenAccount, TokenAccount);
-export const InputCreditRecipient = newFor(LiteIdentity, KeyPage);
-export const InputAuthority = newFor(KeyBook);
+export const InputIdentity = newFor('an ADI', ADI);
+export const InputTokenAccount = newFor(
+  'a token account',
+  LiteTokenAccount,
+  TokenAccount,
+);
+export const InputDataAccount = newFor(
+  'a data account',
+  LiteDataAccount,
+  DataAccount,
+);
+export const InputCreditRecipient = newFor(
+  'a lite identity or key page',
+  LiteIdentity,
+  KeyPage,
+);
+export const InputAuthority = newFor('a key book', KeyBook);
 
-function newFor<C extends Array<Ctor<Account>>>(...types: C) {
+function newFor<C extends Array<Ctor<Account>>>(kind: string, ...types: C) {
   return ({
     allowMissingLite,
     initialValue,
@@ -96,8 +110,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       }
 
       if (!isRecordOf(r, ...(types as any))) {
-        // TODO: Fix this error message
-        setError(`${url} is not a token account`);
+        setError(`${url} is not ${kind}`);
         return;
       }
 

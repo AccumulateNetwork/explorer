@@ -36,14 +36,16 @@ import { getSigners } from './utils';
 
 const { Text } = Typography;
 
-export interface TxnFormProps {
-  open: boolean;
-  signer?: Signer;
-  onCancel: () => any;
-  onFinish: (ok: boolean) => any;
-}
+export namespace TxnForm {
+  export type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
 
-type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
+  export interface Props {
+    open: boolean;
+    signer?: Signer;
+    onCancel: () => any;
+    onFinish: (ok: boolean) => any;
+  }
+}
 
 export function BaseTxnForm<Fields>({
   open,
@@ -56,24 +58,28 @@ export function BaseTxnForm<Fields>({
   children,
   submit: makeTxn,
   onValuesChange,
+  onSignerChange,
 }: {
   title: string;
   form: FormInstance;
   children: React.ReactNode;
-  submit(_: Fields): TransactionArgs;
-  onValuesChange?(_: Fields): void;
-} & TxnFormProps) {
+  submit(values: Fields): TransactionArgs;
+  onValuesChange?(values: Fields): void;
+  onSignerChange?(signer: TxnForm.Signer | undefined): void;
+} & TxnForm.Props) {
   const web3 = useWeb3();
   const { api, onApiError } = useContext(Network);
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
-  const [signers, setSigners] = useState<Signer[]>([]);
-  const [selectedSigner, setSelectedSigner] = useState<Signer>(theSigner);
+  const [signers, setSigners] = useState<TxnForm.Signer[]>([]);
+  const [selectedSigner, setSelectedSigner] = useState<
+    TxnForm.Signer | undefined
+  >(theSigner);
   const [principal, setPrincipal] = useState<URL>();
-  const [principalSigners, setPrincipalSigners] = useState<Signer[]>();
+  const [principalSigners, setPrincipalSigners] = useState<TxnForm.Signer[]>();
   const [fee, setFee] = useState(0);
   const [feeSchedule, setFeeSchedule] = useState<FeeSchedule>();
-  const [balance, setBalance] = useState(null);
+  const [balance, setBalance] = useState<number>();
 
   const [buyingCredits, setBuyingCredits] = useState(false);
 
@@ -88,19 +94,11 @@ export function BaseTxnForm<Fields>({
         return;
       }
 
-      const signers = await getSigners(api, web3, r.account);
+      const signers = await getSigners(api, web3, r.account!);
       if (!mounted()) {
         return;
       }
-      setPrincipalSigners(
-        signers.map(
-          ({ signer, entry }): Signer => ({
-            signer: signer.url,
-            signerVersion: signer instanceof KeyPage ? signer.version : 1,
-            account: signer,
-          }),
-        ),
-      );
+      setPrincipalSigners(signers);
     },
     [principal],
   ).catch((err) => onApiError(err));
@@ -108,8 +106,12 @@ export function BaseTxnForm<Fields>({
   useAsyncEffect(async (isMounted) => {
     const { globals } = await api.networkStatus({ partition: 'Directory' });
     if (!isMounted()) return;
-    setFeeSchedule(globals.feeSchedule);
+    setFeeSchedule(globals!.feeSchedule);
   }, []);
+
+  useEffect(() => {
+    onSignerChange?.(selectedSigner);
+  }, [selectedSigner]);
 
   useEffect(() => {
     setSigners([]);
@@ -117,7 +119,7 @@ export function BaseTxnForm<Fields>({
       return;
     }
 
-    if (principalSigners?.length > 0) {
+    if (principalSigners?.length) {
       if (principalSigners.length == 1) {
         setSelectedSigner(principalSigners[0]);
       } else {
@@ -126,27 +128,36 @@ export function BaseTxnForm<Fields>({
       return;
     }
 
-    const allSigners: Signer[] = [];
-    if (web3.liteIdentity) {
-      allSigners.push({
-        signer: web3.liteIdentity.url,
-        signerVersion: 1,
-        account: web3.liteIdentity,
-      });
+    // Lite identities
+    const allSigners: TxnForm.Signer[] = [];
+    for (const account of web3.accounts) {
+      if (account.exists) {
+        allSigners.push({
+          signer: account.liteIdentity.url!,
+          signerVersion: 1,
+          account: account.liteIdentity,
+          key: account,
+        });
+      }
     }
 
-    const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
+    // Key books
+    const keys = new Map(
+      web3.accounts.map((x) => [x.address.replace(/^0x/, '').toLowerCase(), x]),
+    );
     for (const book of web3.linked.books) {
       for (const page of book.pages) {
-        const ok = page.keys.some(
-          (entry) =>
-            Buffer.from(entry.publicKeyHash).toString('hex') === ethKeyHash,
-        );
-        if (ok) {
+        const [key] = page
+          .keys!.map((x) =>
+            keys.get(Buffer.from(x!.publicKeyHash!).toString('hex')),
+          )
+          .filter((x) => !!x);
+        if (key) {
           allSigners.push({
-            signer: page.url,
-            signerVersion: page.version,
+            signer: page.url!,
+            signerVersion: page.version!,
             account: page,
+            key,
           });
         }
       }
@@ -164,8 +175,8 @@ export function BaseTxnForm<Fields>({
     (r) => {
       if (isRecordOf(r, KeyPage, LiteIdentity)) {
         setSelectedSigner({
-          ...selectedSigner,
-          account: r.account,
+          ...selectedSigner!,
+          account: r.account!,
         });
       }
     },
@@ -173,9 +184,9 @@ export function BaseTxnForm<Fields>({
 
   useEffect(() => {
     if (!selectedSigner?.account) {
-      setBalance(null);
+      setBalance(undefined);
     } else {
-      setBalance(selectedSigner.account.creditBalance || 0);
+      setBalance(selectedSigner.account!.creditBalance! || 0);
     }
   }, [selectedSigner]);
 
@@ -186,7 +197,7 @@ export function BaseTxnForm<Fields>({
       setFee(calculateTransactionFee(txn, feeSchedule));
     } catch (error) {
       console.info(`Error while calculating fee`, error);
-      setPrincipal(null);
+      setPrincipal(undefined);
       setFee(0);
     }
   };
@@ -196,6 +207,7 @@ export function BaseTxnForm<Fields>({
 
   const isMounted = useIsMounted();
   const submit = async (fields: Fields) => {
+    if (!selectedSigner) return;
     setIsSigning(true);
     try {
       const ok = await Sign.submit(
@@ -234,7 +246,13 @@ export function BaseTxnForm<Fields>({
         </Button>
       </Tooltip>
     ) : (
-      <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
+      <Button
+        type="primary"
+        loading={isSigning}
+        onClick={() => {
+          form.submit();
+        }}
+      >
         <SignWith />
       </Button>
     );
@@ -324,7 +342,7 @@ export function BaseTxnForm<Fields>({
                   </Button>
                 </Tooltip>
                 <AddCredits
-                  to={selectedSigner.account.url}
+                  to={selectedSigner?.account.url}
                   open={buyingCredits}
                   onCancel={() => setBuyingCredits(false)}
                   onFinish={(ok) => ok && setBuyingCredits(false)}

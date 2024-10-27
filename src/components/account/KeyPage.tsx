@@ -192,10 +192,13 @@ KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
 KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
   const web3 = useWeb3();
   const isETH =
-    web3.publicKey &&
     entry.publicKeyHash &&
-    web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase() ==
-      Buffer.from(entry.publicKeyHash).toString('hex');
+    web3.accounts.some(
+      (x) =>
+        x.publicKey &&
+        x.publicKey.ethereum.replace(/^0x/, '').toLowerCase() ==
+          Buffer.from(entry.publicKeyHash).toString('hex'),
+    );
 
   return (
     <span>
