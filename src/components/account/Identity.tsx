@@ -19,7 +19,6 @@ import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { WithIcon } from '../common/WithIcon';
 import { useWeb3 } from '../web3/Context';
-import { Dashboard } from '../web3/Dashboard';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { Directory as Web3Directory } from './Directory';
@@ -112,12 +111,6 @@ export function Identity({
           </Descriptions.Item>
         )}
       </InfoTable>
-
-      {web3Account && (
-        <div style={{ marginBottom: 30 }}>
-          <Dashboard account={web3Account} />
-        </div>
-      )}
 
       {/* Authorities (may be inherited) */}
       <Authorities account={account} />

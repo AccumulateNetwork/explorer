@@ -12,7 +12,6 @@ import { Network } from '../common/Network';
 import { WithIcon } from '../common/WithIcon';
 import { Sign } from '../form/Sign';
 import { Context } from './Context';
-import { Dashboard as Web3Dashboard } from './Dashboard';
 
 const { Paragraph, Text } = Typography;
 
@@ -60,13 +59,19 @@ export function MissingLiteID({ account }: { account: Context.Account }) {
           }
         />
       </Paragraph>
-
-      <Web3Dashboard account={account} />
     </div>
   );
 }
 
-MissingLiteID.Create = function ({ lite, eth }: { lite: URL; eth: string }) {
+MissingLiteID.Create = function ({
+  lite,
+  eth,
+  message,
+}: {
+  lite: URL;
+  eth: string;
+  message?: string;
+}) {
   const { api, network } = useContext(Network);
   const [faucetRq, setFaucetRq] = useState<Sign.WaitForRequest<Submission>>();
 
@@ -81,24 +86,33 @@ MissingLiteID.Create = function ({ lite, eth }: { lite: URL; eth: string }) {
 
   return (
     <>
-      <span>This is the lite identity associated with </span>
-      <Text className="code">{eth}</Text>
-      <span>. </span>
-      <strong>It does not exist yet. </strong>
+      {message !== undefined ? (
+        <span>{message} </span>
+      ) : (
+        <>
+          <span>This is the lite identity associated with </span>
+          <Text className="code">{eth}</Text>
+          <span>. </span>
+          <strong>It does not exist yet. </strong>
+        </>
+      )}
       <span>To create a lite identity send ACME to </span>
       <Text
         className="code"
         copyable={{ text: `${lite}/ACME` }}
       >{`${lite}/ACME`}</Text>
-      <span>. </span>
       {network.mainnet ? (
-        <span>
-          You can also <BridgeLink text="bridge WACME" /> from Ethereum or
-          Arbitrum, using the above address as the destination.
-        </span>
+        <>
+          <span>. </span>
+          <span>
+            You can also <BridgeLink text="bridge WACME" /> from Ethereum or
+            Arbitrum, using the above address as the destination.
+          </span>
+        </>
       ) : (
         <span>
-          You can also use the{' '}
+          {' '}
+          or use the{' '}
           <Button
             shape="round"
             size="small"
