@@ -31,8 +31,7 @@ export declare namespace Sign {
 
   interface Request {
     args: TransactionArgs;
-    signer?: Signer;
-    key: web3.Context.Account;
+    signer: Signer;
     onFinish(): any;
     onCancel(): any;
     initiated?: boolean;
@@ -49,14 +48,12 @@ export declare namespace Sign {
 Sign.submit = (
   set: (_: Sign.Request) => void,
   args: TransactionArgs,
-  key: web3.Context.Account,
-  signer?: Sign.Signer,
+  signer: Sign.Signer,
 ) => {
   return new Promise<boolean>((resolve) => {
     set({
       args,
       signer,
-      key,
       onFinish() {
         resolve(true);
       },
@@ -98,15 +95,13 @@ export function Sign({
       return;
     }
 
-    const { args, signer, key, onCancel, onFinish } = request;
+    const { args, signer, onCancel, onFinish } = request;
     setOpen(true);
     setClosable(false);
     setChildren([]);
     try {
       request.initiated = true;
-      if (
-        await sign({ push: pushChild, api, web3, args, signer, key, network })
-      ) {
+      if (await sign({ push: pushChild, api, web3, args, signer, network })) {
         onFinish();
         return;
       }
@@ -286,7 +281,6 @@ async function sign({
   args,
   web3,
   signer,
-  key,
   network,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
@@ -294,13 +288,12 @@ async function sign({
   web3: web3.Context;
   args: TransactionArgs;
   network: NetworkConfig;
-  key: web3.Context.Account;
-  signer?: Sign.Signer;
+  signer: Sign.Signer;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
-  if (!key.publicKey) {
+  if (!signer.key.publicKey) {
     const ok = await web3
-      .login(key)
+      .login(signer.key)
       .then(() => true)
       .catch((error) => {
         update(
@@ -311,7 +304,7 @@ async function sign({
         return false;
       });
     if (!ok) return false;
-    if (!key.publicKey) {
+    if (!signer.key.publicKey) {
       update(
         <Failure>
           <ShowError bare error={new Error('Unable to login')} />
@@ -324,10 +317,10 @@ async function sign({
   const txn = new Transaction(args);
   const sig = await web3
     .driver!.signAccumulate(network, txn, {
-      publicKey: key.publicKey.publicKey,
+      publicKey: signer.key.publicKey.publicKey,
       timestamp: Date.now(),
       ...(signer || {
-        signer: key.liteIdentity.url!,
+        signer: signer.key.liteIdentity.url!,
         signerVersion: 1,
       }),
     })

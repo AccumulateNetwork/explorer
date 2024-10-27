@@ -213,7 +213,7 @@ export function BaseTxnForm<Fields>({
       const ok = await Sign.submit(
         setSignRequest,
         makeTxn(fields),
-        selectedSigner.key,
+        selectedSigner,
       );
       if (!isMounted.current) {
         return;
