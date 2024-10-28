@@ -74,9 +74,9 @@ export function CreateTokenAccount(
         <Switch checked={externallyOwned} onChange={setExternallyOwned} />
       </Form.Item>
 
-      <InheritedAuthorities form={form} hidden={!externallyOwned} />
+      <InheritedAuthorities form={form} hidden={externallyOwned} />
 
-      <InputAuthorities form={form} hidden={externallyOwned} />
+      <InputAuthorities form={form} hidden={!externallyOwned} />
     </BaseTxnForm>
   );
 }

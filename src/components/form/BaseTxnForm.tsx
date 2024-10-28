@@ -238,6 +238,7 @@ export function BaseTxnForm<Fields>({
     return `Sign with ${u.toString().replace(/acc:\/\//, '')}`;
   };
 
+  const [canSubmit, setCanSubmit] = useState(true);
   const submitBtn =
     fee && balance != null && balance < fee ? (
       <Tooltip title="Insufficient balance">
@@ -252,6 +253,7 @@ export function BaseTxnForm<Fields>({
         onClick={() => {
           form.submit();
         }}
+        disabled={!canSubmit}
       >
         <SignWith />
       </Button>
@@ -303,6 +305,9 @@ export function BaseTxnForm<Fields>({
         onValuesChange={(_, v) => {
           updateFromTxn(v);
           onValuesChange?.(v);
+        }}
+        onFieldsChange={(_, f) => {
+          setCanSubmit(f.every((x) => !(x.errors?.length > 0)));
         }}
       >
         {children}

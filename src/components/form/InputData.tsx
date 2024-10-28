@@ -11,23 +11,28 @@ export function InputData({
 }: Omit<FormItemProps, 'children' | 'onChange' | 'noStyle' | 'initialValue'> & {
   after?: React.ReactNode;
 }) {
-  const validate = (form: InternalFormInstance) => {
+  const get = (form: InternalFormInstance) => {
     const fullName = [...(form.prefixName || []), name];
     const format = form.getFieldValue([...fullName, 'format']);
     const value = form.getFieldValue([...fullName, 'value']);
-    const { setError, clearError } = formUtils(form, [name, 'value']);
+    const fns = formUtils(form, [name, 'value']);
+    return { format, value, ...fns };
+  };
 
-    clearError();
+  const validate = async (form: InternalFormInstance) => {
+    const { format, value } = get(form);
+
     if (!value) return;
 
     switch (format) {
       case 'hex':
         if (value.match(/[^0-9a-f]/i)) {
-          setError('Invalid hex value');
+          throw new Error('Invalid hex value');
         }
         break;
     }
   };
+
   return (
     <Space.Compact block>
       <Form.Item
@@ -36,9 +41,15 @@ export function InputData({
         initialValue="utf-8"
         rules={[
           (form) => ({
-            validator() {
-              validate(form as InternalFormInstance);
-              return Promise.resolve();
+            async validator() {
+              const form2 = form as InternalFormInstance;
+              const { setError, clearError } = get(form2);
+              try {
+                clearError();
+                await validate(form2);
+              } catch (error) {
+                setError(error);
+              }
             },
           }),
         ]}
@@ -57,10 +68,7 @@ export function InputData({
         name={[name, 'value']}
         rules={[
           (form) => ({
-            validator() {
-              validate(form as InternalFormInstance);
-              return Promise.resolve();
-            },
+            validator: () => validate(form as InternalFormInstance),
           }),
         ]}
       >
