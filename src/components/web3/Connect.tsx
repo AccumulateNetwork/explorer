@@ -146,25 +146,16 @@ export function Connect({ children }: { children: React.ReactNode }) {
   const [activeAccounts, setActiveAccounts] = useShared(Settings, 'accounts');
   const [state, setState] = useState<ConnectionState>({ accounts: [] });
 
-  const newContext = (() => {
-    // Reassign properties of Context but do not recreate it
-    let context: Context;
-    return (s: ConnectionState): Context =>
-      (context = Object.assign(
-        context || {
-          connect: () => makeRequest({ type: 'connect' }),
-          reload: () => makeRequest({ type: 'reload' }),
-          login: (account: Context.Account) =>
-            makeRequest({ type: 'login', account }),
-          disconnect,
-          canConnect: true,
-        },
-        {
-          connected: !!s.driver,
-          ...s,
-        },
-      ));
-  })();
+  const newContext = (s: ConnectionState): Context => ({
+    connect: () => makeRequest({ type: 'connect' }),
+    reload: () => makeRequest({ type: 'reload' }),
+    login: (account: Context.Account) =>
+      makeRequest({ type: 'login', account }),
+    disconnect,
+    canConnect: true,
+    connected: !!s.driver,
+    ...s,
+  });
 
   const [modal, setModal] = useState<ModalOptions | null>(null);
   const [request, setRequest] = useState<ActionRequest>(
@@ -293,7 +284,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     }
 
     // Sync accounts
-    for (const address of [...ethAccounts, ...activeAccounts]) {
+    for (const address of ethAccounts) {
       const lcaddr = address.toLowerCase();
       let account = accounts.find((x) => x.address.toLowerCase() == lcaddr);
       if (!account) {
@@ -306,6 +297,12 @@ export function Connect({ children }: { children: React.ReactNode }) {
           }),
         };
         accounts.push(account);
+      }
+    }
+    for (let i = accounts.length - 1; i >= 0; i--) {
+      const lcaddr = accounts[i].address.toLowerCase();
+      if (!ethAccounts.some((x) => x.toLowerCase() === lcaddr)) {
+        accounts.splice(i, 1);
       }
     }
 
@@ -391,6 +388,18 @@ export function Connect({ children }: { children: React.ReactNode }) {
     });
     request?.reject(new Error('Disconnected'));
   };
+
+  // Subscribe to account changes
+  useEffect(() => {
+    if (!state.driver) return;
+
+    const unsub = state.driver.onAccountsChanged(() =>
+      makeRequest({ type: 'reload' }),
+    );
+    return () => {
+      unsub();
+    };
+  }, [state.driver]);
 
   useEffect(() => {
     let mounted = true;

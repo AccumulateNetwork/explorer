@@ -90,6 +90,12 @@ export class Driver {
       .catch((e) => (console.warn(e), null));
   }
 
+  onAccountsChanged(fn: (..._: any[]) => void) {
+    const { ethereum } = window;
+    ethereum.on('accountsChanged', fn);
+    return () => ethereum.off('accountsChanged', fn);
+  }
+
   async switchChains(network: NetworkConfig) {
     const { ethereum } = window;
 

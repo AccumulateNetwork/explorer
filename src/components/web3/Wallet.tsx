@@ -44,11 +44,11 @@ export function Wallet() {
     web3.reload({ dataStore: true });
   };
 
-  const labelURL = (
+  const labelETH = (
     <WithIcon
       icon={RiQuestionLine}
-      tooltip={tooltip.web3.liteIdentity}
-      children="Lite Identity"
+      tooltip={tooltip.web3.ethereumAddress}
+      children="Ethereum Address"
     />
   );
 
@@ -78,16 +78,18 @@ export function Wallet() {
 
       {web3.accounts.map((account) => (
         <div key={account.address}>
-          <Title level={4}>{account.address}</Title>
+          <Title level={4}>
+            <Link to={account.liteIdentity.url}>
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiAccountBoxLine />
+              </IconContext.Provider>
+              {`${account.liteIdentity.url}`}
+            </Link>
+          </Title>
 
           <InfoTable>
-            <Descriptions.Item label={labelURL}>
-              <Link to={account.liteIdentity.url}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiAccountBoxLine />
-                </IconContext.Provider>
-                {`${account.liteIdentity.url}`}
-              </Link>
+            <Descriptions.Item label={labelETH}>
+              {account.address}
             </Descriptions.Item>
 
             <Descriptions.Item label={labelBalance}>
