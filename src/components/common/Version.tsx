@@ -17,7 +17,14 @@ export function Version() {
         return;
       }
       // const base = executorVersion < ExecutorVersion.V2 ? 'V1' : 'V2';
-      const name = ExecutorVersion.getName(executorVersion)
+      let name: string;
+      try {
+        name = ExecutorVersion.getName(executorVersion) || String(executorVersion);
+      } catch {
+        // Handle unknown executor versions (e.g., v2-jiuquan)
+        name = String(executorVersion);
+      }
+      name = name
         .replace(/^v\d-?/, '')
         .replace(/\b[a-z]/g, (s) => s.toUpperCase());
       setExecutor(`Accumulate ${name}`);
