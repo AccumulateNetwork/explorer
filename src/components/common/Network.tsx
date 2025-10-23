@@ -152,6 +152,7 @@ export function Status(props: {
       return anchorsOk(anchors) && syntheticOk(synth);
     } catch (error) {
       shared.onApiError(error);
+      return false; // Explicitly return false on error to show warning status
     }
   }, [ctx?.network?.id]);
 
@@ -212,6 +213,17 @@ function defaultNetworkName(): string {
   if (!Context.canChangeNetwork) {
     return import.meta.env.VITE_NETWORK;
   }
+
+  // Auto-detect network based on hostname (hostname takes priority over localStorage)
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname.includes('kermit.explorer')) {
+    return 'kermit';
+  }
+  if (hostname.includes('fozzie.explorer')) {
+    return 'fozzie';
+  }
+
+  // For main explorer domain, use localStorage or default to mainnet
   return Settings.networkName || 'mainnet';
 }
 
