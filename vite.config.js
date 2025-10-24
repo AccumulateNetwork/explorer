@@ -23,6 +23,11 @@ export default defineConfig({
     outDir: 'build',
     sourcemap: true,
     chunkSizeWarningLimit: 2048,
+    target: 'chrome90',  // Very specific target to avoid decorator issues
+    minify: false,  // Disable all minification
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
 
     rollupOptions: {
       output: {
@@ -62,7 +67,12 @@ export default defineConfig({
   optimizeDeps: {
     esbuildOptions: {
       tsconfig: './tsconfig.json',
+      target: 'es2020',
     },
     // exclude: ['accumulate.js'],
+  },
+
+  esbuild: {
+    target: 'chrome90',
   },
 });

@@ -5,6 +5,8 @@ import ReactDOM from 'react-dom';
 // work without it even though nothing explicitly depends on it. So I'm adding
 // an explicit dependency here.
 import 'rxjs';
+// Apply runtime patches to SDK before any API calls
+import './sdk-patches';
 import Web3 from 'web3';
 
 import App from './App';
