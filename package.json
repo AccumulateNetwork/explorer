@@ -45,10 +45,12 @@
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/react": "^18.3.3",
     "@vitejs/plugin-react": "^4.3.1",
+    "buffer": "^6.0.3",
     "prettier": "^3.2.5",
     "terser": "^5.44.0",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "vite-plugin-node-polyfills": "^0.24.0"
   },
   "resolutions": {
     "react-error-overlay": "6.0.9"

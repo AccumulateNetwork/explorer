@@ -54,6 +54,8 @@ export default function Explorer() {
       type: 'didChangeNetwork',
       networkID: item.id,
     });
+    // Force page reload to clear old network data and show new network
+    window.location.href = '/';
   };
 
   const Loading = () => (

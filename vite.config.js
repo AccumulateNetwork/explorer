@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -14,6 +15,15 @@ export default defineConfig({
         plugins: [
           ['@babel/plugin-proposal-decorators', { version: '2023-11' }],
         ],
+      },
+    }),
+    nodePolyfills({
+      // Enable polyfills for specific Node.js modules
+      include: ['buffer', 'process', 'stream', 'util'],
+      // Make Buffer available globally
+      globals: {
+        Buffer: true,
+        process: true,
       },
     }),
   ],
