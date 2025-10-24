@@ -50,8 +50,8 @@ export const Fozzie: NetworkConfig = {
 const Local: NetworkConfig = {
   id: 'local',
   label: 'Local Devnet',
-  api: ['http://127.0.0.1:16591'],
-  eth: ['http://127.0.0.1:16591/eth'],
+  api: ['http://127.0.0.1:26660'],
+  eth: ['http://127.0.0.1:26660/eth'],
 };
 
 const networks = { Mainnet, MainnetBeta, Kermit, Fozzie, Local };
