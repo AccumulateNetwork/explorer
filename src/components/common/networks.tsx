@@ -4,6 +4,7 @@ export interface NetworkConfig {
   mainnet?: boolean;
   explorer?: string;
   api: string[];
+  eth?: string[];
   metrics?: string;
 }
 
@@ -19,6 +20,15 @@ export const Mainnet: NetworkConfig = {
   metrics: 'https://metrics.accumulatenetwork.io/v1',
 };
 
+export const MainnetBeta: NetworkConfig = {
+  id: 'mainnet-beta',
+  label: 'Mainnet (Beta)',
+  mainnet: true,
+  explorer: 'https://beta.explorer.accumulatenetwork.io',
+  api: ['https://beta.mainnet.accumulatenetwork.io'],
+  metrics: 'https://metrics.accumulatenetwork.io/v1',
+};
+
 export const Kermit: NetworkConfig = {
   id: 'kermit',
   label: 'Kermit Testnet',
@@ -27,6 +37,7 @@ export const Kermit: NetworkConfig = {
     'https://kermit.accumulatenetwork.io',
     'https://testnet.accumulatenetwork.io',
   ],
+  eth: ['https://kermit.accumulatenetwork.io/eth'],
 };
 
 export const Fozzie: NetworkConfig = {
@@ -40,9 +51,10 @@ const Local: NetworkConfig = {
   id: 'local',
   label: 'Local Devnet',
   api: ['http://127.0.0.1:16591'],
+  eth: ['http://127.0.0.1:16591/eth'],
 };
 
-const networks = { Mainnet, Kermit, Fozzie, Local };
+const networks = { Mainnet, MainnetBeta, Kermit, Fozzie, Local };
 
 export function getNetwork(s: string) {
   for (const network of Object.values(networks)) {

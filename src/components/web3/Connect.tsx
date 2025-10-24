@@ -1,7 +1,6 @@
-import { useWeb3React } from '@web3-react/core';
-import { InjectedConnector } from '@web3-react/injected-connector';
-import { Button, List, Modal, Select, Skeleton } from 'antd';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Button, List, Modal, ModalProps, Select, Skeleton } from 'antd';
+import { ethers } from 'ethers';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { LiteIdentity } from 'accumulate.js/lib/core';
 
@@ -9,270 +8,458 @@ import { isRecordOf } from '../../utils/types';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { isErrorRecord } from '../common/query';
-import { useAsyncEffect } from '../common/useAsync';
-import { Sign } from '../form/Sign';
-import { Context, Provider, ReloadRequest } from './Context';
+import { Provider } from './Context';
 import { Driver, EthPublicKey } from './Driver';
 import { Linked } from './Linked';
 import { OfflineStore } from './OfflineStore';
 import { OnlineStore } from './OnlineStore';
 import { Settings } from './Settings';
 import { Store } from './Store';
+import { useWalletConnect } from './WalletConnect';
 
 export default Connect;
 
-interface ConnectRequest {
-  resolve: (ok: boolean) => void;
+type Action = 'init' | 'connect' | 'switch' | 'reload';
+
+interface ActionArgs {
+  oldAccount?: string;
+  mustLogIn?: boolean;
 }
 
-interface Request {
-  executed?: boolean;
+class ActionRequest {
+  readonly action: Action;
+  readonly args: ActionArgs;
+  readonly result: Promise<boolean>;
+  #resolve: (ok: boolean) => void;
+  #executed = false;
+
+  constructor(action: Action, args: ActionArgs = {}) {
+    this.action = action;
+    this.args = args;
+    this.result = new Promise<boolean>((resolve) => {
+      this.#resolve = (ok) => {
+        resolve(ok);
+        this.#executed = true;
+      };
+    });
+  }
+
+  resolve(ok: boolean) {
+    this.#resolve(ok);
+  }
+
+  get executed() {
+    return this.#executed;
+  }
 }
+
+interface Resolver<T = unknown> {
+  resolve(value?: T): void;
+}
+
+interface ModalOptions<T = unknown>
+  extends Omit<ModalProps, 'children'>,
+    Resolver<T> {
+  children(_: Resolver<T>): React.ReactNode;
+}
+
+const Processing = (_: Resolver) => (
+  <Skeleton
+    className={'skeleton-singleline'}
+    active
+    title={true}
+    paragraph={false}
+  />
+);
+
+const SelectDriver =
+  ({ walletConnect }: { walletConnect: boolean }) =>
+  ({ resolve }: Resolver<typeof Settings.connected>) => (
+    <div>
+      <List>
+        <List.Item>
+          <Button
+            block
+            shape="round"
+            size="large"
+            disabled={!window.ethereum}
+            onClick={() => resolve('Web3')}
+          >
+            MetaMask
+          </Button>
+        </List.Item>
+      </List>
+      <List>
+        <List.Item>
+          <Button
+            block
+            shape="round"
+            size="large"
+            disabled={!walletConnect}
+            onClick={() => resolve('WalletConnect')}
+          >
+            WalletConnect
+          </Button>
+        </List.Item>
+      </List>
+    </div>
+  );
+
+const SelectAccount =
+  ({ accounts }: { accounts: string[] }) =>
+  ({ resolve }: Resolver<string>) => (
+    <Select
+      style={{ width: '100%' }}
+      placeholder="Select an account"
+      onSelect={(x) => resolve(x)}
+    >
+      {accounts.map((x) => (
+        <Select.Option key={x} value={x}>
+          {x}
+        </Select.Option>
+      ))}
+    </Select>
+  );
 
 export function Connect({ children }: { children: React.ReactNode }) {
-  const { api } = useContext(Network);
-  const { activate, deactivate } = useWeb3React();
+  const { api, network } = useContext(Network);
+  const [walletConnect] = useWalletConnect();
+  const [connected, setConnected] = useShared(Settings, 'connected');
+  const [account, setAccount] = useShared(Settings, 'account');
 
-  // Handle reload requests
-  const [wantReload, setWantReload] = useState<ReloadRequest>({});
-  const [reloadLiteIdentity, setReloadLiteIdentity] = useState(0);
-  const [reloadDataStore, setReloadDataStore] = useState(0);
-  const reload = (rq: ReloadRequest) => setWantReload(rq);
+  const [modal, setModal] = useState<ModalOptions>(null);
+  const [request, setRequest] = useState<ActionRequest>(
+    new ActionRequest('init'),
+  );
 
-  useEffect(() => {
-    if (!wantReload) {
-      return;
-    }
+  const [driver, setDriver] = useState<Driver>(null);
+  const [pubKey, setPubKey] = useState<EthPublicKey>();
+  const [liteIdentity, setLiteIdentity] = useState<LiteIdentity>();
+  const [dataStore, setDataStore] = useState<Store>();
+  const [onlineStore, setOnlineStore] = useState<OnlineStore>();
+  const [linked, setLinked] = useState<Linked>();
 
-    if (wantReload.liteIdentity) {
-      delete wantReload.liteIdentity;
-      setReloadLiteIdentity(reloadLiteIdentity + 1);
-    }
+  const makeRequest = (action: Action, args: ActionArgs = {}) => {
+    const r = new ActionRequest(action, args);
+    setRequest(r);
+    return r.result;
+  };
 
-    if (wantReload.dataStore) {
-      delete wantReload.dataStore;
-      setReloadDataStore(reloadDataStore + 1);
-    }
-  }, [wantReload]);
-
-  const [open, setOpen] = useState<'connect' | 'select'>();
-  const [wantConnect, setWantConnect] = useState<ConnectRequest>();
-  const connect = () => {
-    // Create a promise for the caller. Expose onResolve via resolveConnect, but
-    // clear resolveConnect once it is called.
-    const p = new Promise<boolean>((r) =>
-      setWantConnect({
-        resolve(ok) {
-          r(ok);
-          setWantConnect(null);
-        },
-      }),
-    );
-
-    // Open the Connect Wallet modal
-    setOpen('connect');
-    setConnected(null);
+  const showModal = <T extends unknown>(
+    props: Omit<ModalOptions<T>, 'resolve'>,
+  ) => {
+    let resolve: (_: T) => void;
+    const p = new Promise<T>((r) => (resolve = r));
+    setModal({ ...props, resolve });
     return p;
   };
 
-  const disconnect = () => {
-    // Deactivate the connector
-    deactivate();
+  interface ConnectionState {
+    connected: typeof Settings.connected;
+    account: string;
+    driver: Driver;
+    pubKey: EthPublicKey;
+    liteIdentity: LiteIdentity;
+    dataStore: Store;
+    onlineStore: OnlineStore;
+    linked: Linked;
+  }
 
-    // Resolve the connection promise
-    wantConnect?.resolve?.(false);
+  const connect = async ({
+    mounted,
+    connected,
+    account,
+    driver,
+    pubKey,
+    liteIdentity,
+    dataStore,
+    onlineStore,
+    linked,
+  }: ConnectionState & { mounted(): boolean }): Promise<
+    (ConnectionState & { ok: boolean }) | undefined
+  > => {
+    const packState = (ok: boolean) => ({
+      connected,
+      account,
+      driver,
+      pubKey,
+      liteIdentity,
+      dataStore,
+      onlineStore,
+      linked,
+      ok,
+    });
 
-    // Reset state
-    setOpen(null);
-    setConnected(null);
-    setDriver(null);
-    setAccount(null);
-    setPubKey(null);
-    setLiteIdentity(null);
-    setDataStore(null);
-    setOnlineStore(null);
-    setLinked(null);
-    setWantSwitch(null);
-    Settings.account = null;
-  };
-
-  // Choose connection type
-  const [connected, setConnected] = useShared(Settings, 'connected');
-  const [driver, setDriver] = useState<Driver>(null);
-
-  useEffect(() => {
-    switch (connected) {
-      case 'Web3':
-        const driver = new Driver(window.ethereum);
-        const connector = new InjectedConnector({});
-        activate(connector);
-        setDriver(driver);
-        setWantSwitch(null);
-        break;
-      default:
-        disconnect();
-        break;
+    // [Page load] Don't prompt the user to unlock the wallet
+    if (request.action === 'init' && window.ethereum?.isMetaMask) {
+      if (!(await window.ethereum._metamask.isUnlocked())) {
+        return;
+      }
     }
-  }, [connected]);
 
-  // Select an account
-  const [account, setAccount] = useState<string>();
-  const [accounts, setAccounts] = useState<string[]>();
-  const [wantSwitch, setWantSwitch] = useState<Request>();
+    if (!mounted()) {
+      return;
+    }
 
-  useAsyncEffect(
-    async (mounted) => {
-      const switching = wantSwitch && !wantSwitch.executed;
-      if (switching) {
-        wantSwitch.executed = true;
+    // [Page load] Don't prompt the user to select a driver
+    if (request.action === 'init' && !connected) {
+      return packState(false);
+    }
+
+    // Select a driver
+    if (!connected) {
+      connected = await showModal<typeof Settings.connected>({
+        title: 'Connect',
+        children: SelectDriver({ walletConnect: !!walletConnect }),
+      });
+      if (!mounted() || !connected) {
+        return packState(false);
       }
-      if (!driver) {
-        return;
-      }
+    }
 
-      const accounts = await driver.web3.eth.getAccounts();
-      if (!mounted()) {
-        return;
-      }
-      setAccounts(accounts);
+    if (!driver) {
+      switch (connected) {
+        case 'Web3':
+          driver = new Driver(window.ethereum as any);
+          break;
 
-      if (
-        !switching &&
-        Settings.account &&
-        accounts.includes(Settings.account)
-      ) {
-        setAccount(Settings.account);
-        return;
-      }
+        case 'WalletConnect':
+          if (!walletConnect) {
+            return;
+          }
+          let provider = walletConnect.getWalletProvider();
+          if (provider) {
+            driver = new Driver(provider);
+            break;
+          }
+          if (request.action === 'init') {
+            return;
+          }
 
-      switch (accounts?.length) {
-        case 0:
-          return;
-        case 1:
-          setAccount(accounts[0]);
-          return;
+          provider = await new Promise<ethers.Eip1193Provider>(async (r, j) => {
+            let unsub: () => void;
+            unsub = walletConnect.subscribeProvider(({ provider, error }) => {
+              unsub();
+              if (error) {
+                j(error);
+              } else {
+                r(provider);
+              }
+            });
+            await walletConnect.open();
+          });
+          driver = new Driver(provider);
+          break;
+
         default:
-          setOpen('select');
+          throw new Error(`Invalid driver type ${connected}`);
       }
-    },
-    [driver, wantSwitch],
-  );
+    }
 
-  // Get public key
-  const [pubKey, setPubKey] = useState<EthPublicKey>();
-  const [request, setRequest] = useState<Sign.WaitForRequest<Uint8Array>>();
+    if (request.action !== 'init') {
+      showModal({
+        title: 'Logging in',
+        children: Processing,
+      });
+    }
 
-  useAsyncEffect(
-    async (mounted) => {
-      if (!account) {
-        return;
+    // Request permissions
+    await driver.connect();
+
+    // List accounts
+    const accounts = await driver.listAccounts();
+
+    // Switch the chain to Accumulate
+    await driver.switchChains(network);
+    if (!mounted()) {
+      return;
+    }
+
+    // If there's only one account, select it
+    if (
+      request.action !== 'switch' &&
+      accounts.length === 1 &&
+      account !== accounts[0]
+    ) {
+      account = accounts[0];
+    }
+
+    // [Page load] Don't prompt the user to select an account
+    const didSelectAccount =
+      request.args.oldAccount !== account &&
+      account &&
+      accounts.includes(account);
+    if (request.action === 'init' && !didSelectAccount) {
+      return packState(false);
+    }
+
+    // Select an account
+    if (!didSelectAccount || (request.args.mustLogIn && accounts.length > 1)) {
+      account = await showModal<string>({
+        title: 'Select an account',
+        children: SelectAccount({ accounts }),
+      });
+      if (!mounted() || !account) {
+        return packState(false);
       }
+    }
 
-      Settings.account = account;
+    // Check for a known public key
+    if (pubKey?.ethereum?.toLowerCase() !== account.toLowerCase()) {
       const storedKey = Settings.getKey(account);
       if (storedKey) {
-        setPubKey(new EthPublicKey(storedKey));
-        wantConnect?.resolve?.(true);
-        return;
+        pubKey = new EthPublicKey(storedKey);
       }
+    }
 
-      if (!wantConnect) {
-        disconnect();
-        return;
-      }
+    // [Page load] Don't prompt the user to login
+    if (request.action === 'init' && !pubKey) {
+      return packState(false);
+    }
 
-      // TODO: switch to the driver
+    // Recover the public key
+    if (!pubKey) {
+      showModal({
+        title: 'Logging in',
+        children: Processing,
+      });
+
       const message = 'Login to Accumulate';
-      const [signature] =
-        (await Sign.waitFor(setRequest, () =>
-          driver.sign.eth(account, message, true),
-        )) || [];
+      const signature = await driver.signEthMessage(account, message);
       if (!mounted()) {
         return;
       }
       if (!signature) {
-        disconnect();
-        return;
+        if (request.args.oldAccount) {
+          account = request.args.oldAccount;
+        }
+        return packState(false);
       }
 
-      const pubKey = EthPublicKey.recover(signature, message);
+      pubKey = EthPublicKey.recover(signature, message);
       if (pubKey.ethereum.toLowerCase() !== account.toLowerCase()) {
         throw new Error('Failed to recover public key');
       }
 
       Settings.putKey(account, pubKey.publicKey);
-      setPubKey(pubKey);
-      wantConnect?.resolve?.(true);
-    },
-    [account],
-  );
+    }
 
-  // Load the lite identity
-  const [liteIdentity, setLiteIdentity] = useState<LiteIdentity>();
-  useAsyncEffect(
-    async (mounted) => {
-      if (!pubKey?.lite) {
-        return;
-      }
+    // Load account data
+    const lda = await api.query(pubKey.lite).catch(isErrorRecord);
+    if (!mounted()) {
+      return;
+    }
+    if (isRecordOf(lda, LiteIdentity)) {
+      liteIdentity = lda.account;
+    }
 
-      const r = await api.query(pubKey.lite).catch(isErrorRecord);
-      if (mounted() && isRecordOf(r, LiteIdentity)) {
-        setLiteIdentity(r.account);
-      }
-    },
-    [`${pubKey?.lite}`, reloadLiteIdentity],
-  );
+    onlineStore = new OnlineStore(driver, pubKey);
+    await onlineStore.load(api).catch((err) => {
+      console.error(err);
+    });
+    if (!mounted()) {
+      return;
+    }
 
-  // Load the data store and linked accounts
-  const [dataStore, setDataStore] = useState<Store>();
-  const [onlineStore, setOnlineStore] = useState<OnlineStore>();
-  const [linked, setLinked] = useState<Linked>();
-  useAsyncEffect(
-    async (mounted) => {
-      if (!driver || !pubKey) {
-        setDataStore(null);
-        return;
-      }
+    dataStore = onlineStore.enabled
+      ? onlineStore
+      : new OfflineStore(pubKey.publicKey);
+    linked = await Linked.load(api, [
+      {
+        type: 'link',
+        accountType: 'identity',
+        url: `${pubKey.lite}`,
+      },
+      ...dataStore,
+    ]);
 
-      const online = new OnlineStore(driver, pubKey);
-      setOnlineStore(online);
+    return packState(true);
+  };
 
-      await online.load(api).catch((err) => {
-        console.error(err);
+  useEffect(() => {
+    let mounted = true;
+
+    if (!request || request.executed) {
+      return;
+    }
+
+    connect({
+      connected,
+      account,
+      driver,
+      pubKey,
+      liteIdentity,
+      dataStore,
+      onlineStore,
+      linked,
+      mounted: () => mounted,
+    })
+      .then((r) => {
+        if (!mounted || !r) {
+          return;
+        }
+        const {
+          connected,
+          account,
+          driver,
+          pubKey,
+          liteIdentity,
+          dataStore,
+          onlineStore,
+          linked,
+          ok,
+        } = r;
+        request?.resolve(ok);
+        walletConnect?.disconnect();
+        setModal(null);
+        setConnected(connected);
+        setAccount(account);
+        setDriver(driver);
+        setPubKey(pubKey);
+        setLiteIdentity(liteIdentity);
+        setDataStore(dataStore);
+        setOnlineStore(onlineStore);
+        setLinked(linked);
+      })
+      .catch((e) => {
+        console.error(e);
+        request?.resolve(false);
       });
-      if (!mounted()) {
-        return;
-      }
 
-      const store = online.enabled
-        ? online
-        : new OfflineStore(pubKey.publicKey);
-      setDataStore(store);
-
-      const linked = await Linked.load(api, [
-        {
-          type: 'link',
-          accountType: 'identity',
-          url: `${pubKey.lite}`,
-        },
-        ...store,
-      ]);
-      if (!mounted()) {
-        return;
-      }
-      setLinked(linked);
-    },
-    [pubKey, reloadDataStore],
-  );
+    return () => {
+      mounted = false;
+    };
+  }, [
+    request,
+    connected,
+    driver,
+    network,
+    account,
+    pubKey?.ethereum,
+    walletConnect,
+  ]);
 
   // Render
   return (
     <Provider
       value={{
-        connect,
-        disconnect,
-        reload,
-        switch: () => setWantSwitch({}),
+        connect: () =>
+          makeRequest('connect', {
+            mustLogIn: !(account && Settings.getKey(account)),
+          }),
+        switch: () => makeRequest('switch', { oldAccount: account }),
+        reload: () => makeRequest('reload'),
+
+        disconnect() {
+          request?.resolve(false);
+          setModal(null);
+
+          setConnected(null);
+          setAccount(null);
+
+          setDriver(null);
+          setPubKey(null);
+        },
 
         canConnect: true,
         connected: !!pubKey,
@@ -286,67 +473,18 @@ export function Connect({ children }: { children: React.ReactNode }) {
     >
       {children}
 
-      {/* Modals */}
-      <Sign.WaitFor title="Login" closeWhenDone request={request} />
-
-      {open === 'connect' && (
+      {modal && (
         <Modal
-          title="Connect Wallet"
-          open={open === 'connect'}
-          onCancel={() => disconnect()}
+          {...modal}
+          open={!!modal}
           footer={false}
-        >
-          <List>
-            <List.Item>
-              <Button
-                block
-                shape="round"
-                size="large"
-                onClick={() => (setOpen(null), setConnected('Web3'))}
-                disabled={!window.ethereum}
-                children="MetaMask"
-              />
-            </List.Item>
-          </List>
-          <List>
-            <List.Item>
-              <Button block shape="round" size="large" disabled>
-                WalletConnect
-              </Button>
-            </List.Item>
-          </List>
-        </Modal>
-      )}
-
-      {open === 'select' && (
-        <Modal
-          title="Select account"
-          open={open === 'select'}
-          onCancel={() => {
-            if (wantSwitch?.executed) {
-              setOpen(null);
-            } else {
-              disconnect();
-            }
-          }}
-          footer={false}
-        >
-          {accounts ? (
-            <Select
-              style={{ width: '100%' }}
-              placeholder="Select an account"
-              onSelect={(x) => (setOpen(null), setAccount(x))}
-            >
-              {accounts.map((x) => (
-                <Select.Option key={x} value={x}>
-                  {x}
-                </Select.Option>
-              ))}
-            </Select>
-          ) : (
-            <Skeleton />
-          )}
-        </Modal>
+          onCancel={() => modal.resolve()}
+          children={modal.children({
+            resolve: (v) => {
+              modal.resolve(v);
+            },
+          })}
+        />
       )}
     </Provider>
   );

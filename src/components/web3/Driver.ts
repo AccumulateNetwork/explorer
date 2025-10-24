@@ -1,22 +1,43 @@
+import type { MetaMaskInpageProvider } from '@metamask/providers';
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
+import { ethers } from 'ethers';
 import { ecdsaRecover } from 'secp256k1';
-import Web3 from 'web3';
-import type { provider } from 'web3-core';
 
 import {
   BaseKey,
   PublicKeyAddress,
-  PublicKeyHashAddress,
   SignOptions,
+  Signable,
   Signer,
   URL,
 } from 'accumulate.js';
+import { RpcError } from 'accumulate.js/lib/api_v3';
 import { Buffer, keccak256, sha256 } from 'accumulate.js/lib/common';
-import { Signature, SignatureType, Transaction } from 'accumulate.js/lib/core';
+import {
+  KeySignature,
+  Signature,
+  SignatureType,
+  Transaction,
+  TypedDataSignature,
+} from 'accumulate.js/lib/core';
 import { encode } from 'accumulate.js/lib/encoding';
 
+import { NetworkConfig } from '../common/networks';
+
+declare global {
+  interface Window {
+    ethereum?: ethers.Eip1193Provider & MetaMaskInpageProvider;
+  }
+}
+
 type EncryptedData = Omit<EthEncryptedData, 'version'>;
+
+export interface TypedDataMessage {
+  domain: ethers.TypedDataDomain;
+  types: Record<string, ethers.TypedDataField[]>;
+  message: Record<string, any>;
+}
 
 export class Driver {
   static get canConnect() {
@@ -27,12 +48,191 @@ export class Driver {
     return window.ethereum?.isMetaMask;
   }
 
-  readonly web3: Web3;
-  readonly sign: Sign;
+  readonly #web3: ethers.BrowserProvider;
 
-  constructor(provider: provider) {
-    this.web3 = new Web3(provider);
-    this.sign = new Sign(this.web3);
+  constructor(provider: ethers.Eip1193Provider) {
+    this.#web3 = new ethers.BrowserProvider(provider);
+  }
+
+  async connect() {
+    await this.#web3.getSigner();
+  }
+
+  async listAccounts() {
+    const accounts = await this.#web3.listAccounts();
+    return accounts.map((x) => x.address);
+  }
+
+  static async getChainID(network: NetworkConfig): Promise<string> {
+    if (!network?.eth?.length) {
+      return;
+    }
+
+    return await fetch(network.eth[0], {
+      method: 'POST',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_chainId',
+        params: {},
+      }),
+    })
+      .then((r) => r.json())
+      .then((r) => {
+        if (r.error) {
+          throw new RpcError(r.error);
+        }
+        return r.result;
+      })
+      .catch((e) => (console.warn(e), null));
+  }
+
+  async switchChains(network: NetworkConfig) {
+    const { ethereum } = window;
+
+    const chainId = await Driver.getChainID(network);
+    if (typeof chainId !== 'string') {
+      return;
+    }
+
+    try {
+      // Attempt to switch to Accumulate
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }],
+      });
+    } catch (error) {
+      if (typeof error === 'object' && 'code' in error && error.code === 4902) {
+        // Chain doesn't exist
+      } else {
+        console.warn(error);
+        return;
+      }
+    }
+
+    try {
+      // Add Accumulate
+      await ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [
+          {
+            blockExplorerUrls: [
+              network.explorer || 'https://explorer.accumulatenetwork.io',
+            ],
+            iconUrls: [
+              'https://explorer.accumulatenetwork.io/static/media/logo.64085dfd.svg',
+            ],
+            nativeCurrency: {
+              name: 'ACME',
+              symbol: 'ACME',
+              decimals: 18, // MetaMask won't allow any value except 18 - WTF?
+            },
+            rpcUrls: network.eth,
+            chainId,
+            chainName: `Accumulate ${network.label}`,
+          },
+        ],
+      });
+
+      // Switch to the new chain
+      await ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }],
+      });
+    } catch (error) {
+      console.warn(error);
+      return;
+    }
+  }
+
+  async signEthMessage(account: string, message: string) {
+    try {
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer.signMessage(message);
+      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
+    } catch (error) {
+      this.#checkError(error);
+    }
+  }
+
+  async signEthTypedData(
+    account: string,
+    { domain, types, message }: TypedDataMessage,
+  ) {
+    try {
+      delete types.EIP712Domain;
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer.signTypedData(domain, types, message);
+      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
+    } catch (error) {
+      this.#checkError(error);
+    }
+  }
+
+  async signEthBlind(account: string, hash: Uint8Array) {
+    try {
+      const signer = await this.#web3.getSigner(account);
+      const sig = await signer._legacySignMessage(hash);
+      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
+    } catch (error) {
+      this.#checkError(error);
+    }
+  }
+
+  #checkError(error) {
+    if (typeof error !== 'object') {
+      throw error;
+    }
+
+    if (
+      ('code' in error && error.code === 4001) ||
+      ('cause' in error &&
+        typeof error.cause === 'object' &&
+        'code' in error.cause &&
+        error.cause.code === 4001)
+    ) {
+      return; // User rejected the request
+    }
+
+    // Extract the Ledger error
+    if (error.message.startsWith('Ledger device: ')) {
+      const i = error.message.indexOf('\n');
+      try {
+        const { originalError } = JSON.parse(error.message.substring(i + 1));
+        if (originalError) error = originalError;
+      } catch (_) {}
+    }
+
+    // Parse the status code
+    if ('statusCode' in error) {
+      // eslint-disable-next-line default-case
+      switch (error.statusCode) {
+        case 0x6d02:
+        case 0x6511:
+          throw new Error('Ledger: the Accumulate app is not running');
+        case 0x530c:
+        case 0x6b0c:
+        case 0x5515:
+          throw new Error('Ledger: device is locked');
+      }
+    }
+
+    throw error;
+  }
+
+  signAccumulate(
+    network: NetworkConfig,
+    message: Transaction,
+    opts: SignOptions & { publicKey: Uint8Array },
+  ) {
+    const pub = new EthPublicKey(opts.publicKey);
+    const key = new AccKey(pub, network, (hash) =>
+      hash instanceof Uint8Array
+        ? this.signEthBlind(pub.ethereum, hash)
+        : this.signEthTypedData(pub.ethereum, hash),
+    );
+    const signer = Signer.forPage(opts.signer, key);
+    return signer.sign(message, opts);
   }
 
   async decrypt(publicKey: EthPublicKey, data: EncryptedData): Promise<string> {
@@ -63,82 +263,6 @@ export class Driver {
     const encrypted = encrypt(key, { data }, 'x25519-xsalsa20-poly1305');
     delete encrypted.version;
     return encrypted;
-  }
-}
-
-class Sign {
-  readonly #web3: Web3;
-
-  constructor(web3: Web3) {
-    this.#web3 = web3;
-  }
-
-  async eth(
-    account: string | PublicKeyHashAddress,
-    message: string | Uint8Array,
-    personal = false,
-  ) {
-    if (typeof account !== 'string') {
-      const short = Buffer.from(account.publicKeyHash.slice(-20));
-      account = toChecksumAddress(`0x${short.toString('hex')}`);
-    }
-    if (typeof message !== 'string') {
-      message = '0x' + Buffer.from(message).toString('hex');
-    }
-
-    try {
-      if (window.ethereum?.isMetaMask && personal) {
-        const sig = (await window.ethereum.request({
-          method: 'personal_sign',
-          params: [message, account],
-        })) as string;
-        if (!sig) {
-          return;
-        }
-        return Buffer.from(sig.replace(/^0x/, ''), 'hex');
-      }
-
-      const sig = await this.#web3.eth.sign(message, account);
-      if (!sig) {
-        return;
-      }
-      return Buffer.from(sig.replace(/^0x/, ''), 'hex');
-    } catch (error) {
-      // Extract the Ledger error
-      if (error.message.startsWith('Ledger device: ')) {
-        const i = error.message.indexOf('\n');
-        try {
-          const { originalError } = JSON.parse(error.message.substring(i + 1));
-          if (originalError) error = originalError;
-        } catch (_) {}
-      }
-
-      // Parse the status code
-      if ('statusCode' in error) {
-        // eslint-disable-next-line default-case
-        switch (error.statusCode) {
-          case 0x6d02:
-          case 0x6511:
-            throw new Error('Ledger: the Accumulate app is not running');
-          case 0x530c:
-          case 0x6b0c:
-          case 0x5515:
-            throw new Error('Ledger: device is locked');
-        }
-      }
-
-      throw error;
-    }
-  }
-
-  accumulate(
-    message: Uint8Array | Transaction,
-    opts: SignOptions & { publicKey: Uint8Array },
-  ) {
-    const pub = new EthPublicKey(opts.publicKey);
-    const key = new AccKey(pub, (hash) => this.eth(pub.ethereum, hash));
-    const signer = Signer.forPage(opts.signer, key);
-    return signer.sign(message, opts);
   }
 }
 
@@ -176,23 +300,97 @@ export class EthPublicKey extends PublicKeyAddress {
 }
 
 class AccKey extends BaseKey {
-  readonly #sign: (_: Uint8Array) => Promise<Uint8Array>;
+  readonly #network: NetworkConfig;
+  readonly #sign: (_: Uint8Array | TypedDataMessage) => Promise<Uint8Array>;
 
   constructor(
     publicKey: EthPublicKey,
-    sign: (_: Uint8Array) => Promise<Uint8Array>,
+    network: NetworkConfig,
+    sign: (_: Uint8Array | TypedDataMessage) => Promise<Uint8Array>,
   ) {
     super(publicKey);
+    this.#network = network;
     this.#sign = sign;
   }
 
-  async signRaw(
-    signature: Signature,
-    message: Uint8Array,
-  ): Promise<Uint8Array> {
-    const sigMdHash = sha256(encode(signature));
-    const hash = sha256(Buffer.concat([sigMdHash, message]));
-    return await this.#sign(hash);
+  #useTypedData(message: Signable): message is Transaction {
+    if (!(message instanceof Transaction)) {
+      return false;
+    }
+
+    return !!this.#network.eth?.length;
+  }
+
+  protected async initSignature(
+    message: Signable,
+    opts: SignOptions,
+  ): Promise<KeySignature> {
+    // If the network doesn't have an eth endpoint, use a plain ETH signature
+    if (!this.#useTypedData(message)) {
+      return super.initSignature(message, opts);
+    }
+
+    const chainID = await fetch(this.#network.eth[0], {
+      method: 'POST',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_chainId',
+        params: {},
+      }),
+    })
+      .then((r) => r.json())
+      .then((r) => r.result)
+      .catch((e) =>
+        Promise.reject(new Error('Unable to resolve chain ID', { cause: e })),
+      );
+
+    return new TypedDataSignature({
+      chainID: BigInt(chainID),
+      publicKey: this.address.publicKey,
+      signer: opts.signer,
+      signerVersion: opts.signerVersion,
+      timestamp: opts.timestamp,
+      vote: opts.vote,
+    });
+  }
+
+  async signRaw(signature: Signature, message: Signable): Promise<Uint8Array> {
+    // If the network doesn't have an eth endpoint, blind sign
+    if (!this.#useTypedData(message)) {
+      const sigMdHash = sha256(encode(signature));
+      const hash = sha256(Buffer.concat([sigMdHash, message.hash()]));
+      return await this.#sign(hash);
+    }
+
+    const typedData: TypedDataMessage = await fetch(this.#network.eth[0], {
+      method: 'POST',
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'acc_typedData',
+        params: {
+          transaction: message.asObject(),
+          signature: signature.asObject(),
+        },
+      }),
+    })
+      .then((r) => r.json())
+      .then((r) => {
+        if (r.error) {
+          throw new RpcError(r.error);
+        }
+        return r.result;
+      })
+      .catch((e) =>
+        Promise.reject(
+          new Error('Unable to construct typed data', { cause: e }),
+        ),
+      );
+
+    // Verify the result matches the request?
+
+    return this.#sign(typedData);
   }
 }
 

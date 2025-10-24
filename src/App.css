@@ -15,6 +15,10 @@
   vertical-align: middle;
 }
 
+w3m-modal {
+  z-index: 2000;
+}
+
 input:read-only {
   background-color: hsla(0, 0%, 0%, 0.04);
   cursor: not-allowed;
@@ -964,4 +968,8 @@ header.web3 {
 
 .compact-list .ant-list-item {
   padding: 0px !important;
+}
+
+.validator-signatures .ant-list-item {
+  padding: 8px 16px !important;
 }

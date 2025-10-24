@@ -15,7 +15,7 @@ export function WithIcon({
   icon: IconType | React.ReactNode;
   after?: boolean;
   tooltip?: React.ReactNode;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   style?: React.CSSProperties;
   className?: string;
 }) {

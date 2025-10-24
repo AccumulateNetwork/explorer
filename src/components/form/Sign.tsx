@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert, Modal, Spin } from 'antd';
 import React, { useContext, useState } from 'react';
 
-import { SignOptions, TxID } from 'accumulate.js';
+import { SignOptions, TxID, network } from 'accumulate.js';
 import {
   JsonRpcClient,
   MessageRecord,
@@ -14,6 +14,7 @@ import { Status } from 'accumulate.js/lib/errors';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { ShowError } from '../common/ShowError';
+import { NetworkConfig } from '../common/networks';
 import { isClientError } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import * as web3 from '../web3/Context';
@@ -91,7 +92,7 @@ export function Sign({
   title?: React.ReactNode;
 }) {
   const web3 = useWeb3();
-  const { api } = useContext(Network);
+  const { api, network } = useContext(Network);
   const [open, setOpen] = useState(false);
   const [closable, setClosable] = useState(false);
   const [children, setChildren] = useState<React.ReactNode[]>();
@@ -108,7 +109,7 @@ export function Sign({
       setClosable(false);
       try {
         request.initiated = true;
-        if (await sign({ push, api, web3: web3, args, signer })) {
+        if (await sign({ push, api, web3, args, signer, network })) {
           onFinish();
           return true;
         }
@@ -284,17 +285,19 @@ async function sign({
   args,
   web3,
   signer,
+  network,
 }: {
   push(n: React.ReactNode): (n: React.ReactNode) => void;
   api: JsonRpcClient;
   web3: web3.Context;
   args: TransactionArgs;
   signer: Sign.Signer;
+  network: NetworkConfig;
 }): Promise<boolean> {
   let update = push(<Pending>Signing</Pending>);
   const txn = new Transaction(args);
-  const sig = await web3.driver.sign
-    .accumulate(txn, {
+  const sig = await web3.driver
+    .signAccumulate(network, txn, {
       publicKey: web3.publicKey.publicKey,
       timestamp: Date.now(),
       ...(signer || {

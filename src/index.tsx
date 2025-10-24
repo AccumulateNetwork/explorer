@@ -1,4 +1,3 @@
-import { Web3ReactProvider } from '@web3-react/core';
 import React from 'react';
 import ReactDOM from 'react-dom';
 // Something depends on rxjs. I don't know what it is, but the explorer doesn't
@@ -7,21 +6,13 @@ import ReactDOM from 'react-dom';
 import 'rxjs';
 // Apply runtime patches to SDK before any API calls
 import './sdk-patches';
-import Web3 from 'web3';
 
 import App from './App';
 import './index.css';
 
-const getLibrary = (provider) => {
-  const library = new Web3(provider);
-  return library;
-};
-
 ReactDOM.render(
   <React.StrictMode>
-    <Web3ReactProvider getLibrary={getLibrary}>
-      <App />
-    </Web3ReactProvider>
+    <App />
   </React.StrictMode>,
   document.getElementById('root'),
 );
