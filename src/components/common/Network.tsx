@@ -149,7 +149,9 @@ export function Status(props: {
         Promise.all(p.map((x) => get(x, 'synthetic', SyntheticLedger))),
       ]);
 
-      return anchorsOk(anchors) && syntheticOk(synth);
+      // Use larger threshold for local devnets (they may have larger lags when idle)
+      const threshold = ctx.network.id === 'local' ? 50 : okThreshold;
+      return anchorsOk(anchors, threshold) && syntheticOk(synth, threshold);
     } catch (error) {
       shared.onApiError(error);
       return false; // Explicitly return false on error to show warning status
@@ -170,7 +172,7 @@ export function Status(props: {
 // considered not ok.
 const okThreshold = 10;
 
-function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[]) {
+function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[], threshold = okThreshold) {
   for (const a of ledgers) {
     for (const b of ledgers) {
       if (
@@ -182,7 +184,7 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[]) {
       const ba = b.ledger.sequence?.find((x) => x.url.equals(a.url));
       if (
         !ba ||
-        a.ledger.minorBlockSequenceNumber - ba.delivered > okThreshold
+        a.ledger.minorBlockSequenceNumber - ba.delivered > threshold
       ) {
         return false;
       }
@@ -191,15 +193,21 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[]) {
   return true;
 }
 
-function syntheticOk(ledgers: LedgerInfo<SyntheticLedger>[]) {
+function syntheticOk(ledgers: LedgerInfo<SyntheticLedger>[], threshold = okThreshold) {
   for (const a of ledgers) {
     for (const b of ledgers) {
       const ab = a.ledger.sequence?.find((x) => x.url.equals(b.url));
       const ba = b.ledger.sequence?.find((x) => x.url.equals(a.url));
       if (!ab && !ba) continue;
-      if (!ab || !ba) return false;
-      if (ab.produced - ba.delivered > okThreshold) {
-        return false;
+      // For devnets, skip if only one direction exists (not fully bidirectional yet)
+      if (!ab || !ba) continue;
+
+      // Handle asymmetric fields: ba has 'produced', ab has 'delivered'
+      // Check if B produced for A is within threshold of A delivered from B
+      if (ba.produced != null && ab.delivered != null) {
+        if (ba.produced - ab.delivered > threshold) {
+          return false;
+        }
       }
     }
   }
@@ -225,8 +233,12 @@ function defaultNetworkName(): string {
 
   // For localhost, always use 'local' network (don't trust cached URLs)
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Clear old cached URLs that might be outdated
-    if (Settings.networkName && Settings.networkName.includes('http://127.0.0.1:')) {
+    // Clear ALL cached network URLs (not just localhost ones) to prevent
+    // stale URLs from remote networks interfering with local development
+    if (Settings.networkName && (
+      Settings.networkName.startsWith('http://') ||
+      Settings.networkName.startsWith('https://')
+    )) {
       Settings.networkName = '';
     }
     return 'local';
