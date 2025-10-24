@@ -223,6 +223,15 @@ function defaultNetworkName(): string {
     return 'fozzie';
   }
 
+  // For localhost, always use 'local' network (don't trust cached URLs)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    // Clear old cached URLs that might be outdated
+    if (Settings.networkName && Settings.networkName.includes('http://127.0.0.1:')) {
+      Settings.networkName = '';
+    }
+    return 'local';
+  }
+
   // For main explorer domain, use localStorage or default to mainnet
   return Settings.networkName || 'mainnet';
 }
