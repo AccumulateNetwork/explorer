@@ -6,20 +6,20 @@
 ## Build Information
 
 **Current Build:**
-- Commit: (pending)
+- Commit: fe435dd
 - Branch: develop
-- Build Size: (pending rebuild)
-- Built: 2025-10-24
+- Build Size: 39MB
+- Built: 2025-10-24 20:34 UTC
 - Status: ✅ Ready for deployment
 
 **Changes in This Build:**
 - ✅ Buffer polyfill for browser compatibility
 - ✅ Network switching now reloads page
 - ✅ **FIXED: Network switching persistence on localhost**
+- ✅ **FIXED: Removed non-existent Mainnet Beta network**
 - ✅ **NEW: Maroon top bar for local devnet (#4B0000)**
 - ✅ **NEW: Darker purple for testnets (#2D1640)**
 - ✅ WalletConnect integration
-- ✅ Mainnet Beta network
 - ✅ ETH endpoint support
 - ✅ SDK patches for executor versions
 - ✅ MCP server implementation
