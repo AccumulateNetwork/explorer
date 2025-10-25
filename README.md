@@ -1,70 +1,241 @@
-# Getting Started with Create React App
+# Accumulate Explorer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A web-based blockchain explorer for the Accumulate protocol, providing real-time network monitoring, transaction tracking, and account inspection across multiple Accumulate networks.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+### Multi-Network Support
+- **Mainnet** - Production Accumulate network
+- **Kermit Testnet** - Primary test network with ETH endpoint support
+- **Fozzie Testnet** - Secondary test network
+- **Local Devnet** - Local development blockchain
 
-### `yarn start`
+### Core Functionality
+- **Account Explorer** - View account details, balances, and transaction history
+- **Transaction Tracking** - Search and inspect transactions with signature details
+- **Block Explorer** - Browse major and minor blocks with full chain data
+- **Network Health Monitoring** - Real-time network status with partition synchronization checks
+- **Search** - Search by account URL, transaction ID, public key, or key hash
+- **Web3 Wallet Integration** - Connect via MetaMask or WalletConnect
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Network Health Indicators
+Visual status indicators show real-time network health:
+- 🟢 **Green** - All partitions synchronized and healthy
+- 🟡 **Yellow** - Network experiencing synchronization delays
+- ⚪ **Gray** - Loading or checking network status
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Health checks validate:
+- CORS configuration (browser compatibility)
+- Partition synchronization (< 10 blocks lag)
+- Anchor ledger synchronization
+- Synthetic message ledger synchronization
+- Data freshness (< 60 seconds old)
 
-### `yarn test`
+## MCP Server Integration
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The Explorer includes a production-ready Model Context Protocol (MCP) server that enables AI assistants to interact with Accumulate networks.
 
-### `yarn build`
+### MCP Features
+- **Devnet Management** - Start/stop local Accumulate blockchain
+- **Explorer Control** - Launch web interface for any network
+- **Network Queries** - Query accounts, transactions, blocks, and chains
+- **Health Checks** - Comprehensive network validation matching browser behavior
+- **Network Switching** - Connect to mainnet, testnets, or custom endpoints
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### MCP Documentation
+- [MCP README](mcp/README.md) - Complete usage guide with examples
+- [MCP Implementation](mcp/IMPLEMENTATION.md) - Technical details and architecture
+- [Health Check Investigation](mcp/EXPLORER_HEALTH_CHECK.md) - CORS validation details
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Getting Started
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Prerequisites
+- Node.js 20+
+- npm 10+
 
-### `yarn eject`
+### Installation
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+# Install dependencies
+npm install
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Start development server
+npm start
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+# Open browser to http://localhost:5173
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### Build for Production
 
-## Learn More
+```bash
+# Create optimized production build
+npm run build
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Build output will be in build/ directory
+# Deploy build/ contents to your web server
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Configuration
 
-### Code Splitting
+The explorer automatically detects the network based on hostname:
+- `kermit.explorer.accumulatenetwork.io` → Kermit Testnet
+- `fozzie.explorer.accumulatenetwork.io` → Fozzie Testnet
+- `localhost` → Local Devnet (or last selected network)
+- Other domains → Mainnet (or last selected network)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Network switching is enabled when `VITE_NETWORK=any` environment variable is set.
 
-### Analyzing the Bundle Size
+## Development
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Available Scripts
 
-### Making a Progressive Web App
+```bash
+npm start         # Start dev server with hot reload
+npm run build     # Build for production
+npm run check     # Run TypeScript type checking
+npm run format    # Format code with Prettier
+npm run preview   # Build and preview production build
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Project Structure
 
-### Advanced Configuration
+```
+src/
+├── components/
+│   ├── common/
+│   │   ├── Network.tsx       # Network context and health checks
+│   │   └── networks.tsx      # Network configurations
+│   ├── explorer/             # Explorer UI components
+│   ├── views/                # Page views
+│   └── web3/                 # Web3 wallet integration
+├── utils/                    # Utility functions
+├── sdk-patches.ts            # SDK compatibility patches
+├── index.tsx                 # App entry point
+└── App.tsx                   # Main app component
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+mcp/
+├── src/
+│   └── index.ts              # MCP server implementation
+├── README.md                 # MCP usage guide
+├── IMPLEMENTATION.md         # Technical documentation
+└── test-*.js                 # Health check tests
+```
 
-### Deployment
+## Network-Specific Features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Local Devnet
+- **Visual Indicator**: Maroon top bar (#4B0000)
+- **Default Port**: 26660
+- **ETH Endpoint**: http://127.0.0.1:26660/eth
 
-### `yarn build` fails to minify
+### Testnets (Kermit/Fozzie)
+- **Visual Indicator**: Dark purple top bar (#2D1640)
+- **Kermit ETH Support**: https://kermit.accumulatenetwork.io/eth
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Mainnet
+- **Metrics Dashboard**: https://metrics.accumulatenetwork.io/v1
+- **Production Explorer**: https://explorer.accumulatenetwork.io
+
+## Deployment
+
+### Beta Deployment
+The beta explorer is deployed to Netlify:
+- **URL**: https://beta.explorer.accumulatenetwork.io
+- **Method**: Auto-deploy from GitHub `updates` branch
+- **Build Config**: `netlify.toml`
+
+```bash
+# Deploy to beta
+git push github develop:updates
+```
+
+### Production Deployment
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
+
+## Testing
+
+Comprehensive testing procedures are documented:
+- [TESTING.md](TESTING.md) - Testing strategy and checklists
+- [TEST-RESULTS.md](TEST-RESULTS.md) - Test execution results
+
+### Quick Test
+
+```bash
+# Start dev server
+npm start
+
+# Open http://localhost:5173
+# Verify:
+# - Page loads without errors
+# - Network dropdown appears
+# - Can switch between networks
+# - Health indicators show status dots
+```
+
+## Browser Compatibility
+
+Supports modern browsers:
+- Chrome/Edge (last 2 versions)
+- Firefox (last 2 versions)
+- Safari (last 2 versions)
+
+Requires JavaScript enabled and CORS-compatible API endpoints.
+
+## Technology Stack
+
+- **React 17** - UI framework
+- **TypeScript 5** - Type safety
+- **Vite 5** - Build tool and dev server
+- **Ant Design 4** - UI component library
+- **accumulate.js 0.11** - Accumulate protocol SDK
+- **ethers.js 6** - Ethereum wallet integration
+- **@web3modal/ethers 5** - WalletConnect integration
+
+## Known Issues
+
+### TypeScript Type Warnings
+Non-blocking type errors in WalletConnect/MetaMask type declarations. Does not affect runtime.
+
+### npm Vulnerabilities
+Known vulnerabilities in axios (used by accumulate.js). Monitoring for SDK updates.
+
+## Contributing
+
+### Code Style
+- TypeScript strict mode
+- Prettier formatting (configured in package.json)
+- Imports sorted automatically
+
+```bash
+# Format code
+npm run format
+
+# Check types
+npm run check
+```
+
+## License
+
+See LICENSE file for details.
+
+## Support
+
+- **Repository**: gitlab.com/AccumulateNetwork/explorer
+- **Issues**: Report bugs via GitLab issues
+- **Documentation**: See docs in mcp/ directory
+
+## Version History
+
+**Current Version**: 0.1.0
+
+Recent improvements:
+- ✅ Network switching with automatic cache validation
+- ✅ MCP server for AI assistant integration
+- ✅ Enhanced network health monitoring with CORS validation
+- ✅ Web3 wallet integration (MetaMask, WalletConnect)
+- ✅ Network-specific UI colors
+- ✅ ETH endpoint support for Kermit and local devnets
+
+---
+
+Built with ❤️ for the Accumulate community
