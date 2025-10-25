@@ -5,7 +5,7 @@
   for = "/*"
   [headers.values]
     # Allow clipboard access for copy-to-clipboard functionality
-    Permissions-Policy = "clipboard-read=self, clipboard-write=self"
+    Permissions-Policy = "clipboard-read=(self), clipboard-write=(self)"
     # Security headers
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
