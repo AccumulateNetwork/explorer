@@ -63,7 +63,7 @@ export class Context {
     this.#onApiError = onApiError;
     this.#network = network;
     this.#api = new JsonRpcClient(`${network.api[0]}/v3`);
-    Settings.networkName = network.api[0];
+    Settings.networkName = network.id;
   }
 
   get network() {
