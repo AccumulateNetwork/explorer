@@ -1,20 +1,23 @@
 # Explorer Deployment Guide
 
 **Last Updated:** 2025-10-24
-**Version:** Post-merge with Buffer polyfill and network switching fixes
+**Version:** Network switching fixes and UI color improvements
 
 ## Build Information
 
 **Current Build:**
-- Commit: c5efd52
+- Commit: (pending)
 - Branch: develop
-- Build Size: 39MB
-- Built: 2025-10-24 10:01
+- Build Size: (pending rebuild)
+- Built: 2025-10-24
 - Status: ✅ Ready for deployment
 
 **Changes in This Build:**
 - ✅ Buffer polyfill for browser compatibility
 - ✅ Network switching now reloads page
+- ✅ **FIXED: Network switching persistence on localhost**
+- ✅ **NEW: Maroon top bar for local devnet (#4B0000)**
+- ✅ **NEW: Darker purple for testnets (#2D1640)**
 - ✅ WalletConnect integration
 - ✅ Mainnet Beta network
 - ✅ ETH endpoint support

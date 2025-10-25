@@ -231,16 +231,13 @@ function defaultNetworkName(): string {
     return 'fozzie';
   }
 
-  // For localhost, always use 'local' network (don't trust cached URLs)
+  // For localhost, use cached network selection if available, otherwise default to 'local'
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Clear ALL cached network URLs (not just localhost ones) to prevent
-    // stale URLs from remote networks interfering with local development
-    if (Settings.networkName && (
-      Settings.networkName.startsWith('http://') ||
-      Settings.networkName.startsWith('https://')
-    )) {
-      Settings.networkName = '';
+    // If user has selected a network, use it
+    if (Settings.networkName) {
+      return Settings.networkName;
     }
+    // Otherwise default to local devnet
     return 'local';
   }
 

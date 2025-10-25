@@ -46,7 +46,12 @@ header {
 
 header.testnet,
 header.testnet > .ant-menu {
-  background-color: #402152;
+  background-color: #2D1640;
+}
+
+header.local,
+header.local > .ant-menu {
+  background-color: #4B0000;
 }
 
 main {

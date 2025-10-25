@@ -71,7 +71,7 @@ export default function Explorer() {
         <Router>
           <ScrollToTop />
           <Layout>
-            <Header className={shared.network.mainnet ? '' : 'testnet'}>
+            <Header className={shared.network.id === 'local' ? 'local' : (shared.network.mainnet ? '' : 'testnet')}>
               <MainMenu onSelectNetwork={onSelectNetwork} />
             </Header>
 
