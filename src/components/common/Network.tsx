@@ -231,18 +231,28 @@ function defaultNetworkName(): string {
     return 'fozzie';
   }
 
-  // For localhost, use cached network selection if available, otherwise default to 'local'
+  // For localhost, use cached network selection if valid, otherwise default to 'local'
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // If user has selected a network, use it
-    if (Settings.networkName) {
+    // Validate cached network exists
+    if (Settings.networkName && getNetwork(Settings.networkName)) {
       return Settings.networkName;
     }
-    // Otherwise default to local devnet
+    // Clear invalid cached value and default to local devnet
+    if (Settings.networkName) {
+      Settings.networkName = '';
+    }
     return 'local';
   }
 
-  // For main explorer domain, use localStorage or default to mainnet
-  return Settings.networkName || 'mainnet';
+  // For main explorer domain, validate cached network or default to mainnet
+  if (Settings.networkName && getNetwork(Settings.networkName)) {
+    return Settings.networkName;
+  }
+  // Clear invalid cached value and default to mainnet
+  if (Settings.networkName) {
+    Settings.networkName = '';
+  }
+  return 'mainnet';
 }
 
 export const Network = Object.assign(
