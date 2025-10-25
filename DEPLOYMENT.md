@@ -1,18 +1,23 @@
 # Explorer Deployment Guide
 
 **Last Updated:** 2025-10-24
-**Version:** Network switching fixes and UI color improvements
+**Version:** README update and vulnerability fixes
 
 ## Build Information
 
 **Current Build:**
-- Commit: fe435dd
+- Commit: 8e288f6
 - Branch: develop
 - Build Size: 39MB
-- Built: 2025-10-24 20:34 UTC
+- Built: 2025-10-24
 - Status: ✅ Ready for deployment
 
 **Changes in This Build:**
+- ✅ **NEW: Comprehensive README.md with project overview**
+- ✅ **FIXED: Critical axios vulnerabilities (CVE GHSA-wf5p-g6vw-rhxx, GHSA-jr5f-v2jv-69x6, GHSA-4hjh-wcwx-xvwj)**
+- ✅ **NEW: VULNERABILITIES.md documentation**
+- ✅ Axios updated from 0.21.4 to 1.12.2 (via override)
+- ✅ Reduced vulnerabilities from 39 to 23 (all critical eliminated)
 - ✅ Buffer polyfill for browser compatibility
 - ✅ Network switching now reloads page
 - ✅ **FIXED: Network switching persistence on localhost**
@@ -375,11 +380,26 @@ VITE_NETWORK=any          # Allow network switching
 
 ## Changelog
 
+**2025-10-24 - 8e288f6**
+- Updated README.md with comprehensive project overview
+- Fixed critical axios vulnerabilities (0.21.4 → 1.12.2)
+- Created VULNERABILITIES.md assessment document
+- Reduced total vulnerabilities from 39 to 23
+- Updated .gitignore for build artifacts
+
+**2025-10-24 - 2c04675**
+- Automatically clear invalid cached network names
+- Fix network switching persistence
+
+**2025-10-24 - fe435dd**
+- Network switching persistence and UI color improvements
+- Maroon top bar for local devnet
+- Darker purple for testnets
+
 **2025-10-24 - c5efd52**
 - Added Buffer polyfill for browser compatibility
 - Fixed network switching to reload page
 - Added WalletConnect support
-- Added Mainnet Beta network
 - Added ETH endpoint support
 - SDK patches for executor versions
 
