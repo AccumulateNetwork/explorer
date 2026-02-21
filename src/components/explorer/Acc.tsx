@@ -16,6 +16,7 @@ import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 import { isRecordOf } from '../../utils/types';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import { RawData } from '../common/RawData';
 import { lazy2 } from '../common/lazy2';
 import { queryEffect } from '../common/query';
@@ -111,7 +112,7 @@ export function Acc({
   }
 
   return (
-    <>
+    <ErrorBoundary>
       {record instanceof AccountRecord ? (
         <Account record={record} />
       ) : (
@@ -137,6 +138,6 @@ export function Acc({
           />
         </div>
       )}
-    </>
+    </ErrorBoundary>
   );
 }

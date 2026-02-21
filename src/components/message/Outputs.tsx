@@ -65,12 +65,21 @@ Outputs.Output = function ({
 }) {
   return (
     <Paragraph>
-      <Link to={url}>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <RiAccountCircleLine />
-        </IconContext.Provider>
-        {url.toString()}
-      </Link>
+      {url ? (
+        <Link to={url}>
+          <IconContext.Provider value={{ className: 'react-icons' }}>
+            <RiAccountCircleLine />
+          </IconContext.Provider>
+          {url.toString()}
+        </Link>
+      ) : (
+        <span>
+          <IconContext.Provider value={{ className: 'react-icons' }}>
+            <RiAccountCircleLine />
+          </IconContext.Provider>
+          (no destination)
+        </span>
+      )}
       <br />
       <Outputs.Amount {...rest} />
       <br />

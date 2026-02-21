@@ -108,12 +108,18 @@ export function SendTokens({
           <Descriptions.Item label="Amount">
             <TokenAmount
               issuer={issuer}
-              amount={outputs.reduce((v, x) => x.amount + v, 0n)}
+              amount={outputs.reduce((v, x) => {
+                const amt = x.amount ?? 0;
+                return v + (typeof amt === 'bigint' ? amt : BigInt(amt));
+              }, 0n)}
             />
             <br />
             <TokenAmount
               issuer={issuer}
-              amount={outputs.reduce((v, x) => x.amount + v, 0n)}
+              amount={outputs.reduce((v, x) => {
+                const amt = x.amount ?? 0;
+                return v + (typeof amt === 'bigint' ? amt : BigInt(amt));
+              }, 0n)}
               digits={{ min: 2, max: 2, group: true }}
               className="formatted-balance"
             />
