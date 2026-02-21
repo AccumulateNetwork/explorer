@@ -35,25 +35,31 @@ export function SendTokens({
   const [issuer, setIssuer] = useState<core.TokenIssuer>();
   useAsyncEffect(
     async (mounted) => {
-      let r = await api.query(txn.header.principal);
-      if (!mounted()) {
-        return;
-      }
-      if (isRecordOf(r, core.TokenIssuer)) {
-        setIssuer(r.account);
-        return;
-      }
+      try {
+        let r = await api.query(txn.header.principal);
+        if (!mounted()) {
+          return;
+        }
+        if (isRecordOf(r, core.TokenIssuer)) {
+          setIssuer(r.account);
+          return;
+        }
 
-      if (
-        !isRecordOf(r, core.TokenAccount) &&
-        !isRecordOf(r, core.LiteTokenAccount)
-      ) {
-        return;
-      }
+        if (
+          !isRecordOf(r, core.TokenAccount) &&
+          !isRecordOf(r, core.LiteTokenAccount)
+        ) {
+          return;
+        }
 
-      r = await api.query(r.account.tokenUrl);
-      if (mounted() && isRecordOf(r, core.TokenIssuer)) {
-        setIssuer(r.account);
+        r = await api.query(r.account.tokenUrl);
+        if (mounted() && isRecordOf(r, core.TokenIssuer)) {
+          setIssuer(r.account);
+        }
+      } catch (error) {
+        // Account doesn't exist - this is OK for IssueTokens transactions
+        // that create new accounts. Just skip loading the issuer.
+        console.warn('Could not load token issuer:', error);
       }
     },
     [`${txn.header.principal}`, network.id],
