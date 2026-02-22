@@ -3,10 +3,94 @@ import { NamePath } from 'antd/lib/form/interface';
 import { FieldContext } from 'rc-field-form';
 import { useCallback, useContext, useEffect, useMemo } from 'react';
 
+import { JsonRpcClient, RecordType } from 'accumulate.js/lib/api_v3';
+import {
+  Account,
+  AccountType,
+  AuthorityEntry,
+  KeyPage,
+  KeySpec,
+  LiteIdentity,
+} from 'accumulate.js/lib/core';
+
 import { SplitFirst, curryFirst } from '../../utils/typemagic';
 import { unwrapError } from '../common/ShowError';
+import { Context } from '../web3/Context';
 
-type FieldData = Omit<Parameters<FormInstance['setFields']>[0][0], 'name'>;
+export interface SignerSpec {
+  signer: KeyPage | LiteIdentity;
+  entry: KeySpec;
+}
+
+export async function getSigners(
+  api: JsonRpcClient,
+  web3: Context,
+  account: Account,
+): Promise<SignerSpec[]> {
+  const authorities = await resolveAuthorities(api, account);
+  if (!authorities) {
+    return;
+  }
+
+  const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
+  return [
+    ...(authorities.some(({ url }) => web3?.liteIdentity?.url.equals(url))
+      ? [
+          {
+            signer: web3.liteIdentity,
+            entry: new KeySpec({ publicKeyHash: ethKeyHash }),
+          },
+        ]
+      : []),
+    ...(web3?.linked?.books || [])
+      .filter(({ book }) => authorities.some(({ url }) => book.url.equals(url)))
+      .flatMap(({ pages }) => pages)
+      .flatMap((page) =>
+        page.keys.flatMap((entry) => ({ signer: page, entry })),
+      )
+      .filter(
+        ({ entry }) =>
+          Buffer.from(entry.publicKeyHash).toString('hex') === ethKeyHash,
+      ),
+  ];
+}
+
+async function resolveAuthorities(api: JsonRpcClient, account: Account) {
+  const s = account.url.toString().replace(/^acc:\/\//, '');
+  const i = s.lastIndexOf('/');
+  switch (account.type) {
+    case AccountType.KeyPage:
+      return [
+        new AuthorityEntry({
+          url: s.substring(0, i),
+        }),
+      ];
+
+    case AccountType.Identity:
+    case AccountType.TokenIssuer:
+    case AccountType.TokenAccount:
+    case AccountType.KeyBook:
+    case AccountType.DataAccount:
+      if (account.authorities?.length) {
+        return account.authorities;
+      }
+      if (i < 0) {
+        return false;
+      }
+      const r = await api.query(s.substring(0, i));
+      if (r.recordType !== RecordType.Account) {
+        return false;
+      }
+      return resolveAuthorities(api, r.account);
+
+    case AccountType.LiteTokenAccount:
+      return [new AuthorityEntry({ url: account.url.authority })];
+    case AccountType.LiteIdentity:
+      return [new AuthorityEntry({ url: account.url })];
+    default:
+      return false;
+  }
+}
 
 export function debounce<I extends Array<any>>(
   cb: (..._: I) => void | Promise<void>,
@@ -18,6 +102,8 @@ export function debounce<I extends Array<any>>(
     id = setTimeout(() => cb(...args), time);
   }, []);
 }
+
+type FieldData = Omit<Parameters<FormInstance['setFields']>[0][0], 'name'>;
 
 interface FormUtils<Fields> {
   set(name: NamePath<Fields>, data: FieldData): void;
@@ -47,6 +133,15 @@ export function formUtils<Fields>(
       name = [...prefixName, name] as NamePath<Fields>;
     }
     form.setFields([{ name, ...data }]);
+
+    // Workaround for https://github.com/ant-design/ant-design/issues/23782
+    if ('value' in data) {
+      (form as any).getInternalHooks('RC_FORM_INTERNAL_HOOKS').dispatch({
+        type: 'updateValue',
+        namePath: [name],
+        value: data.value,
+      });
+    }
   };
 
   const setError = (name: NamePath<Fields>, error: any) => {
@@ -74,8 +169,9 @@ export function formUtils<Fields>(
 
 export function useFormWatchEffect<F, K extends keyof F>(
   form: FormInstance<F>,
-  key: K,
+  key: K | K[],
   effect: (value: F[K], mounted: () => boolean) => void | Promise<void>,
+  dependencies: any[] = [],
   debounceTime = 200,
 ) {
   effect = debounce(effect, debounceTime);
@@ -86,14 +182,15 @@ export function useFormWatchEffect<F, K extends keyof F>(
     return () => {
       mounted = false;
     };
-  }, [value]);
+  }, [value, ...dependencies]);
 }
 
 export function useFormWatchMemo<F, K extends keyof F, V>(
   form: FormInstance<F>,
   key: K,
   factory: (value: F[K]) => V,
+  dependencies: any[] = [],
 ) {
   const value = Form.useWatch(key, form);
-  return useMemo(() => factory(value), [value]);
+  return useMemo(() => factory(value), [value, ...dependencies]);
 }

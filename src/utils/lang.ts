@@ -1,4 +1,5 @@
 export const tooltip = {
+  acctType: 'The Accumulate account type',
   tokenAcctUrl:
     "The URL of the token account, where an account's balances and transactions are organized for a particular token",
   tokenUrl: 'The URL of the token',
@@ -68,6 +69,9 @@ export const tooltip = {
     adiUrl: 'The URL of the ADI',
     adiKeyBook: 'The key book that will own the ADI',
     initialKey: "The initial key of the ADI's key book",
+    parentOwned:
+      'The sub-ADI or account will be owned by the ADI it is contained within',
+    selfOwned: 'The ADI will be owned by its own key book',
     externallyOwned:
       'The ADI or account will be owned by an authority within a different ADI',
   },

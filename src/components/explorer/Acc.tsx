@@ -18,18 +18,25 @@ import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import { RawData } from '../common/RawData';
-import { lazy2 } from '../common/lazy2';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
 import { useWeb3 } from '../web3/Context';
+import { MissingLiteID } from '../web3/MissingLiteID';
 import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
 
-const Web3 = {
-  MissingLiteID: lazy2(() => import('../web3/MissingLiteID'), 'MissingLiteID'),
-};
+function tryParseURL(s: string) {
+  try {
+    return URL.parse(s);
+  } catch (error) {
+    return new URL({
+      scheme: 'acc',
+      hostname: s,
+    } as any);
+  }
+}
 
 export function Acc({
   parentCallback,
@@ -45,7 +52,7 @@ export function Acc({
   const [error, setError] = useState(null);
 
   const params = useParams<{ hash: string; url: string }>();
-  const url = URL.parse(
+  const url = tryParseURL(
     params.hash ? `${params.hash}@unknown` : `${params.url}`,
   );
   document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
@@ -84,7 +91,7 @@ export function Acc({
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
     if (web3.publicKey?.lite?.equals(url)) {
-      return <Web3.MissingLiteID />;
+      return <MissingLiteID />;
     }
     return <Error404 />;
   }

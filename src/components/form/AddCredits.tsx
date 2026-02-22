@@ -79,11 +79,11 @@ export function AddCredits(
   // Submit the transaction
   const submit = ({ from, to, tokens, oracle }: Fields): TransactionArgs => ({
     header: {
-      principal: from.url,
+      principal: from?.url,
     },
     body: {
       type: 'addCredits',
-      recipient: to.url,
+      recipient: to?.url,
       amount: tokens,
       oracle,
     },

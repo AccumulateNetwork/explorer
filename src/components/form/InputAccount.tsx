@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { URL, URLArgs, errors } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
+  ADI,
   Account,
   KeyBook,
   KeyPage,
@@ -15,6 +16,7 @@ import {
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
+import { omit } from '../../utils/typemagic';
 import { Ctor, isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { queryEffect } from '../common/query';
@@ -30,6 +32,7 @@ interface InputAccountProps
   placeholder?: string;
 }
 
+export const InputIdentity = newFor(ADI);
 export const InputTokenAccount = newFor(LiteTokenAccount, TokenAccount);
 export const InputCreditRecipient = newFor(LiteIdentity, KeyPage);
 export const InputAuthority = newFor(KeyBook);
@@ -93,6 +96,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       }
 
       if (!isRecordOf(r, ...(types as any))) {
+        // TODO: Fix this error message
         setError(`${url} is not a token account`);
         return;
       }
@@ -111,10 +115,37 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       setAllOpts(opts);
     }, [web3?.linked?.all]);
 
+    const input = readOnly ? (
+      <Input
+        value={initialValue && `${initialValue}`}
+        readOnly={readOnly}
+        onChange={(e) => slowValueChange(e.target.value)}
+        placeholder={placeholder}
+        style={!after && props.style}
+      />
+    ) : !baseOpts?.length ? (
+      <Input
+        readOnly={readOnly}
+        onChange={(e) => slowValueChange(e.target.value)}
+        placeholder={placeholder}
+        style={!after && props.style}
+      />
+    ) : (
+      <Select
+        showSearch
+        options={allOpts}
+        filterOption={(s, opt) => opt.value.toString().includes(s)}
+        placeholder={placeholder}
+        onSearch={(s) => setAllOpts([{ label: s, value: s }, ...baseOpts])}
+        onSelect={setURL}
+        style={!after && props.style}
+      />
+    );
+
     const slowValueChange = debounce(setURL, 200);
     return (
       <Form.Item
-        {...props}
+        {...omit(props, 'style')}
         initialValue={initialValue && `${initialValue}`}
         normalize={(value) => {
           if (typeof value === 'string') {
@@ -129,34 +160,14 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
           return { value };
         }}
       >
-        <Space.Compact block>
-          {readOnly ? (
-            <Input
-              value={initialValue && `${initialValue}`}
-              readOnly={readOnly}
-              onChange={(e) => slowValueChange(e.target.value)}
-              placeholder={placeholder}
-            />
-          ) : !baseOpts?.length ? (
-            <Input
-              readOnly={readOnly}
-              onChange={(e) => slowValueChange(e.target.value)}
-              placeholder={placeholder}
-            />
-          ) : (
-            <Select
-              showSearch
-              options={allOpts}
-              filterOption={(s, opt) => opt.value.toString().includes(s)}
-              placeholder={placeholder}
-              onSearch={(s) =>
-                setAllOpts([{ label: s, value: s }, ...baseOpts])
-              }
-              onSelect={setURL}
-            />
-          )}
-          {after}
-        </Space.Compact>
+        {after ? (
+          <Space.Compact block style={props.style}>
+            {input}
+            {after}
+          </Space.Compact>
+        ) : (
+          input
+        )}
       </Form.Item>
     );
   };

@@ -19,6 +19,10 @@ w3m-modal {
   z-index: 2000;
 }
 
+.accountTitle {
+  display: flex;
+}
+
 input:read-only {
   background-color: hsla(0, 0%, 0%, 0.04);
   cursor: not-allowed;
