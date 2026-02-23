@@ -186,76 +186,181 @@ func queryStakedAmount() (int64, error) {
 	// Query all registered staking accounts from staking.acme/registered data account
 	stakingAccounts := []string{}
 
-	// Query up to 500 data entries (should be more than enough)
-	for i := 0; i < 500; i++ {
-		requestBody := map[string]interface{}{
+	// First, get the total number of entries in the main chain
+	chainReq := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      0,
+		"method":  "query",
+		"params": map[string]interface{}{
+			"scope": "acc://staking.acme/registered",
+			"query": map[string]interface{}{
+				"queryType": "chain",
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(chainReq)
+	if err != nil {
+		return 0, fmt.Errorf("failed to marshal chain request: %w", err)
+	}
+
+	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return 0, fmt.Errorf("failed to query chain: %w", err)
+	}
+	defer resp.Body.Close()
+
+	var chainResp struct {
+		Result struct {
+			Records []struct {
+				Name  string `json:"name"`
+				Count int64  `json:"count"`
+			} `json:"records"`
+		} `json:"result"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&chainResp); err != nil {
+		return 0, fmt.Errorf("failed to decode chain response: %w", err)
+	}
+
+	// Find the main chain and get total count
+	var totalEntries int64
+	for _, chain := range chainResp.Result.Records {
+		if chain.Name == "main" {
+			totalEntries = chain.Count
+			break
+		}
+	}
+
+	if totalEntries == 0 {
+		return 0, fmt.Errorf("no entries found in main chain")
+	}
+
+	log.Printf("Found %d total entries in staking.acme/registered main chain", totalEntries)
+
+	// Query all chain entries in batches
+	batchSize := int64(100)
+	for start := int64(0); start < totalEntries; start += batchSize {
+		count := batchSize
+		if start+count > totalEntries {
+			count = totalEntries - start
+		}
+
+		// Query a range of chain entries
+		rangeReq := map[string]interface{}{
 			"jsonrpc": "2.0",
-			"id":      i,
+			"id":      int(start),
 			"method":  "query",
 			"params": map[string]interface{}{
 				"scope": "acc://staking.acme/registered",
 				"query": map[string]interface{}{
-					"queryType": "data",
-					"index":     i,
+					"queryType": "chain",
+					"name":      "main",
+					"range": map[string]interface{}{
+						"start": start,
+						"count": count,
+					},
+					"includeReceipt": false,
 				},
 			},
 		}
 
-		jsonData, err := json.Marshal(requestBody)
+		jsonData, err := json.Marshal(rangeReq)
 		if err != nil {
 			continue
 		}
 
 		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
-			break
+			log.Printf("Warning: Failed to fetch entries %d-%d: %v", start, start+count-1, err)
+			continue
 		}
 		defer resp.Body.Close()
 
-		var dataResp map[string]interface{}
-		if err := json.NewDecoder(resp.Body).Decode(&dataResp); err != nil {
-			break
+		var rangeResp struct {
+			Result struct {
+				Records []struct {
+					Entry string `json:"entry"`
+					Index int64  `json:"index"`
+				} `json:"records"`
+			} `json:"result"`
 		}
 
-		// Check for errors (end of data)
-		if _, hasError := dataResp["error"]; hasError {
-			break
+		if err := json.NewDecoder(resp.Body).Decode(&rangeResp); err != nil {
+			log.Printf("Warning: Failed to decode response for entries %d-%d: %v", start, start+count-1, err)
+			continue
 		}
 
-		// Extract staking account URLs from the data entry
-		if result, ok := dataResp["result"].(map[string]interface{}); ok {
-			if value, ok := result["value"].(map[string]interface{}); ok {
-				if message, ok := value["message"].(map[string]interface{}); ok {
-					if transaction, ok := message["transaction"].(map[string]interface{}); ok {
-						if body, ok := transaction["body"].(map[string]interface{}); ok {
-							if bodyType, ok := body["type"].(string); ok && bodyType == "writeData" {
-								if entry, ok := body["entry"].(map[string]interface{}); ok {
-									if dataArray, ok := entry["data"].([]interface{}); ok && len(dataArray) > 0 {
-										if dataHex, ok := dataArray[0].(string); ok {
-											// Decode hex to JSON
-											dataBytes, err := hex.DecodeString(dataHex)
-											if err == nil {
-												var entryData struct {
-													Identity string `json:"identity"`
-													Accounts []struct {
-														Type string `json:"type"`
-														URL  string `json:"url"`
-													} `json:"accounts"`
-													Status string `json:"status"`
-												}
-												if err := json.Unmarshal(dataBytes, &entryData); err == nil {
-													if entryData.Status == "registered" {
-														for _, account := range entryData.Accounts {
-															if account.URL != "" {
-																stakingAccounts = append(stakingAccounts, account.URL)
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
+		// Process each entry hash - query the full transaction
+		for _, record := range rangeResp.Result.Records {
+			// Query the transaction by its entry hash
+			txReq := map[string]interface{}{
+				"jsonrpc": "2.0",
+				"id":      int(record.Index),
+				"method":  "query",
+				"params": map[string]interface{}{
+					"scope": fmt.Sprintf("acc://%s@staking.acme/registered", record.Entry),
+					"query": map[string]interface{}{},
+				},
+			}
+
+			txData, err := json.Marshal(txReq)
+			if err != nil {
+				continue
+			}
+
+			txResp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(txData))
+			if err != nil {
+				continue
+			}
+			defer txResp.Body.Close()
+
+			var txResult struct {
+				Result struct {
+					Message struct {
+						Transaction struct {
+							Body struct {
+								Type  string `json:"type"`
+								Entry struct {
+									Data []string `json:"data"`
+								} `json:"entry"`
+							} `json:"body"`
+						} `json:"transaction"`
+					} `json:"message"`
+				} `json:"result"`
+			}
+
+			if err := json.NewDecoder(txResp.Body).Decode(&txResult); err != nil {
+				continue
+			}
+
+			// Check if this is a WriteData transaction
+			if txResult.Result.Message.Transaction.Body.Type == "writeData" {
+				dataArray := txResult.Result.Message.Transaction.Body.Entry.Data
+				if len(dataArray) > 0 {
+					// Decode hex to JSON
+					dataBytes, err := hex.DecodeString(dataArray[0])
+					if err != nil {
+						continue
+					}
+
+					var entryData struct {
+						Identity string `json:"identity"`
+						Accounts []struct {
+							Type string `json:"type"`
+							URL  string `json:"url"`
+						} `json:"accounts"`
+						Status string `json:"status"`
+					}
+
+					if err := json.Unmarshal(dataBytes, &entryData); err != nil {
+						continue
+					}
+
+					if entryData.Status == "registered" {
+						for _, account := range entryData.Accounts {
+							if account.URL != "" {
+								stakingAccounts = append(stakingAccounts, account.URL)
 							}
 						}
 					}
