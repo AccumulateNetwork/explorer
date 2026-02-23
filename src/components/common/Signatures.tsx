@@ -32,6 +32,7 @@ import {
   VoteType,
 } from 'accumulate.js/lib/core';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
+import { sha256 } from 'accumulate.js/lib/common';
 
 import { SigRecord, isRecordOf } from '../../utils/types';
 import Key from './Key';
@@ -542,14 +543,16 @@ Signature.Key = function ({
       })) as AccountRecord;
 
       if (account.type === AccountType.KeyPage) {
-        // Convert signature public key to hex for comparison
-        const sigPubKeyHex = signature.publicKey instanceof Uint8Array || Buffer.isBuffer(signature.publicKey)
-          ? Buffer.from(signature.publicKey).toString('hex')
-          : signature.publicKey.toString();
+        // Hash the signature's public key to get the key hash
+        const pubKeyBytes = signature.publicKey instanceof Uint8Array || Buffer.isBuffer(signature.publicKey)
+          ? signature.publicKey
+          : Buffer.from(signature.publicKey, 'hex');
 
-        console.log('Looking for key:', sigPubKeyHex, 'in', keyPageUrl.toString());
+        const sigKeyHash = Buffer.from(sha256(pubKeyBytes)).toString('hex');
 
-        // Find the key entry that matches this public key
+        console.log('Looking for key hash:', sigKeyHash, 'in', keyPageUrl.toString());
+
+        // Find the key entry that matches this public key hash
         const keyEntry = account.keys?.find((entry) => {
           if (!entry.publicKeyHash) return false;
 
@@ -558,9 +561,9 @@ Signature.Key = function ({
             ? Buffer.from(entry.publicKeyHash).toString('hex')
             : entry.publicKeyHash.toString();
 
-          console.log('Comparing with entry key:', entryKeyHex, 'delegate:', entry.delegate?.toString());
+          console.log('Comparing with entry key hash:', entryKeyHex, 'delegate:', entry.delegate?.toString());
 
-          return entryKeyHex === sigPubKeyHex;
+          return entryKeyHex === sigKeyHash;
         });
 
         console.log('Found key entry:', keyEntry);
