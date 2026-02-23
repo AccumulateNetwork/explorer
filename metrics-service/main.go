@@ -94,6 +94,27 @@ var (
 	// Accumulate API endpoints
 	accumulateAPI   = "https://mainnet.accumulatenetwork.io/v3"
 	accumulateAPIv2 = "https://mainnet.accumulatenetwork.io"
+
+	// Known registered staking accounts (hard-coded from historical data)
+	// Last updated: 2026-02-23, chain index 418
+	knownStakingAccounts = []string{
+		"acc://RenatoDAP.acme/staking",
+		"acc://RenatoDAP.acme/token",
+		"acc://accumulated.acme/staking",
+		"acc://accumulator.acme/tokens",
+		"acc://defidevs.acme/stake",
+		"acc://defidevs.acme/wacme-lp-incentives-curve",
+		"acc://diopter-estrange-020.acme/tokens",
+		"acc://gnacmeadi.acme/GNACME%20STAKE",
+		"acc://gnacmeadi.acme/GNACME%20STAKE2",
+		"acc://henspop.acme/staking",
+		"acc://henspop.acme/token",
+		"acc://kompendium.acme/staking1",
+		"acc://saisne.acme/stake",
+		"acc://saisne.acme/staking",
+		"acc://sigrlami.acme/staking",
+	}
+	lastKnownChainIndex = int64(418)
 )
 
 // AccumulateResponse represents the JSON-RPC response from Accumulate v3 API
@@ -183,8 +204,9 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 
 // queryStakedAmount queries the actual staked ACME from registered staking accounts
 func queryStakedAmount() (int64, error) {
-	// Query all registered staking accounts from staking.acme/registered data account
-	stakingAccounts := []string{}
+	// Start with known historical accounts
+	stakingAccounts := make([]string, len(knownStakingAccounts))
+	copy(stakingAccounts, knownStakingAccounts)
 
 	// First, get the total number of entries in the main chain
 	chainReq := map[string]interface{}{
@@ -236,15 +258,20 @@ func queryStakedAmount() (int64, error) {
 		return 0, fmt.Errorf("no entries found in main chain")
 	}
 
-	log.Printf("Found %d total entries in staking.acme/registered main chain", totalEntries)
+	// Check if there are new entries since our last known index
+	if totalEntries <= lastKnownChainIndex+1 {
+		log.Printf("No new entries since last known index %d (total: %d), using cached accounts", lastKnownChainIndex, totalEntries)
+	} else {
+		log.Printf("Found %d new entries (total: %d, last known: %d), querying new registrations",
+			totalEntries-lastKnownChainIndex-1, totalEntries, lastKnownChainIndex)
 
-	// Query all chain entries in batches
-	batchSize := int64(100)
-	for start := int64(0); start < totalEntries; start += batchSize {
-		count := batchSize
-		if start+count > totalEntries {
-			count = totalEntries - start
-		}
+		// Query only new chain entries since last known index
+		batchSize := int64(100)
+		for start := lastKnownChainIndex + 1; start < totalEntries; start += batchSize {
+			count := batchSize
+			if start+count > totalEntries {
+				count = totalEntries - start
+			}
 
 		// Query a range of chain entries
 		rangeReq := map[string]interface{}{
@@ -368,12 +395,20 @@ func queryStakedAmount() (int64, error) {
 			}
 		}
 	}
+	}
 
-	log.Printf("Found %d registered staking accounts", len(stakingAccounts))
+	log.Printf("Total staking accounts found: %d (%d known + %d new)", len(stakingAccounts), len(knownStakingAccounts), len(stakingAccounts)-len(knownStakingAccounts))
 
-	// Query balance of each staking account and sum them up
+	// Deduplicate account URLs (accounts re-register when configuration changes)
+	uniqueAccounts := make(map[string]bool)
+	for _, url := range stakingAccounts {
+		uniqueAccounts[url] = true
+	}
+	log.Printf("Unique staking accounts after deduplication: %d", len(uniqueAccounts))
+
+	// Query balance of each unique staking account and sum them up
 	var totalStakedRaw int64
-	for _, accountURL := range stakingAccounts {
+	for accountURL := range uniqueAccounts {
 		requestBody := map[string]interface{}{
 			"jsonrpc": "2.0",
 			"id":      0,
@@ -421,7 +456,7 @@ func queryStakedAmount() (int64, error) {
 	const acmePrecision = 100000000 // 10^8
 	totalStaked := totalStakedRaw / acmePrecision
 
-	log.Printf("Total staked: %d ACME (from %d accounts)", totalStaked, len(stakingAccounts))
+	log.Printf("Total staked: %d ACME (from %d unique accounts)", totalStaked, len(uniqueAccounts))
 
 	return totalStaked, nil
 }
