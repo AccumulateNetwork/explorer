@@ -95,27 +95,93 @@ var (
 	accumulateAPI   = "https://mainnet.accumulatenetwork.io/v3"
 	accumulateAPIv2 = "https://mainnet.accumulatenetwork.io"
 
-	// Known registered staking accounts (hard-coded from historical data)
-	// Last updated: 2026-02-23, chain index 418
-	knownStakingAccounts = []string{
-		"acc://RenatoDAP.acme/staking",
-		"acc://RenatoDAP.acme/token",
-		"acc://accumulated.acme/staking",
-		"acc://accumulator.acme/tokens",
-		"acc://defidevs.acme/stake",
-		"acc://defidevs.acme/wacme-lp-incentives-curve",
-		"acc://diopter-estrange-020.acme/tokens",
-		"acc://gnacmeadi.acme/GNACME%20STAKE",
-		"acc://gnacmeadi.acme/GNACME%20STAKE2",
-		"acc://henspop.acme/staking",
-		"acc://henspop.acme/token",
-		"acc://kompendium.acme/staking1",
-		"acc://saisne.acme/stake",
-		"acc://saisne.acme/staking",
-		"acc://sigrlami.acme/staking",
-	}
-	lastKnownChainIndex = int64(418)
+	// REMOVED: Hard-coded accounts optimization - must query all entries to handle account removal
+	// Previously hard-coded 15 accounts (up to index 418), but accounts can be deleted (Status == "deleted")
+	// Must dynamically build complete account set by querying all chain entries every time
+	// knownStakingAccounts = []string{...}
+	// lastKnownChainIndex = int64(418)
 )
+
+// RegistrationIdentity represents a complete registration entry
+// Supports both modern (multi-account) and legacy (single-account) formats
+type RegistrationIdentity struct {
+	// Modern format (multi-account)
+	Identity        string    `json:"identity"`
+	Accounts        []Account `json:"accounts"`
+	DelegatorPayout string    `json:"delegatorPayout"`
+	RejectDelegates bool      `json:"rejectDelegates"`
+	Status          string    `json:"status"`
+
+	// Legacy format (single account) - backward compatibility
+	Type     string `json:"type"`
+	Stake    string `json:"stake"`
+	Rewards  string `json:"rewards"`
+	Delegate string `json:"delegate"`
+	Lockup   uint64 `json:"lockup"`
+	HardLock bool   `json:"hardLock"`
+
+	// Additional fields
+	AcceptingDelegates string `json:"acceptingDelegates"`
+}
+
+// Account represents a staking account in the modern format
+type Account struct {
+	Type     string `json:"type"`     // "pure", "delegated", "coreValidator", etc.
+	Url      string `json:"url"`      // Primary staking account URL
+	Payout   string `json:"payout"`   // Reward payout account
+	Delegate string `json:"delegate"` // Delegation target
+	Lockup   uint64 `json:"lockup"`   // Lockup quarters
+	HardLock bool   `json:"hardLock"` // Hard lock flag
+}
+
+// normalizeIdentity converts legacy format to modern format
+// Matches staking/pkg/types/account.go Normalize() behavior
+func normalizeIdentity(id *RegistrationIdentity) {
+	// If Stake is empty, nothing to normalize
+	if id.Stake == "" {
+		return
+	}
+
+	// Check if account already exists matching Stake URL
+	for _, a := range id.Accounts {
+		if a.Url == id.Stake {
+			// Already normalized
+			id.clearLegacyFields()
+			return
+		}
+	}
+
+	// Convert legacy fields to Account entry
+	account := Account{
+		Type:     id.Type,
+		Url:      id.Stake,
+		Payout:   id.Rewards,
+		Delegate: id.Delegate,
+		Lockup:   id.Lockup,
+		HardLock: id.HardLock,
+	}
+	id.Accounts = append(id.Accounts, account)
+
+	// Set DelegatorPayout if not explicitly configured
+	if !id.RejectDelegates && id.DelegatorPayout == "" {
+		if id.Rewards != "" {
+			id.DelegatorPayout = id.Rewards
+		} else {
+			id.DelegatorPayout = id.Stake
+		}
+	}
+
+	id.clearLegacyFields()
+}
+
+func (id *RegistrationIdentity) clearLegacyFields() {
+	id.Stake = ""
+	id.Rewards = ""
+	id.Type = ""
+	id.Delegate = ""
+	id.Lockup = 0
+	id.HardLock = false
+}
 
 // AccumulateResponse represents the JSON-RPC response from Accumulate v3 API
 type AccumulateResponse struct {
@@ -203,12 +269,13 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // queryStakedAmount queries the actual staked ACME from registered staking accounts
+// Matches staking tool's LoadAllRegistered logic:
+// 1. Build identity map from all chain entries (latest status per identity)
+// 2. Skip deleted identities
+// 3. Extract accounts from registered identities only
+// 4. Query balances and sum
 func queryStakedAmount() (int64, error) {
-	// Start with known historical accounts
-	stakingAccounts := make([]string, len(knownStakingAccounts))
-	copy(stakingAccounts, knownStakingAccounts)
-
-	// First, get the total number of entries in the main chain
+	// Step 1: Get the total number of entries in the main chain
 	chainReq := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      0,
@@ -258,20 +325,18 @@ func queryStakedAmount() (int64, error) {
 		return 0, fmt.Errorf("no entries found in main chain")
 	}
 
-	// Check if there are new entries since our last known index
-	if totalEntries <= lastKnownChainIndex+1 {
-		log.Printf("No new entries since last known index %d (total: %d), using cached accounts", lastKnownChainIndex, totalEntries)
-	} else {
-		log.Printf("Found %d new entries (total: %d, last known: %d), querying new registrations",
-			totalEntries-lastKnownChainIndex-1, totalEntries, lastKnownChainIndex)
+	log.Printf("Querying %d chain entries from acc://staking.acme/registered", totalEntries)
 
-		// Query only new chain entries since last known index
-		batchSize := int64(100)
-		for start := lastKnownChainIndex + 1; start < totalEntries; start += batchSize {
-			count := batchSize
-			if start+count > totalEntries {
-				count = totalEntries - start
-			}
+	// Step 2: Build identity map - query all chain entries
+	// Map to track latest registration per identity (key = identity URL)
+	identityMap := make(map[string]*RegistrationIdentity)
+	batchSize := int64(100)
+
+	for start := int64(0); start < totalEntries; start += batchSize {
+		count := batchSize
+		if start+count > totalEntries {
+			count = totalEntries - start
+		}
 
 		// Query a range of chain entries
 		rangeReq := map[string]interface{}{
@@ -281,12 +346,9 @@ func queryStakedAmount() (int64, error) {
 			"params": map[string]interface{}{
 				"scope": "acc://staking.acme/registered",
 				"query": map[string]interface{}{
-					"queryType": "chain",
-					"name":      "main",
-					"range": map[string]interface{}{
-						"start": start,
-						"count": count,
-					},
+					"queryType":      "chain",
+					"name":           "main",
+					"range":          map[string]interface{}{"start": start, "count": count},
 					"includeReceipt": false,
 				},
 			},
@@ -294,6 +356,7 @@ func queryStakedAmount() (int64, error) {
 
 		jsonData, err := json.Marshal(rangeReq)
 		if err != nil {
+			log.Printf("Warning: Failed to marshal range request for entries %d-%d: %v", start, start+count-1, err)
 			continue
 		}
 
@@ -371,42 +434,83 @@ func queryStakedAmount() (int64, error) {
 						continue
 					}
 
-					var entryData struct {
-						Identity string `json:"identity"`
-						Accounts []struct {
-							Type string `json:"type"`
-							URL  string `json:"url"`
-						} `json:"accounts"`
-						Status string `json:"status"`
-					}
-
+					var entryData RegistrationIdentity
 					if err := json.Unmarshal(dataBytes, &entryData); err != nil {
 						continue
 					}
 
-					if entryData.Status == "registered" {
-						for _, account := range entryData.Accounts {
-							if account.URL != "" {
-								stakingAccounts = append(stakingAccounts, account.URL)
-							}
+					// Normalize legacy format to modern format
+					normalizeIdentity(&entryData)
+
+					// Infer identity from Stake if missing (legacy format)
+					identity := entryData.Identity
+					if identity == "" && entryData.Stake != "" {
+						// Extract identity from stake URL: "acc://validator.acme/staking" -> "acc://validator.acme"
+						parts := strings.Split(entryData.Stake, "/")
+						if len(parts) >= 3 {
+							identity = strings.Join(parts[:3], "/")
 						}
 					}
+
+					if identity == "" {
+						continue
+					}
+
+					// Keep latest entry per identity (entries processed forward, later entries overwrite)
+					identityMap[identity] = &entryData
 				}
 			}
 		}
 	}
+
+	// Step 3: Extract accounts from registered identities only
+	var stakingAccounts []string
+	registeredCount := 0
+	deletedCount := 0
+	missingStatusCount := 0
+	identitiesWithoutAccounts := 0
+
+	for identity, entryData := range identityMap {
+		// Skip deleted entries
+		if entryData.Status == "deleted" {
+			deletedCount++
+			continue
+		}
+
+		// Include registered identities OR entries with missing status (legacy format)
+		// Legacy entries don't have explicit status but are implicitly registered
+		if entryData.Status == "registered" || entryData.Status == "" {
+			if entryData.Status == "" {
+				missingStatusCount++
+			}
+			registeredCount++
+			accountCountBefore := len(stakingAccounts)
+			for _, account := range entryData.Accounts {
+				if account.Url != "" {
+					stakingAccounts = append(stakingAccounts, account.Url)
+				}
+			}
+			// Check if this identity has no accounts
+			if len(stakingAccounts) == accountCountBefore {
+				identitiesWithoutAccounts++
+				log.Printf("Warning: Identity has no accounts: %s (status: %q)", identity, entryData.Status)
+			}
+		} else {
+			log.Printf("Warning: Unknown status '%s' for identity: %s", entryData.Status, identity)
+		}
 	}
 
-	log.Printf("Total staking accounts found: %d (%d known + %d new)", len(stakingAccounts), len(knownStakingAccounts), len(stakingAccounts)-len(knownStakingAccounts))
+	log.Printf("Found %d identities: %d registered (%d legacy without status, %d without accounts), %d deleted, extracted %d staking accounts",
+		len(identityMap), registeredCount, missingStatusCount, identitiesWithoutAccounts, deletedCount, len(stakingAccounts))
 
-	// Deduplicate account URLs (accounts re-register when configuration changes)
+	// Deduplicate account URLs (accounts can appear in multiple identities)
 	uniqueAccounts := make(map[string]bool)
 	for _, url := range stakingAccounts {
 		uniqueAccounts[url] = true
 	}
 	log.Printf("Unique staking accounts after deduplication: %d", len(uniqueAccounts))
 
-	// Query balance of each unique staking account and sum them up
+	// Step 4: Query balance of each unique staking account and sum them up
 	var totalStakedRaw int64
 	for accountURL := range uniqueAccounts {
 		requestBody := map[string]interface{}{
