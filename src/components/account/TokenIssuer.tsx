@@ -243,25 +243,39 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
         </Descriptions.Item>
 
         {isACME && (
-          <Descriptions.Item label={labelCirculating}>
-            {supply.circulatingTokens.toLocaleString('en-US', {
-              maximumFractionDigits: 0,
-            })}{' '}
-            ACME
-            <Progress
-              percent={Math.round((supply.total / supply.max) * 100)}
-              success={{
-                percent: Math.round((supply.circulating / supply.max) * 100),
-                strokeColor: '#1677ff',
-              }}
-              strokeColor={'#d6e4ff'}
-              showInfo={false}
-            />
-            <Text type="secondary">
-              {Math.round((supply.circulating / supply.total) * 100)}% of total
-              supply is circulating
-            </Text>
-          </Descriptions.Item>
+          <>
+            <Descriptions.Item label={labelCirculating}>
+              {supply.circulatingTokens.toLocaleString('en-US', {
+                maximumFractionDigits: 0,
+              })}{' '}
+              ACME
+              <Progress
+                percent={Math.round((supply.total / supply.max) * 100)}
+                success={{
+                  percent: Math.round((supply.circulating / supply.max) * 100),
+                  strokeColor: '#1677ff',
+                }}
+                strokeColor={'#d6e4ff'}
+                showInfo={false}
+              />
+              <Text type="secondary">
+                {Math.round((supply.circulating / supply.total) * 100)}% of total
+                supply is circulating
+              </Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Staked">
+              {supply.staked.toLocaleString('en-US', {
+                maximumFractionDigits: 0,
+              })}{' '}
+              ACME
+              <div>
+                <Text type="secondary">
+                  {Math.round((supply.staked / supply.total) * 100)}% of total
+                  supply is staked
+                </Text>
+              </div>
+            </Descriptions.Item>
+          </>
         )}
       </InfoTable>
     </div>
