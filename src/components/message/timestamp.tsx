@@ -61,9 +61,9 @@ export function describeTimestamp(txid: string | URL | TxID) {
         .sort((a, b) => b.block - a.block);
 
       // Use the youngest entry
-      if (entries.length && entries[0].block && entries[0].time) {
+      if (entries.length && entries[0].time) {
         setTs(entries[0].time);
-        setBlock(entries[0].block);
+        setBlock(entries[0].block || 0); // block can be 0 for signature timestamps
       } else {
         setTs(0);
         setBlock(0);
