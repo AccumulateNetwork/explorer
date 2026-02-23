@@ -22,6 +22,7 @@ export function describeTimestamp(txid: string | URL | TxID) {
 
   const [ts, setTs] = useState(null);
   const [block, setBlock] = useState(null);
+  const [status, setStatus] = useState(null);
 
   useAsyncEffect(
     async (mounted) => {
@@ -53,6 +54,10 @@ export function describeTimestamp(txid: string | URL | TxID) {
         setBlock(0);
         return;
       }
+
+      // Extract status if available
+      const txStatus = response.data.status || null;
+      setStatus(txStatus);
 
       const entries = (response.data.chains || [])
         // // Filter by chain
@@ -134,6 +139,8 @@ export function describeTimestamp(txid: string | URL | TxID) {
             <Link className="code" to={'/block/' + block}>
               {block}
             </Link>
+          ) : status === 'pending' ? (
+            <Text disabled>Pending</Text>
           ) : (
             <Text disabled>N/A</Text>
           )}
