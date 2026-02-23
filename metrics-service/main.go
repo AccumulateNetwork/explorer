@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -180,6 +181,146 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(metrics)
 }
 
+// queryStakedAmount queries the actual staked ACME from registered staking accounts
+func queryStakedAmount() (int64, error) {
+	// Query all registered staking accounts from staking.acme/registered data account
+	stakingAccounts := []string{}
+
+	// Query up to 500 data entries (should be more than enough)
+	for i := 0; i < 500; i++ {
+		requestBody := map[string]interface{}{
+			"jsonrpc": "2.0",
+			"id":      i,
+			"method":  "query",
+			"params": map[string]interface{}{
+				"scope": "acc://staking.acme/registered",
+				"query": map[string]interface{}{
+					"queryType": "data",
+					"index":     i,
+				},
+			},
+		}
+
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			continue
+		}
+
+		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			break
+		}
+		defer resp.Body.Close()
+
+		var dataResp map[string]interface{}
+		if err := json.NewDecoder(resp.Body).Decode(&dataResp); err != nil {
+			break
+		}
+
+		// Check for errors (end of data)
+		if _, hasError := dataResp["error"]; hasError {
+			break
+		}
+
+		// Extract staking account URLs from the data entry
+		if result, ok := dataResp["result"].(map[string]interface{}); ok {
+			if value, ok := result["value"].(map[string]interface{}); ok {
+				if message, ok := value["message"].(map[string]interface{}); ok {
+					if transaction, ok := message["transaction"].(map[string]interface{}); ok {
+						if body, ok := transaction["body"].(map[string]interface{}); ok {
+							if bodyType, ok := body["type"].(string); ok && bodyType == "writeData" {
+								if entry, ok := body["entry"].(map[string]interface{}); ok {
+									if dataArray, ok := entry["data"].([]interface{}); ok && len(dataArray) > 0 {
+										if dataHex, ok := dataArray[0].(string); ok {
+											// Decode hex to JSON
+											dataBytes, err := hex.DecodeString(dataHex)
+											if err == nil {
+												var entryData struct {
+													Identity string `json:"identity"`
+													Accounts []struct {
+														Type string `json:"type"`
+														URL  string `json:"url"`
+													} `json:"accounts"`
+													Status string `json:"status"`
+												}
+												if err := json.Unmarshal(dataBytes, &entryData); err == nil {
+													if entryData.Status == "registered" {
+														for _, account := range entryData.Accounts {
+															if account.URL != "" {
+																stakingAccounts = append(stakingAccounts, account.URL)
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	log.Printf("Found %d registered staking accounts", len(stakingAccounts))
+
+	// Query balance of each staking account and sum them up
+	var totalStakedRaw int64
+	for _, accountURL := range stakingAccounts {
+		requestBody := map[string]interface{}{
+			"jsonrpc": "2.0",
+			"id":      0,
+			"method":  "query",
+			"params": map[string]interface{}{
+				"scope": accountURL,
+				"query": map[string]interface{}{},
+			},
+		}
+
+		jsonData, err := json.Marshal(requestBody)
+		if err != nil {
+			continue
+		}
+
+		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+
+		var accResp struct {
+			Result struct {
+				Account struct {
+					Type    string `json:"type"`
+					Balance string `json:"balance"`
+				} `json:"account"`
+			} `json:"result"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&accResp); err != nil {
+			continue
+		}
+
+		// Parse balance
+		if accResp.Result.Account.Balance != "" {
+			var balance int64
+			if _, err := fmt.Sscanf(accResp.Result.Account.Balance, "%d", &balance); err == nil {
+				totalStakedRaw += balance
+			}
+		}
+	}
+
+	// Convert from smallest units to ACME tokens
+	const acmePrecision = 100000000 // 10^8
+	totalStaked := totalStakedRaw / acmePrecision
+
+	log.Printf("Total staked: %d ACME (from %d accounts)", totalStaked, len(stakingAccounts))
+
+	return totalStaked, nil
+}
+
 // Fetch supply metrics from Accumulate mainnet
 func fetchSupplyMetrics() (*SupplyMetrics, error) {
 	// Query ACME token issuer from Accumulate network using v3 API
@@ -231,10 +372,13 @@ func fetchSupplyMetrics() (*SupplyMetrics, error) {
 	issued := issuedRaw / acmePrecision
 	supplyLimit := supplyLimitRaw / acmePrecision
 
-	// TODO: Query actual staked amount from staking contracts
-	// For now, use a reasonable estimate based on known staking patterns
-	// Approximately 15-20% of issued tokens are typically staked
-	staked := issued / 5 // ~20% estimate
+	// Query actual staked amount from registered staking accounts
+	staked, err := queryStakedAmount()
+	if err != nil {
+		log.Printf("Error querying staked amount, using estimate: %v", err)
+		// Fall back to estimate if query fails
+		staked = issued / 5 // ~20% estimate
+	}
 
 	// Circulating = issued - staked
 	circulating := issued - staked
