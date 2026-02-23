@@ -535,17 +535,31 @@ Signature.Key = function ({
       })) as AccountRecord;
 
       if (account.type === AccountType.KeyPage) {
+        // Convert signature public key to hex for comparison
+        const sigPubKeyHex = signature.publicKey instanceof Uint8Array || Buffer.isBuffer(signature.publicKey)
+          ? Buffer.from(signature.publicKey).toString('hex')
+          : signature.publicKey.toString();
+
+        console.log('Looking for key:', sigPubKeyHex, 'in', signature.signer.toString());
+
         // Find the key entry that matches this public key
         const keyEntry = account.keys?.find((entry) => {
           if (!entry.publicKeyHash) return false;
-          // Compare public key hashes
-          return (
-            entry.publicKeyHash.toString('hex') ===
-            signature.publicKey.toString('hex')
-          );
+
+          // Convert entry key hash to hex string for comparison
+          const entryKeyHex = entry.publicKeyHash instanceof Uint8Array || Buffer.isBuffer(entry.publicKeyHash)
+            ? Buffer.from(entry.publicKeyHash).toString('hex')
+            : entry.publicKeyHash.toString();
+
+          console.log('Comparing with entry key:', entryKeyHex, 'delegate:', entry.delegate?.toString());
+
+          return entryKeyHex === sigPubKeyHex;
         });
 
+        console.log('Found key entry:', keyEntry);
+
         if (keyEntry && keyEntry.delegate) {
+          console.log('Setting delegate:', keyEntry.delegate.toString());
           setDelegate(keyEntry.delegate);
         }
       }
