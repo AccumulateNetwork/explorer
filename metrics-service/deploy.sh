@@ -14,18 +14,18 @@ GOOS=linux GOARCH=amd64 go build -o metrics-service
 echo "=== Deploying to $SERVER ==="
 
 # Create accumulate user if it doesn't exist
-ssh $SERVER "id accumulate >/dev/null 2>&1 || sudo useradd -r -s /bin/false -d $DEPLOY_DIR accumulate"
+ssh $SERVER "id accumulate >/dev/null 2>&1 || useradd -r -s /bin/false -d $DEPLOY_DIR accumulate"
 
 # Create deployment directory on server
-ssh $SERVER "sudo mkdir -p $DEPLOY_DIR"
+ssh $SERVER "mkdir -p $DEPLOY_DIR"
 
-# Copy binary to /tmp first, then move with sudo
+# Copy binary to /tmp first, then move
 scp metrics-service $SERVER:/tmp/metrics-service-new
 scp README.md $SERVER:/tmp/README-new.md
-ssh $SERVER "sudo mv /tmp/metrics-service-new $DEPLOY_DIR/metrics-service && \
-             sudo mv /tmp/README-new.md $DEPLOY_DIR/README.md && \
-             sudo chmod +x $DEPLOY_DIR/metrics-service && \
-             sudo chown -R accumulate:accumulate $DEPLOY_DIR"
+ssh $SERVER "mv /tmp/metrics-service-new $DEPLOY_DIR/metrics-service && \
+             mv /tmp/README-new.md $DEPLOY_DIR/README.md && \
+             chmod +x $DEPLOY_DIR/metrics-service && \
+             chown -R accumulate:accumulate $DEPLOY_DIR"
 
 # Create systemd service file
 cat > accumulate-metrics.service << 'EOF'
@@ -49,20 +49,20 @@ EOF
 
 # Deploy systemd service
 scp accumulate-metrics.service $SERVER:/tmp/
-ssh $SERVER "sudo mv /tmp/accumulate-metrics.service /etc/systemd/system/ && \
-             sudo systemctl daemon-reload && \
-             sudo systemctl enable $SERVICE_NAME && \
-             sudo systemctl restart $SERVICE_NAME && \
-             sudo systemctl status $SERVICE_NAME"
+ssh $SERVER "mv /tmp/accumulate-metrics.service /etc/systemd/system/ && \
+             systemctl daemon-reload && \
+             systemctl enable $SERVICE_NAME && \
+             systemctl restart $SERVICE_NAME && \
+             systemctl status $SERVICE_NAME"
 
 echo "=== Deployment complete ==="
 echo "Service is running on $SERVER:8080"
 echo ""
 echo "To check status:"
-echo "  ssh $SERVER sudo systemctl status $SERVICE_NAME"
+echo "  ssh $SERVER systemctl status $SERVICE_NAME"
 echo ""
 echo "To view logs:"
-echo "  ssh $SERVER sudo journalctl -u $SERVICE_NAME -f"
+echo "  ssh $SERVER journalctl -u $SERVICE_NAME -f"
 echo ""
 echo "To test:"
 echo "  curl http://$SERVER:8080/v1/supply"
