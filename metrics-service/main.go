@@ -124,9 +124,6 @@ func main() {
 
 	router := mux.NewRouter()
 
-	// Enable CORS
-	router.Use(corsMiddleware)
-
 	// API routes
 	router.HandleFunc("/v1/supply", getSupplyHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/v1/timestamp/{txid}", getTimestampHandler).Methods("GET", "OPTIONS")
@@ -136,22 +133,6 @@ func main() {
 	port := ":8080"
 	log.Printf("Starting Accumulate Metrics API on %s", port)
 	log.Fatal(http.ListenAndServe(port, router))
-}
-
-// CORS middleware
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
 
 // Health check endpoint
