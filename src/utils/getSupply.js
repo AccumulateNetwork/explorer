@@ -19,7 +19,9 @@ export default async function getSupply(network, setSupply, setAPR) {
     const apr = (1 + rate) ** 52 - 1;
     setAPR?.(apr);
   } catch (error) {
+    // Silently fail - supply metrics are non-critical
+    // If metrics API is down, just don't show supply data
+    console.warn('Failed to fetch supply metrics:', error.message);
     setSupply(null);
-    message.error(error.message);
   }
 }
