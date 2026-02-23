@@ -17,6 +17,7 @@ export const Mainnet: NetworkConfig = {
     'https://mainnet.accumulatenetwork.io',
     'https://api-gateway.accumulate.defidevs.io',
   ],
+  metrics: 'https://metrics.accumulatenetwork.io/v1',
 };
 
 export const Kermit: NetworkConfig = {

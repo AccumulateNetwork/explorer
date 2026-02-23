@@ -28,13 +28,20 @@ export function describeTimestamp(txid: string | URL | TxID) {
       setTs(null);
       setBlock(null);
       let txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
+
+      // Use metrics service if available for caching, otherwise fall back to direct API
+      const timestampUrl = network.metrics
+        ? `${network.metrics}/timestamp/${txId}`
+        : `${network.api[0]}/timestamp/${txId}@unknown`;
+
       const response = await axios
-        .get(`${network.api[0]}/timestamp/${txId}@unknown`)
+        .get(timestampUrl)
         .catch((error) => {
           setTs(0);
           setBlock(0);
           if (!`${error}`.includes('404')) {
-            message.error(`${error}`);
+            // Silently fail - timestamps are often unavailable
+            console.warn('Failed to fetch timestamp:', error.message);
           }
           return null;
         });
