@@ -1,0 +1,19 @@
+# Binaries
+metrics-service
+*.exe
+*.test
+
+# Data
+data/
+*.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
