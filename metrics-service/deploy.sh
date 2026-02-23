@@ -13,12 +13,19 @@ GOOS=linux GOARCH=amd64 go build -o metrics-service
 
 echo "=== Deploying to $SERVER ==="
 
-# Create deployment directory on server
-ssh $SERVER "sudo mkdir -p $DEPLOY_DIR && sudo chown $USER:$USER $DEPLOY_DIR"
+# Create accumulate user if it doesn't exist
+ssh $SERVER "id accumulate >/dev/null 2>&1 || sudo useradd -r -s /bin/false -d $DEPLOY_DIR accumulate"
 
-# Copy binary
-scp metrics-service $SERVER:$DEPLOY_DIR/
-scp README.md $SERVER:$DEPLOY_DIR/
+# Create deployment directory on server
+ssh $SERVER "sudo mkdir -p $DEPLOY_DIR"
+
+# Copy binary to /tmp first, then move with sudo
+scp metrics-service $SERVER:/tmp/metrics-service-new
+scp README.md $SERVER:/tmp/README-new.md
+ssh $SERVER "sudo mv /tmp/metrics-service-new $DEPLOY_DIR/metrics-service && \
+             sudo mv /tmp/README-new.md $DEPLOY_DIR/README.md && \
+             sudo chmod +x $DEPLOY_DIR/metrics-service && \
+             sudo chown -R accumulate:accumulate $DEPLOY_DIR"
 
 # Create systemd service file
 cat > accumulate-metrics.service << 'EOF'
