@@ -3,7 +3,7 @@
 
 set -e
 
-SERVER="server1"
+SERVER="dal-server1"
 DEPLOY_DIR="/opt/accumulate-metrics"
 SERVICE_NAME="accumulate-metrics"
 
