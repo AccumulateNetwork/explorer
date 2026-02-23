@@ -213,17 +213,23 @@ func fetchSupplyMetrics() (*SupplyMetrics, error) {
 		return nil, fmt.Errorf("Accumulate API error: %s", accResp.Error.Message)
 	}
 
-	// Parse the issued tokens value (as string from API)
-	var issued int64
-	if _, err := fmt.Sscanf(accResp.Result.Account.Issued, "%d", &issued); err != nil {
+	// Parse the issued tokens value (as string from API) - this is in smallest units
+	var issuedRaw int64
+	if _, err := fmt.Sscanf(accResp.Result.Account.Issued, "%d", &issuedRaw); err != nil {
 		return nil, fmt.Errorf("failed to parse issued amount: %w", err)
 	}
 
-	// Parse the supply limit
-	var supplyLimit int64
-	if _, err := fmt.Sscanf(accResp.Result.Account.SupplyLimit, "%d", &supplyLimit); err != nil {
+	// Parse the supply limit - this is in smallest units
+	var supplyLimitRaw int64
+	if _, err := fmt.Sscanf(accResp.Result.Account.SupplyLimit, "%d", &supplyLimitRaw); err != nil {
 		return nil, fmt.Errorf("failed to parse supply limit: %w", err)
 	}
+
+	// Convert from smallest units to ACME tokens
+	// ACME has precision=8, meaning 1 ACME = 10^8 smallest units
+	const acmePrecision = 100000000 // 10^8
+	issued := issuedRaw / acmePrecision
+	supplyLimit := supplyLimitRaw / acmePrecision
 
 	// TODO: Query actual staked amount from staking contracts
 	// For now, use a reasonable estimate based on known staking patterns
