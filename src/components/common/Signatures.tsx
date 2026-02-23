@@ -471,15 +471,17 @@ function Required({
 function Signature({
   level = 0,
   signature,
+  delegator,
 }: {
   level?: number;
   signature: core.Signature;
+  delegator?: URL;
 }) {
   if (signature instanceof core.DelegatedSignature) {
     return <Signature.Delegated level={level} signature={signature} />;
   }
   if ('publicKey' in signature) {
-    return <Signature.Key level={level} signature={signature} />;
+    return <Signature.Key level={level} signature={signature} delegator={delegator} />;
   }
   return (
     <Alert type="error" message={`Unknown signature type ${signature.type}`} />
@@ -514,9 +516,11 @@ Signature.List = function (props: ListProps<SigRecord>) {
 Signature.Key = function ({
   level = 0,
   signature,
+  delegator,
 }: {
   level?: number;
   signature: core.KeySignature;
+  delegator?: URL;
 }) {
   const { api } = useContext(Network);
   const [delegate, setDelegate] = useState<URL | null>(null);
@@ -524,13 +528,16 @@ Signature.Key = function ({
 
   // Look up the delegate for this public key
   useAsyncEffect(async () => {
-    if (!signature.signer || !signature.publicKey) {
+    // Use delegator if provided (for delegated signatures), otherwise use signer
+    const keyPageUrl = delegator || signature.signer;
+
+    if (!keyPageUrl || !signature.publicKey) {
       return;
     }
 
     try {
       setLoading(true);
-      const { account } = (await api.query(signature.signer, {
+      const { account } = (await api.query(keyPageUrl, {
         queryType: 'default',
       })) as AccountRecord;
 
@@ -540,7 +547,7 @@ Signature.Key = function ({
           ? Buffer.from(signature.publicKey).toString('hex')
           : signature.publicKey.toString();
 
-        console.log('Looking for key:', sigPubKeyHex, 'in', signature.signer.toString());
+        console.log('Looking for key:', sigPubKeyHex, 'in', keyPageUrl.toString());
 
         // Find the key entry that matches this public key
         const keyEntry = account.keys?.find((entry) => {
@@ -568,7 +575,7 @@ Signature.Key = function ({
     } finally {
       setLoading(false);
     }
-  }, [signature.signer, signature.publicKey]);
+  }, [delegator, signature.signer, signature.publicKey]);
 
   return (
     <div className={level ? 'subsignature' : null}>
@@ -627,7 +634,7 @@ Signature.Delegated = function ({
               </Link>
             </Paragraph>
             <Tag color="green">Delegated</Tag>
-            <Signature level={level + 1} signature={signature.signature} />
+            <Signature level={level + 1} signature={signature.signature} delegator={signature.delegator} />
           </Paragraph>
         </div>
       ) : null}
