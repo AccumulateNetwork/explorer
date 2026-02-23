@@ -518,6 +518,44 @@ Signature.Key = function ({
   level?: number;
   signature: core.KeySignature;
 }) {
+  const { api } = useContext(Network);
+  const [delegate, setDelegate] = useState<URL | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Look up the delegate for this public key
+  useAsyncEffect(async () => {
+    if (!signature.signer || !signature.publicKey) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { account } = (await api.query(signature.signer, {
+        queryType: 'default',
+      })) as AccountRecord;
+
+      if (account.type === AccountType.KeyPage) {
+        // Find the key entry that matches this public key
+        const keyEntry = account.keys?.find((entry) => {
+          if (!entry.publicKeyHash) return false;
+          // Compare public key hashes
+          return (
+            entry.publicKeyHash.toString('hex') ===
+            signature.publicKey.toString('hex')
+          );
+        });
+
+        if (keyEntry && keyEntry.delegate) {
+          setDelegate(keyEntry.delegate);
+        }
+      }
+    } catch (error) {
+      console.log('Error looking up delegate for key:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [signature.signer, signature.publicKey]);
+
   return (
     <div className={level ? 'subsignature' : null}>
       {signature.signer ? (
@@ -530,6 +568,17 @@ Signature.Key = function ({
           </Link>
         </Paragraph>
       ) : null}
+      {delegate && (
+        <Paragraph style={{ marginBottom: 5 }}>
+          <Link to={delegate}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiPenNibLine />
+            </IconContext.Provider>
+            {`${delegate}`}
+          </Link>
+          <Tag color="blue" style={{ marginLeft: 8 }}>Delegated</Tag>
+        </Paragraph>
+      )}
       {signature.publicKey ? (
         <Paragraph>
           {signature.vote === VoteType.Reject && <Tag color="red">Reject</Tag>}
