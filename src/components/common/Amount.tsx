@@ -211,5 +211,8 @@ export function totalAmount(
   to: readonly (CreditRecipient | TokenRecipient)[],
   predicate = (_: CreditRecipient | TokenRecipient) => true,
 ) {
-  return to.filter(predicate).reduce((v, x) => v + BigInt(x.amount), 0n);
+  return to.filter(predicate).reduce((v, x) => {
+    const amt = x.amount ?? 0;
+    return v + (typeof amt === 'bigint' ? amt : BigInt(amt));
+  }, 0n);
 }
