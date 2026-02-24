@@ -84,9 +84,13 @@ type V3Signature struct {
 
 var (
 	// Cache for supply metrics (in-memory, short-lived)
-	cachedMetrics *SupplyMetrics
-	lastUpdate    time.Time
-	cacheDuration = 5 * time.Minute
+	cachedMetrics        *SupplyMetrics
+	lastUpdate           time.Time
+	cacheDuration        = 5 * time.Minute
+
+	// Cache for staking identity map
+	cachedIdentityMap    map[string]*RegistrationIdentity
+	identityMapLastUpdate time.Time
 
 	// Timestamp database (persistent LevelDB, never expires)
 	timestampDB *leveldb.DB
@@ -215,6 +219,7 @@ func main() {
 	// API routes
 	router.HandleFunc("/v1/supply", getSupplyHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/v1/timestamp/{txid}", getTimestampHandler).Methods("GET", "OPTIONS")
+	router.HandleFunc("/staking/stakers/{url:.*}", getStakingAccountHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/health", healthHandler).Methods("GET")
 
 	// Start server
@@ -230,6 +235,40 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 		"status": "healthy",
 		"time":   time.Now().Format(time.RFC3339),
 	})
+}
+
+// StakingAccountInfo represents staking metadata for a specific account
+type StakingAccountInfo struct {
+	URL      string `json:"url"`
+	Type     string `json:"type,omitempty"`
+	Delegate string `json:"delegate,omitempty"`
+	Rewards  string `json:"rewards,omitempty"`
+	Identity string `json:"identity,omitempty"`
+}
+
+// Get staking account info handler
+func getStakingAccountHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	accountURL := vars["url"]
+
+	// Normalize URL: handle both acc:/ (from HTTP redirect) and missing prefix
+	// HTTP clients may convert acc:// to acc:/ (single slash)
+	if strings.HasPrefix(accountURL, "acc:/") && !strings.HasPrefix(accountURL, "acc://") {
+		accountURL = "acc://" + accountURL[5:] // Convert acc:/domain to acc://domain
+	} else if !strings.HasPrefix(accountURL, "acc://") {
+		accountURL = "acc://" + accountURL
+	}
+
+	// Query registration data to find this account
+	stakingInfo, err := queryStakingAccount(accountURL)
+	if err != nil {
+		log.Printf("Error querying staking account %s: %v", accountURL, err)
+		http.Error(w, fmt.Sprintf("Account not found in staking registry: %v", err), http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stakingInfo)
 }
 
 // Get supply metrics handler
@@ -268,14 +307,17 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(metrics)
 }
 
-// queryStakedAmount queries the actual staked ACME from registered staking accounts
-// Matches staking tool's LoadAllRegistered logic:
-// 1. Build identity map from all chain entries (latest status per identity)
-// 2. Skip deleted identities
-// 3. Extract accounts from registered identities only
-// 4. Query balances and sum
-func queryStakedAmount() (int64, error) {
-	// Step 1: Get the total number of entries in the main chain
+// getOrRefreshIdentityMap returns the cached identity map or refreshes it if stale
+func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
+	// Check if cache is still fresh
+	if cachedIdentityMap != nil && time.Since(identityMapLastUpdate) < cacheDuration {
+		return cachedIdentityMap, nil
+	}
+
+	// Cache is stale or doesn't exist, refresh it
+	log.Printf("Refreshing identity map cache...")
+
+	// Get total entries
 	chainReq := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      0,
@@ -290,12 +332,12 @@ func queryStakedAmount() (int64, error) {
 
 	jsonData, err := json.Marshal(chainReq)
 	if err != nil {
-		return 0, fmt.Errorf("failed to marshal chain request: %w", err)
+		return nil, fmt.Errorf("failed to marshal chain request: %w", err)
 	}
 
 	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return 0, fmt.Errorf("failed to query chain: %w", err)
+		return nil, fmt.Errorf("failed to query chain: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -309,10 +351,9 @@ func queryStakedAmount() (int64, error) {
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&chainResp); err != nil {
-		return 0, fmt.Errorf("failed to decode chain response: %w", err)
+		return nil, fmt.Errorf("failed to decode chain response: %w", err)
 	}
 
-	// Find the main chain and get total count
 	var totalEntries int64
 	for _, chain := range chainResp.Result.Records {
 		if chain.Name == "main" {
@@ -322,13 +363,10 @@ func queryStakedAmount() (int64, error) {
 	}
 
 	if totalEntries == 0 {
-		return 0, fmt.Errorf("no entries found in main chain")
+		return nil, fmt.Errorf("no entries found in main chain")
 	}
 
-	log.Printf("Querying %d chain entries from acc://staking.acme/registered", totalEntries)
-
-	// Step 2: Build identity map - query all chain entries
-	// Map to track latest registration per identity (key = identity URL)
+	// Build identity map
 	identityMap := make(map[string]*RegistrationIdentity)
 	batchSize := int64(100)
 
@@ -338,7 +376,6 @@ func queryStakedAmount() (int64, error) {
 			count = totalEntries - start
 		}
 
-		// Query a range of chain entries
 		rangeReq := map[string]interface{}{
 			"jsonrpc": "2.0",
 			"id":      int(start),
@@ -354,39 +391,28 @@ func queryStakedAmount() (int64, error) {
 			},
 		}
 
-		jsonData, err := json.Marshal(rangeReq)
-		if err != nil {
-			log.Printf("Warning: Failed to marshal range request for entries %d-%d: %v", start, start+count-1, err)
-			continue
-		}
-
+		jsonData, _ := json.Marshal(rangeReq)
 		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
 			log.Printf("Warning: Failed to fetch entries %d-%d: %v", start, start+count-1, err)
 			continue
 		}
-		defer resp.Body.Close()
 
 		var rangeResp struct {
 			Result struct {
 				Records []struct {
 					Entry string `json:"entry"`
-					Index int64  `json:"index"`
 				} `json:"records"`
 			} `json:"result"`
 		}
 
-		if err := json.NewDecoder(resp.Body).Decode(&rangeResp); err != nil {
-			log.Printf("Warning: Failed to decode response for entries %d-%d: %v", start, start+count-1, err)
-			continue
-		}
+		json.NewDecoder(resp.Body).Decode(&rangeResp)
+		resp.Body.Close()
 
-		// Process each entry hash - query the full transaction
 		for _, record := range rangeResp.Result.Records {
-			// Query the transaction by its entry hash
 			txReq := map[string]interface{}{
 				"jsonrpc": "2.0",
-				"id":      int(record.Index),
+				"id":      0,
 				"method":  "query",
 				"params": map[string]interface{}{
 					"scope": fmt.Sprintf("acc://%s@staking.acme/registered", record.Entry),
@@ -394,16 +420,11 @@ func queryStakedAmount() (int64, error) {
 				},
 			}
 
-			txData, err := json.Marshal(txReq)
-			if err != nil {
-				continue
-			}
-
+			txData, _ := json.Marshal(txReq)
 			txResp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(txData))
 			if err != nil {
 				continue
 			}
-			defer txResp.Body.Close()
 
 			var txResult struct {
 				Result struct {
@@ -420,50 +441,56 @@ func queryStakedAmount() (int64, error) {
 				} `json:"result"`
 			}
 
-			if err := json.NewDecoder(txResp.Body).Decode(&txResult); err != nil {
-				continue
-			}
+			json.NewDecoder(txResp.Body).Decode(&txResult)
+			txResp.Body.Close()
 
-			// Check if this is a WriteData transaction
 			if txResult.Result.Message.Transaction.Body.Type == "writeData" {
 				dataArray := txResult.Result.Message.Transaction.Body.Entry.Data
 				if len(dataArray) > 0 {
-					// Decode hex to JSON
-					dataBytes, err := hex.DecodeString(dataArray[0])
-					if err != nil {
-						continue
-					}
-
+					dataBytes, _ := hex.DecodeString(dataArray[0])
 					var entryData RegistrationIdentity
-					if err := json.Unmarshal(dataBytes, &entryData); err != nil {
-						continue
-					}
+					if json.Unmarshal(dataBytes, &entryData) == nil {
+						normalizeIdentity(&entryData)
 
-					// Normalize legacy format to modern format
-					normalizeIdentity(&entryData)
+						identity := entryData.Identity
+						if identity == "" && entryData.Stake != "" {
+							parts := strings.Split(entryData.Stake, "/")
+							if len(parts) >= 3 {
+								identity = strings.Join(parts[:3], "/")
+							}
+						}
 
-					// Infer identity from Stake if missing (legacy format)
-					identity := entryData.Identity
-					if identity == "" && entryData.Stake != "" {
-						// Extract identity from stake URL: "acc://validator.acme/staking" -> "acc://validator.acme"
-						parts := strings.Split(entryData.Stake, "/")
-						if len(parts) >= 3 {
-							identity = strings.Join(parts[:3], "/")
+						if identity != "" {
+							identityMap[identity] = &entryData
 						}
 					}
-
-					if identity == "" {
-						continue
-					}
-
-					// Keep latest entry per identity (entries processed forward, later entries overwrite)
-					identityMap[identity] = &entryData
 				}
 			}
 		}
 	}
 
-	// Step 3: Extract accounts from registered identities only
+	// Update cache
+	cachedIdentityMap = identityMap
+	identityMapLastUpdate = time.Now()
+	log.Printf("Identity map cache refreshed: %d identities", len(identityMap))
+
+	return identityMap, nil
+}
+
+// queryStakedAmount queries the actual staked ACME from registered staking accounts
+// Matches staking tool's LoadAllRegistered logic:
+// 1. Build identity map from all chain entries (latest status per identity)
+// 2. Skip deleted identities
+// 3. Extract accounts from registered identities only
+// 4. Query balances and sum
+func queryStakedAmount() (int64, error) {
+	// Get cached identity map
+	identityMap, err := getOrRefreshIdentityMap()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get identity map: %w", err)
+	}
+
+	// Extract accounts from registered identities only
 	var stakingAccounts []string
 	registeredCount := 0
 	deletedCount := 0
@@ -564,6 +591,39 @@ func queryStakedAmount() (int64, error) {
 	log.Printf("Total staked: %d ACME (from %d unique accounts)", totalStaked, len(uniqueAccounts))
 
 	return totalStaked, nil
+}
+
+// queryStakingAccount finds staking information for a specific account URL
+func queryStakingAccount(accountURL string) (*StakingAccountInfo, error) {
+	// Get cached identity map
+	identityMap, err := getOrRefreshIdentityMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get identity map: %w", err)
+	}
+
+	// Search for the account in the identity map
+	for identityURL, entryData := range identityMap {
+		if entryData.Status == "deleted" {
+			continue
+		}
+
+		if entryData.Status == "registered" || entryData.Status == "" {
+			for _, account := range entryData.Accounts {
+				if account.Url == accountURL {
+					// Found it!
+					return &StakingAccountInfo{
+						URL:      account.Url,
+						Type:     account.Type,
+						Delegate: account.Delegate,
+						Rewards:  account.Payout,
+						Identity: identityURL,
+					}, nil
+				}
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("account not found in staking registry")
 }
 
 // Fetch supply metrics from Accumulate mainnet
