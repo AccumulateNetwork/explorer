@@ -34,20 +34,15 @@ pages:
   only:
     - main
 
-# Deploy to beta server (on develop branch)
+# Deploy to Netlify beta (on develop branch)
 deploy_beta:
   stage: deploy
-  image: alpine:latest
+  image: node:20
   before_script:
-    - apk add --no-cache openssh-client rsync
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n\n" > ~/.ssh/config
+    - npm install -g netlify-cli
   script:
-    - echo "Deploying to beta.explorer.accumulatenetwork.io..."
-    - rsync -avz --delete build/ ${BETA_SERVER}:${BETA_PATH}/
+    - echo "Deploying to beta.explorer.accumulatenetwork.io (Netlify)..."
+    - netlify deploy --prod --site=${NETLIFY_BETA_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN} --dir=build
     - echo "✓ Beta deployment complete"
   environment:
     name: beta
@@ -57,20 +52,15 @@ deploy_beta:
   dependencies:
     - build
 
-# Deploy to production server (on main branch, manual trigger)
+# Deploy to Netlify production (on main branch, manual trigger)
 deploy_production:
   stage: deploy
-  image: alpine:latest
+  image: node:20
   before_script:
-    - apk add --no-cache openssh-client rsync
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n\n" > ~/.ssh/config
+    - npm install -g netlify-cli
   script:
-    - echo "Deploying to explorer.accumulatenetwork.io..."
-    - rsync -avz --delete build/ ${PROD_SERVER}:${PROD_PATH}/
+    - echo "Deploying to explorer.accumulatenetwork.io (Netlify)..."
+    - netlify deploy --prod --site=${NETLIFY_PROD_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN} --dir=build
     - echo "✓ Production deployment complete"
   environment:
     name: production
