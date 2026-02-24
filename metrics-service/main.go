@@ -508,6 +508,7 @@ func queryStakedAmount() (int64, error) {
 	for _, url := range stakingAccounts {
 		uniqueAccounts[url] = true
 	}
+
 	log.Printf("Unique staking accounts after deduplication: %d", len(uniqueAccounts))
 
 	// Step 4: Query balance of each unique staking account and sum them up
