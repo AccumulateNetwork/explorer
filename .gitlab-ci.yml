@@ -1,13 +1,82 @@
-image: node:20
+stages:
+  - build
+  - deploy
 
-pages:
-  variables:
-    VITE_NETWORK: any
+variables:
+  VITE_NETWORK: any
+
+# Build job (runs on all branches)
+build:
+  stage: build
+  image: node:20
   script:
     - yarn install
     - yarn build
-    - mv build/* public
-    - find public -type f
+  artifacts:
+    paths:
+      - build/
+    expire_in: 1 hour
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+# GitLab Pages (for GitLab's built-in pages feature)
+pages:
+  stage: deploy
+  image: node:20
+  script:
+    - mkdir -p public
+    - cp -r build/* public/
   artifacts:
     paths:
       - public
+  only:
+    - main
+
+# Deploy to beta server (on develop branch)
+deploy_beta:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n\n" > ~/.ssh/config
+  script:
+    - echo "Deploying to beta.explorer.accumulatenetwork.io..."
+    - rsync -avz --delete build/ ${BETA_SERVER}:${BETA_PATH}/
+    - echo "✓ Beta deployment complete"
+  environment:
+    name: beta
+    url: https://beta.explorer.accumulatenetwork.io
+  only:
+    - develop
+  dependencies:
+    - build
+
+# Deploy to production server (on main branch, manual trigger)
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n\n" > ~/.ssh/config
+  script:
+    - echo "Deploying to explorer.accumulatenetwork.io..."
+    - rsync -avz --delete build/ ${PROD_SERVER}:${PROD_PATH}/
+    - echo "✓ Production deployment complete"
+  environment:
+    name: production
+    url: https://explorer.accumulatenetwork.io
+  only:
+    - main
+  when: manual  # Require manual trigger for production safety
+  dependencies:
+    - build
