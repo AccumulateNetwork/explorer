@@ -88,11 +88,7 @@ var (
 	lastUpdate           time.Time
 	cacheDuration        = 5 * time.Minute
 
-	// Cache for staking identity map
-	cachedIdentityMap    map[string]*RegistrationIdentity
-	identityMapLastUpdate time.Time
-
-	// Timestamp database (persistent LevelDB, never expires)
+	// Persistent database for timestamps and identity map
 	timestampDB *leveldb.DB
 
 	// Accumulate API endpoints
@@ -136,6 +132,124 @@ type Account struct {
 	Delegate string `json:"delegate"` // Delegation target
 	Lockup   uint64 `json:"lockup"`   // Lockup quarters
 	HardLock bool   `json:"hardLock"` // Hard lock flag
+}
+
+// Database key prefixes
+const (
+	identityPrefix        = "identity:"
+	metadataPrefix        = "metadata:"
+	lastQueriedIndexKey   = "metadata:lastQueriedIndex"
+	totalEntriesKey       = "metadata:totalEntries"
+)
+
+// Database helper functions for identity map storage
+
+// getIdentityFromDB retrieves an identity from the database
+func getIdentityFromDB(identityURL string) (*RegistrationIdentity, error) {
+	data, err := timestampDB.Get([]byte(identityPrefix+identityURL), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var identity RegistrationIdentity
+	if err := json.Unmarshal(data, &identity); err != nil {
+		return nil, err
+	}
+
+	return &identity, nil
+}
+
+// saveIdentityToDB saves or updates an identity in the database
+func saveIdentityToDB(identityURL string, identity *RegistrationIdentity) error {
+	data, err := json.Marshal(identity)
+	if err != nil {
+		return err
+	}
+
+	return timestampDB.Put([]byte(identityPrefix+identityURL), data, nil)
+}
+
+// deleteIdentityFromDB removes an identity from the database
+func deleteIdentityFromDB(identityURL string) error {
+	return timestampDB.Delete([]byte(identityPrefix+identityURL), nil)
+}
+
+// getAllIdentitiesFromDB retrieves all identities from the database
+func getAllIdentitiesFromDB() (map[string]*RegistrationIdentity, error) {
+	identities := make(map[string]*RegistrationIdentity)
+
+	iter := timestampDB.NewIterator(nil, nil)
+	defer iter.Release()
+
+	prefix := []byte(identityPrefix)
+	for iter.Seek(prefix); iter.Valid(); iter.Next() {
+		key := iter.Key()
+		if !bytes.HasPrefix(key, prefix) {
+			break
+		}
+
+		identityURL := string(key[len(prefix):])
+
+		var identity RegistrationIdentity
+		if err := json.Unmarshal(iter.Value(), &identity); err != nil {
+			log.Printf("Warning: Failed to unmarshal identity %s: %v", identityURL, err)
+			continue
+		}
+
+		identities[identityURL] = &identity
+	}
+
+	return identities, iter.Error()
+}
+
+// getLastQueriedIndex retrieves the last processed chain index
+func getLastQueriedIndex() int64 {
+	data, err := timestampDB.Get([]byte(lastQueriedIndexKey), nil)
+	if err != nil {
+		return -1 // Not found, start from beginning
+	}
+
+	var index int64
+	if err := json.Unmarshal(data, &index); err != nil {
+		return -1
+	}
+
+	return index
+}
+
+// setLastQueriedIndex updates the last processed chain index
+func setLastQueriedIndex(index int64) error {
+	data, err := json.Marshal(index)
+	if err != nil {
+		return err
+	}
+
+	return timestampDB.Put([]byte(lastQueriedIndexKey), data, nil)
+}
+
+// getTotalEntries retrieves the cached total entry count
+func getTotalEntries() int64 {
+	data, err := timestampDB.Get([]byte(totalEntriesKey), nil)
+	if err != nil {
+		return 0
+	}
+
+	var total int64
+	if err := json.Unmarshal(data, &total); err != nil {
+		return 0
+	}
+
+	return total
+}
+
+// setTotalEntries updates the cached total entry count
+func setTotalEntries(total int64) error {
+	data, err := json.Marshal(total)
+	if err != nil {
+		return err
+	}
+
+	return timestampDB.Put([]byte(totalEntriesKey), data, nil)
 }
 
 // normalizeIdentity converts legacy format to modern format
@@ -213,6 +327,18 @@ func main() {
 		log.Fatalf("Failed to open timestamp database: %v", err)
 	}
 	defer timestampDB.Close()
+
+	// Start background identity map updater
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			if err := updateIdentityDatabaseFromBlockchain(); err != nil {
+				log.Printf("Background update error: %v", err)
+			}
+		}
+	}()
 
 	router := mux.NewRouter()
 
@@ -309,15 +435,18 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 
 // getOrRefreshIdentityMap returns the cached identity map or refreshes it if stale
 func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
-	// Check if cache is still fresh
-	if cachedIdentityMap != nil && time.Since(identityMapLastUpdate) < cacheDuration {
-		return cachedIdentityMap, nil
+	// Check for new entries and update database incrementally
+	if err := updateIdentityDatabaseFromBlockchain(); err != nil {
+		log.Printf("Warning: Failed to update identity database: %v", err)
 	}
 
-	// Cache is stale or doesn't exist, refresh it
-	log.Printf("Refreshing identity map cache...")
+	// Return all identities from database
+	return getAllIdentitiesFromDB()
+}
 
-	// Get total entries
+// updateIdentityDatabaseFromBlockchain queries new blockchain entries and updates the database
+func updateIdentityDatabaseFromBlockchain() error {
+	// Get current chain length
 	chainReq := map[string]interface{}{
 		"jsonrpc": "2.0",
 		"id":      0,
@@ -332,12 +461,12 @@ func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
 
 	jsonData, err := json.Marshal(chainReq)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal chain request: %w", err)
+		return fmt.Errorf("failed to marshal chain request: %w", err)
 	}
 
 	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return nil, fmt.Errorf("failed to query chain: %w", err)
+		return fmt.Errorf("failed to query chain: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -351,7 +480,7 @@ func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&chainResp); err != nil {
-		return nil, fmt.Errorf("failed to decode chain response: %w", err)
+		return fmt.Errorf("failed to decode chain response: %w", err)
 	}
 
 	var totalEntries int64
@@ -363,14 +492,37 @@ func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
 	}
 
 	if totalEntries == 0 {
-		return nil, fmt.Errorf("no entries found in main chain")
+		return fmt.Errorf("no entries found in main chain")
 	}
 
-	// Build identity map
-	identityMap := make(map[string]*RegistrationIdentity)
-	batchSize := int64(100)
+	// Get last queried index
+	lastIndex := getLastQueriedIndex()
+	cachedTotal := getTotalEntries()
 
-	for start := int64(0); start < totalEntries; start += batchSize {
+	// Check if there are new entries
+	if lastIndex >= 0 && totalEntries == cachedTotal {
+		// No new entries, database is up to date
+		return nil
+	}
+
+	if lastIndex < 0 {
+		log.Printf("Initial database load: processing all %d entries", totalEntries)
+	}
+
+	// Determine start index
+	startIndex := lastIndex + 1
+	if startIndex < 0 {
+		startIndex = 0
+	}
+
+	log.Printf("Updating identity database: processing entries %d to %d (total: %d)", startIndex, totalEntries-1, totalEntries-startIndex)
+
+	// Process new entries in batches
+	batchSize := int64(100)
+	newIdentities := 0
+	updatedIdentities := 0
+
+	for start := startIndex; start < totalEntries; start += batchSize {
 		count := batchSize
 		if start+count > totalEntries {
 			count = totalEntries - start
@@ -461,7 +613,19 @@ func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
 						}
 
 						if identity != "" {
-							identityMap[identity] = &entryData
+							// Check if this is a deletion
+							if entryData.Status == "deleted" {
+								deleteIdentityFromDB(identity)
+							} else {
+								// Check if identity already exists
+								_, err := getIdentityFromDB(identity)
+								if err != nil {
+									newIdentities++
+								} else {
+									updatedIdentities++
+								}
+								saveIdentityToDB(identity, &entryData)
+							}
 						}
 					}
 				}
@@ -469,12 +633,15 @@ func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
 		}
 	}
 
-	// Update cache
-	cachedIdentityMap = identityMap
-	identityMapLastUpdate = time.Now()
-	log.Printf("Identity map cache refreshed: %d identities", len(identityMap))
+	// Update metadata
+	setLastQueriedIndex(totalEntries - 1)
+	setTotalEntries(totalEntries)
 
-	return identityMap, nil
+	if newIdentities > 0 || updatedIdentities > 0 {
+		log.Printf("Identity database updated: %d new, %d updated", newIdentities, updatedIdentities)
+	}
+
+	return nil
 }
 
 // queryStakedAmount queries the actual staked ACME from registered staking accounts
