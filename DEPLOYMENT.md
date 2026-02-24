@@ -1,7 +1,49 @@
 # Explorer Deployment Guide
 
-**Last Updated:** 2025-10-24
-**Version:** README update and vulnerability fixes
+**Last Updated:** 2026-02-24
+**Version:** Netlify auto-deployment + Staking fix
+
+---
+
+## 🚀 Quick Deployment (Netlify - Recommended)
+
+### Production Sites
+
+- **Production:** https://explorer.accumulatenetwork.io
+- **Beta:** https://beta.explorer.accumulatenetwork.io
+- **Hosting:** Netlify (auto-deploy from GitHub)
+
+### Deploy Now
+
+**Deploy to Beta:**
+```bash
+git push github develop:updates
+```
+
+**Deploy to Production:**
+```bash
+git push github develop:main
+```
+
+**That's it!** Netlify watches the GitHub repository and automatically builds and deploys.
+
+### How It Works
+
+1. Push to GitHub's `updates` or `main` branch
+2. Netlify detects the push
+3. Netlify runs `yarn install && yarn build`
+4. Netlify deploys to CDN
+5. Site live in ~2 minutes
+
+### Check Deployment Status
+
+- Netlify Dashboard: https://app.netlify.com
+- Build logs show in real-time
+- Email notifications on success/failure
+
+---
+
+## 📋 Alternative: Manual Deployment (SSH)
 
 ## Build Information
 

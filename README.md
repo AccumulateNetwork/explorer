@@ -2,6 +2,8 @@
 
 A web-based blockchain explorer for the Accumulate protocol, providing real-time network monitoring, transaction tracking, and account inspection across multiple Accumulate networks.
 
+> **🤖 For AI Assistants:** See [AI-README.md](AI-README.md) for quick reference on deployment, architecture, and common tasks.
+
 ## Features
 
 ### Multi-Network Support
@@ -138,19 +140,29 @@ mcp/
 
 ## Deployment
 
-### Beta Deployment
-The beta explorer is deployed to Netlify:
-- **URL**: https://beta.explorer.accumulatenetwork.io
-- **Method**: Auto-deploy from GitHub `updates` branch
-- **Build Config**: `netlify.toml`
+### Quick Deployment (Netlify)
 
+Both production and beta are hosted on Netlify with auto-deployment:
+
+**Deploy to Beta:**
 ```bash
-# Deploy to beta
 git push github develop:updates
 ```
 
-### Production Deployment
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
+**Deploy to Production:**
+```bash
+git push github develop:main
+```
+
+Netlify automatically builds and deploys in ~2 minutes.
+
+### Sites
+- **Production:** https://explorer.accumulatenetwork.io (GitHub `main` branch)
+- **Beta:** https://beta.explorer.accumulatenetwork.io (GitHub `updates` branch)
+- **Build Config:** `netlify.toml`
+
+### Detailed Guide
+See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment documentation.
 
 ## Testing
 
