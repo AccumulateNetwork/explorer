@@ -380,7 +380,7 @@ const Staking = () => {
                 </Text>
               </Descriptions.Item>
               <Descriptions.Item label="Staked">
-                {supply.stakedTokens.toLocaleString('en-US', {
+                {supply.staked.toLocaleString('en-US', {
                   maximumFractionDigits: 0,
                 })}
                  ACME
