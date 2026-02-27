@@ -104,11 +104,9 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
 
         {describeParent(account)}
 
-        {account.acceptThreshold ? (
-          <Descriptions.Item label={labelThreshold}>
-            {account.acceptThreshold}
-          </Descriptions.Item>
-        ) : null}
+        <Descriptions.Item label={labelThreshold}>
+          {account.acceptThreshold ?? 1}
+        </Descriptions.Item>
 
         <Descriptions.Item label={labelBalance}>
           {account.creditBalance ? account.creditBalance / 100 : 0} credits
