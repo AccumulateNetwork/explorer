@@ -1,0 +1,16 @@
+[Unit]
+Description=Accumulate Metrics API
+After=network.target
+
+[Service]
+Type=simple
+User=accumulate
+WorkingDirectory=/opt/accumulate-metrics
+ExecStart=/opt/accumulate-metrics/metrics-service
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
