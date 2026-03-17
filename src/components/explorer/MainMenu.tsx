@@ -10,10 +10,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import {
   RiCoinLine,
+  RiComputerLine,
   RiDashboardLine,
+  RiMoonLine,
   RiPercentLine,
   RiShieldCheckLine,
   RiStarLine,
+  RiSunLine,
 } from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -21,8 +24,11 @@ import { Link } from 'react-router-dom';
 import Logo from '../common/Logo';
 import { Network } from '../common/Network';
 import networks, { NetworkConfig } from '../common/networks';
+import { useShared } from '../common/Shared';
 import { useWeb3 } from '../web3/Context';
 import { Login } from '../web3/Login';
+import { Settings } from './Settings';
+import { applyTheme } from '../../theme';
 
 export function MainMenu({
   onSelectNetwork,
@@ -39,6 +45,43 @@ export function MainMenu({
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
   ]);
+  const [theme, setTheme] = useShared(Settings, 'theme');
+
+  const Icon = ({ icon: IconComponent }: { icon: IconType }) => (
+    <IconContext.Provider
+      value={{ className: 'react-icons' }}
+      children={<IconComponent />}
+    />
+  );
+
+  const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
+    setTheme(newTheme);
+    applyTheme(newTheme);
+  };
+
+  const themeIcon =
+    theme === 'light' ? RiSunLine : theme === 'dark' ? RiMoonLine : RiComputerLine;
+
+  const themeMenuItems: MenuProps['items'] = [
+    {
+      key: 'light',
+      label: 'Light',
+      icon: <Icon icon={RiSunLine} />,
+      onClick: () => handleThemeChange('light'),
+    },
+    {
+      key: 'dark',
+      label: 'Dark',
+      icon: <Icon icon={RiMoonLine} />,
+      onClick: () => handleThemeChange('dark'),
+    },
+    {
+      key: 'system',
+      label: 'System',
+      icon: <Icon icon={RiComputerLine} />,
+      onClick: () => handleThemeChange('system'),
+    },
+  ];
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
@@ -86,12 +129,6 @@ export function MainMenu({
             </a>
           ),
         }));
-  const Icon = ({ icon: Icon }: { icon: IconType }) => (
-    <IconContext.Provider
-      value={{ className: 'react-icons' }}
-      children={<Icon />}
-    />
-  );
 
   const items: MenuProps['items'] = [
     isWide && {
@@ -172,6 +209,12 @@ export function MainMenu({
       label: 'Select Network',
       children: networkMenuItems,
     },
+    !isWide && {
+      key: 'theme',
+      label: 'Theme',
+      icon: <Icon icon={themeIcon} />,
+      children: themeMenuItems,
+    },
   ];
 
   if (isWide) {
@@ -186,6 +229,21 @@ export function MainMenu({
         />
         <div className="menu-right">
           {!shared.network.mainnet && <Login />}
+          <Dropdown
+            menu={{ items: themeMenuItems, selectedKeys: [theme] }}
+            trigger={['click']}
+          >
+            <Button
+              ghost
+              style={{
+                marginRight: 8,
+                padding: '4px 10px',
+                background: 'rgba(255, 255, 255, 0.08)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+              }}
+              icon={<Icon icon={themeIcon} />}
+            />
+          </Dropdown>
           <Dropdown
             menu={{ items: networkMenuItems }}
             trigger={['click']}

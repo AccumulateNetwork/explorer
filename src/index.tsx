@@ -9,6 +9,10 @@ import './sdk-patches';
 
 import App from './App';
 import './index.css';
+import { initTheme } from './theme';
+
+// Initialize theme before rendering to prevent flash
+initTheme();
 
 ReactDOM.render(
   <React.StrictMode>

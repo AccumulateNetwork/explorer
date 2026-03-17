@@ -2,7 +2,7 @@ import { Descriptions, Switch, Typography } from 'antd';
 import React from 'react';
 
 import { InfoTable } from '../common/InfoTable';
-import { storage, stored } from '../common/Shared';
+import { broadcast, storage, stored } from '../common/Shared';
 
 const { Title } = Typography;
 
@@ -12,6 +12,7 @@ export const Settings = new (
     @stored accessor enableDevMode: boolean = false;
     @stored accessor networkName: string = 'mainnet';
     @stored accessor favourites: string[] = [];
+    @broadcast @stored accessor theme: 'light' | 'dark' | 'system' = 'system';
 
     readonly Edit = function () {
       return (
