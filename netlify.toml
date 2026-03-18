@@ -1,16 +1,38 @@
+[build]
+  publish = "build"
+  command = "yarn build"
+  # Only build main branch; skip if only docs/tests change
+  ignore = "if [ \"$BRANCH\" != \"main\" ]; then exit 0; fi; git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- src/ public/ index.html package.json yarn.lock vite.config.js"
+
 [build.environment]
   VITE_NETWORK = "any"
+  NODE_VERSION = "20"
+
+# Cache static assets in browser (reduces server load)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    # Allow clipboard access for copy-to-clipboard functionality
     Permissions-Policy = "clipboard-read=(self), clipboard-write=(self)"
-    # Security headers
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
+# SPA routing
 [[redirects]]
   from = "/*"
   to = "/"
