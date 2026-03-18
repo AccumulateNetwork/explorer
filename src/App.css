@@ -1340,6 +1340,86 @@ header.web3 {
   background-color: hsl(8, 50%, 18%);
 }
 
+/* Dark mode - Drawer component overrides */
+[data-theme='dark'] .ant-drawer-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-drawer-header {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+[data-theme='dark'] .ant-drawer-title {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-drawer-close {
+  color: var(--text-secondary);
+}
+
+[data-theme='dark'] .ant-drawer-close:hover {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-drawer-body {
+  background: var(--bg-secondary);
+}
+
+[data-theme='dark'] .ant-drawer-footer {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+/* Dark mode - Collapse component overrides (used in WalletPanel) */
+[data-theme='dark'] .ant-collapse {
+  background: var(--bg-secondary);
+  border-color: var(--border-secondary);
+}
+
+[data-theme='dark'] .ant-collapse > .ant-collapse-item {
+  border-color: var(--border-secondary);
+}
+
+[data-theme='dark'] .ant-collapse > .ant-collapse-item > .ant-collapse-header {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+[data-theme='dark'] .ant-collapse-content {
+  background: var(--bg-primary);
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-collapse > .ant-collapse-item > .ant-collapse-header .ant-collapse-arrow {
+  color: var(--text-secondary);
+}
+
+/* Dark mode - List component overrides (used in WalletPanel) */
+[data-theme='dark'] .ant-list {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-list-item {
+  border-color: var(--border-secondary);
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-list-item-meta-title {
+  color: var(--text-primary);
+}
+
+[data-theme='dark'] .ant-list-item-meta-description {
+  color: var(--text-secondary);
+}
+
+/* Dark mode - Badge component overrides */
+[data-theme='dark'] .ant-badge-count {
+  box-shadow: 0 0 0 1px var(--bg-secondary);
+}
+
 /* Theme transition for smooth switching */
 body,
 .ant-layout,
@@ -1354,6 +1434,10 @@ body,
 .ant-btn,
 .ant-tabs-tab,
 .ant-modal-content,
-.ant-dropdown-menu {
+.ant-dropdown-menu,
+.ant-drawer-content,
+.ant-drawer-header,
+.ant-collapse,
+.ant-collapse-content {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
