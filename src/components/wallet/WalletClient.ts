@@ -67,7 +67,7 @@ export class WalletClient {
   private requestId: number = 0;
   private authToken: Uint8Array | null = null;
 
-  constructor(endpoint: string = 'http://127.0.0.1:8079/v1') {
+  constructor(endpoint: string = 'http://127.0.0.1:8080/v1') {
     this.endpoint = endpoint;
   }
 

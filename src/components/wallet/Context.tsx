@@ -53,7 +53,7 @@ interface WalletProviderProps {
 }
 
 const STORAGE_KEY = 'accumulate-wallet-endpoint';
-const DEFAULT_ENDPOINT = 'http://127.0.0.1:8079/v1';
+const DEFAULT_ENDPOINT = 'http://127.0.0.1:8080/v1';
 
 export function WalletProvider({ children }: WalletProviderProps) {
   const [connected, setConnected] = useState(false);
