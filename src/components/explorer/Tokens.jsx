@@ -115,7 +115,7 @@ const Tokens = () => {
   useEffect(() => {
     document.title = 'Tokens | Accumulate Explorer';
     getTokens();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>

@@ -1,4 +1,4 @@
-import { DownOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   Button,
   Dropdown,
@@ -6,6 +6,7 @@ import {
   FormInstance,
   Modal,
   Space,
+  Tooltip,
   Typography,
 } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
@@ -13,33 +14,38 @@ import React, { useContext, useEffect, useState } from 'react';
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
+  FeeSchedule,
   KeyPage,
   LiteIdentity,
   Transaction,
   TransactionArgs,
 } from 'accumulate.js/lib/core';
 
+import { isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { CreditAmount } from '../common/Amount';
 import { Network } from '../common/Network';
-import { isErrorRecord } from '../common/query';
+import { isErrorRecord, queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
+import { AddCredits } from './AddCredits';
 import { Sign } from './Sign';
 import { calculateTransactionFee } from './fees';
 import { getSigners } from './utils';
 
 const { Text } = Typography;
 
-export interface TxnFormProps {
-  open: boolean;
-  signer?: Signer;
-  onCancel: () => any;
-  onFinish: (ok: boolean) => any;
-}
+export namespace TxnForm {
+  export type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
 
-type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
+  export interface Props {
+    open: boolean;
+    signer?: Signer;
+    onCancel: () => any;
+    onFinish: (ok: boolean) => any;
+  }
+}
 
 export function BaseTxnForm<Fields>({
   open,
@@ -52,23 +58,30 @@ export function BaseTxnForm<Fields>({
   children,
   submit: makeTxn,
   onValuesChange,
+  onSignerChange,
 }: {
   title: string;
   form: FormInstance;
   children: React.ReactNode;
-  submit(_: Fields): TransactionArgs;
-  onValuesChange?(_: Fields): void;
-} & TxnFormProps) {
+  submit(values: Fields): TransactionArgs;
+  onValuesChange?(values: Fields): void;
+  onSignerChange?(signer: TxnForm.Signer | undefined): void;
+} & TxnForm.Props) {
   const web3 = useWeb3();
   const { api, onApiError } = useContext(Network);
   const [signRequest, setSignRequest] = useState<Sign.Request>();
   const [isSigning, setIsSigning] = useState(false);
-  const [signers, setSigners] = useState<Signer[]>([]);
-  const [selectedSigner, setSelectedSigner] = useState<Signer>(theSigner);
+  const [signers, setSigners] = useState<TxnForm.Signer[]>([]);
+  const [selectedSigner, setSelectedSigner] = useState<
+    TxnForm.Signer | undefined
+  >(theSigner);
   const [principal, setPrincipal] = useState<URL>();
-  const [principalSigners, setPrincipalSigners] = useState<Signer[]>();
+  const [principalSigners, setPrincipalSigners] = useState<TxnForm.Signer[]>();
   const [fee, setFee] = useState(0);
-  const [balance, setBalance] = useState(null);
+  const [feeSchedule, setFeeSchedule] = useState<FeeSchedule>();
+  const [balance, setBalance] = useState<number>();
+
+  const [buyingCredits, setBuyingCredits] = useState(false);
 
   useAsyncEffect(
     async (mounted) => {
@@ -81,22 +94,24 @@ export function BaseTxnForm<Fields>({
         return;
       }
 
-      const signers = await getSigners(api, web3, r.account);
+      const signers = await getSigners(api, web3, r.account!);
       if (!mounted()) {
         return;
       }
-      setPrincipalSigners(
-        signers.map(
-          ({ signer, entry }): Signer => ({
-            signer: signer.url,
-            signerVersion: signer instanceof KeyPage ? signer.version : 1,
-            account: signer,
-          }),
-        ),
-      );
+      setPrincipalSigners(signers);
     },
     [principal],
   ).catch((err) => onApiError(err));
+
+  useAsyncEffect(async (isMounted) => {
+    const { globals } = await api.networkStatus({ partition: 'Directory' });
+    if (!isMounted()) return;
+    setFeeSchedule(globals!.feeSchedule);
+  }, []);
+
+  useEffect(() => {
+    onSignerChange?.(selectedSigner);
+  }, [selectedSigner]);
 
   useEffect(() => {
     setSigners([]);
@@ -104,7 +119,7 @@ export function BaseTxnForm<Fields>({
       return;
     }
 
-    if (principalSigners?.length > 0) {
+    if (principalSigners?.length) {
       if (principalSigners.length == 1) {
         setSelectedSigner(principalSigners[0]);
       } else {
@@ -113,27 +128,36 @@ export function BaseTxnForm<Fields>({
       return;
     }
 
-    const allSigners: Signer[] = [];
-    if (web3.liteIdentity) {
-      allSigners.push({
-        signer: web3.liteIdentity.url,
-        signerVersion: 1,
-        account: web3.liteIdentity,
-      });
+    // Lite identities
+    const allSigners: TxnForm.Signer[] = [];
+    for (const account of web3.accounts) {
+      if (account.exists) {
+        allSigners.push({
+          signer: account.liteIdentity.url!,
+          signerVersion: 1,
+          account: account.liteIdentity,
+          key: account,
+        });
+      }
     }
 
-    const ethKeyHash = web3.publicKey.ethereum.replace(/^0x/, '').toLowerCase();
+    // Key books
+    const keys = new Map(
+      web3.accounts.map((x) => [x.address.replace(/^0x/, '').toLowerCase(), x]),
+    );
     for (const book of web3.linked.books) {
       for (const page of book.pages) {
-        const ok = page.keys.some(
-          (entry) =>
-            Buffer.from(entry.publicKeyHash).toString('hex') === ethKeyHash,
-        );
-        if (ok) {
+        const [key] = page
+          .keys!.map((x) =>
+            keys.get(Buffer.from(x!.publicKeyHash!).toString('hex')),
+          )
+          .filter((x) => !!x);
+        if (key) {
           allSigners.push({
-            signer: page.url,
-            signerVersion: page.version,
+            signer: page.url!,
+            signerVersion: page.version!,
             account: page,
+            key,
           });
         }
       }
@@ -146,11 +170,23 @@ export function BaseTxnForm<Fields>({
     }
   }, [web3, principalSigners]);
 
+  // Reload the signer after buying credits
+  queryEffect(selectedSigner?.account?.url, undefined, [buyingCredits]).then(
+    (r) => {
+      if (isRecordOf(r, KeyPage, LiteIdentity)) {
+        setSelectedSigner({
+          ...selectedSigner!,
+          account: r.account!,
+        });
+      }
+    },
+  );
+
   useEffect(() => {
     if (!selectedSigner?.account) {
-      setBalance(null);
+      setBalance(undefined);
     } else {
-      setBalance(selectedSigner.account.creditBalance);
+      setBalance(selectedSigner.account!.creditBalance! || 0);
     }
   }, [selectedSigner]);
 
@@ -158,16 +194,20 @@ export function BaseTxnForm<Fields>({
     try {
       const txn = new Transaction(makeTxn(fields));
       setPrincipal(txn.header?.principal);
-      setFee(calculateTransactionFee(txn));
+      setFee(calculateTransactionFee(txn, feeSchedule));
     } catch (error) {
       console.info(`Error while calculating fee`, error);
-      setPrincipal(null);
+      setPrincipal(undefined);
       setFee(0);
     }
   };
 
+  // Initialize the fee
+  useEffect(() => updateFromTxn(form.getFieldsValue()), [form, feeSchedule]);
+
   const isMounted = useIsMounted();
   const submit = async (fields: Fields) => {
+    if (!selectedSigner) return;
     setIsSigning(true);
     try {
       const ok = await Sign.submit(
@@ -198,11 +238,26 @@ export function BaseTxnForm<Fields>({
     return `Sign with ${u.toString().replace(/acc:\/\//, '')}`;
   };
 
-  const submitBtn = (
-    <Button type="primary" loading={isSigning} onClick={() => form.submit()}>
-      <SignWith />
-    </Button>
-  );
+  const [canSubmit, setCanSubmit] = useState(true);
+  const submitBtn =
+    fee && balance != null && balance < fee ? (
+      <Tooltip title="Insufficient balance">
+        <Button type="primary" disabled>
+          <SignWith />
+        </Button>
+      </Tooltip>
+    ) : (
+      <Button
+        type="primary"
+        loading={isSigning}
+        onClick={() => {
+          form.submit();
+        }}
+        disabled={!canSubmit}
+      >
+        <SignWith />
+      </Button>
+    );
 
   const footer = (
     <Space>
@@ -251,6 +306,9 @@ export function BaseTxnForm<Fields>({
           updateFromTxn(v);
           onValuesChange?.(v);
         }}
+        onFieldsChange={(_, f) => {
+          setCanSubmit(f.every((x) => !(x.errors?.length > 0)));
+        }}
       >
         {children}
 
@@ -273,6 +331,29 @@ export function BaseTxnForm<Fields>({
                 />
               )}
             </Form.Item>
+
+            {balance != null && balance < fee && (
+              <Form.Item label="&nbsp;">
+                <Tooltip title="Purchase credits">
+                  <Button
+                    shape="circle"
+                    size="small"
+                    style={{
+                      borderRadius: '50%', // Override Space.Compact styling
+                    }}
+                    onClick={() => setBuyingCredits(true)}
+                  >
+                    <PlusOutlined />
+                  </Button>
+                </Tooltip>
+                <AddCredits
+                  to={selectedSigner?.account.url}
+                  open={buyingCredits}
+                  onCancel={() => setBuyingCredits(false)}
+                  onFinish={(ok) => ok && setBuyingCredits(false)}
+                />
+              </Form.Item>
+            )}
           </Space.Compact>
         )}
       </Form>

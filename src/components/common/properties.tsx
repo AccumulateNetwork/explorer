@@ -6,7 +6,6 @@ import { TxID, URL } from 'accumulate.js';
 import { CreditRecipient, TokenRecipient } from 'accumulate.js/lib/core';
 
 import { Outputs } from '../message/Outputs';
-import { Amount, CreditAmount } from './Amount';
 import { Link } from './Link';
 
 const { Text } = Typography;

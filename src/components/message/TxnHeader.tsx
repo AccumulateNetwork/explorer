@@ -3,7 +3,6 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiRefund2Fill } from 'react-icons/ri';
 
-import { errors } from 'accumulate.js';
 import { MessageRecord } from 'accumulate.js/lib/api_v3';
 import { SignatureType, TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, TransactionMessage } from 'accumulate.js/lib/messaging';

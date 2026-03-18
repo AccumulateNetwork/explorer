@@ -1,9 +1,7 @@
 import { AccountType, TransactionArgs } from 'accumulate.js/lib/core';
 
-import { Ctor, IsNameOf } from '../../utils/types';
-
 export interface Store {
-  add(sign: Store.Sign, entry: Store.Entry): Promise<boolean>;
+  add(entry: Store.Entry): Promise<boolean>;
   [Symbol.iterator](): Generator<Store.Entry, void, undefined>;
 }
 

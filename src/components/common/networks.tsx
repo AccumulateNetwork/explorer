@@ -2,6 +2,7 @@ export interface NetworkConfig {
   id: string;
   label: string;
   mainnet?: boolean;
+  wallet?: boolean;
   explorer?: string;
   api: string[];
   eth?: string[];
@@ -23,6 +24,7 @@ export const Mainnet: NetworkConfig = {
 export const Kermit: NetworkConfig = {
   id: 'kermit',
   label: 'Kermit Testnet',
+  wallet: true,
   explorer: 'https://kermit.explorer.accumulatenetwork.io',
   api: [
     'https://kermit.accumulatenetwork.io',
@@ -41,6 +43,7 @@ export const Fozzie: NetworkConfig = {
 const Local: NetworkConfig = {
   id: 'local',
   label: 'Local Devnet',
+  wallet: true,
   api: ['http://127.0.0.1:26660'],
   eth: ['http://127.0.0.1:26660/eth'],
 };

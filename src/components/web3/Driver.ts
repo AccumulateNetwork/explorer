@@ -1,4 +1,5 @@
 import type { MetaMaskInpageProvider } from '@metamask/providers';
+import axios from 'axios';
 import { EthEncryptedData, encrypt } from 'eth-sig-util';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { ethers } from 'ethers';
@@ -89,6 +90,12 @@ export class Driver {
       .catch((e) => (console.warn(e), null));
   }
 
+  onAccountsChanged(fn: (..._: any[]) => void) {
+    const { ethereum } = window;
+    ethereum.on('accountsChanged', fn);
+    return () => ethereum.off('accountsChanged', fn);
+  }
+
   async switchChains(network: NetworkConfig) {
     const { ethereum } = window;
 
@@ -96,13 +103,17 @@ export class Driver {
     if (typeof chainId !== 'string') {
       return;
     }
+    const chainNum = parseInt(chainId.replace(/^0x/, ''), 16);
 
+    // Attempt to switch to Accumulate
     try {
-      // Attempt to switch to Accumulate
       await ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId }],
       });
+
+      // Success
+      return;
     } catch (error) {
       if (typeof error === 'object' && 'code' in error && error.code === 4902) {
         // Chain doesn't exist
@@ -112,28 +123,84 @@ export class Driver {
       }
     }
 
+    interface ChainListData {
+      name: string;
+      shortName: string;
+      title: string;
+      chain: string;
+      chainId: number;
+      networkId: number;
+      infoUrl: string;
+      slip44: number;
+      rpc: string[];
+      nativeCurrency: {
+        name: string;
+        symbol: string;
+        decimals: number;
+      };
+      faucets: string[];
+      explorers: {
+        name: string;
+        url: string;
+        standard: string;
+      }[];
+    }
+
+    interface WalletChainData {
+      blockExplorerUrls: string[];
+      iconUrls?: string[];
+      nativeCurrency: {
+        name: string;
+        symbol: string;
+        decimals: number;
+      };
+      rpcUrls: string[];
+      chainId: string;
+      chainName: string;
+    }
+
+    // Find the chain data from chainlist
+    let chain: WalletChainData;
     try {
-      // Add Accumulate
+      const { data: chains } = await axios.get<ChainListData[]>(
+        'https://chainid.network/chains.json',
+      );
+      const found = chains.find((x) => x.chainId === chainNum);
+      if (found) {
+        chain = {
+          blockExplorerUrls: found.explorers.map((x) => x.url),
+          chainId,
+          chainName: found.name,
+          nativeCurrency: found.nativeCurrency,
+          rpcUrls: found.rpc,
+        };
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+
+    // Manually populate if necessary
+    if (!chain) {
+      chain = {
+        blockExplorerUrls: [
+          network.explorer || 'https://explorer.accumulatenetwork.io',
+        ],
+        nativeCurrency: {
+          name: 'ACME',
+          symbol: 'ACME',
+          decimals: 18, // MetaMask won't allow any value except 18 - WTF?
+        },
+        rpcUrls: network.eth,
+        chainId,
+        chainName: `Accumulate ${network.label}`,
+      };
+    }
+
+    // Add Accumulate
+    try {
       await ethereum.request({
         method: 'wallet_addEthereumChain',
-        params: [
-          {
-            blockExplorerUrls: [
-              network.explorer || 'https://explorer.accumulatenetwork.io',
-            ],
-            iconUrls: [
-              'https://explorer.accumulatenetwork.io/static/media/logo.64085dfd.svg',
-            ],
-            nativeCurrency: {
-              name: 'ACME',
-              symbol: 'ACME',
-              decimals: 18, // MetaMask won't allow any value except 18 - WTF?
-            },
-            rpcUrls: network.eth,
-            chainId,
-            chainName: `Accumulate ${network.label}`,
-          },
-        ],
+        params: [chain],
       });
 
       // Switch to the new chain
@@ -187,13 +254,14 @@ export class Driver {
     }
 
     if (
-      ('code' in error && error.code === 4001) ||
-      ('cause' in error &&
-        typeof error.cause === 'object' &&
-        'code' in error.cause &&
-        error.cause.code === 4001)
+      'code' in error &&
+      typeof error.code === 'string' &&
+      error.code === 'ACTION_REJECTED' &&
+      'reason' in error &&
+      typeof error.reason === 'string' &&
+      error.reason === 'rejected'
     ) {
-      return; // User rejected the request
+      throw new Error('Canceled');
     }
 
     // Extract the Ledger error
@@ -207,7 +275,6 @@ export class Driver {
 
     // Parse the status code
     if ('statusCode' in error) {
-      // eslint-disable-next-line default-case
       switch (error.statusCode) {
         case 0x6d02:
         case 0x6511:
@@ -294,10 +361,19 @@ export class EthPublicKey extends PublicKeyAddress {
   }
 
   get lite() {
-    const eth = Buffer.from(this.publicKeyHash).toString('hex');
-    const hashHash = sha256(Buffer.from(eth));
+    return EthPublicKey.liteFromHash(this.publicKeyHash);
+  }
+
+  static liteFromHash(hash: Uint8Array | string) {
+    if (typeof hash !== 'string') {
+      hash = Buffer.from(hash).toString('hex');
+    } else if (hash.startsWith('0x')) {
+      hash = hash.substring(2);
+    }
+    hash = hash.toLowerCase();
+    const hashHash = sha256(Buffer.from(hash));
     const checkSum = Buffer.from(hashHash.slice(28)).toString('hex');
-    return URL.parse(`acc://${eth}${checkSum}`);
+    return URL.parse(`acc://${hash}${checkSum}`);
   }
 }
 

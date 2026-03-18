@@ -8,7 +8,7 @@ export const Settings = new (
   class Settings {
     @broadcast @stored accessor dashboardOpen = false;
     @broadcast @stored accessor connected: ConnectedType = null;
-    @broadcast @stored accessor account: string = null;
+    @broadcast @stored accessor accounts: string[] = [];
 
     @stored accessor backup: Record<string, any> = {};
     @stored accessor #publicKeys: Record<string, string> = {};

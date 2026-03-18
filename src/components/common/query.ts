@@ -44,22 +44,22 @@ import { Network } from './Network';
 import { useAsyncEffect } from './useAsync';
 
 export function queryEffect(
-  scope: URLArgs | TxID,
+  scope: URLArgs | TxID | undefined,
   query?: DefaultQueryArgsWithType,
   dependencies?: any[],
 ): QueryEffect<AccountRecord | MessageRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<ChainQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
 ): QueryEffect<RecordRange<ChainRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<ChainQueryArgsWithType, 'queryType' | 'name'>,
   dependencies?: any[],
 ): QueryEffect<ChainRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'index' | 'includeReceipt'
@@ -67,7 +67,7 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<ChainEntryRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'entry' | 'includeReceipt'
@@ -75,7 +75,7 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<ChainEntryRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'range' | 'includeReceipt'
@@ -83,28 +83,28 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<RecordRange<ChainEntryRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DataQueryArgsWithType, 'queryType'>,
   dependencies?: any[],
 ): QueryEffect<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'index'>,
   dependencies?: any[],
 ): QueryEffect<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'entry'>,
   dependencies?: any[],
 ): QueryEffect<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'range'>,
   dependencies?: any[],
 ): QueryEffect<
@@ -112,28 +112,28 @@ export function queryEffect(
   | ErrorRecord
 >;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
   dependencies?: any[],
 ): QueryEffect<RecordRange<UrlRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
   dependencies?: any[],
 ): QueryEffect<RecordRange<AccountRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
   dependencies?: any[],
 ): QueryEffect<RecordRange<TxIDRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
@@ -142,7 +142,7 @@ export function queryEffect(
   RecordRange<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     BlockQueryArgsWithType,
     'queryType' | 'minor' | 'entryRange' | 'omitEmpty'
@@ -150,7 +150,7 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<MinorBlockRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     BlockQueryArgsWithType,
     'queryType' | 'major' | 'minorRange' | 'entryRange' | 'omitEmpty'
@@ -158,17 +158,17 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<MajorBlockRecord | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<BlockQueryArgsWithType, 'queryType' | 'minorRange' | 'omitEmpty'>,
   dependencies?: any[],
 ): QueryEffect<RecordRange<MinorBlockRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<BlockQueryArgsWithType, 'queryType' | 'majorRange' | 'omitEmpty'>,
   dependencies?: any[],
 ): QueryEffect<RecordRange<MajorBlockRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     AnchorSearchQueryArgsWithType,
     'queryType' | 'anchor' | 'includeReceipt'
@@ -176,7 +176,7 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<RecordRange<ChainEntryRecord<never>> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     PublicKeySearchQueryArgsWithType,
     'queryType' | 'publicKey' | 'type'
@@ -184,7 +184,7 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<
     PublicKeyHashSearchQueryArgsWithType,
     'queryType' | 'publicKeyHash'
@@ -192,24 +192,24 @@ export function queryEffect(
   dependencies?: any[],
 ): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<DelegateSearchQueryArgsWithType, 'queryType' | 'delegate'>,
   dependencies?: any[],
 ): QueryEffect<RecordRange<KeyRecord> | ErrorRecord>;
 export function queryEffect(
-  scope: URLArgs,
+  scope: URLArgs | undefined,
   query: Pick<MessageHashSearchQueryArgsWithType, 'queryType' | 'hash'>,
   dependencies?: any[],
 ): QueryEffect<RecordRange<MessageRecord> | ErrorRecord>;
 
 export function queryEffect(
-  scope: URLArgs | TxID,
-  query: QueryArgs,
+  scope: URLArgs | TxID | undefined,
+  query?: QueryArgs,
   dependencies?: any[],
 ): QueryEffect<Record> {
   const ctx = useContext(Network);
   return {
-    then<T1>(effect?: Call<Record, T1>) {
+    then<T1>(effect: Call<Record, T1>) {
       const node = new CallNode(effect);
 
       useAsyncEffect(

@@ -1,4 +1,4 @@
-import { LogoutOutlined, UserSwitchOutlined } from '@ant-design/icons';
+import { LogoutOutlined } from '@ant-design/icons';
 import { Button, Dropdown } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
@@ -19,17 +19,14 @@ export function Login() {
     </IconContext.Provider>
   );
 
-  const goToWallet = () =>
-    history.push(
-      `/acc/${web3.liteIdentity.url.toString().replace(/^acc:\/\//, '')}`,
-    );
+  const goToWallet = () => history.push(`/wallet`);
 
   if (!web3.connected) {
     return (
       <Button
         shape="circle"
         type="default"
-        onClick={() => web3.connect().then((ok) => ok && goToWallet())}
+        onClick={() => web3.connect().then((x) => x && goToWallet())}
         style={{ marginRight: '1em' }}
         icon={<Icon />}
       />
@@ -43,12 +40,6 @@ export function Login() {
         menu={{
           items: [
             {
-              label: 'Switch account',
-              key: 'switch',
-              onClick: () => web3.switch(),
-              icon: <UserSwitchOutlined />,
-            },
-            {
               label: 'Disconnect',
               key: 'disconnect',
               onClick: () => web3.disconnect(),
@@ -61,7 +52,7 @@ export function Login() {
           shape="circle"
           type="primary"
           style={{ marginRight: '1em' }}
-          onClick={goToWallet}
+          onClick={() => goToWallet()}
           icon={<Icon />}
         />
       </Dropdown>

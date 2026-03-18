@@ -104,7 +104,7 @@ export function TxnMetadata({
       <InfoTable>
         {memo && (
           <Descriptions.Item label={labelMemo}>
-            <Content type="ASCII">{memo}</Content>
+            <Content type="Text">{memo}</Content>
           </Descriptions.Item>
         )}
 

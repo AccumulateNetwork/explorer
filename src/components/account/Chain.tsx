@@ -1,19 +1,11 @@
-import {
-  List,
-  Skeleton,
-  Table,
-  TablePaginationConfig,
-  Tag,
-  Typography,
-} from 'antd';
+import { Skeleton, Table, TablePaginationConfig, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
   RiExchangeLine,
   RiShieldCheckLine,
-  RiTimerLine,
 } from 'react-icons/ri';
 
 import { TxID, URL, URLArgs } from 'accumulate.js';
@@ -22,7 +14,6 @@ import {
   ChainEntryRecord,
   ErrorRecord,
   MessageRecord,
-  RangeOptionsArgs,
   Record,
   RecordRange,
 } from 'accumulate.js/lib/api_v3';
@@ -39,11 +30,7 @@ import {
   TransactionType,
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
-import {
-  Message,
-  MessageType,
-  TransactionMessage,
-} from 'accumulate.js/lib/messaging';
+import { Message, MessageType } from 'accumulate.js/lib/messaging';
 
 import { ManagedRange } from '../../utils/ManagedRange';
 import {
@@ -57,7 +44,6 @@ import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { Outputs } from '../message/Outputs';
 
-type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
 type ChainRecord =
   | ChainEntryRecord<MessageRecord>
   | ChainEntryRecord<ErrorRecord>;
@@ -66,38 +52,32 @@ const { Text } = Typography;
 
 export function Chain(props: {
   url: URLArgs;
-  type: 'main' | 'scratch' | 'pending' | 'signature';
+  type: 'main' | 'scratch' | 'signature';
 }) {
   const { type } = props;
   const url = URL.parse(props.url);
 
   const { api, network } = useContext(Network);
-  const [managed] = useState(
-    props.type === 'pending'
-      ? new ManagedRange((range) =>
+  const [managed, setManaged] = useState<ManagedRange<ChainRecord>>(null);
+
+  useEffect(() => {
+    setManaged(
+      new ManagedRange(
+        (range) =>
           api.query(url, {
-            queryType: 'pending',
+            queryType: 'chain',
+            name: props.type,
             range: {
               expand: true,
               ...range,
-            } as RangeOptionsArgs & { expand: true },
-          }),
-        )
-      : new ManagedRange(
-          (range) =>
-            api.query(url, {
-              queryType: 'chain',
-              name: props.type,
-              range: {
-                expand: true,
-                ...range,
-              },
-            }) as Promise<RecordRange<ChainRecord>>,
-          true,
-        ),
-  );
+            },
+          }) as Promise<RecordRange<ChainRecord>>,
+        true,
+      ),
+    );
+  }, [`${props.url}`, network.id]);
 
-  const [txChain, setTxChain] = useState<PendingRecord[] | ChainRecord[]>(null);
+  const [txChain, setTxChain] = useState<ChainRecord[]>(null);
   const [account, setAccount] = useState<
     TokenAccount | LiteTokenAccount | TokenIssuer | KeyPage | LiteIdentity
   >(null);
@@ -142,20 +122,15 @@ export function Chain(props: {
         setIssuer(r2.account);
       }
     },
-    [props.url.toString(), network.id],
+    [`${props.url}`, network.id],
   );
 
   useAsyncEffect(
     async (mounted) => {
       setTableIsLoading(true);
       try {
-        const range: RangeOptionsArgs & { expand: true } = {
-          start: (pagination.current - 1) * pagination.pageSize,
-          count: pagination.pageSize,
-          expand: true,
-        };
+        if (!managed) return;
         const response = await managed.getPage(pagination);
-
         if (!mounted()) return;
 
         setTxChain((response.records || []).reverse());
@@ -168,7 +143,7 @@ export function Chain(props: {
         setTableIsLoading(false);
       }
     },
-    [props.url, JSON.stringify(pagination), network.id],
+    [managed, JSON.stringify(pagination), network.id],
   );
 
   const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [
@@ -247,8 +222,6 @@ export function Chain(props: {
 
   function Icon() {
     switch (type) {
-      case 'pending':
-        return <RiTimerLine />;
       case 'signature':
         return <RiShieldCheckLine />;
       default:
@@ -261,32 +234,6 @@ export function Chain(props: {
       <div className="skeleton-holder">
         <Skeleton active />
       </div>
-    );
-  }
-
-  if (type === 'pending') {
-    return (
-      <List
-        size="small"
-        bordered
-        dataSource={txChain as PendingRecord[]}
-        renderItem={(item) => {
-          if (item instanceof ErrorRecord) {
-            return <Text style={{ color: 'red' }}>{item.value.message}</Text>;
-          }
-          return (
-            <List.Item>
-              <Link to={item.id}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <Icon />
-                </IconContext.Provider>
-                {item.id.toString()}
-              </Link>
-            </List.Item>
-          );
-        }}
-        style={{ marginBottom: '30px' }}
-      />
     );
   }
 

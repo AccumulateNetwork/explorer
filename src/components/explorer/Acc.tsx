@@ -21,21 +21,33 @@ import { RawData } from '../common/RawData';
 import { queryEffect } from '../common/query';
 import { Message } from '../message/Message';
 import { useWeb3 } from '../web3/Context';
+import { EthPublicKey } from '../web3/Driver';
 import { MissingLiteID } from '../web3/MissingLiteID';
 import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
+const unknown = URL.parse('acc://unknown');
 
 function tryParseURL(s: string) {
   try {
     return URL.parse(s);
   } catch (error) {
-    return new URL({
-      scheme: 'acc',
-      hostname: s,
-    } as any);
+    return null;
   }
+}
+
+function tryParseTxID(s: string) {
+  try {
+    return unknown.withTxID(s).asUrl();
+  } catch (error) {
+    return null;
+  }
+}
+
+function tryParseAddress(s: string) {
+  // TODO: Add AIP-001 parsing
+  return EthPublicKey.liteFromHash(s);
 }
 
 export function Acc({
@@ -51,10 +63,34 @@ export function Acc({
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
 
-  const params = useParams<{ hash: string; url: string }>();
-  const url = tryParseURL(
-    params.hash ? `${params.hash}@unknown` : `${params.url}`,
-  );
+  // Determine the URL
+  const params = useParams() as {
+    hash?: string;
+    url?: string;
+    address?: string;
+  };
+  let url: URL;
+  if (params.address) {
+    url = tryParseAddress(params.address);
+    if (!url) {
+      return <Alert message={`"${params.address}" is not a valid address`} />;
+    }
+  } else if (params.hash) {
+    url = tryParseTxID(params.hash);
+    if (!url) {
+      return <Alert message={`"${params.hash}" is not a valid hash`} />;
+    }
+  } else if (params.url) {
+    url = tryParseURL(params.url);
+    if (!url) {
+      return (
+        <Alert message={`"${params.url}" is not a valid Accumulate URL`} />
+      );
+    }
+  } else {
+    throw new Error('Routing error, missing params');
+  }
+
   document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
 
   queryEffect(url, { queryType: 'default' })
@@ -90,8 +126,9 @@ export function Acc({
   }, [record]);
 
   if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
-    if (web3.publicKey?.lite?.equals(url)) {
-      return <MissingLiteID />;
+    const account = web3.accounts.find((x) => x.liteIdentity.url.equals(url));
+    if (account) {
+      return <MissingLiteID account={account} />;
     }
     return <Error404 />;
   }

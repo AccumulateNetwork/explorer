@@ -67,11 +67,11 @@ export class Context {
   }
 
   get network() {
-    return this.#network;
+    return this.#network!;
   }
 
   get api() {
-    return this.#api;
+    return this.#api!;
   }
 
   get onApiError() {

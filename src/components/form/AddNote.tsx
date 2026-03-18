@@ -3,30 +3,25 @@ import React, { useState } from 'react';
 
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
-import { TxnFormProps } from './BaseTxnForm';
-import { Sign } from './Sign';
+import { TxnForm } from './BaseTxnForm';
 
 interface Fields {
   value: string;
 }
 
-export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
+export function AddNote({ open, signer, onFinish, onCancel }: TxnForm.Props) {
   const web3 = useWeb3();
   const [form] = Form.useForm<Fields>();
-  const [toSign, setToSign] = useState<Sign.Request>();
   const [pending, setPending] = useState(false);
 
   const isMounted = useIsMounted();
   const submit = async ({ value }: Fields) => {
     setPending(true);
     try {
-      const ok = await web3.dataStore.add(
-        (txn) => Sign.submit(setToSign, txn, signer),
-        {
-          type: 'note',
-          value,
-        },
-      );
+      const ok = await web3.dataStore.add({
+        type: 'note',
+        value,
+      });
       if (!isMounted.current) {
         return;
       }
@@ -77,8 +72,6 @@ export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
           />
         </Form.Item>
       </Form>
-
-      <Sign request={toSign} />
     </Modal>
   );
 }

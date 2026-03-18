@@ -214,7 +214,7 @@ const Validators = () => {
     document.title = 'Validators | Accumulate Explorer';
     getSupply(network, setSupply);
     getValidators();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>

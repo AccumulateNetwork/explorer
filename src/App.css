@@ -1248,14 +1248,19 @@ header.web3 {
 }
 
 [data-theme='dark'] .ant-dropdown-menu {
-  background: var(--bg-secondary);
-  border-color: var(--border-primary);
-  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2);
+  background: var(--bg-secondary) !important;
+  border-color: var(--border-primary) !important;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.48), 0 6px 16px 0 rgba(0, 0, 0, 0.32), 0 9px 28px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 [data-theme='dark'] .ant-dropdown-menu-item,
 [data-theme='dark'] .ant-dropdown-menu-submenu-title {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
+}
+
+[data-theme='dark'] .ant-dropdown-menu-item a,
+[data-theme='dark'] .ant-dropdown-menu-item .ant-badge-status-text {
+  color: var(--text-primary) !important;
 }
 
 [data-theme='dark'] .ant-dropdown-menu-item:hover,

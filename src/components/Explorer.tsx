@@ -1,6 +1,6 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Layout, Spin, Typography, message } from 'antd';
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 import MinorBlocks from './common/MinorBlocks';
@@ -22,6 +22,7 @@ import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
 import { Connect } from './web3/Connect';
+import { Wallet } from './web3/Wallet';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -90,8 +91,18 @@ export default function Explorer() {
                   {!shared.network.mainnet && (
                     <Route exact path="/faucet" children={<Faucet />} />
                   )}
+                  {shared.network.wallet && (
+                    <Route exact path="/wallet" children={<Wallet />} />
+                  )}
 
-                  <Route path={['/acc/:url+', '/tx/:hash+']}>
+                  <Route
+                    path={[
+                      '/acc/:url+',
+                      '/token/:url+',
+                      '/tx/:hash+',
+                      '/address/:address',
+                    ]}
+                  >
                     <Acc didLoad={(x) => searchDidLoad?.(x)} />
                   </Route>
 

@@ -1,11 +1,11 @@
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Form, Input, Space, Switch, Typography } from 'antd';
-import React, { useContext, useMemo, useState } from 'react';
+import { Button, Divider, Form, Input, Space, Switch } from 'antd';
+import React, { useContext, useState } from 'react';
 import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
+import { KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
@@ -16,9 +16,8 @@ import { WithIcon } from '../common/WithIcon';
 import { isErrorRecord } from '../common/query';
 import { useIsMounted } from '../common/useIsMounted';
 import { useWeb3 } from '../web3/Context';
-import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
+import { BaseTxnForm, TxnForm } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
-import { Sign } from './Sign';
 import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {
@@ -26,14 +25,21 @@ interface Fields {
   authorities: KeyBook[];
 }
 
-export function CreateIdentity(props: TxnFormProps) {
+export function CreateIdentity(props: TxnForm.Props) {
   const [form] = Form.useForm<Fields>();
   const web3 = useWeb3();
   const { api } = useContext(Network);
   const { setError, clearError, setValidating } = formUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);
+  const [signer, setSigner] = useState<TxnForm.Signer>();
 
   const submit = ({ url, authorities }: Fields): TransactionArgs => {
+    if (!url) url = null;
+
+    // To avoid reporting a fee of 400 credits when the form is first opened,
+    // use a fake URL for the key book if url is unset and externallyOwned is
+    // unset.
+
     return {
       header: {
         principal: url,
@@ -41,9 +47,13 @@ export function CreateIdentity(props: TxnFormProps) {
       body: {
         type: 'createIdentity',
         url,
-        keyBookUrl: externallyOwned ? null : `${url}/book`,
-        keyHash: externallyOwned ? null : web3.publicKey.publicKeyHash,
-        authorities: externallyOwned ? authorities?.map((x) => x.url) : null,
+        keyBookUrl: externallyOwned ? null : url ? `${url}/book` : 'fake',
+        keyHash: externallyOwned
+          ? null
+          : signer?.key.address.replace(/^0x/, ''),
+        authorities: externallyOwned
+          ? authorities?.filter((x) => x).map((x) => x.url)
+          : null,
       },
     };
   };
@@ -86,20 +96,16 @@ export function CreateIdentity(props: TxnFormProps) {
   });
 
   const isMounted = useIsMounted();
-  const [toSign, setToSign] = useState<Sign.Request>();
   const onFinish = async (ok: boolean) => {
     if (!isMounted.current) {
       return;
     }
     if (ok) {
-      const ok = await web3.dataStore.add(
-        (txn) => Sign.submit(setToSign, txn),
-        {
-          type: 'link',
-          url: form.getFieldValue('url'),
-          accountType: 'identity',
-        },
-      );
+      const ok = await web3.dataStore.add({
+        type: 'link',
+        url: form.getFieldValue('url'),
+        accountType: 'identity',
+      });
       if (!isMounted.current) {
         return;
       }
@@ -117,6 +123,7 @@ export function CreateIdentity(props: TxnFormProps) {
       form={form}
       submit={submit}
       onFinish={onFinish}
+      onSignerChange={(s) => setSigner(s)}
     >
       <Form.Item
         name="url"
@@ -174,7 +181,7 @@ export function CreateIdentity(props: TxnFormProps) {
           />
         }
       >
-        <Input readOnly value={web3?.publicKey?.ethereum} />
+        <Input readOnly value={signer?.key.address} />
       </Form.Item>
 
       <Form.Item label="Authorities" hidden={!externallyOwned}>
@@ -206,8 +213,6 @@ export function CreateIdentity(props: TxnFormProps) {
           )}
         />
       </Form.Item>
-
-      <Sign title={`Linking ${form.getFieldValue('url')}`} request={toSign} />
     </BaseTxnForm>
   );
 }

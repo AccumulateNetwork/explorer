@@ -11,15 +11,18 @@ import {
   KeySpec,
   LiteIdentity,
 } from 'accumulate.js/lib/core';
-import { open } from 'accumulate.js/lib/ledger/hw';
 
 import { Network } from '../common/Network';
 import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { AddCredits } from '../form/AddCredits';
+import { TxnForm } from '../form/BaseTxnForm';
+import { CreateDataAccount } from '../form/CreateDataAccount';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { CreateSubADI } from '../form/CreateSubADI';
+import { CreateTokenAccount } from '../form/CreateTokenAccount';
 import { SendTokens } from '../form/SendTokens';
+import { WriteData } from '../form/WriteData';
 import { getSigners } from '../form/utils';
 import { useWeb3 } from './Context';
 
@@ -39,14 +42,19 @@ export function Actions({ account: accountUrl }: { account: URL }) {
   type FormKey =
     | 'addCredits'
     | 'sendTokens'
+    | 'writeData'
     | 'createIdentity'
-    | 'createSubADI';
+    | 'createSubADI'
+    | 'createTokenAccount'
+    | 'createDataAccount';
   const web3 = useWeb3();
   const [acc, setAcc] = useState<core.Account>();
-  const [signers, setSigners] = useState<Signer[]>([]);
-  const [items, setItems] = useState<DropdownProps['menu']['items']>([]);
+  const [signer, setSigner] = useState<TxnForm.Signer>();
+  const [items, setItems] = useState<
+    NonNullable<NonNullable<DropdownProps['menu']>['items']>
+  >([]);
   const [toFrom, setToFrom] = useState<ToFrom>({});
-  const [open, setOpen] = useState<FormKey>();
+  const [open, setOpen] = useState<FormKey | null>(null);
 
   queryEffect(accountUrl).then((r) => {
     if (r.recordType === RecordType.Account) {
@@ -85,6 +93,13 @@ export function Actions({ account: accountUrl }: { account: URL }) {
         ]);
         break;
 
+      case AccountType.DataAccount:
+      case AccountType.LiteDataAccount:
+        setItems([
+          item({ label: 'Write data', open: 'writeData', to: acc.url }),
+        ]);
+        break;
+
       case AccountType.LiteIdentity:
         setItems([
           item({
@@ -106,6 +121,16 @@ export function Actions({ account: accountUrl }: { account: URL }) {
             open: 'createSubADI',
             from: acc.url,
           }),
+          item({
+            label: 'Create a token account',
+            open: 'createTokenAccount',
+            from: acc.url,
+          }),
+          item({
+            label: 'Create a data account',
+            open: 'createDataAccount',
+            from: acc.url,
+          }),
         ]);
         break;
 
@@ -124,7 +149,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
   const { api } = useContext(Network);
   useAsyncEffect(
     async (mounted) => {
-      setSigners([]);
+      setSigner(undefined);
       if (!web3?.linked || !acc) {
         return;
       }
@@ -132,16 +157,13 @@ export function Actions({ account: accountUrl }: { account: URL }) {
       if (!mounted()) {
         return;
       }
-      setSigners(signers);
+
+      // Why aren't we passing all the signers?
+      setSigner(signers[0]);
     },
-    [web3, acc, items],
+    [web3.linked, acc, items],
   );
 
-  if (!items.length || !signers.length) {
-    return false;
-  }
-
-  const { signer } = signers[0];
   return (
     <>
       <Dropdown
@@ -150,6 +172,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
         placement="bottomRight"
       >
         <SendOutlined
+          hidden={!signer || !items.length}
           style={{
             cursor: 'pointer',
             color: 'hsl(40, 100%, 47.5%)',
@@ -165,13 +188,17 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           open={open === 'sendTokens'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
-          signer={
-            toFrom.from?.equals(acc.url) && {
-              signer: signer.url,
-              signerVersion: signer instanceof KeyPage ? signer.version : 1,
-              account: signer,
-            }
-          }
+          signer={acc && toFrom.from?.equals(acc.url!) ? signer : undefined}
+        />
+      )}
+
+      {open === 'writeData' && (
+        <WriteData
+          {...toFrom}
+          open={open === 'writeData'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          signer={acc && toFrom.to?.equals(acc.url!) ? signer : undefined}
         />
       )}
 
@@ -181,13 +208,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           open={open === 'addCredits'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
-          signer={
-            toFrom.from?.equals(acc.url) && {
-              signer: signer.url,
-              signerVersion: signer instanceof KeyPage ? signer.version : 1,
-              account: signer,
-            }
-          }
+          signer={acc && toFrom.from?.equals(acc.url!) ? signer : undefined}
         />
       )}
 
@@ -196,11 +217,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           open={open === 'createIdentity'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
-          signer={{
-            signer: signer.url,
-            signerVersion: signer instanceof KeyPage ? signer.version : 1,
-            account: signer,
-          }}
+          signer={signer}
         />
       )}
 
@@ -209,12 +226,28 @@ export function Actions({ account: accountUrl }: { account: URL }) {
           open={open === 'createSubADI'}
           onCancel={() => setOpen(null)}
           onFinish={(ok) => ok && setOpen(null)}
-          parent={toFrom.from}
-          signer={{
-            signer: signer.url,
-            signerVersion: signer instanceof KeyPage ? signer.version : 1,
-            account: signer,
-          }}
+          parent={toFrom.from!}
+          signer={signer}
+        />
+      )}
+
+      {open === 'createTokenAccount' && (
+        <CreateTokenAccount
+          open={open === 'createTokenAccount'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          identity={toFrom.from}
+          signer={signer}
+        />
+      )}
+
+      {open === 'createDataAccount' && (
+        <CreateDataAccount
+          open={open === 'createDataAccount'}
+          onCancel={() => setOpen(null)}
+          onFinish={(ok) => ok && setOpen(null)}
+          identity={toFrom.from}
+          signer={signer}
         />
       )}
     </>

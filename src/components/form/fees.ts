@@ -80,7 +80,8 @@ export function calculateTransactionFee(
       return 0;
 
     case TransactionType.WriteData: {
-      let fee = oversize * (txn.body.scratch ? generalTiny : generalSmall);
+      let fee =
+        (oversize + 1) * (txn.body.scratch ? generalTiny : generalSmall);
       if (txn.body.writeToState) {
         fee *= 2;
       }
@@ -88,7 +89,7 @@ export function calculateTransactionFee(
     }
 
     case TransactionType.CreateIdentity: {
-      let fee = baseIdentityFee(txn.body);
+      let fee = baseIdentityFee(txn.body, schedule);
       if (schedule?.bareIdentityDiscount > 0 && !txn.body.keyBookUrl) {
         fee -= schedule.bareIdentityDiscount;
         fee = Math.max(fee, createDirectory);
@@ -102,7 +103,10 @@ export function calculateTransactionFee(
   }
 }
 
-function baseIdentityFee(body: CreateIdentity, schedule?: FeeSchedule) {
+function baseIdentityFee(
+  body: CreateIdentity,
+  schedule: FeeSchedule | undefined,
+) {
   if (!schedule || !body.url) {
     return createIdentity;
   }
