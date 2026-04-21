@@ -82,7 +82,6 @@ const Staking = () => {
 
   const supply = summary?.supply;
   const stakers = summary?.stakers || [];
-  const totalStaked = Number(supply?.staked);
 
   const columns = [
     {
@@ -129,21 +128,7 @@ const Staking = () => {
       render: (balance) => {
         const n = Number(balance);
         if (!Number.isFinite(n)) return <Text disabled>N/A</Text>;
-        const p = Number.isFinite(totalStaked) && totalStaked > 0
-          ? ((n / totalStaked) * 100).toFixed(2)
-          : 0;
-        return (
-          <span>
-            {fmtAcme(n)} ACME
-            <br />
-            <Progress
-              percent={p}
-              strokeColor={'#1677ff'}
-              showInfo={true}
-              className="staking-progress"
-            />
-          </span>
-        );
+        return <span>{fmtAcme(n)} ACME</span>;
       },
     },
     {
