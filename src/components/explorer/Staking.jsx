@@ -233,9 +233,11 @@ const Staking = () => {
         throw new Error('Stakers not found');
       }
     } catch (error) {
+      // Metrics endpoint is not available on every network. Silence the toast
+      // and just render an empty table — same pattern as the Blocks price feed.
       setStakers(null);
       setTotalStakers(-1);
-      if (error.message) message.error(error.message);
+      if (error.message) console.warn('Staking fetch failed:', error.message);
     }
     setTableIsLoading(false);
   };
