@@ -17,7 +17,6 @@ import {
   RiDashboardLine,
   RiPercentLine,
   RiShieldCheckLine,
-  RiStarLine,
 } from 'react-icons/ri';
 import { useHistory } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -191,13 +190,6 @@ export function MainMenu({
       icon: isWide && <Icon icon={RiShieldCheckLine} />,
       label: (
         <Link to="/validators" className="nav-text" children="Validators" />
-      ),
-    },
-    {
-      key: 'favourites',
-      icon: isWide && <Icon icon={RiStarLine} />,
-      label: (
-        <Link to="/favourites" className="nav-text" children="Favourites" />
       ),
     },
     !isWide && {
