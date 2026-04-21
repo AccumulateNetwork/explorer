@@ -266,64 +266,81 @@ const Staking = () => {
       <Title level={2}>Staking</Title>
 
       <Card className="staking-card" style={{ marginBottom: 20 }}>
-        <Tabs defaultActiveKey="TabStaking">
-          <Tabs.TabPane
-            tab={
-              <span>
-                ACME Staking
-                {apr && false ? (
-                  <Tag color="green" style={{ marginLeft: 10, marginRight: 0 }}>
-                    APR: {(apr * 10 ** 2).toFixed(2)}%
-                  </Tag>
-                ) : null}
-              </span>
-            }
-            key="TabStaking"
-          >
-            You can stake ACME following{' '}
-            <a
-              href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <strong>
-                this guide
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiExternalLinkLine />
-                </IconContext.Provider>
-              </strong>
-            </a>
-          </Tabs.TabPane>
-          <Tabs.TabPane
-            tab={
-              <span>
-                WACME Liquid Staking
-                {stakingRewardRate > 0 ? (
-                  <Tag color="green" style={{ marginLeft: 10, marginRight: 0 }}>
-                    APR: {stakingRewardRate.toFixed(2)}%
-                  </Tag>
-                ) : null}
-              </span>
-            }
-            key="TabLiquidStaking"
-          >
-            You can stake WACME in the liquid staking on{' '}
-            <a
-              href="https://accumulated.finance/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <strong>
-                Accumulated Finance
-                <IconContext.Provider
-                  value={{ className: 'react-icons react-icons-end' }}
-                >
-                  <RiExternalLinkLine />
-                </IconContext.Provider>
-              </strong>
-            </a>
-          </Tabs.TabPane>
-        </Tabs>
+        <Tabs
+          defaultActiveKey="TabStaking"
+          items={[
+            {
+              key: 'TabStaking',
+              label: (
+                <span>
+                  ACME Staking
+                  {apr && false ? (
+                    <Tag
+                      color="green"
+                      style={{ marginLeft: 10, marginRight: 0 }}
+                    >
+                      APR: {(apr * 10 ** 2).toFixed(2)}%
+                    </Tag>
+                  ) : null}
+                </span>
+              ),
+              children: (
+                <>
+                  You can stake ACME following{' '}
+                  <a
+                    href="https://docs.accumulatenetwork.io/accumulate/staking/how-to-stake-your-tokens"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <strong>
+                      this guide
+                      <IconContext.Provider
+                        value={{ className: 'react-icons' }}
+                      >
+                        <RiExternalLinkLine />
+                      </IconContext.Provider>
+                    </strong>
+                  </a>
+                </>
+              ),
+            },
+            {
+              key: 'TabLiquidStaking',
+              label: (
+                <span>
+                  WACME Liquid Staking
+                  {stakingRewardRate > 0 ? (
+                    <Tag
+                      color="green"
+                      style={{ marginLeft: 10, marginRight: 0 }}
+                    >
+                      APR: {stakingRewardRate.toFixed(2)}%
+                    </Tag>
+                  ) : null}
+                </span>
+              ),
+              children: (
+                <>
+                  You can stake WACME in the liquid staking on{' '}
+                  <a
+                    href="https://accumulated.finance/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <strong>
+                      Accumulated Finance
+                      <IconContext.Provider
+                        value={{ className: 'react-icons react-icons-end' }}
+                      >
+                        <RiExternalLinkLine />
+                      </IconContext.Provider>
+                    </strong>
+                  </a>
+                </>
+              ),
+            },
+          ]}
+        />
       </Card>
 
       {network.metrics && (
