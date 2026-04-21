@@ -7,7 +7,6 @@ import {
   Tabs,
   Tag,
   Typography,
-  message,
 } from 'antd';
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
@@ -15,236 +14,53 @@ import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
   RiExternalLinkLine,
-  RiFileList2Line,
   RiInformationLine,
 } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
-import getSupply from '../../utils/getSupply';
-import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
 import { InfoTable } from '../common/InfoTable';
 import { Network } from '../common/Network';
 
 const { Title, Text } = Typography;
 
+const STAKING_SUMMARY_URL =
+  'https://staking.accumulatenetwork.io/api/explorer/staking-summary';
+
+const fmtAcme = (v) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return null;
+  return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+};
+
+const pct = (num, denom) => {
+  const n = Number(num);
+  const d = Number(denom);
+  if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return 0;
+  return Math.round((n / d) * 100);
+};
+
 const Staking = () => {
   const { network } = useContext(Network);
 
-  const [stakers, setStakers] = useState(null);
-  const [supply, setSupply] = useState(null);
-  const [apr, setAPR] = useState(null);
+  const [summary, setSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
   const [stakingRewardRate, setStakingRewardRate] = useState(0);
 
-  const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    pageSize: 10,
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
-  });
-  const [totalStakers, setTotalStakers] = useState(-1);
-
-  const columns = [
-    {
-      title: 'Identity',
-      sorter: true,
-      render: (row) => {
-        if (row.identity && row.stake) {
-          return (
-            <div>
-              <Link to={'/acc/' + row.stake.replace('acc://', '')}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiAccountCircleLine />
-                </IconContext.Provider>
-                {row.identity}
-                <br />
-                <Text type="secondary">
-                  {row.stake.replace(row.identity, '')}
-                </Text>
-              </Link>
-              {row.identity === 'acc://accumulate.acme' ? (
-                <div className="name-tag">
-                  <Tag>Accumulate Foundation</Tag>
-                </div>
-              ) : null}
-              {row.identity === 'acc://accumulated.acme' ? (
-                <div className="name-tag">
-                  <Tag>Liquid Staking</Tag>
-                </div>
-              ) : null}
-            </div>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Type',
-      render: (row) => {
-        if (row.type) {
-          return (
-            <div>
-              <Tag color={row.delegate ? 'green' : 'cyan'}>{row.type}</Tag>
-              {row.delegate && (
-                <div>
-                  <Link to={'/acc/' + row.delegate.replace('acc://', '')}>
-                    <IconContext.Provider value={{ className: 'react-icons' }}>
-                      <RiAccountCircleLine />
-                    </IconContext.Provider>
-                    {row.delegate}
-                  </Link>
-                </div>
-              )}
-            </div>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Balance',
-      sorter: true,
-      defaultSortOrder: 'descend',
-      dataIndex: 'balance',
-      render: (balance) => {
-        if ((balance || balance === 0) && supply?.staked) {
-          const pt = ((balance / supply.staked) * 100).toFixed(2);
-          return (
-            <span>
-              <TokenAmount
-                amount={balance}
-                issuer="ACME"
-                digits={{ min: 0, max: 0, group: true }}
-              />
-              <br />
-              <Progress
-                percent={pt}
-                strokeColor={'#1677ff'}
-                showInfo={true}
-                className="staking-progress"
-              />
-            </span>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Rewards',
-      dataIndex: 'rewards',
-      render: (rewards) => {
-        return (
-          <div>
-            <Link to={'/acc/' + rewards.replace('acc://', '')}>
-              <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiAccountCircleLine />
-              </IconContext.Provider>
-              {rewards}
-            </Link>
-          </div>
-        );
-      },
-    },
-    {
-      title: 'Latest Entry',
-      dataIndex: 'entryHash',
-      render: (entryHash) => {
-        if (entryHash) {
-          return (
-            <div>
-              <Link to={'/acc/staking.acme/registered#data/' + entryHash}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiFileList2Line />
-                </IconContext.Provider>
-                {entryHash}
-              </Link>
-            </div>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-  ];
-
-  const getStakers = async (params = pagination, filters, sorter) => {
-    setTableIsLoading(true);
-
-    let start = 0;
-    let count = 10;
-    let showTotalStart = 1;
-    let showTotalFinish = 10;
-    let sort = 'desc';
-    let field = (sorter && sorter.field) || 'balance';
-
-    if (params) {
-      start = (params.current - 1) * params.pageSize;
-      count = params.pageSize;
-      showTotalStart = (params.current - 1) * params.pageSize + 1;
-      showTotalFinish = params.current * params.pageSize;
-    }
-
-    if (sorter) {
-      switch (sorter.order) {
-        case 'ascend':
-          sort = 'asc';
-          break;
-        case 'descend':
-        default:
-          sort = 'desc';
-          break;
-      }
-    }
-
+  const fetchSummary = async () => {
+    setSummaryLoading(true);
     try {
-      if (!network.metrics) throw new Error();
-      const response = await axios.get(
-        network.metrics +
-          '/staking/stakers?start=' +
-          start +
-          '&count=' +
-          count +
-          '&sort=' +
-          field +
-          '&order=' +
-          sort,
-      );
-      if (response && response.data) {
-        // workaround API bug response
-        if (response.data.start === null || response.data.start === undefined) {
-          response.data.start = 0;
-        }
-
-        setStakers(response.data.result);
-        setPagination({
-          ...pagination,
-          current: response.data.start / response.data.count + 1,
-          pageSize: response.data.count,
-          total: response.data.total,
-          showTotal: (total, range) =>
-            `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`,
-        });
-        setTotalStakers(response.data.total);
-      } else {
-        throw new Error('Stakers not found');
-      }
+      const response = await axios.get(STAKING_SUMMARY_URL);
+      setSummary(response?.data || null);
     } catch (error) {
-      // Metrics endpoint is not available on every network. Silence the toast
-      // and just render an empty table — same pattern as the Blocks price feed.
-      setStakers(null);
-      setTotalStakers(-1);
-      if (error.message) console.warn('Staking fetch failed:', error.message);
+      console.warn('Staking summary fetch failed:', error.message);
+      setSummary(null);
     }
-    setTableIsLoading(false);
+    setSummaryLoading(false);
   };
 
   const fetchLiquidStakingInfo = async () => {
     try {
-      // Fetch data from the API using Axios
       const response = await axios.get(
         'https://api.accumulated.finance/v1/lsd/wacme',
       );
@@ -252,16 +68,103 @@ const Staking = () => {
         Math.max(Number(response.data[0]?.apr), Number(response.data[1]?.apr)),
       );
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.warn('Liquid staking APR fetch failed:', error.message);
     }
   };
 
   useEffect(() => {
     document.title = 'Staking | Accumulate Explorer';
-    getSupply(network, setSupply, setAPR);
-    getStakers();
+    if (network.mainnet) {
+      fetchSummary();
+    }
     fetchLiquidStakingInfo();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const supply = summary?.supply;
+  const stakers = summary?.stakers || [];
+  const totalStaked = Number(supply?.staked);
+
+  const columns = [
+    {
+      title: 'Account',
+      dataIndex: 'account',
+      sorter: (a, b) => (a.account || '').localeCompare(b.account || ''),
+      render: (account, row) => {
+        if (!account) return <Text disabled>N/A</Text>;
+        const href = account.replace(/^acc:\/\//, '');
+        return (
+          <div>
+            <Link to={'/acc/' + href}>
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiAccountCircleLine />
+              </IconContext.Provider>
+              {account}
+            </Link>
+            {row.identity === 'accumulate.acme' ? (
+              <div className="name-tag">
+                <Tag>Accumulate Foundation</Tag>
+              </div>
+            ) : null}
+            {row.identity === 'accumulated.acme' ? (
+              <div className="name-tag">
+                <Tag>Liquid Staking</Tag>
+              </div>
+            ) : null}
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      sorter: (a, b) => (a.type || '').localeCompare(b.type || ''),
+      render: (type) =>
+        type ? <Tag color="cyan">{type}</Tag> : <Text disabled>N/A</Text>,
+    },
+    {
+      title: 'Balance',
+      dataIndex: 'balance',
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => Number(a.balance) - Number(b.balance),
+      render: (balance) => {
+        const n = Number(balance);
+        if (!Number.isFinite(n)) return <Text disabled>N/A</Text>;
+        const p = Number.isFinite(totalStaked) && totalStaked > 0
+          ? ((n / totalStaked) * 100).toFixed(2)
+          : 0;
+        return (
+          <span>
+            {fmtAcme(n)} ACME
+            <br />
+            <Progress
+              percent={p}
+              strokeColor={'#1677ff'}
+              showInfo={true}
+              className="staking-progress"
+            />
+          </span>
+        );
+      },
+    },
+    {
+      title: 'Rewards',
+      dataIndex: 'rewards',
+      sorter: (a, b) => Number(a.rewards) - Number(b.rewards),
+      render: (rewards) => {
+        const n = Number(rewards);
+        if (!Number.isFinite(n)) return <Text disabled>N/A</Text>;
+        return (
+          <span>
+            {n.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 4,
+            })}{' '}
+            ACME
+          </span>
+        );
+      },
+    },
+  ];
 
   return (
     <div>
@@ -273,19 +176,7 @@ const Staking = () => {
           items={[
             {
               key: 'TabStaking',
-              label: (
-                <span>
-                  ACME Staking
-                  {apr && false ? (
-                    <Tag
-                      color="green"
-                      style={{ marginLeft: 10, marginRight: 0 }}
-                    >
-                      APR: {(apr * 10 ** 2).toFixed(2)}%
-                    </Tag>
-                  ) : null}
-                </span>
-              ),
+              label: <span>ACME Staking</span>,
               children: (
                 <>
                   You can stake ACME following{' '}
@@ -345,7 +236,7 @@ const Staking = () => {
         />
       </Card>
 
-      {network.metrics && (
+      {network.mainnet && (
         <>
           <Title level={4}>
             <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -354,71 +245,40 @@ const Staking = () => {
             ACME Supply
           </Title>
 
-          {supply &&
-          supply.maxTokens != null &&
-          supply.totalTokens != null &&
-          supply.circulatingTokens != null &&
-          supply.staked != null ? (
+          {supply ? (
             <InfoTable>
               <Descriptions.Item label="Max supply">
-                {supply.maxTokens.toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                })}
-                 ACME
+                {fmtAcme(supply.maxSupply)} ACME
               </Descriptions.Item>
-              <Descriptions.Item label="Total supply">
-                {supply.totalTokens.toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                })}
-                 ACME
+              <Descriptions.Item label="Issued">
+                {fmtAcme(supply.issued)} ACME
                 <Progress
-                  percent={Math.round((supply.total / supply.max) * 100)}
+                  percent={pct(supply.issued, supply.maxSupply)}
                   strokeColor={'#1677ff'}
                   showInfo={false}
                 />
                 <Text type="secondary">
-                  {Math.round((supply.total / supply.max) * 100)}% of max supply
-                  is issued
+                  {pct(supply.issued, supply.maxSupply)}% of max supply is
+                  issued
                 </Text>
               </Descriptions.Item>
-              <Descriptions.Item label="Circulating supply">
-                {supply.circulatingTokens.toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                })}
-                 ACME
-                <Progress
-                  percent={Math.round((supply.total / supply.max) * 100)}
-                  success={{
-                    percent: Math.round(
-                      (supply.circulating / supply.max) * 100,
-                    ),
-                    strokeColor: '#1677ff',
-                  }}
-                  strokeColor={'#d6e4ff'}
-                  showInfo={false}
-                />
-                <Text type="secondary">
-                  {Math.round((supply.circulating / supply.total) * 100)}% of
-                  total supply is circulating
-                </Text>
+              <Descriptions.Item label="Unissued">
+                {fmtAcme(supply.unissued)} ACME
               </Descriptions.Item>
               <Descriptions.Item label="Staked">
-                {supply.staked.toLocaleString('en-US', {
-                  maximumFractionDigits: 0,
-                })}
-                 ACME
+                {fmtAcme(supply.staked)} ACME
                 <Progress
-                  percent={Math.round((supply.total / supply.max) * 100)}
+                  percent={pct(supply.issued, supply.maxSupply)}
                   success={{
-                    percent: Math.round((supply.staked / supply.max) * 100),
+                    percent: pct(supply.staked, supply.maxSupply),
                     strokeColor: '#1677ff',
                   }}
                   strokeColor={'#d6e4ff'}
                   showInfo={false}
                 />
                 <Text type="secondary">
-                  {Math.round((supply.staked / supply.total) * 100)}% of total
-                  supply is staked
+                  {pct(supply.staked, supply.issued)}% of issued supply is
+                  staked
                 </Text>
               </Descriptions.Item>
             </InfoTable>
@@ -427,26 +287,26 @@ const Staking = () => {
               <Skeleton active />
             </div>
           )}
+
+          <Title level={4}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiAccountCircleLine />
+            </IconContext.Provider>
+            Stakers
+            {stakers.length ? <Count count={stakers.length} /> : null}
+          </Title>
+
+          <Table
+            dataSource={stakers}
+            columns={columns}
+            rowKey={(row) => row.account || row.identity}
+            pagination={false}
+            loading={summaryLoading}
+            scroll={{ x: 'max-content', y: 500 }}
+            sortDirections={['descend', 'ascend', 'descend']}
+          />
         </>
       )}
-
-      <Title level={4}>
-        <IconContext.Provider value={{ className: 'react-icons' }}>
-          <RiAccountCircleLine />
-        </IconContext.Provider>
-        Stakers
-        {totalStakers ? <Count count={totalStakers} /> : null}
-      </Title>
-
-      <Table
-        dataSource={stakers}
-        columns={columns}
-        pagination={pagination}
-        loading={tableIsLoading}
-        onChange={getStakers}
-        sortDirections={['ascend', 'descend', 'ascend']}
-        scroll={{ x: 'max-content' }}
-      />
     </div>
   );
 };
