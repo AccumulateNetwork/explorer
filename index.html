@@ -24,6 +24,23 @@
     -->
     <link rel="manifest" href="/manifest.json" />
     <title>Accumulate Explorer</title>
+    <script>
+      // Set data-theme before paint so the page doesn't flash light then dark.
+      (function () {
+        try {
+          var raw = localStorage.getItem('themeMode');
+          var mode = raw ? JSON.parse(raw) : 'system';
+          var dark =
+            mode === 'dark' ||
+            (mode === 'system' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+        } catch (_) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
