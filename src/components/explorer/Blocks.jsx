@@ -1,7 +1,5 @@
 import { Card, Col, Row, Typography } from 'antd';
 import React, { useContext, useEffect } from 'react';
-import { IconContext } from 'react-icons';
-import { RiCoinLine, RiHandCoinLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 
 import { Network } from '../common/Network';
@@ -25,13 +23,7 @@ const Blocks = () => {
           <Col xs={24} sm={8} md={6} lg={5} xl={4}>
             <Link to="/acc/acme">
               <Card>
-                <span>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <RiCoinLine />
-                  </IconContext.Provider>
-                  <br />
-                  Accumulate token
-                </span>
+                <span>Accumulate token</span>
                 <Title level={4}>ACME</Title>
               </Card>
             </Link>
@@ -40,13 +32,7 @@ const Blocks = () => {
             <Col xs={24} sm={8} md={6} lg={5} xl={4}>
               <Link to="/faucet">
                 <Card>
-                  <span>
-                    <IconContext.Provider value={{ className: 'react-icons' }}>
-                      <RiHandCoinLine />
-                    </IconContext.Provider>
-                    <br />
-                    Get test ACME
-                  </span>
+                  <span>Get test ACME</span>
                   <Title level={4}>Faucet</Title>
                 </Card>
               </Link>
