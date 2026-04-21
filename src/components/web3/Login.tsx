@@ -39,7 +39,7 @@ export function Login() {
   return (
     <>
       <Dropdown
-        placement="bottomCenter"
+        placement="bottom"
         menu={{
           items: [
             {

@@ -354,7 +354,11 @@ const Staking = () => {
             ACME Supply
           </Title>
 
-          {supply ? (
+          {supply &&
+          supply.maxTokens != null &&
+          supply.totalTokens != null &&
+          supply.circulatingTokens != null &&
+          supply.staked != null ? (
             <InfoTable>
               <Descriptions.Item label="Max supply">
                 {supply.maxTokens.toLocaleString('en-US', {
