@@ -153,8 +153,11 @@ export function Status(props: {
       const threshold = ctx.network.id === 'local' ? 50 : okThreshold;
       return anchorsOk(anchors, threshold) && syntheticOk(synth, threshold);
     } catch (error) {
-      shared.onApiError(error);
-      return false; // Explicitly return false on error to show warning status
+      // Status badge is a background health check — log but don't trigger the
+      // global "API call failed" toast, which users see as spam when the
+      // dropdown probes every network at once.
+      console.error(error);
+      return false;
     }
   }, [ctx?.network?.id]);
 
@@ -218,40 +221,23 @@ function defaultNetworkName(): string {
   if (import.meta.env.VITE_APP_API_PATH) {
     return import.meta.env.VITE_APP_API_PATH;
   }
-  if (!Context.canChangeNetwork) {
+  if (!Context.canChangeNetwork && import.meta.env.VITE_NETWORK) {
     return import.meta.env.VITE_NETWORK;
   }
 
-  // Auto-detect network based on hostname (hostname takes priority over localStorage)
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
-  if (hostname.includes('kermit.explorer')) {
-    return 'kermit';
-  }
-  if (hostname.includes('fozzie.explorer')) {
-    return 'fozzie';
-  }
-
-  // For localhost, use cached network selection if valid, otherwise default to 'local'
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // Validate cached network exists
-    if (Settings.networkName && getNetwork(Settings.networkName)) {
-      return Settings.networkName;
-    }
-    // Clear invalid cached value and default to local devnet
-    if (Settings.networkName) {
-      Settings.networkName = '';
-    }
-    return 'local';
-  }
-
-  // For main explorer domain, validate cached network or default to mainnet
+  // Honor the user's last explicit selection if it's still a known network.
   if (Settings.networkName && getNetwork(Settings.networkName)) {
     return Settings.networkName;
   }
-  // Clear invalid cached value and default to mainnet
   if (Settings.networkName) {
     Settings.networkName = '';
   }
+
+  // No stored selection — pick a sensible default based on hostname.
+  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  if (hostname.includes('kermit.explorer')) return 'kermit';
+  if (hostname.includes('fozzie.explorer')) return 'fozzie';
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'local';
   return 'mainnet';
 }
 
