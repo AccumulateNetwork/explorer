@@ -1,8 +1,9 @@
-import { Descriptions, Switch, Typography } from 'antd';
+import { Descriptions, Radio, Switch, Typography } from 'antd';
 import React from 'react';
 
 import { InfoTable } from '../common/InfoTable';
-import { storage, stored } from '../common/Shared';
+import { ThemeMode } from '../common/theme';
+import { broadcast, storage, stored, useShared } from '../common/Shared';
 
 const { Title } = Typography;
 
@@ -12,13 +13,28 @@ export const Settings = new (
     @stored accessor enableDevMode: boolean = false;
     @stored accessor networkName: string = 'mainnet';
     @stored accessor favourites: string[] = [];
+    @broadcast @stored accessor themeMode: ThemeMode = 'system';
 
     readonly Edit = function () {
+      const ThemeRow = () => {
+        const [mode, setMode] = useShared(this, 'themeMode');
+        return (
+          <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)}>
+            <Radio.Button value="light">Light</Radio.Button>
+            <Radio.Button value="dark">Dark</Radio.Button>
+            <Radio.Button value="system">System</Radio.Button>
+          </Radio.Group>
+        );
+      };
+
       return (
         <div>
           <Title level={2}>Settings</Title>
 
           <InfoTable>
+            <Descriptions.Item key="theme" label="Theme">
+              <ThemeRow />
+            </Descriptions.Item>
             <Descriptions.Item key="dev-mode" label="Developer mode">
               <Switch
                 defaultChecked={this.enableDevMode}

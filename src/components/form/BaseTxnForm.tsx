@@ -219,7 +219,7 @@ export function BaseTxnForm<Fields>({
           {selectedSigner ? (
             submitBtn
           ) : (
-            <Button type="ghost" disabled>
+            <Button ghost disabled>
               Select signer
               <DownOutlined />
             </Button>

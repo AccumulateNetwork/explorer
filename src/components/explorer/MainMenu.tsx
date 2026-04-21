@@ -1,11 +1,15 @@
 import {
   BarsOutlined,
+  BulbOutlined,
+  DesktopOutlined,
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
+  MoonOutlined,
+  SunOutlined,
   UserSwitchOutlined,
 } from '@ant-design/icons';
-import { Button, Dropdown, Menu, MenuProps, Space } from 'antd';
+import { Button, Dropdown, Menu, MenuProps, Space, Tooltip } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import {
@@ -21,8 +25,37 @@ import { Link } from 'react-router-dom';
 import Logo from '../common/Logo';
 import { Network } from '../common/Network';
 import networks, { NetworkConfig } from '../common/networks';
+import { ThemeMode, useThemeMode } from '../common/theme';
 import { useWeb3 } from '../web3/Context';
 import { Login } from '../web3/Login';
+import { Settings } from './Settings';
+
+function ThemeToggle() {
+  const [mode, setMode] = useThemeMode();
+  const next: Record<ThemeMode, ThemeMode> = {
+    light: 'dark',
+    dark: 'system',
+    system: 'light',
+  };
+  const icon =
+    mode === 'light' ? (
+      <SunOutlined />
+    ) : mode === 'dark' ? (
+      <MoonOutlined />
+    ) : (
+      <DesktopOutlined />
+    );
+  return (
+    <Tooltip title={`Theme: ${mode} (click to change)`}>
+      <Button
+        ghost
+        icon={icon}
+        onClick={() => setMode(next[mode])}
+        aria-label="Toggle theme"
+      />
+    </Tooltip>
+  );
+}
 
 export function MainMenu({
   onSelectNetwork,
@@ -172,6 +205,16 @@ export function MainMenu({
       label: 'Select Network',
       children: networkMenuItems,
     },
+    !isWide && {
+      key: 'theme',
+      icon: <BulbOutlined />,
+      label: 'Theme',
+      children: (['light', 'dark', 'system'] as ThemeMode[]).map((m) => ({
+        key: `theme-${m}`,
+        label: m.charAt(0).toUpperCase() + m.slice(1),
+        onClick: () => (Settings.themeMode = m),
+      })),
+    },
   ];
 
   if (isWide) {
@@ -186,6 +229,7 @@ export function MainMenu({
         />
         <div className="menu-right">
           {!shared.network.mainnet && <Login />}
+          <ThemeToggle />
           <Dropdown
             menu={{ items: networkMenuItems }}
             trigger={['click']}

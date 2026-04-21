@@ -1,4 +1,5 @@
 import { CloseCircleFilled } from '@ant-design/icons';
+import type { TabsProps } from 'antd';
 import { Alert, Select, Table, Tabs, Tag, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 
@@ -16,10 +17,8 @@ export function NetworkDashboard() {
   const [peers, setPeers] = useState([]);
   const [peerStatus, setPeerStatus] = useState({});
   const [peersAreLoading, setPeersAreLoading] = useState(true);
-  const [dynamicTabs, setDynamicTabs] = useState([
-    <Tabs.TabPane tab="Directory" key="directory">
-      Loading...
-    </Tabs.TabPane>,
+  const [dynamicTabs, setDynamicTabs] = useState<TabsProps['items']>([
+    { key: 'directory', label: 'Directory', children: 'Loading...' },
   ]);
   const [filter, setFilter] = useState<(_: any) => boolean>(() => () => true);
 
@@ -177,8 +176,10 @@ export function NetworkDashboard() {
               entries.push({ peer, part, status, validator });
             }
 
-            return (
-              <Tabs.TabPane tab={part.id} key={part.lcid}>
+            return {
+              key: part.lcid,
+              label: part.id,
+              children: (
                 <Table
                   dataSource={entries.filter(({ peer, part }) =>
                     filter({ ...peer, part }),
@@ -187,8 +188,8 @@ export function NetworkDashboard() {
                   rowKey={({ peer }) => peer.peerID}
                   loading={peersAreLoading}
                 />
-              </Tabs.TabPane>
-            );
+              ),
+            };
           }),
         );
       } catch (error) {
@@ -358,8 +359,8 @@ export function NetworkDashboard() {
       <Tabs
         defaultActiveKey="directory"
         tabBarExtraContent={tabsExtra}
-        children={dynamicTabs.concat([
-          <Tabs.TabPane tab="All Nodes" key="all" children={allNodes} />,
+        items={dynamicTabs.concat([
+          { key: 'all', label: 'All Nodes', children: allNodes },
         ])}
       />
     </div>

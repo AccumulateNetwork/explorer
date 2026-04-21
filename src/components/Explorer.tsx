@@ -3,6 +3,7 @@ import { Layout, Spin, Typography, message } from 'antd';
 import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
+import { ErrorBoundary } from './common/ErrorBoundary';
 import MinorBlocks from './common/MinorBlocks';
 import { Network } from './common/Network';
 import ScrollToTop from './common/ScrollToTop';
@@ -82,31 +83,45 @@ export default function Explorer() {
 
                 <Content>
                   <SearchForm searching={(x) => (searchDidLoad = x)} />
-                  <Suspense fallback={<Loading />}>
-                    <Switch>
-                      <Route exact path="/" children={<Blocks />} />
-                      <Route path="/validators" children={<Validators />} />
-                      <Route path="/tokens" children={<Tokens />} />
-                      <Route path="/staking" children={<Staking />} />
-                      <Route path="/favourites" children={<Favourites />} />
-                      <Route path="/blocks" children={<MinorBlocks />} />
-                      <Route path="/network" children={<NetworkDashboard />} />
-                      <Route path="/settings" children={<Settings.Edit />} />
+                  <ErrorBoundary>
+                    <Suspense fallback={<Loading />}>
+                      <Switch>
+                        <Route exact path="/" children={<Blocks />} />
+                        <Route path="/validators" children={<Validators />} />
+                        <Route path="/tokens" children={<Tokens />} />
+                        <Route path="/staking" children={<Staking />} />
+                        <Route path="/favourites" children={<Favourites />} />
+                        <Route path="/blocks" children={<MinorBlocks />} />
+                        <Route
+                          path="/network"
+                          children={<NetworkDashboard />}
+                        />
+                        <Route
+                          path="/settings"
+                          children={<Settings.Edit />}
+                        />
 
-                      {!shared.network.mainnet && (
-                        <Route exact path="/faucet" children={<Faucet />} />
-                      )}
+                        {!shared.network.mainnet && (
+                          <Route
+                            exact
+                            path="/faucet"
+                            children={<Faucet />}
+                          />
+                        )}
 
-                      <Route path={['/acc/:url+', '/tx/:hash+']}>
-                        <AccWithWallet didLoad={(x) => searchDidLoad?.(x)} />
-                      </Route>
+                        <Route path={['/acc/:url+', '/tx/:hash+']}>
+                          <AccWithWallet
+                            didLoad={(x) => searchDidLoad?.(x)}
+                          />
+                        </Route>
 
-                      <Route path="/data/:url+" children={<Data />} />
-                      <Route path="/block/:index" children={<Block />} />
+                        <Route path="/data/:url+" children={<Data />} />
+                        <Route path="/block/:index" children={<Block />} />
 
-                      <Route children={<Error404 />} />
-                    </Switch>
-                  </Suspense>
+                        <Route children={<Error404 />} />
+                      </Switch>
+                    </Suspense>
+                  </ErrorBoundary>
                 </Content>
 
                 <Footer>

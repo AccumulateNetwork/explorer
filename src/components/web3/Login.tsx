@@ -28,7 +28,7 @@ export function Login() {
     return (
       <Button
         shape="circle"
-        type="default"
+        ghost
         onClick={() => web3.connect().then((ok) => ok && goToWallet())}
         style={{ marginRight: '1em' }}
         icon={<Icon />}
@@ -39,7 +39,7 @@ export function Login() {
   return (
     <>
       <Dropdown
-        placement="bottomCenter"
+        placement="bottom"
         menu={{
           items: [
             {
