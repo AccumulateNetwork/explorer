@@ -1018,4 +1018,23 @@ header.web3 {
   background-color: hsl(8, 30%, 18%);
 }
 
+/* Every place the CSS explicitly paints a white background on an antd
+ * surface. In light mode these match the default; in dark mode they were
+ * leaving white panels inside a dark app. */
+[data-theme='dark'] .ant-descriptions-item-content,
+[data-theme='dark'] .skeleton-holder,
+[data-theme='dark'] .ant-list .ant-list-item,
+[data-theme='dark'] .ant-table .ant-table-footer,
+[data-theme='dark'] .extid .extid-text,
+[data-theme='dark'] .key .key-text {
+  background: #141414;
+}
+
+/* These hardcode black-ish text colors that become invisible on dark
+ * surfaces. Swap for antd's dark-mode defaults. */
+[data-theme='dark'] .ant-typography-secondary,
+[data-theme='dark'] .ant-typography.secondary {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
 /* Header brand colors stay dark regardless of theme — they're the brand. */
