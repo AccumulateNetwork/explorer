@@ -118,7 +118,7 @@ const Staking = () => {
       dataIndex: 'type',
       sorter: (a, b) => (a.type || '').localeCompare(b.type || ''),
       render: (type) =>
-        type ? <Tag color="cyan">{type}</Tag> : <Text disabled>N/A</Text>,
+        type ? <Tag>{type}</Tag> : <Text disabled>N/A</Text>,
     },
     {
       title: 'Balance',

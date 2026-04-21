@@ -19,6 +19,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           colorPrimary: '#1890ff',
           fontFamily:
             "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          // Antd's default dark link color is muted against our near-black
+          // background. Bump it in dark mode for legibility.
+          ...(effective === 'dark'
+            ? { colorLink: '#69b1ff', colorLinkHover: '#91caff' }
+            : {}),
         },
       }}
     >
