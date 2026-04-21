@@ -1,6 +1,6 @@
 import { SendOutlined } from '@ant-design/icons';
 import { Dropdown, DropdownProps, Typography } from 'antd';
-import { MenuItemType } from 'antd/lib/menu/hooks/useItems';
+import { MenuItemType } from 'antd/es/menu/interface';
 import React, { useContext, useEffect, useState } from 'react';
 
 import { URL, core } from 'accumulate.js';

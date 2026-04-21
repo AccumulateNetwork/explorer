@@ -44,8 +44,10 @@ const Blocks = () => {
         throw new Error('Coingecko API is not available');
       }
     } catch (error) {
+      // Price is nice-to-have (third-party API). Log but don't surface
+      // CoinGecko outages as a user-facing error.
       setPrice(null);
-      message.error(error.message);
+      console.warn('Price fetch failed:', error.message);
     }
   };
 

@@ -2,6 +2,7 @@ import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
+import { ThemeProvider } from './components/common/ThemeProvider';
 import Explorer from './components/Explorer';
 
 const App = () => {
@@ -19,7 +20,11 @@ const App = () => {
     setLoaded(true);
   }, []);
 
-  return <div>{renderApp()}</div>;
+  return (
+    <ThemeProvider>
+      <div>{renderApp()}</div>
+    </ThemeProvider>
+  );
 };
 
 export default App;

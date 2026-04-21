@@ -221,54 +221,63 @@ const Validators = () => {
       <Title level={2}>Validators</Title>
 
       <Card className="staking-card" style={{ marginBottom: 20 }}>
-        <Tabs defaultActiveKey="TabValidators">
-          <Tabs.TabPane
-            tab={
-              <span>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiShieldCheckLine />
-                </IconContext.Provider>
-                About Validators
-              </span>
-            }
-            key="TabValidators"
-          >
-            Validators are nodes that are responsible for verifying and
-            validating transactions and adding them to the blockchain.
-            <br />
-            In Accumulate validators earn <strong>10%</strong> of staking
-            rewards.
-          </Tabs.TabPane>
-          <Tabs.TabPane
-            tab={
-              <span>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiTrophyLine />
-                </IconContext.Provider>
-                Become Validator
-              </span>
-            }
-            key="TabBecomeValidator"
-          >
-            Anyone with a minimum stake of <strong>50,000 ACME</strong> can
-            become a validator.
-            <br />
-            <a
-              href="https://docs.accumulatenetwork.io/accumulate/setup/validator-node-setup-with-accman"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <strong>
-                Validator node setup
-                <IconContext.Provider
-                  value={{ className: 'react-icons react-icons-end' }}
-                >
-                  <RiExternalLinkLine />
-                </IconContext.Provider>
-              </strong>
-            </a>
-          </Tabs.TabPane>
-        </Tabs>
+        <Tabs
+          defaultActiveKey="TabValidators"
+          items={[
+            {
+              key: 'TabValidators',
+              label: (
+                <span>
+                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiShieldCheckLine />
+                  </IconContext.Provider>
+                  About Validators
+                </span>
+              ),
+              children: (
+                <>
+                  Validators are nodes that are responsible for verifying and
+                  validating transactions and adding them to the blockchain.
+                  <br />
+                  In Accumulate validators earn <strong>10%</strong> of staking
+                  rewards.
+                </>
+              ),
+            },
+            {
+              key: 'TabBecomeValidator',
+              label: (
+                <span>
+                  <IconContext.Provider value={{ className: 'react-icons' }}>
+                    <RiTrophyLine />
+                  </IconContext.Provider>
+                  Become Validator
+                </span>
+              ),
+              children: (
+                <>
+                  Anyone with a minimum stake of <strong>50,000 ACME</strong> can
+                  become a validator.
+                  <br />
+                  <a
+                    href="https://docs.accumulatenetwork.io/accumulate/setup/validator-node-setup-with-accman"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <strong>
+                      Validator node setup
+                      <IconContext.Provider
+                        value={{ className: 'react-icons react-icons-end' }}
+                      >
+                        <RiExternalLinkLine />
+                      </IconContext.Provider>
+                    </strong>
+                  </a>
+                </>
+              ),
+            },
+          ]}
+        />
       </Card>
 
       <Title level={4}>
