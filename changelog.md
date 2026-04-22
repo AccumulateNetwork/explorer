@@ -3,6 +3,14 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.2.1] - 2026-04-22
+
+### Changed
+- Theme toggle simplified from a 3-state cycle (Light / Dark / System) to a plain 2-state Light ↔ Dark button. One click flips the theme instead of two. ([#18](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/18))
+
+### Migration
+- Users with `themeMode = 'system'` stored from 0.2.0 are transparently migrated to `'light'` on first load (or `'dark'` if you landed on a dark-mode render before the migration ran).
+
 ## [0.2.0] - 2026-04-21
 
 ### Changed

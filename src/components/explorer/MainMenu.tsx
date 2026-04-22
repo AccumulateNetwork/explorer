@@ -1,7 +1,6 @@
 import {
   BarsOutlined,
   BulbOutlined,
-  DesktopOutlined,
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
@@ -31,26 +30,14 @@ import { Settings } from './Settings';
 
 function ThemeToggle() {
   const [mode, setMode] = useThemeMode();
-  const next: Record<ThemeMode, ThemeMode> = {
-    light: 'dark',
-    dark: 'system',
-    system: 'light',
-  };
-  const icon =
-    mode === 'light' ? (
-      <SunOutlined />
-    ) : mode === 'dark' ? (
-      <MoonOutlined />
-    ) : (
-      <DesktopOutlined />
-    );
+  const isDark = mode === 'dark';
   return (
-    <Tooltip title={`Theme: ${mode} (click to change)`}>
+    <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
       <Button
         ghost
-        icon={icon}
-        onClick={() => setMode(next[mode])}
-        aria-label="Toggle theme"
+        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+        onClick={() => setMode(isDark ? 'light' : 'dark')}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       />
     </Tooltip>
   );
@@ -201,7 +188,7 @@ export function MainMenu({
       key: 'theme',
       icon: <BulbOutlined />,
       label: 'Theme',
-      children: (['light', 'dark', 'system'] as ThemeMode[]).map((m) => ({
+      children: (['light', 'dark'] as ThemeMode[]).map((m) => ({
         key: `theme-${m}`,
         label: m.charAt(0).toUpperCase() + m.slice(1),
         onClick: () => (Settings.themeMode = m),
