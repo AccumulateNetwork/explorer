@@ -42,7 +42,7 @@ section.ant-layout {
 }
 
 header {
-  width: 100vw;
+  width: 100%;
   padding: 0;
   margin: 0;
 }
@@ -73,13 +73,20 @@ main {
 
 @media (max-width: 1599px), not screen {
   main {
-    width: 100vw;
+    width: 100%;
   }
 }
 
 .logo {
   height: 38px;
-  margin-top: -2px;
+  width: 38px;
+  object-fit: contain;
+  vertical-align: middle;
+  /* Solid white halo circle behind the logo. */
+  background: #ffffff;
+  border-radius: 50%;
+  padding: 6px;
+  box-sizing: content-box;
 }
 
 .search-box {
@@ -142,10 +149,26 @@ main {
     monospace;
 }
 
+/* Layered hierarchy: primary data 0.88, secondary 0.70, decorative 0.50. */
 .stats .ant-card-body {
   padding: 18px 24px 16px;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgba(0, 0, 0, 0.88);
   min-height: 121px;
+}
+
+[data-theme='dark'] .stats .ant-card-body {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* Hard outlines on surface boxes so edges read cleanly in either theme. */
+.stats .ant-card,
+.minor-blocks-table .ant-table-container {
+  border: 1px solid #000 !important;
+}
+
+[data-theme='dark'] .stats .ant-card,
+[data-theme='dark'] .minor-blocks-table .ant-table-container {
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
 }
 
 .stats.stats-minheight145 .ant-card-body {
@@ -153,7 +176,11 @@ main {
 }
 
 .stats small {
-  color: rgba(0, 0, 0, 0.25);
+  color: rgba(0, 0, 0, 0.70);
+}
+
+[data-theme='dark'] .stats small {
+  color: rgba(255, 255, 255, 0.70);
 }
 
 .stats .ant-skeleton-content .ant-skeleton-title {
@@ -241,7 +268,7 @@ h4.ant-typography .react-icons {
 
 h4.ant-typography .react-icons-tooltip {
   margin-left: 6px;
-  color: rgba(0, 0, 0, 0.4);
+  color: #000;
   vertical-align: middle;
   font-size: 75%;
 }
@@ -253,9 +280,9 @@ h4.ant-typography .react-icons.react-icons-eblocks {
 h1.ant-typography .count,
 .ant-typography .count,
 h4.ant-typography .count {
-  background: rgba(255, 255, 255, 0.85);
-  color: rgba(0, 0, 0, 0.5) !important;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) !important;
+  background: #fff;
+  color: #000 !important;
+  box-shadow: 0 0 0 1px #000 !important;
   display: inline-block;
   vertical-align: middle;
   margin-top: -3px;
@@ -662,13 +689,69 @@ h4.ant-typography .count {
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* Only force white on headers that have a dark brand background. On the
- * default mainnet header, let antd's theme-aware colorText flow through,
- * otherwise the label goes white-on-white in light mode. */
-header.testnet .network-badge .ant-badge-status-text,
-header.local .network-badge .ant-badge-status-text,
-[data-theme='dark'] .network-badge .ant-badge-status-text {
-  color: #fff;
+/* Header background: deep saturated blue. testnet/local win via their
+ * own rules below. */
+header.ant-layout-header:not(.testnet):not(.local) {
+  background-color: #0958d9 !important; /* antd blue-7 */
+}
+
+/* Everything inside the header is WHITE, 600 weight. No antd token will
+ * override these — pinned with !important. Contrast vs #0958d9: 6.23:1. */
+header.ant-layout-header,
+header.ant-layout-header a,
+header.ant-layout-header .ant-menu,
+header.ant-layout-header .ant-menu-item,
+header.ant-layout-header .ant-menu-item a,
+header.ant-layout-header .ant-menu-submenu,
+header.ant-layout-header .ant-menu-submenu-title,
+header.ant-layout-header .nav-text,
+header.ant-layout-header .ant-badge-status-text,
+header.ant-layout-header .anticon,
+header.ant-layout-header .ant-btn,
+header.ant-layout-header .ant-btn .anticon {
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+header.ant-layout-header .anticon svg {
+  fill: currentColor !important;
+}
+
+header.ant-layout-header .ant-menu,
+header.ant-layout-header .ant-menu-horizontal {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+header.ant-layout-header .ant-menu-item:hover,
+header.ant-layout-header .ant-menu-item-selected,
+header.ant-layout-header .ant-menu-item-active {
+  background: rgba(255, 255, 255, 0.22) !important;
+  border-radius: 6px;
+}
+
+/* The menu item holding the logo should never paint a highlight box —
+ * it's pure brand imagery, not a nav state. */
+header.ant-layout-header .ant-menu-item:has(.logo),
+header.ant-layout-header .ant-menu-item:has(.logo):hover,
+header.ant-layout-header .ant-menu-item:has(.logo).ant-menu-item-selected,
+header.ant-layout-header .ant-menu-item:has(.logo).ant-menu-item-active {
+  background: transparent !important;
+}
+
+/* Header action buttons — explicit transparent fill, solid 2px white
+ * border, solid white text and icon. No theme token gets a vote. */
+.menu-right .ant-btn,
+.menu-right .ant-btn:hover,
+.menu-right .ant-btn:focus {
+  background: transparent !important;
+  border: 2px solid #fff !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+.menu-right .ant-btn:hover {
+  background: rgba(255, 255, 255, 0.22) !important;
 }
 
 .network-badge .ant-badge-status-dot {
@@ -1043,3 +1126,84 @@ header.web3 {
 }
 
 /* Header brand colors stay dark regardless of theme — they're the brand. */
+
+/* ==================================================================
+ * Surface layering — force clear contrast between page / table
+ * container / rows so nothing blends into a single gray blob.
+ * ================================================================== */
+
+/* Let the body colour (blue in light, black in dark) show through
+ * antd's grey default Layout bg. */
+.ant-layout,
+.ant-layout-content,
+.ant-layout-footer {
+  background: transparent !important;
+}
+
+/* ---------- Light mode ---------- */
+/* Body: #4096ff  (blue-5, bold blue, per index.css).
+ * Table container: #ffffff.
+ * Alt row tint:   #e6f4ff (blue-1).
+ * Hover row:      #bae0ff (blue-2).
+ * Header strip:   #f0f5ff. */
+[data-theme='light'] .ant-table,
+[data-theme='light'] .ant-table-container,
+[data-theme='light'] .ant-table-tbody,
+[data-theme='light'] .ant-table-tbody > tr > td {
+  background: #ffffff !important;
+}
+
+[data-theme='light'] .ant-table-thead > tr > th {
+  background: #ececec !important;
+  color: #000 !important;
+}
+
+[data-theme='light'] .ant-table-tbody > tr:nth-child(even) > td {
+  background: #f5f5f5 !important;
+}
+
+[data-theme='light']
+  .ant-table-tbody
+  > tr.ant-table-row:hover
+  > td:not(.ant-table-cell-row-hover),
+[data-theme='light'] .ant-table-tbody > tr:hover > td {
+  background: #bae0ff !important; /* keep the accent blue on hover */
+}
+
+[data-theme='light'] .ant-card {
+  background: #ffffff !important;
+}
+
+/* ---------- Dark mode ---------- */
+/* Body: #000.
+ * Table container: #1f1f1f.
+ * Header strip:    #141414  (deepest).
+ * Alt row tint:    #262626.
+ * Hover row:       #303030. */
+[data-theme='dark'] .ant-table,
+[data-theme='dark'] .ant-table-container,
+[data-theme='dark'] .ant-table-tbody,
+[data-theme='dark'] .ant-table-tbody > tr > td {
+  background: #1f1f1f !important;
+}
+
+[data-theme='dark'] .ant-table-thead > tr > th {
+  background: #141414 !important;
+  color: #fff !important;
+}
+
+[data-theme='dark'] .ant-table-tbody > tr:nth-child(even) > td {
+  background: #262626 !important;
+}
+
+[data-theme='dark']
+  .ant-table-tbody
+  > tr.ant-table-row:hover
+  > td:not(.ant-table-cell-row-hover),
+[data-theme='dark'] .ant-table-tbody > tr:hover > td {
+  background: #303030 !important;
+}
+
+[data-theme='dark'] .ant-card {
+  background: #1f1f1f !important;
+}
