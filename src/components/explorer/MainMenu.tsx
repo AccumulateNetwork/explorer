@@ -1,7 +1,6 @@
 import {
   BarsOutlined,
   BulbOutlined,
-  DesktopOutlined,
   DownOutlined,
   LogoutOutlined,
   MenuOutlined,
@@ -29,28 +28,24 @@ import { useWeb3 } from '../web3/Context';
 import { Login } from '../web3/Login';
 import { Settings } from './Settings';
 
+const HEADER_BTN_STYLE: React.CSSProperties = {
+  color: '#fff',
+  background: 'transparent',
+  border: '2px solid #fff',
+  fontWeight: 600,
+};
+
 function ThemeToggle() {
   const [mode, setMode] = useThemeMode();
-  const next: Record<ThemeMode, ThemeMode> = {
-    light: 'dark',
-    dark: 'system',
-    system: 'light',
-  };
-  const icon =
-    mode === 'light' ? (
-      <SunOutlined />
-    ) : mode === 'dark' ? (
-      <MoonOutlined />
-    ) : (
-      <DesktopOutlined />
-    );
+  const isDark = mode === 'dark';
   return (
-    <Tooltip title={`Theme: ${mode} (click to change)`}>
+    <Tooltip title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
       <Button
-        ghost
-        icon={icon}
-        onClick={() => setMode(next[mode])}
-        aria-label="Toggle theme"
+        shape="circle"
+        icon={isDark ? <SunOutlined /> : <MoonOutlined />}
+        onClick={() => setMode(isDark ? 'light' : 'dark')}
+        aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+        style={{ ...HEADER_BTN_STYLE, fontSize: 18 }}
       />
     </Tooltip>
   );
@@ -79,6 +74,7 @@ export function MainMenu({
       setCurrentMenu([e.key]);
     }
   };
+
 
   useEffect(() => {
     setCurrentMenu(window.location.pathname);
@@ -201,7 +197,7 @@ export function MainMenu({
       key: 'theme',
       icon: <BulbOutlined />,
       label: 'Theme',
-      children: (['light', 'dark', 'system'] as ThemeMode[]).map((m) => ({
+      children: (['light', 'dark'] as ThemeMode[]).map((m) => ({
         key: `theme-${m}`,
         label: m.charAt(0).toUpperCase() + m.slice(1),
         onClick: () => (Settings.themeMode = m),
@@ -227,12 +223,16 @@ export function MainMenu({
             trigger={['click']}
             className="network-badge"
           >
-            <Button ghost>
+            <Button style={HEADER_BTN_STYLE}>
               <Network.Status
                 network={shared.network}
-                text={shared.network.label}
+                text={
+                  <span style={{ color: '#fff', fontWeight: 600 }}>
+                    {shared.network.label}
+                  </span>
+                }
               />
-              <DownOutlined />
+              <DownOutlined style={{ color: '#fff' }} />
             </Button>
           </Dropdown>
         </div>

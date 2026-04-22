@@ -1,5 +1,5 @@
 import { LoadingOutlined } from '@ant-design/icons';
-import { Layout, Spin, Typography, message } from 'antd';
+import { Layout, Spin, message } from 'antd';
 import React, { Suspense, useEffect, useState } from 'react';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
@@ -25,7 +25,6 @@ import Validators from './explorer/Validators';
 import { Connect } from './web3/Connect';
 
 const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
 
 const Acc = lazy2(() => import('./explorer/Acc'), 'Acc');
 
@@ -118,9 +117,6 @@ export default function Explorer() {
               <p>&copy; Accumulate Network Explorer</p>
               <p>
                 <Version />
-              </p>
-              <p>
-                <Text type="secondary">{shared.network.api[0]}</Text>
               </p>
               <p>
                 <a href="mailto:support@defidevs.io">support@defidevs.io</a>

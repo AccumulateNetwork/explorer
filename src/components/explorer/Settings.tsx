@@ -13,7 +13,7 @@ export const Settings = new (
     @stored accessor enableDevMode: boolean = false;
     @stored accessor networkName: string = 'mainnet';
     @stored accessor favourites: string[] = [];
-    @broadcast @stored accessor themeMode: ThemeMode = 'system';
+    @broadcast @stored accessor themeMode: ThemeMode = 'light';
 
     readonly Edit = function () {
       const ThemeRow = () => {
@@ -22,7 +22,6 @@ export const Settings = new (
           <Radio.Group value={mode} onChange={(e) => setMode(e.target.value)}>
             <Radio.Button value="light">Light</Radio.Button>
             <Radio.Button value="dark">Dark</Radio.Button>
-            <Radio.Button value="system">System</Radio.Button>
           </Radio.Group>
         );
       };

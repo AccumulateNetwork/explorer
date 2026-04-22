@@ -2,7 +2,7 @@ import { Form, Input, InputRef } from 'antd';
 import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
 import React, { useEffect, useRef, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
@@ -14,11 +14,22 @@ export function SearchForm({
   searching?: (didLoad: (_: any) => void) => void;
 }) {
   const history = useHistory();
+  const location = useLocation();
 
   const [searchTs, setSearchTs] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [searchIsLoading, setSearchIsLoading] = useState(false);
   const [searchForm] = Form.useForm();
+
+  // Mirror the ?block=N query param in the search field so users always see
+  // where they are in the blocks list and can tell at-a-glance which block
+  // a returning session is pinned to.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const block = params.get('block') || '';
+    searchForm.setFieldValue('search', block);
+    setSearchText(block);
+  }, [location.search, searchForm]);
 
   function generateLiteIdentity(publicKeyHash) {
     const pkHash = Buffer.from(publicKeyHash.slice(0, 20));
