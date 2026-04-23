@@ -3,16 +3,7 @@ import {
   CloseOutlined,
   InfoCircleTwoTone,
 } from '@ant-design/icons';
-import {
-  Alert,
-  List,
-  ListProps,
-  Table,
-  TableProps,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Alert, Table, TableProps, Tag, Tooltip, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
@@ -35,6 +26,7 @@ import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 import { sha256 } from 'accumulate.js/lib/common';
 
 import { SigRecord, isRecordOf } from '../../utils/types';
+import { InfiniteList } from './InfiniteList';
 import Key from './Key';
 import { Link } from './Link';
 import { Network } from './Network';
@@ -489,26 +481,37 @@ function Signature({
   );
 }
 
-Signature.List = function (props: ListProps<SigRecord>) {
+Signature.List = function ({
+  dataSource,
+}: {
+  dataSource: SigRecord[];
+  bordered?: boolean;
+}) {
   return (
-    <List
-      {...props}
-      size="small"
+    <InfiniteList<SigRecord>
+      dataSource={dataSource}
+      rowKey={(r, i) => (r.id ? `${r.id}` : i)}
       renderItem={(r) => (
-        <List.Item
-          actions={[
-            <Link to={r.id} target="_blank">
-              <Tooltip
-                overlayClassName="explorer-tooltip"
-                title={'Inspect signature'}
-              >
-                <InfoCircleTwoTone />
-              </Tooltip>
-            </Link>,
-          ]}
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+          }}
         >
-          <Signature signature={r.message.signature} />
-        </List.Item>
+          <div style={{ flex: 1 }}>
+            <Signature signature={r.message.signature} />
+          </div>
+          <Link to={r.id} target="_blank">
+            <Tooltip
+              overlayClassName="explorer-tooltip"
+              title={'Inspect signature'}
+            >
+              <InfoCircleTwoTone />
+            </Tooltip>
+          </Link>
+        </div>
       )}
     />
   );

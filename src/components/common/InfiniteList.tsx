@@ -365,8 +365,13 @@ interface CommonTableProps<T> {
   rowClassName?: TableProps<T>['rowClassName'];
   /** Pass-through antd `Table` prop. */
   expandable?: TableProps<T>['expandable'];
-  /** URL cursor binding — same semantics as {@link InfiniteList}. */
+  /**
+   * URL query-param name to bind the top-visible row to. When set, initial
+   * offset is read from `URLSearchParams` at mount and scroll position
+   * updates the param (throttled). Mirrors the {@link InfiniteList} prop.
+   */
   cursorParam?: string;
+  /** Extract the cursor value for a row (required if `cursorParam` is set). */
   cursorOf?: (item: T) => string | number | null | undefined;
   showHeader?: TableProps<T>['showHeader'];
   sortDirections?: TableProps<T>['sortDirections'];
@@ -415,6 +420,8 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     sortDirections,
   } = props;
 
+  const history = useHistory();
+
   const server = isServerTableProps(props);
   const total = server ? props.total : props.dataSource.length;
   const windowed = total > SHORT_LIST_LIMIT;
@@ -425,17 +432,23 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
   const [loading, setLoading] = useState(server);
   const [error, setError] = useState<unknown>(null);
   const [enrichment, setEnrichment] = useState<EnrichmentMap | null>(null);
+  const [exhausted, setExhausted] = useState(false);
   const mountedRef = useRef(true);
   const loadingRef = useRef(false);
 
-  // URL cursor binding: only used when `cursorParam` is set, but hooks
-  // must be called unconditionally to keep hook order stable.
-  const history = useHistory();
-
-  const hasMoreServer = server && items.length < total;
+  const hasMoreServer = server && !exhausted && items.length < total;
   const hasMoreArray =
     !server && windowed && items.length < props.dataSource.length;
   const hasMore = server ? hasMoreServer : hasMoreArray;
+
+  // Cursor restore: capture the URL cursor once at mount. `restoredRef`
+  // flips true once we've scrolled the target row to the top (or given up).
+  const initialCursor =
+    cursorParam && typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get(cursorParam)
+      : null;
+  const targetCursorRef = useRef<string | null>(initialCursor);
+  const restoredRef = useRef<boolean>(targetCursorRef.current === null);
 
   const doLoadPage = useCallback(
     async (startOffset: number, append: boolean) => {
@@ -452,6 +465,9 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
         }
         if (!mountedRef.current) return;
         setItems((prev) => (append ? [...prev, ...page] : page));
+        // A short page (fewer than requested) means the source is exhausted —
+        // prevents infinite retries when `total` is unknown / set as a guess.
+        if (server && page.length < pageSize) setExhausted(true);
 
         if (enrichPage && page.length) {
           enrichPage(page)
@@ -483,6 +499,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     if (server) {
       setItems([]);
       setEnrichment(null);
+      setExhausted(false);
       doLoadPage(0, false);
     } else {
       setItems(props.dataSource.slice(0, windowed ? pageSize : total));
@@ -492,6 +509,51 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [server, total]);
+
+  // After each load, if a target cursor was present at mount, try to scroll
+  // the matching row to the top. If not yet in view, keep loading more pages
+  // (capped at 20). This mirrors the bespoke restore loop in MinorBlocks.
+  useEffect(() => {
+    if (restoredRef.current || loading || !cursorOf || !cursorParam) return;
+    const target = targetCursorRef.current;
+    if (target === null) return;
+    const MAX_RESTORE_PAGES = 20;
+
+    const idx = items.findIndex((it) => {
+      const c = cursorOf(it);
+      return c !== null && c !== undefined && String(c) === target;
+    });
+    if (idx >= 0) {
+      requestAnimationFrame(() => {
+        const root = className
+          ? document.querySelector<HTMLElement>(`.${className}`)
+          : null;
+        const body =
+          (root?.querySelector('.ant-table-body') as HTMLElement | null) ||
+          document.querySelector<HTMLElement>('.ant-table-body');
+        const rows = body?.querySelectorAll<HTMLElement>('tr.ant-table-row');
+        if (body && rows?.[idx]) {
+          const bodyTop = body.getBoundingClientRect().top;
+          const rowTop = rows[idx].getBoundingClientRect().top;
+          body.scrollTop += rowTop - bodyTop;
+        }
+        restoredRef.current = true;
+      });
+    } else if (hasMore && items.length < MAX_RESTORE_PAGES * pageSize) {
+      doLoadPage(items.length, true);
+    } else {
+      restoredRef.current = true;
+    }
+  }, [
+    loading,
+    items,
+    hasMore,
+    cursorOf,
+    cursorParam,
+    pageSize,
+    className,
+    doLoadPage,
+  ]);
 
   // Attach scroll listener to the antd Table body once it renders.
   useEffect(() => {
@@ -519,9 +581,10 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       }
 
       if (!cursorParam || !history || !cursorOf || throttle) return;
+      if (!restoredRef.current) return;
       throttle = setTimeout(() => {
         throttle = null;
-        const rows = body.querySelectorAll<HTMLElement>('[data-row-key]');
+        const rows = body.querySelectorAll<HTMLElement>('tr[data-row-key]');
         const bodyTop = body.getBoundingClientRect().top;
         for (const row of rows) {
           const rect = row.getBoundingClientRect();
