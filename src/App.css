@@ -1191,6 +1191,22 @@ header.web3 {
   border-color: #bfbfbf !important;
 }
 
+/* antd Descriptions (Properties / Info tables) — same rule. Row
+ * dividers 50% gray, outer frame 25% gray. */
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-row,
+[data-theme='light']
+  .ant-descriptions-bordered
+  .ant-descriptions-item-label,
+[data-theme='light']
+  .ant-descriptions-bordered
+  .ant-descriptions-item-content {
+  border-color: #808080 !important;
+}
+
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view {
+  border-color: #bfbfbf !important;
+}
+
 /* ---------- Dark mode ---------- */
 /* Body: #000.
  * Table container: #1f1f1f.
