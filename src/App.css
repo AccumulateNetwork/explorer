@@ -163,7 +163,7 @@ main {
 /* Hard outlines on surface boxes so edges read cleanly in either theme. */
 .stats .ant-card,
 .minor-blocks-table .ant-table-container {
-  border: 1px solid #808080 !important;
+  border: 1px solid #bfbfbf !important;
 }
 
 [data-theme='dark'] .stats .ant-card,
@@ -1178,17 +1178,17 @@ header.web3 {
  * is fine as shipped — these only apply in light mode. */
 [data-theme='light'] .ant-table-tbody > tr > td,
 [data-theme='light'] .ant-table-thead > tr > th {
-  border-bottom-color: #808080 !important;
+  border-bottom-color: #bfbfbf !important;
 }
 
 [data-theme='light'] .ant-list-bordered .ant-list-item,
 [data-theme='light'] .ant-list-split .ant-list-item {
-  border-color: #808080 !important;
+  border-color: #bfbfbf !important;
 }
 
 [data-theme='light'] .ant-list.ant-list-bordered,
 [data-theme='light'] .ant-table-container {
-  border-color: #808080 !important;
+  border-color: #bfbfbf !important;
 }
 
 /* antd Descriptions (Properties / Info tables) — same rule. */
@@ -1200,7 +1200,7 @@ header.web3 {
   .ant-descriptions-bordered
   .ant-descriptions-item-content,
 [data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view {
-  border-color: #808080 !important;
+  border-color: #bfbfbf !important;
 }
 
 /* ---------- Dark mode ---------- */
