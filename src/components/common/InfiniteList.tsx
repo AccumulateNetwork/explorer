@@ -359,6 +359,12 @@ interface CommonTableProps<T> {
   scrollHeight?: number;
   pageSize?: number;
   onSort?: TableProps<T>['onChange'];
+  /** Pass-through antd `Table` prop; OR-ed with internal loading state. */
+  loading?: TableProps<T>['loading'];
+  /** Pass-through antd `Table` prop. */
+  rowClassName?: TableProps<T>['rowClassName'];
+  /** Pass-through antd `Table` prop. */
+  expandable?: TableProps<T>['expandable'];
 }
 
 interface ArrayTableProps<T> extends CommonTableProps<T> {
@@ -395,6 +401,9 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     scrollHeight = SCROLL_HEIGHT,
     pageSize = PAGE_SIZE,
     onSort,
+    loading: externalLoading,
+    rowClassName,
+    expandable,
   } = props;
 
   const server = isServerTableProps(props);
@@ -506,9 +515,11 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
         dataSource={items}
         columns={columns}
         rowKey={rowKey}
+        rowClassName={rowClassName}
+        expandable={expandable}
         pagination={false}
         onChange={onSort}
-        loading={loading && items.length === 0}
+        loading={externalLoading || (loading && items.length === 0)}
         scroll={windowed ? { x: 'max-content', y: scrollHeight } : undefined}
         locale={{ emptyText: 'No items' }}
         footer={() => {
