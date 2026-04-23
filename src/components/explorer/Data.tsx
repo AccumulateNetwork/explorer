@@ -1,4 +1,4 @@
-import { Descriptions, List, Skeleton, Typography } from 'antd';
+import { Descriptions, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFileList2Line } from 'react-icons/ri';
@@ -14,6 +14,7 @@ import {
 } from '../../utils/types';
 import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { queryEffect } from '../common/query';
 import { TxnInfo } from '../message/TxnInfo';
@@ -102,17 +103,13 @@ function ShowDataEntry({ record }: { record: DataTxnRecord }) {
         Entry Data
       </Title>
 
-      <List
-        size="small"
-        bordered
-        dataSource={dataEntryParts(record.message.transaction.body.entry)}
-        renderItem={(item) => (
-          <List.Item>
-            <Content>{item}</Content>
-          </List.Item>
-        )}
-        style={{ marginBottom: '30px' }}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <InfiniteList<Uint8Array>
+          className="ant-list-sm"
+          dataSource={dataEntryParts(record.message.transaction.body.entry)}
+          renderItem={(item) => <Content>{item}</Content>}
+        />
+      </div>
     </div>
   );
 }
