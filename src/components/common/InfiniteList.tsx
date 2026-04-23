@@ -11,6 +11,8 @@ import React, {
 } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 
+import { MessageType } from 'accumulate.js/lib/messaging';
+
 const { Text } = Typography;
 
 export const PAGE_SIZE = 25;
@@ -24,11 +26,28 @@ export const SHORT_LIST_LIMIT = 10;
  * Robust to missing fields so a single malformed tx doesn't break an
  * enrichment pass. Lifted from the MinorBlocks prototype so migrating
  * callers (#22, #24, #26) can drop their own copies.
+ *
+ * Resolution order:
+ * 1. `msg.transaction.body.type` — user transactions (`sendTokens`, etc.).
+ * 2. `msg.type` when it's already a string.
+ * 3. `MessageType.getName(msg.type)` when it's the numeric enum
+ *    (signature messages, synthetic wrappers, status-only rows).
  */
 export function extractTxType(record: any): string | undefined {
   const msg = record?.message;
   if (!msg) return undefined;
-  return msg?.transaction?.body?.type || msg?.type || undefined;
+  const bodyType = msg?.transaction?.body?.type;
+  if (typeof bodyType === 'string' && bodyType) return bodyType;
+  const msgType = msg?.type;
+  if (typeof msgType === 'string' && msgType) return msgType;
+  if (typeof msgType === 'number') {
+    try {
+      return MessageType.getName(msgType);
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
 }
 
 type EnrichmentMap = ReadonlyMap<unknown, unknown>;
@@ -210,7 +229,28 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       setEnrichment(null);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount (enrichPage was only
+      // wired into server-mode doLoadPage). Short-list callers that pass
+      // enrichPage (MsgInfo/TxnInfo cause+produced) need this to populate
+      // type labels instead of rendering `unknown`.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteList enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
@@ -502,7 +542,26 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       setExhausted(false);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount; mirror the InfiniteList
+      // fix so array-mode callers that pass enrichPage get their types.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteTable enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
