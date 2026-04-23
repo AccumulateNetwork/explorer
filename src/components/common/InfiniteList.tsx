@@ -365,6 +365,11 @@ interface CommonTableProps<T> {
   rowClassName?: TableProps<T>['rowClassName'];
   /** Pass-through antd `Table` prop. */
   expandable?: TableProps<T>['expandable'];
+  /** URL cursor binding — same semantics as {@link InfiniteList}. */
+  cursorParam?: string;
+  cursorOf?: (item: T) => string | number | null | undefined;
+  showHeader?: TableProps<T>['showHeader'];
+  sortDirections?: TableProps<T>['sortDirections'];
 }
 
 interface ArrayTableProps<T> extends CommonTableProps<T> {
@@ -404,6 +409,10 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     loading: externalLoading,
     rowClassName,
     expandable,
+    cursorParam,
+    cursorOf,
+    showHeader,
+    sortDirections,
   } = props;
 
   const server = isServerTableProps(props);
@@ -418,6 +427,10 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
   const [enrichment, setEnrichment] = useState<EnrichmentMap | null>(null);
   const mountedRef = useRef(true);
   const loadingRef = useRef(false);
+
+  // URL cursor binding: only used when `cursorParam` is set, but hooks
+  // must be called unconditionally to keep hook order stable.
+  const history = useHistory();
 
   const hasMoreServer = server && items.length < total;
   const hasMoreArray =
@@ -493,6 +506,8 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       document.querySelector<HTMLElement>('.ant-table-body');
     if (!body) return;
 
+    let throttle: ReturnType<typeof setTimeout> | null = null;
+
     const onScroll = () => {
       if (
         !loadingRef.current &&
@@ -502,11 +517,62 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       ) {
         doLoadPage(items.length, true);
       }
+
+      if (!cursorParam || !history || !cursorOf || throttle) return;
+      throttle = setTimeout(() => {
+        throttle = null;
+        const rows = body.querySelectorAll<HTMLElement>('[data-row-key]');
+        const bodyTop = body.getBoundingClientRect().top;
+        for (const row of rows) {
+          const rect = row.getBoundingClientRect();
+          if (rect.bottom <= bodyTop + 2) continue;
+          const key = row.getAttribute('data-row-key');
+          const top = items.find((it, i) => {
+            const k =
+              typeof rowKey === 'function'
+                ? rowKey(it, i)
+                : typeof rowKey === 'string'
+                  ? (it as any)[rowKey]
+                  : i;
+            return String(k) === key;
+          });
+          if (top !== undefined) {
+            const c = cursorOf(top);
+            if (c !== null && c !== undefined) {
+              const current = new URLSearchParams(
+                window.location.search,
+              ).get(cursorParam);
+              if (current !== String(c)) {
+                const params = new URLSearchParams(window.location.search);
+                params.set(cursorParam, String(c));
+                history.replace({
+                  pathname: window.location.pathname,
+                  search: `?${params.toString()}`,
+                });
+              }
+            }
+          }
+          break;
+        }
+      }, URL_THROTTLE_MS);
     };
 
     body.addEventListener('scroll', onScroll);
-    return () => body.removeEventListener('scroll', onScroll);
-  }, [windowed, hasMore, items, doLoadPage, className]);
+    return () => {
+      body.removeEventListener('scroll', onScroll);
+      if (throttle) clearTimeout(throttle);
+    };
+  }, [
+    windowed,
+    hasMore,
+    items,
+    doLoadPage,
+    className,
+    cursorParam,
+    cursorOf,
+    rowKey,
+    history,
+  ]);
 
   return (
     <EnrichmentContext.Provider value={enrichment}>
@@ -519,6 +585,8 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
         expandable={expandable}
         pagination={false}
         onChange={onSort}
+        showHeader={showHeader}
+        sortDirections={sortDirections}
         loading={externalLoading || (loading && items.length === 0)}
         scroll={windowed ? { x: 'max-content', y: scrollHeight } : undefined}
         locale={{ emptyText: 'No items' }}
