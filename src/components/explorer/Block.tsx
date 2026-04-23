@@ -3,7 +3,6 @@ import {
   Descriptions,
   Skeleton,
   Switch,
-  Table,
   Tag,
   Typography,
 } from 'antd';
@@ -11,12 +10,17 @@ import moment from 'moment-timezone';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiInformationLine } from 'react-icons/ri';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getBlockEntries from '../../utils/getBlockEntries';
 import Count from '../common/Count';
+import {
+  InfiniteTable,
+  extractTxType,
+} from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
@@ -24,14 +28,36 @@ import Error404 from './Error404';
 
 const { Title, Text } = Typography;
 
-const Block = () => {
-  const pagination = {
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
+interface BlockMessage {
+  value?: {
+    id?: string;
+    message?: { type?: string };
   };
+  txid?: string;
+}
+
+function shortHash(id: string | undefined): string {
+  if (!id) return 'unknown';
+  const hex = id.replace(/^acc:\/\//, '').replace(/^.*@/, '');
+  return hex.slice(0, 8) || 'unknown';
+}
+
+function splitAcc(id: string | undefined): { adi?: string; path?: string } {
+  if (!id) return {};
+  const m = id.match(/^acc:\/\/([^@]+)/);
+  if (!m) return {};
+  const [adi, ...rest] = m[1].split('/');
+  return { adi, path: rest.join('/') };
+}
+
+function formatTime(t: Date | string | undefined): string | undefined {
+  if (!t) return undefined;
+  return moment(t).format('HH:mm:ss');
+}
+
+const Block = () => {
   const [block, setBlock] = useState(null);
-  const [notFound, setNotFound] = useState(false);
+  const [notFound] = useState(false);
   const [error, setError] = useState(null);
   const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
@@ -44,32 +70,40 @@ const Block = () => {
 
   const columns = [
     {
-      title: 'Transaction ID',
-      render: (row) => {
-        if (row) {
-          return (
-            <div>
-              <Link to={'/acc/' + row.value.id.replace('acc://', '')}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <RiExchangeLine />
-                </IconContext.Provider>
-                {row.value.id}
-              </Link>
-            </div>
-          );
-        } else {
+      title: 'Transaction',
+      render: (row: BlockMessage) => {
+        if (!row) {
           return <Text disabled>N/A</Text>;
         }
+        const id = row.value?.id;
+        const type = row.value?.message?.type || extractTxType(row.value);
+        const { adi, path } = splitAcc(id);
+        const timestamp = formatTime((row.value as any)?.lastBlockTime);
+        const pathSuffix = path ? `/${path}` : '';
+        const label = type
+          ? `${type} · ${adi ?? 'unknown'}${pathSuffix}${
+              timestamp ? ` @ ${timestamp}` : ''
+            }`
+          : `${shortHash(id)} · unknown`;
+        const to = id ? '/acc/' + id.replace('acc://', '') : '#';
+        return (
+          <Link to={to} style={{ display: 'block' }}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiExchangeLine />
+            </IconContext.Provider>
+            {label}
+          </Link>
+        );
       },
     },
     {
       title: 'Type',
-      render: (row) => {
-        if (row) {
-          return <Tag color="green">{row.value.message.type}</Tag>;
-        } else {
-          return <Text disabled>N/A</Text>;
+      render: (row: BlockMessage) => {
+        const type = row?.value?.message?.type || extractTxType(row?.value);
+        if (type) {
+          return <Tag color="green">{type}</Tag>;
         }
+        return <Text disabled>N/A</Text>;
       },
     },
   ];
@@ -125,13 +159,14 @@ const Block = () => {
             <Count count={block.messages ? block.messages.length : 0} />
           </Title>
 
-          {block.messages ? (
-            <Table
+          {block.messages && block.messages.length ? (
+            <InfiniteTable<BlockMessage>
+              className="block-messages-table"
               dataSource={block.messages}
               columns={columns}
-              pagination={pagination}
-              rowKey="txid"
-              scroll={{ x: 'max-content' }}
+              rowKey={(row: BlockMessage, idx) =>
+                row?.value?.id || row?.txid || `i-${idx}`
+              }
             />
           ) : (
             <Alert
