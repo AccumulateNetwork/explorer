@@ -163,7 +163,7 @@ main {
 /* Hard outlines on surface boxes so edges read cleanly in either theme. */
 .stats .ant-card,
 .minor-blocks-table .ant-table-container {
-  border: 1px solid #000 !important;
+  border: 1px solid #bfbfbf !important;
 }
 
 [data-theme='dark'] .stats .ant-card,
@@ -1174,17 +1174,21 @@ header.web3 {
   background: #ffffff !important;
 }
 
-/* Row dividers in light mode. The antd default is nearly invisible against
- * the white/light table surfaces. Dark mode is fine as shipped. */
+/* Row dividers at 50% gray; frame outlines at 25% gray. Dark mode default
+ * is fine as shipped — these only apply in light mode. */
 [data-theme='light'] .ant-table-tbody > tr > td,
 [data-theme='light'] .ant-table-thead > tr > th {
   border-bottom-color: #808080 !important;
 }
 
-[data-theme='light'] .ant-list.ant-list-bordered,
 [data-theme='light'] .ant-list-bordered .ant-list-item,
 [data-theme='light'] .ant-list-split .ant-list-item {
   border-color: #808080 !important;
+}
+
+[data-theme='light'] .ant-list.ant-list-bordered,
+[data-theme='light'] .ant-table-container {
+  border-color: #bfbfbf !important;
 }
 
 /* ---------- Dark mode ---------- */
