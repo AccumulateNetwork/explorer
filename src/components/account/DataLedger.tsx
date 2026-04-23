@@ -1,4 +1,4 @@
-import { Input, Table, TablePaginationConfig, Tag, Typography } from 'antd';
+import { Input, Tag, Typography } from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFileList2Line } from 'react-icons/ri';
@@ -10,6 +10,7 @@ import { DataChain } from '../../utils/DataChain';
 import { DataTxnEntry, TxnEntry, dataEntryParts } from '../../utils/types';
 import { Content } from '../common/Content';
 import Count from '../common/Count';
+import { InfiniteTable } from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
@@ -18,50 +19,43 @@ import { useWeb3 } from '../web3/Context';
 
 const { Title, Text } = Typography;
 
+const PAGE_SIZE = 25;
+
 export function DataLedger({ scope }: { scope: URL }) {
   const { api, network } = useContext(Network);
   const [dataChain] = useState(new DataChain(scope, api));
-  const [entries, setEntries] = useState<TxnEntry[]>(null);
-  const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    pageSize: 10,
-    showSizeChanger: true,
-    pageSizeOptions: ['2', '10', '20', '50', '100'],
-    current: 1,
-    hideOnSinglePage: true,
-
-    showTotal(_, range) {
-      const { total } = dataChain;
-      if (typeof total !== 'number') {
-        return;
-      }
-      return `${range[0]}-${range[1]} of ${total}`;
-    },
-  });
+  const [total, setTotal] = useState<number | null>(null);
   const [totalEntries, setTotalEntries] = useState(-1);
 
   useAsyncEffect(
     async (mounted) => {
-      setTableIsLoading(true);
-      const r = await dataChain.getRange({
-        start: (pagination.current - 1) * pagination.pageSize,
-        count: pagination.pageSize,
-      });
+      const r = await dataChain.getRange({ start: 0, count: 1 });
       if (!mounted()) return;
 
-      let { total } = r;
-      if (typeof total !== 'number') {
-        // Pretend that we have another page to make pagination work
-        total = (pagination.current + 1) * pagination.pageSize;
+      let t = r.total;
+      if (typeof t !== 'number') {
+        // Pretend that we have another page to make pagination work.
+        t = PAGE_SIZE * 2;
       }
-
-      setEntries(r.records);
-      setPagination({ ...pagination, total });
+      setTotal(t);
       setTotalEntries(r.total);
-      setTableIsLoading(false);
     },
-    [scope.toString(), JSON.stringify(pagination), network.id],
+    [scope.toString(), network.id],
   );
+
+  const loadPage = async (start: number, count: number): Promise<TxnEntry[]> => {
+    const r = await dataChain.getRange({ start, count });
+
+    let t = r.total;
+    if (typeof t !== 'number') {
+      // Pretend that there's another page so the window keeps fetching.
+      t = start + count + PAGE_SIZE;
+    }
+    setTotal(t);
+    setTotalEntries(r.total);
+
+    return r.records || [];
+  };
 
   const columns = [
     {
@@ -89,15 +83,15 @@ export function DataLedger({ scope }: { scope: URL }) {
         {(totalEntries || totalEntries == 0) && <Count count={totalEntries} />}
       </Title>
 
-      <Table
-        dataSource={entries}
-        columns={columns}
-        pagination={pagination}
-        rowKey="entry"
-        loading={tableIsLoading}
-        onChange={(p) => setPagination(p)}
-        scroll={{ x: 'max-content' }}
-      />
+      {total !== null && (
+        <InfiniteTable<TxnEntry>
+          total={total}
+          loadPage={loadPage}
+          columns={columns}
+          rowKey="entry"
+          pageSize={PAGE_SIZE}
+        />
+      )}
     </div>
   );
 }
@@ -165,7 +159,7 @@ DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
   if (extra > 0) {
     items.push(
       <Tag className="extid-tag" key="extra">
-        +{extra} more
+        +{extra} more
       </Tag>,
     );
   }
