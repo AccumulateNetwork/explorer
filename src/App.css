@@ -1245,7 +1245,8 @@ header.web3 {
 [data-theme='light'] .stats .ant-card,
 [data-theme='light'] .ant-table-container,
 [data-theme='light'] .ant-list.ant-list-bordered,
-[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view {
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view,
+[data-theme='light'] .search-box .ant-input-wrapper {
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.06),
     0 2px 6px rgba(0, 0, 0, 0.08);
@@ -1254,7 +1255,8 @@ header.web3 {
 [data-theme='dark'] .stats .ant-card,
 [data-theme='dark'] .ant-table-container,
 [data-theme='dark'] .ant-list.ant-list-bordered,
-[data-theme='dark'] .ant-descriptions-bordered .ant-descriptions-view {
+[data-theme='dark'] .ant-descriptions-bordered .ant-descriptions-view,
+[data-theme='dark'] .search-box .ant-input-wrapper {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 2px 6px rgba(0, 0, 0, 0.45);
