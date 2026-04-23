@@ -1174,6 +1174,19 @@ header.web3 {
   background: #ffffff !important;
 }
 
+/* Row dividers in light mode. The antd default is nearly invisible against
+ * the white/light table surfaces. Dark mode is fine as shipped. */
+[data-theme='light'] .ant-table-tbody > tr > td,
+[data-theme='light'] .ant-table-thead > tr > th {
+  border-bottom-color: #808080 !important;
+}
+
+[data-theme='light'] .ant-list.ant-list-bordered,
+[data-theme='light'] .ant-list-bordered .ant-list-item,
+[data-theme='light'] .ant-list-split .ant-list-item {
+  border-color: #808080 !important;
+}
+
 /* ---------- Dark mode ---------- */
 /* Body: #000.
  * Table container: #1f1f1f.
