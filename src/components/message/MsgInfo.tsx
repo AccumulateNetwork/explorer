@@ -1,4 +1,4 @@
-import { Descriptions, List, Tooltip, Typography } from 'antd';
+import { Descriptions, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -11,8 +11,8 @@ import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
 import { MessageType } from 'accumulate.js/lib/messaging';
 
 import tooltipDescs from '../../utils/lang';
-import { CompactList } from '../common/CompactList';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
@@ -118,28 +118,24 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
 
         {cause.length && (
           <Descriptions.Item label={labelCause}>
-            <CompactList
+            <InfiniteList
               dataSource={cause}
-              limit={5}
-              renderItem={(item) => (
-                <List.Item>
-                  <MsgInfo.Related record={item} />
-                </List.Item>
-              )}
+              rowKey={(item, i) => `${item?.value?.toString?.() ?? i}`}
+              renderItem={(item) => <MsgInfo.Related record={item} />}
             />
           </Descriptions.Item>
         )}
 
         {produced.length && (
           <Descriptions.Item label={labelProduced}>
-            <CompactList
+            <InfiniteList
               dataSource={produced}
-              limit={5}
+              rowKey={(item, i) => `${item?.value?.toString?.() ?? i}`}
               renderItem={(item) => (
-                <List.Item>
+                <>
                   <MsgInfo.Related record={item} />
                   <Status id={item.value} />
-                </List.Item>
+                </>
               )}
             />
           </Descriptions.Item>

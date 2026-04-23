@@ -1,4 +1,4 @@
-import { Button, Descriptions, List, Tooltip, Typography } from 'antd';
+import { Button, Descriptions, Tooltip, Typography } from 'antd';
 import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -12,8 +12,8 @@ import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
 import { TransactionMessage } from 'accumulate.js/lib/messaging';
 
 import tooltipDescs from '../../utils/lang';
-import { CompactList } from '../common/CompactList';
 import { EntryHash } from '../common/EntryHash';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
@@ -165,28 +165,24 @@ export function TxnInfo({
 
         {cause.length && (
           <Descriptions.Item label={labelCause}>
-            <CompactList
+            <InfiniteList
               dataSource={cause}
-              limit={5}
-              renderItem={(item) => (
-                <List.Item>
-                  <TxnInfo.Related record={item} />
-                </List.Item>
-              )}
+              rowKey={(item, i) => `${item?.value?.toString?.() ?? i}`}
+              renderItem={(item) => <TxnInfo.Related record={item} />}
             />
           </Descriptions.Item>
         )}
 
         {produced.length && (
           <Descriptions.Item label={labelProduced}>
-            <CompactList
+            <InfiniteList
               dataSource={produced}
-              limit={5}
+              rowKey={(item, i) => `${item?.value?.toString?.() ?? i}`}
               renderItem={(item) => (
-                <List.Item>
+                <>
                   <TxnInfo.Related record={item} />
                   <Status id={item.value} />
-                </List.Item>
+                </>
               )}
             />
           </Descriptions.Item>
