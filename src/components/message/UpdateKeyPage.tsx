@@ -1,4 +1,4 @@
-import { List, Tag, Typography } from 'antd';
+import { Tag, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiInformationLine } from 'react-icons/ri';
@@ -14,6 +14,7 @@ import {
 import { TxnRecord } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
 import { TxnHeader } from './TxnHeader';
@@ -41,15 +42,10 @@ export function UpdateKeyPage({
         Operations
       </Title>
 
-      <List
-        bordered
-        size="small"
+      <InfiniteList<KeyPageOperation>
+        className="ant-list-sm"
         dataSource={record.message.transaction.body.operation}
-        renderItem={(op) => (
-          <List.Item>
-            <UpdateKeyPage.Operation operation={op} />
-          </List.Item>
-        )}
+        renderItem={(op) => <UpdateKeyPage.Operation operation={op} />}
       />
     </>
   );

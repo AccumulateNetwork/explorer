@@ -1,5 +1,5 @@
-import { Descriptions, List, Tooltip, Typography } from 'antd';
-import React from 'react';
+import { Descriptions, Tooltip, Typography } from 'antd';
+import React, { useContext } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiExchangeLine,
@@ -11,13 +11,48 @@ import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
 import { MessageType } from 'accumulate.js/lib/messaging';
 
 import tooltipDescs from '../../utils/lang';
-import { CompactList } from '../common/CompactList';
 import { EnumValue } from '../common/EnumValue';
+import {
+  InfiniteList,
+  extractTxType,
+  useInfiniteListEnrichment,
+} from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
+import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { Status } from './Status';
 import { describeTimestamp } from './timestamp';
+
+type TxEnrichment = { type?: string; principal?: string };
+
+function txidKey(record: TxIDRecord): string {
+  return record.value.toString();
+}
+
+async function enrichTxIdRecords(
+  api: { query: (id: any) => Promise<any> },
+  items: TxIDRecord[],
+): Promise<ReadonlyMap<string, TxEnrichment>> {
+  const map = new Map<string, TxEnrichment>();
+  await Promise.all(
+    items.map(async (it) => {
+      const key = txidKey(it);
+      try {
+        const r = (await api.query(it.value)) as MessageRecord | undefined;
+        const type = extractTxType(r);
+        const principal =
+          r?.message && 'transaction' in r.message
+            ? r.message.transaction?.header?.principal?.toString()
+            : undefined;
+        map.set(key, { type, principal });
+      } catch {
+        map.set(key, {});
+      }
+    }),
+  );
+  return map;
+}
 
 const { Title } = Typography;
 
@@ -86,8 +121,10 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
     </span>
   );
 
+  const { api } = useContext(Network);
   const cause = record.cause?.records || [];
   const produced = record.produced?.records || [];
+  const enrich = (items: TxIDRecord[]) => enrichTxIdRecords(api, items);
 
   return (
     <>
@@ -118,28 +155,26 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
 
         {cause.length && (
           <Descriptions.Item label={labelCause}>
-            <CompactList
+            <InfiniteList<TxIDRecord>
               dataSource={cause}
-              limit={5}
-              renderItem={(item) => (
-                <List.Item>
-                  <MsgInfo.Related record={item} />
-                </List.Item>
-              )}
+              rowKey={(item) => txidKey(item)}
+              enrichPage={enrich}
+              renderItem={(item) => <MsgInfo.Related record={item} />}
             />
           </Descriptions.Item>
         )}
 
         {produced.length && (
           <Descriptions.Item label={labelProduced}>
-            <CompactList
+            <InfiniteList<TxIDRecord>
               dataSource={produced}
-              limit={5}
+              rowKey={(item) => txidKey(item)}
+              enrichPage={enrich}
               renderItem={(item) => (
-                <List.Item>
+                <>
                   <MsgInfo.Related record={item} />
                   <Status id={item.value} />
-                </List.Item>
+                </>
               )}
             />
           </Descriptions.Item>
@@ -150,12 +185,20 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
 }
 
 MsgInfo.Related = function ({ record }: { record: TxIDRecord }) {
+  const enrichment = useInfiniteListEnrichment<string, TxEnrichment>();
+  const data = enrichment?.get(txidKey(record));
+  const hashHex = Buffer.from(record.value.hash).toString('hex');
+  const shortHash = hashHex.slice(0, 8);
+  const type = data?.type || 'unknown';
+  const principal = data?.principal;
   return (
     <Link to={record.value}>
       <IconContext.Provider value={{ className: 'react-icons' }}>
         <RiExchangeLine />
       </IconContext.Provider>
-      {record.value.toString()}
+      <span>
+        {type} · {principal || shortHash}
+      </span>
     </Link>
   );
 };

@@ -1,4 +1,4 @@
-import { List, Tag, Typography } from 'antd';
+import { Tag, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiInformationLine } from 'react-icons/ri';
@@ -12,6 +12,7 @@ import {
 import { TxnRecord } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
@@ -38,15 +39,10 @@ export function UpdateAccountAuth({
         Operations
       </Title>
 
-      <List
-        bordered
-        size="small"
+      <InfiniteList<AccountAuthOperation>
+        className="ant-list-sm"
         dataSource={record.message.transaction.body.operations}
-        renderItem={(op) => (
-          <List.Item>
-            <UpdateAccountAuth.Operation operation={op} />
-          </List.Item>
-        )}
+        renderItem={(op) => <UpdateAccountAuth.Operation operation={op} />}
       />
     </>
   );

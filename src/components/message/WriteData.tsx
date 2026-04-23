@@ -1,4 +1,4 @@
-import { Descriptions, List, Tag, Typography } from 'antd';
+import { Descriptions, Tag, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -13,6 +13,7 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { DataTxnRecord, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { Content } from '../common/Content';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { TxnHeader } from './TxnHeader';
@@ -83,17 +84,13 @@ function Entries({ record }: { record: DataTxnRecord }) {
         </div>
       )}
 
-      <List
-        size="small"
-        bordered
-        dataSource={dataEntryParts(txn.body.entry)}
-        renderItem={(item) => (
-          <List.Item>
-            <Content>{item}</Content>
-          </List.Item>
-        )}
-        style={{ marginBottom: '30px' }}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <InfiniteList<Uint8Array>
+          className="ant-list-sm"
+          dataSource={dataEntryParts(txn.body.entry)}
+          renderItem={(item) => <Content>{item}</Content>}
+        />
+      </div>
     </>
   );
 }
