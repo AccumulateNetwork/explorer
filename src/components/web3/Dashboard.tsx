@@ -1,5 +1,5 @@
 import { DisconnectOutlined, LinkOutlined } from '@ant-design/icons';
-import { Alert, Button, List, Skeleton, Tooltip, Typography } from 'antd';
+import { Alert, Button, Skeleton, Tooltip, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
@@ -9,6 +9,7 @@ import { URLArgs } from 'accumulate.js';
 import { TransactionArgs } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
+import { InfiniteList } from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
@@ -99,23 +100,17 @@ export function Dashboard() {
           />
         </>
       ) : (
-        <List
-          size="small"
-          bordered
+        <InfiniteList
           dataSource={linkedAccounts}
+          rowKey={(item) => `${item.url}`}
           renderItem={(item) => (
-            <List.Item
-              actions={[
-                <Tooltip
-                  overlayClassName="explorer-tooltip"
-                  title={tooltip.web3.unlink}
-                >
-                  <DisconnectOutlined
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => unlink(item.url)}
-                  />
-                </Tooltip>,
-              ]}
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
             >
               <Link to={item.url}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -123,7 +118,16 @@ export function Dashboard() {
                 </IconContext.Provider>
                 {`${item.url}`}
               </Link>
-            </List.Item>
+              <Tooltip
+                overlayClassName="explorer-tooltip"
+                title={tooltip.web3.unlink}
+              >
+                <DisconnectOutlined
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => unlink(item.url)}
+                />
+              </Tooltip>
+            </div>
           )}
         />
       )}
