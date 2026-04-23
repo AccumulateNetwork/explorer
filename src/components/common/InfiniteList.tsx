@@ -229,7 +229,28 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       setEnrichment(null);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount (enrichPage was only
+      // wired into server-mode doLoadPage). Short-list callers that pass
+      // enrichPage (MsgInfo/TxnInfo cause+produced) need this to populate
+      // type labels instead of rendering `unknown`.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteList enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
@@ -521,7 +542,26 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       setExhausted(false);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount; mirror the InfiniteList
+      // fix so array-mode callers that pass enrichPage get their types.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteTable enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
