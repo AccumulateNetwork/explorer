@@ -7,6 +7,8 @@ import { CreditRecipient, TokenRecipient } from 'accumulate.js/lib/core';
 
 import { Outputs } from '../message/Outputs';
 import { Amount, CreditAmount } from './Amount';
+import { InfiniteList, SHORT_LIST_LIMIT } from './InfiniteList';
+import { InfoTable } from './InfoTable';
 import { Link } from './Link';
 
 const { Text } = Typography;
@@ -72,14 +74,40 @@ export function describeProperty({
   }
 
   if (value instanceof Array) {
-    // Arrays
-    return value.map((value, i) =>
-      describeProperty({
-        label: `${key} #${i + 1}`,
-        key: i,
-        value,
-        obj,
-      }),
+    // Short arrays: inline as sibling <Descriptions.Item> rows (unchanged).
+    if (value.length <= SHORT_LIST_LIMIT) {
+      return value.map((v, i) =>
+        describeProperty({
+          label: `${key} #${i + 1}`,
+          key: i,
+          value: v,
+          obj,
+        }),
+      );
+    }
+
+    // Long arrays: one <Descriptions.Item> wrapping an InfiniteList. Each
+    // row is rendered in its own nested <InfoTable> so object elements still
+    // show their sub-properties. Primitive elements are boxed into a single
+    // "#N" row. Only BlockLedger.entries is known to reach this branch on
+    // mainnet (#30 audit).
+    return describe(
+      label || `${key}`,
+      key,
+      <InfiniteList
+        dataSource={value}
+        rowKey={(_, i) => i}
+        renderItem={(v, i) => (
+          <InfoTable>
+            {renderArrayItem({
+              label: `${key} #${i + 1}`,
+              index: i,
+              value: v,
+              obj,
+            })}
+          </InfoTable>
+        )}
+      />,
     );
   }
 
@@ -104,6 +132,45 @@ function describe(
       label={humanName(label || `${name}`)}
       children={children}
     />
+  );
+}
+
+function renderArrayItem({
+  label,
+  index,
+  value,
+  obj,
+}: {
+  label: string;
+  index: number;
+  value: any;
+  obj: any;
+}) {
+  // Object elements: recurse into each field so the nested <InfoTable>
+  // shows one row per sub-property. Primitive elements: render a single
+  // "#N" row labelled with the parent key.
+  if (value !== null && typeof value === 'object' && !isLeafObject(value)) {
+    return Object.entries(value).map(([name, v]) =>
+      describeProperty({
+        label: name,
+        key: name,
+        value: v,
+        obj: obj?.[index],
+      }),
+    );
+  }
+  return describeProperty({ label, key: index, value, obj });
+}
+
+function isLeafObject(value: any): boolean {
+  return (
+    value instanceof Date ||
+    value instanceof URL ||
+    value instanceof TxID ||
+    value instanceof Uint8Array ||
+    value instanceof CreditRecipient ||
+    value instanceof TokenRecipient ||
+    value instanceof Array
   );
 }
 

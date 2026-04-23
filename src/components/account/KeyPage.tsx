@@ -1,4 +1,4 @@
-import { Descriptions, List, Row, Tag, Tooltip, Typography } from 'antd';
+import { Descriptions, Row, Tag, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -17,6 +17,7 @@ import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import Key from '../common/Key';
 import { Link } from '../common/Link';
@@ -144,17 +145,17 @@ KeyPage.Entries = function ({ account }: { account: core.KeyPage }) {
     );
   }
   return (
-    <List
-      size="small"
-      bordered
-      dataSource={account.keys}
-      renderItem={(item) => (
-        <List.Item>
-          <KeyPage.Entry entry={item} />{' '}
-        </List.Item>
-      )}
-      style={{ marginBottom: '30px' }}
-    />
+    <div style={{ marginBottom: '30px' }}>
+      <InfiniteList
+        className="ant-list-sm"
+        dataSource={account.keys}
+        renderItem={(item) => (
+          <>
+            <KeyPage.Entry entry={item} />{' '}
+          </>
+        )}
+      />
+    </div>
   );
 };
 
@@ -172,17 +173,13 @@ KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
         <Count count={account.transactionBlacklist.length} />
       </Title>
 
-      <List
-        size="small"
-        bordered
-        dataSource={account.transactionBlacklist}
-        renderItem={(item) => (
-          <List.Item>
-            <Tag color="volcano">{item}</Tag>
-          </List.Item>
-        )}
-        style={{ marginBottom: '30px' }}
-      />
+      <div style={{ marginBottom: '30px' }}>
+        <InfiniteList
+          className="ant-list-sm"
+          dataSource={account.transactionBlacklist}
+          renderItem={(item) => <Tag color="volcano">{item}</Tag>}
+        />
+      </div>
     </div>
   );
 };

@@ -3,6 +3,23 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.3.0] - 2026-04-23
+
+### Added
+- **Unified infinite-scroll list presentation across the entire explorer.** One shared `InfiniteList` / `InfiniteTable` primitive replaces every `Table` pagination and ad-hoc scroll window. Lists with ≤10 items render as a plain bordered list; lists with >10 items render a 600px, 25-row windowed scroll with URL-cursor binding. ([#19](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/19))
+- **Enriched transaction rows everywhere.** Any list row that represents a transaction now shows `<type> · <adi>/<path> @ HH:mm:ss` as a full-row link to `/tx/<hash>`, with a short-hash + `unknown` fallback. No more raw hex-hash labels. Batched `api.call(...)` per loaded page projects the tx type.
+
+### Changed
+- **Account pages.** Chain tables (pending, main, scratch, signatures, up to 4 per page) are windowed; Directory and DataLedger migrate to the shared primitive. Authorities, KeyBook pages, KeyPage keys + blacklist, and DataAccount state-entry parts all render through the same component so presentation is uniform at any item count.
+- **Explorer pages.** Blocks, Block detail, Tokens, Validators, Staking stakers, NetworkDashboard entries and peers, and Favourites all share the same scroll / short-list rendering. Column sorting preserved on Tokens and Validators.
+- **Message views.** `TxnInfo` and `MsgInfo` `cause` and `produced` lists, plus `UpdateAccountAuth` / `UpdateKeyPage` operations, `WriteData` entry parts, and `Data` entry parts now use `InfiniteList`. cause/produced rows pick up the enriched transaction format.
+- **`describeProperty` array branch.** Arrays > 10 entries (notably `BlockLedger.entries`) now render through `InfiniteList` instead of inlining every row as a `<Descriptions.Item>`.
+- **MinorBlocks** migrated off its bespoke scroll window and enrichment pipeline onto the shared primitive. `?block=N` cursor binding, anchor-block bar, and anchor-row format preserved.
+- **`CompactList` deleted.** The "+N more" UX is replaced by the short-list / windowed rule.
+
+### Fixed
+- Cursor writeback on Tables now fires after mount-restore completes, not during (prevents the scroll-sync loop from racing with the restore page-walk).
+
 ## [0.2.2] - 2026-04-22
 
 ### Added
