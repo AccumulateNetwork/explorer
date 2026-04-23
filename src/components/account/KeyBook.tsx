@@ -1,4 +1,4 @@
-import { Descriptions, List, Tooltip, Typography } from 'antd';
+import { Descriptions, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine, RiQuestionLine, RiStackLine } from 'react-icons/ri';
@@ -11,6 +11,7 @@ import { AccountRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import Count from '../common/Count';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Nobr } from '../common/Nobr';
@@ -83,22 +84,20 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
       </Title>
 
       {account.pageCount ? (
-        <List
-          size="small"
-          bordered
-          dataSource={pages}
-          renderItem={(item) => (
-            <List.Item>
+        <div style={{ marginBottom: '30px' }}>
+          <InfiniteList
+            className="ant-list-sm"
+            dataSource={pages}
+            renderItem={(item) => (
               <Link to={item}>
                 <IconContext.Provider value={{ className: 'react-icons' }}>
                   <RiStackLine />
                 </IconContext.Provider>
                 {item.toString()}
               </Link>
-            </List.Item>
-          )}
-          style={{ marginBottom: '30px' }}
-        />
+            )}
+          />
+        </div>
       ) : (
         <Paragraph>
           <Text type="secondary">No pages</Text>

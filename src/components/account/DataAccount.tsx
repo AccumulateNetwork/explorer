@@ -1,4 +1,4 @@
-import { Descriptions, List, Tooltip, Typography } from 'antd';
+import { Descriptions, Tooltip, Typography } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import {
@@ -15,6 +15,7 @@ import { AccountRecordOf, dataEntryParts } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
+import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Nobr } from '../common/Nobr';
 import { AccChains } from './AccChains';
@@ -88,17 +89,13 @@ export function DataAccount({
           </Title>
 
           {account.entry ? (
-            <List
-              size="small"
-              bordered
-              dataSource={dataEntryParts(account.entry)}
-              renderItem={(item) => (
-                <List.Item>
-                  <Content>{item}</Content>
-                </List.Item>
-              )}
-              style={{ marginBottom: '30px' }}
-            />
+            <div style={{ marginBottom: '30px' }}>
+              <InfiniteList
+                className="ant-list-sm"
+                dataSource={dataEntryParts(account.entry)}
+                renderItem={(item) => <Content>{item}</Content>}
+              />
+            </div>
           ) : (
             <Paragraph>
               <Text type="secondary">Empty state</Text>
