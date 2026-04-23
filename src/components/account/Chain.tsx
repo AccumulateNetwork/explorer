@@ -1,13 +1,7 @@
-import {
-  List,
-  Skeleton,
-  Table,
-  TablePaginationConfig,
-  Tag,
-  Typography,
-} from 'antd';
+import { Skeleton, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
-import React, { useContext, useState } from 'react';
+import moment from 'moment-timezone';
+import React, { useContext, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -52,17 +46,52 @@ import {
   recipientsOfTx,
   totalAmount,
 } from '../common/Amount';
+import {
+  InfiniteList,
+  InfiniteTable,
+  extractTxType,
+} from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
-import { Outputs } from '../message/Outputs';
 
 type PendingRecord = MessageRecord<TransactionMessage> | ErrorRecord;
 type ChainRecord =
   | ChainEntryRecord<MessageRecord>
   | ChainEntryRecord<ErrorRecord>;
 
+interface EnrichedRow {
+  type?: string;
+  timestamp?: string;
+  adi?: string;
+  path?: string;
+}
+
 const { Text } = Typography;
+
+const CURSOR_PARAMS = {
+  pending: 'pending_start',
+  main: 'main_start',
+  scratch: 'scratch_start',
+  signature: 'signature_start',
+} as const;
+
+function shortHash(entry: Uint8Array | undefined): string {
+  if (!entry || !entry.length) return 'unknown';
+  return Buffer.from(entry).toString('hex').slice(0, 8);
+}
+
+function splitAccount(u: URL | undefined): { adi?: string; path?: string } {
+  if (!u) return {};
+  const s = u.toString().replace(/^acc:\/\//, '');
+  const [adi, ...rest] = s.split('/');
+  return { adi, path: rest.join('/') };
+}
+
+function formatTime(t: Date | string | undefined): string | undefined {
+  if (!t) return undefined;
+  return moment(t).format('HH:mm:ss');
+}
 
 export function Chain(props: {
   url: URLArgs;
@@ -97,19 +126,11 @@ export function Chain(props: {
         ),
   );
 
-  const [txChain, setTxChain] = useState<PendingRecord[] | ChainRecord[]>(null);
+  const [total, setTotal] = useState<number | null>(null);
   const [account, setAccount] = useState<
     TokenAccount | LiteTokenAccount | TokenIssuer | KeyPage | LiteIdentity
   >(null);
   const [issuer, setIssuer] = useState<TokenIssuer>(null);
-  const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    pageSize: 10,
-    showSizeChanger: true,
-    hideOnSinglePage: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
-  });
 
   useAsyncEffect(
     async (mounted) => {
@@ -145,31 +166,61 @@ export function Chain(props: {
     [props.url.toString(), network.id],
   );
 
+  // Prime the total so InfiniteList/Table can decide short vs windowed.
+  // Uses a 1-element fetch; the component will drive the real pages.
   useAsyncEffect(
     async (mounted) => {
-      setTableIsLoading(true);
-      try {
-        const range: RangeOptionsArgs & { expand: true } = {
-          start: (pagination.current - 1) * pagination.pageSize,
-          count: pagination.pageSize,
-          expand: true,
-        };
-        const response = await managed.getPage(pagination);
-
-        if (!mounted()) return;
-
-        setTxChain((response.records || []).reverse());
-        setPagination({
-          ...pagination,
-          total: response.total,
-        });
-      } finally {
-        if (!mounted()) return;
-        setTableIsLoading(false);
-      }
+      const resp = await managed.getPage({ current: 1, pageSize: 1 });
+      if (!mounted()) return;
+      setTotal(resp.total ?? 0);
     },
-    [props.url, JSON.stringify(pagination), network.id],
+    [props.url.toString(), props.type, network.id],
   );
+
+  const pageSize = 25;
+
+  const loadPage = async <T,>(start: number, count: number): Promise<T[]> => {
+    const current = Math.floor(start / count) + 1;
+    const resp = await managed.getPage({ current, pageSize: count });
+    // Preserve the existing reverse-ordering from the prior implementation.
+    return ((resp.records as unknown as T[]) || []).slice().reverse();
+  };
+
+  const enrichChainPage = async (
+    items: ChainRecord[],
+  ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
+    const map = new Map<ChainRecord, EnrichedRow>();
+    for (const item of items) {
+      if (item.value instanceof ErrorRecord) continue;
+      const value = item.value as MessageRecord | undefined;
+      const { adi, path } = splitAccount(item.account);
+      map.set(item, {
+        type: extractTxType(value),
+        timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
+        adi,
+        path,
+      });
+    }
+    return map;
+  };
+
+  const enrichPendingPage = async (
+    items: PendingRecord[],
+  ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
+    const map = new Map<PendingRecord, EnrichedRow>();
+    for (const item of items) {
+      if (item instanceof ErrorRecord) continue;
+      const u = item.id ? URL.parse(item.id.toString()) : undefined;
+      const { adi, path } = splitAccount(u);
+      map.set(item, {
+        type: extractTxType(item),
+        timestamp: formatTime(item.lastBlockTime),
+        adi,
+        path,
+      });
+    }
+    return map;
+  };
 
   const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [
     {
@@ -184,9 +235,7 @@ export function Chain(props: {
       className: 'no-break',
       render({ value, entry }: ChainRecord) {
         if (value instanceof ErrorRecord) {
-          return (
-            <Text type="secondary">{Buffer.from(entry).toString('hex')}</Text>
-          );
+          return <Text type="secondary">{shortHash(entry)}</Text>;
         }
         return <Chain.ID record={value} entry={entry} />;
       },
@@ -245,6 +294,12 @@ export function Chain(props: {
     },
   ];
 
+  const visibleColumns = useMemo(
+    () => columns.filter((x) => !x.hidden),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [account, issuer],
+  );
+
   function Icon() {
     switch (type) {
       case 'pending':
@@ -256,7 +311,7 @@ export function Chain(props: {
     }
   }
 
-  if (!txChain) {
+  if (total === null) {
     return (
       <div className="skeleton-holder">
         <Skeleton active />
@@ -266,58 +321,67 @@ export function Chain(props: {
 
   if (type === 'pending') {
     return (
-      <List
-        size="small"
-        bordered
-        dataSource={txChain as PendingRecord[]}
-        renderItem={(item) => {
-          if (item instanceof ErrorRecord) {
-            return <Text style={{ color: 'red' }}>{item.value.message}</Text>;
-          }
-          return (
-            <List.Item>
-              <Link to={item.id}>
-                <IconContext.Provider value={{ className: 'react-icons' }}>
-                  <Icon />
-                </IconContext.Provider>
-                {item.id.toString()}
-              </Link>
-            </List.Item>
-          );
-        }}
-        style={{ marginBottom: '30px' }}
+      <InfiniteList<PendingRecord>
+        total={total}
+        loadPage={(s, c) => loadPage<PendingRecord>(s, c)}
+        enrichPage={enrichPendingPage as (items: PendingRecord[]) => Promise<ReadonlyMap<unknown, unknown>>}
+        rowKey={(item, i) => (item instanceof ErrorRecord ? `e-${i}` : item.id?.toString() || `i-${i}`)}
+        cursorParam={CURSOR_PARAMS.pending}
+        cursorOf={() => undefined}
+        pageSize={pageSize}
+        renderItem={(item) => (
+          <Chain.PendingRow item={item} icon={<Icon />} />
+        )}
       />
     );
   }
 
   return (
-    <Table
-      dataSource={txChain as ChainRecord[]}
-      columns={columns.filter((x) => !x.hidden)}
-      pagination={pagination}
-      onChange={(p) => setPagination(p)}
+    <InfiniteTable<ChainRecord>
+      className={`chain-table chain-table-${type}`}
+      total={total}
+      loadPage={(s, c) => loadPage<ChainRecord>(s, c)}
+      columns={visibleColumns}
       rowKey="index"
-      loading={tableIsLoading}
-      scroll={{ x: 'max-content' }}
-      expandable={{
-        expandedRowRender: ({ value }) => {
-          if (value instanceof ErrorRecord) return null;
-          if (value.message.type !== MessageType.Transaction) return null;
-          const data = recipientsOfTx(value.message.transaction);
-          return <Outputs outputs={data} issuer={issuer} credits={!issuer} />;
-        },
-        rowExpandable: ({ value }) => {
-          if (value instanceof ErrorRecord) return null;
-          if (value.message.type !== MessageType.Transaction) return null;
-          return (
-            value.message.type === MessageType.Transaction &&
-            recipientsOfTx(value.message.transaction)?.length > 1
-          );
-        },
-      }}
+      enrichPage={enrichChainPage as (items: ChainRecord[]) => Promise<ReadonlyMap<unknown, unknown>>}
+      pageSize={pageSize}
     />
   );
 }
+
+Chain.PendingRow = function ({
+  item,
+  icon,
+}: {
+  item: PendingRecord;
+  icon: React.ReactNode;
+}) {
+  if (item instanceof ErrorRecord) {
+    return <Text style={{ color: 'red' }}>{item.value.message}</Text>;
+  }
+
+  const hash = item.id ? Buffer.from(item.id.hash).toString('hex') : '';
+  const short = hash ? hash.slice(0, 8) : 'unknown';
+  const u = item.id ? URL.parse(item.id.toString()) : undefined;
+  const { adi, path } = splitAccount(u);
+  const type = extractTxType(item);
+  const timestamp = formatTime(item.lastBlockTime);
+
+  const pathSuffix = path ? `/${path}` : '';
+  const label =
+    type
+      ? `${type} · ${adi ?? 'unknown'}${pathSuffix}${timestamp ? ` @ ${timestamp}` : ''}`
+      : `${short} · unknown`;
+
+  return (
+    <Link to={item.id}>
+      <IconContext.Provider value={{ className: 'react-icons' }}>
+        {icon}
+      </IconContext.Provider>
+      {label}
+    </Link>
+  );
+};
 
 Chain.Index = function ({ entry }: { entry: ChainEntryRecord<Record> }) {
   return (
@@ -343,7 +407,7 @@ Chain.ID = function ({
       <IconContext.Provider value={{ className: 'react-icons' }}>
         <Icon />
       </IconContext.Provider>
-      {Buffer.from(entry).toString('hex')}
+      {shortHash(entry)}
     </Link>
   );
 };
@@ -393,7 +457,7 @@ Chain.TxnFrom = function ({
               <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiExchangeLine />
               </IconContext.Provider>
-              {Buffer.from(txn.body.cause.hash).toString('hex')}
+              {shortHash(txn.body.cause.hash)}
             </Link>
           </div>
         );

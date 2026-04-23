@@ -1,7 +1,6 @@
 import {
   Card,
   Progress,
-  Table,
   Tabs,
   Tag,
   Tooltip,
@@ -22,22 +21,16 @@ import { Link } from 'react-router-dom';
 import getSupply from '../../utils/getSupply';
 import { TokenAmount } from '../common/Amount';
 import Count from '../common/Count';
+import { InfiniteTable } from '../common/InfiniteList';
 import { Network } from '../common/Network';
 
 const { Title, Text } = Typography;
 
 const Validators = () => {
   const { network } = useContext(Network);
-  const [validators, setValidators] = useState(null);
   const [totalValidators, setTotalValidators] = useState(-1);
   const [supply, setSupply] = useState(null);
-  const [tableIsLoading, setTableIsLoading] = useState(true);
-  const [pagination, setPagination] = useState({
-    pageSize: 10,
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
-  });
+  const [sort, setSort] = useState({ field: 'totalStaked', order: 'desc' });
 
   const columns = [
     {
@@ -142,38 +135,9 @@ const Validators = () => {
     },
   ];
 
-  const getValidators = async (params = pagination, filters, sorter) => {
-    setTableIsLoading(true);
-
-    let start = 0;
-    let count = 10;
-    let showTotalStart = 1;
-    let showTotalFinish = 10;
-    let sort = 'desc';
-    let field = (sorter && sorter.field) || 'totalStaked';
-
-    if (params) {
-      start = (params.current - 1) * params.pageSize;
-      count = params.pageSize;
-      showTotalStart = (params.current - 1) * params.pageSize + 1;
-      showTotalFinish = params.current * params.pageSize;
-    }
-
-    if (sorter) {
-      if (sorter?.column?.title === 'Self-stake') field = 'balance';
-
-      switch (sorter.order) {
-        case 'ascend':
-          sort = 'asc';
-          break;
-        case 'descend':
-        default:
-          sort = 'desc';
-          break;
-      }
-    }
+  const loadPage = async (start, count) => {
+    if (!network.metrics) throw new Error('Validator metrics endpoint not configured');
     try {
-      if (!network.metrics) throw new Error();
       const response = await axios.get(
         network.metrics +
           '/validators?start=' +
@@ -181,40 +145,65 @@ const Validators = () => {
           '&count=' +
           count +
           '&sort=' +
-          field +
+          sort.field +
           '&order=' +
-          sort,
+          sort.order,
       );
-      if (response && response.data) {
-        // workaround API bug response
-        if (response.data.start === null || response.data.start === undefined) {
-          response.data.start = 0;
-        }
-
-        setValidators(response.data.result);
-        setPagination({
-          ...pagination,
-          current: response.data.start / response.data.count + 1,
-          pageSize: response.data.count,
-          total: response.data.total,
-          showTotal: (total, range) =>
-            `${showTotalStart}-${Math.min(response.data.total, showTotalFinish)} of ${response.data.total}`,
-        });
+      if (!response || !response.data) throw new Error('Validators not found');
+      if (typeof response.data.total === 'number') {
         setTotalValidators(response.data.total);
-      } else {
-        throw new Error('Validators not found');
       }
+      return response.data.result || [];
     } catch (error) {
       if (error.message) message.error(error.message);
+      throw error;
     }
-    setTableIsLoading(false);
   };
 
+  // Prime total on mount / sort change so InfiniteTable can render.
   useEffect(() => {
     document.title = 'Validators | Accumulate Explorer';
     getSupply(network, setSupply);
-    getValidators();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        if (!network.metrics) return;
+        const response = await axios.get(
+          network.metrics +
+            '/validators?start=0&count=1&sort=' +
+            sort.field +
+            '&order=' +
+            sort.order,
+        );
+        if (cancelled) return;
+        if (response?.data?.total != null) {
+          setTotalValidators(response.data.total);
+        }
+      } catch (error) {
+        if (error.message) message.error(error.message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [network.id, sort.field, sort.order]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onSort = (_pagination, _filters, sorter) => {
+    let field = sorter?.field || 'totalStaked';
+    if (sorter?.column?.title === 'Self-stake') field = 'balance';
+    const order =
+      sorter?.order === 'ascend'
+        ? 'asc'
+        : sorter?.order === 'descend'
+          ? 'desc'
+          : 'desc';
+    if (field !== sort.field || order !== sort.order) {
+      setSort({ field, order });
+    }
+  };
 
   return (
     <div>
@@ -256,7 +245,7 @@ const Validators = () => {
               ),
               children: (
                 <>
-                  Anyone with a minimum stake of <strong>50,000 ACME</strong> can
+                  Anyone with a minimum stake of <strong>50,000 ACME</strong> can
                   become a validator.
                   <br />
                   <a
@@ -285,19 +274,23 @@ const Validators = () => {
           <RiAccountCircleLine />
         </IconContext.Provider>
         Validators List
-        {totalValidators ? <Count count={totalValidators} /> : null}
+        {totalValidators > 0 ? <Count count={totalValidators} /> : null}
       </Title>
 
-      <Table
-        dataSource={validators}
-        columns={columns}
-        pagination={pagination}
-        rowKey="entryHash"
-        loading={tableIsLoading}
-        onChange={getValidators}
-        sortDirections={['ascend', 'descend', 'ascend']}
-        scroll={{ x: 'max-content' }}
-      />
+      {totalValidators >= 0 && (
+        <InfiniteTable
+          key={`${sort.field}:${sort.order}`}
+          className="validators-table"
+          total={totalValidators}
+          loadPage={loadPage}
+          columns={columns}
+          rowKey={(row, idx) => row?.entryHash || row?.identity || `v-${idx}`}
+          onSort={onSort}
+          sortDirections={['ascend', 'descend', 'ascend']}
+          cursorParam="validators_start"
+          cursorOf={(row) => row?.identity}
+        />
+      )}
     </div>
   );
 };

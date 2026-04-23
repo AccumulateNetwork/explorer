@@ -3,7 +3,6 @@ import {
   Descriptions,
   Progress,
   Skeleton,
-  Table,
   Tabs,
   Tag,
   Typography,
@@ -19,6 +18,7 @@ import {
 import { Link } from 'react-router-dom';
 
 import Count from '../common/Count';
+import { InfiniteTable } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Network } from '../common/Network';
 
@@ -281,15 +281,17 @@ const Staking = () => {
             {stakers.length ? <Count count={stakers.length} /> : null}
           </Title>
 
-          <Table
-            dataSource={stakers}
-            columns={columns}
-            rowKey={(row) => row.account || row.identity}
-            pagination={false}
-            loading={summaryLoading}
-            scroll={{ x: 'max-content', y: 500 }}
-            sortDirections={['descend', 'ascend', 'descend']}
-          />
+          {summaryLoading ? (
+            <div className="skeleton-holder">
+              <Skeleton active />
+            </div>
+          ) : (
+            <InfiniteTable
+              dataSource={stakers}
+              columns={columns}
+              rowKey={(row) => row.account || row.identity}
+            />
+          )}
         </>
       )}
     </div>

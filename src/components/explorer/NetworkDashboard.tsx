@@ -1,10 +1,11 @@
 import { CloseCircleFilled } from '@ant-design/icons';
 import type { TabsProps } from 'antd';
-import { Alert, Select, Table, Tabs, Tag, Typography } from 'antd';
+import { Alert, Select, Tabs, Tag, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 
 import { RpcError } from 'accumulate.js/lib/api_v3';
 
+import { InfiniteTable } from '../common/InfiniteList';
 import { Network as NetworkCtx } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 
@@ -180,7 +181,7 @@ export function NetworkDashboard() {
               key: part.lcid,
               label: part.id,
               children: (
-                <Table
+                <InfiniteTable
                   dataSource={entries.filter(({ peer, part }) =>
                     filter({ ...peer, part }),
                   )}
@@ -335,7 +336,7 @@ export function NetworkDashboard() {
   );
 
   const allNodes = (
-    <Table
+    <InfiniteTable
       dataSource={peers.filter((peer) => filter(peer))}
       columns={allNodesColumns}
       rowClassName={(peer) => `node-details ${peer.error && 'node-error'}`}

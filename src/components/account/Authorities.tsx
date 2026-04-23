@@ -1,4 +1,4 @@
-import { List, Spin, Tag, Typography } from 'antd';
+import { Spin, Tag, Typography } from 'antd';
 import React, { useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
@@ -14,6 +14,7 @@ import {
 
 import { getParentUrl } from '../../utils/url';
 import Count from '../common/Count';
+import { InfiniteList } from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { queryEffect } from '../common/query';
 
@@ -42,12 +43,11 @@ function Render({
           from {from.toString()}
         </Title>
       )}
-      <List
-        size="small"
-        bordered
-        dataSource={authorities}
-        renderItem={(item) => (
-          <List.Item>
+      <div style={{ marginBottom: '30px' }}>
+        <InfiniteList
+          className="ant-list-sm"
+          dataSource={authorities}
+          renderItem={(item) => (
             <Link to={item.url}>
               <IconContext.Provider value={{ className: 'react-icons' }}>
                 <RiAccountBoxLine />
@@ -59,10 +59,9 @@ function Render({
                 </Tag>
               ) : null}
             </Link>
-          </List.Item>
-        )}
-        style={{ marginBottom: '30px' }}
-      />
+          )}
+        />
+      </div>
     </div>
   );
 }

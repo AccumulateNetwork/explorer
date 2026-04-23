@@ -1,60 +1,49 @@
-import { Table, TablePaginationConfig } from 'antd';
-import row from 'antd/lib/row';
-import { useState } from 'react';
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFolder2Line } from 'react-icons/ri';
 
-import { AccountRecord, RecordType, UrlRecord } from 'accumulate.js/lib/api_v3';
+import {
+  AccountRecord,
+  RecordType,
+  UrlRecord,
+} from 'accumulate.js/lib/api_v3';
 
+import { InfiniteTable } from '../common/InfiniteList';
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/query';
+import { Network } from '../common/Network';
+
+type DirEntry = UrlRecord | AccountRecord;
 
 export function Directory({ record }: { record: AccountRecord }) {
-  const [directory, setDirectory] = useState<(UrlRecord | AccountRecord)[]>(
-    record.directory?.records || [],
-  );
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    pageSize: 10,
-    showSizeChanger: true,
-    pageSizeOptions: ['10', '20', '50', '100'],
-    current: 1,
-    total: record.directory?.total || 0,
-    hideOnSinglePage: true,
-    showTotal: (total, range) => `${range[0]}-${range[1]} of ${total}`,
-  });
+  const { api } = useContext(Network);
+  const total = record.directory?.total || 0;
 
-  queryEffect(record.account.url, {
-    queryType: 'directory',
-    range: {
-      start: (pagination.current - 1) * pagination.pageSize,
-      count: pagination.pageSize,
-      // expand: true, // There's currently no reason to expand since we don't do anything with the info
-    },
-  }).then((r) => {
-    if (r.recordType !== RecordType.Range) return;
-    setDirectory(r.records || []);
-  });
+  const loadPage = async (start: number, count: number): Promise<DirEntry[]> => {
+    const r = await api.query(record.account.url, {
+      queryType: 'directory',
+      range: { start, count },
+    });
+    if (r.recordType !== RecordType.Range) return [];
+    return (r.records as DirEntry[]) || [];
+  };
 
   const columns = [
     {
       title: 'Accounts',
-      render: (row) => <Directory.Entry record={row} />,
+      render: (row: DirEntry) => <Directory.Entry record={row} />,
     },
   ];
 
   return (
-    <Table
-      dataSource={directory}
+    <InfiniteTable<DirEntry>
+      total={total}
+      loadPage={loadPage}
       columns={columns}
-      pagination={pagination}
       rowKey={(r) =>
         r.recordType === RecordType.Url
           ? r.value.toString()
           : r.account.url.toString()
       }
-      onChange={(p) => setPagination(p)}
-      scroll={{ x: 'max-content' }}
     />
   );
 }
@@ -71,7 +60,6 @@ Directory.Entry = function ({ record }: { record: UrlRecord | AccountRecord }) {
     );
   }
 
-  // TODO: do something with the extra info?
   return (
     <Link to={record.account.url}>
       <IconContext.Provider value={{ className: 'react-icons' }}>
