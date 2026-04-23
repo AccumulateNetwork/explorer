@@ -26,7 +26,11 @@ import {
 import { FilterRanger, Ranger, apiQuery } from '../../utils/Ranger';
 import getBlockEntries from '../../utils/getBlockEntries';
 import Count from './Count';
-import { InfiniteTable } from './InfiniteList';
+import {
+  InfiniteTable,
+  extractTxType,
+  useInfiniteListEnrichment,
+} from './InfiniteList';
 import { Link } from './Link';
 import { Network } from './Network';
 
@@ -39,7 +43,11 @@ interface BlockData {
   anchors: ChainEntryRecord[];
 }
 
-const PAGE_SIZE = 100;
+interface TxInfo {
+  type?: string;
+}
+
+const PAGE_SIZE = 25;
 
 function readBlockFromUrl(search: string): number | null {
   const raw = new URLSearchParams(search).get('block');
@@ -146,6 +154,7 @@ const MinorBlocks = () => {
     const rootIndex = (chain as any)?.value?.value?.rootIndexIndex as
       | number
       | undefined;
+    const txInfo = useInfiniteListEnrichment<string, TxInfo>();
 
     if (!transactions.length && !anchors.length)
       return <Text disabled>Empty block</Text>;
@@ -181,6 +190,11 @@ const MinorBlocks = () => {
           const majorBlockTime =
             (item as any)?.value?.message?.majorBlockTime ||
             (item as any)?.value?.majorBlockTime;
+          const hex = Buffer.from(item.entry).toString('hex');
+          const accountPath = item.account
+            .toString()
+            .replace(/^acc:\/\//, '');
+          const type = txInfo?.get(hex)?.type;
 
           return (
             <List.Item key={item.index} style={{ background: 'none' }}>
@@ -224,8 +238,16 @@ const MinorBlocks = () => {
                       </>
                     ) : (
                       <>
-                        <code>{Buffer.from(item.entry).toString('hex')}</code>@
-                        {item.account.toString().replace(/^acc:\/\//, '')}
+                        <code>{type || `${hex.slice(0, 8)} unknown`}</code> ·{' '}
+                        {accountPath}
+                        {block.time && (
+                          <>
+                            {' @ '}
+                            <code>
+                              {moment(block.time).format('HH:mm:ss')}
+                            </code>
+                          </>
+                        )}
                       </>
                     )}
                   </span>
@@ -336,6 +358,45 @@ const MinorBlocks = () => {
     [blocks, txnBlocks, showAnchors, onApiError],
   );
 
+  // Tx-row enrichment: one batched message-query per page, keyed by the
+  // entry's tx hash (hex). Non-fatal — row renderer falls back to a
+  // short-hash + "unknown" when a lookup is absent.
+  const enrichPage = useCallback(
+    async (pageBlocks: BlockData[]): Promise<Map<string, TxInfo>> => {
+      const out = new Map<string, TxInfo>();
+      type TxRef = { hex: string; entry: ChainEntryRecord };
+      const refs: TxRef[] = [];
+      for (const b of pageBlocks) {
+        for (const entry of b.transactions) {
+          refs.push({
+            hex: Buffer.from(entry.entry).toString('hex'),
+            entry,
+          });
+        }
+      }
+      if (!refs.length) return out;
+      try {
+        const txRecords = await api.call(
+          refs.map(({ entry }) => ({
+            method: 'query',
+            params: {
+              scope: entry.account.withTxID(entry.entry).toString(),
+              query: { queryType: 'default' },
+            },
+          })),
+        );
+        refs.forEach((ref, i) => {
+          const type = extractTxType(txRecords[i]);
+          if (type) out.set(ref.hex, { type });
+        });
+      } catch (e) {
+        console.warn('Tx-row enrichment failed:', (e as Error)?.message);
+      }
+      return out;
+    },
+    [api],
+  );
+
   // Treat the page size * a large multiplier as total so InfiniteTable keeps
   // `hasMore` true until a short page is returned. We don't know the
   // ultimate total until the Ranger exhausts.
@@ -414,6 +475,7 @@ const MinorBlocks = () => {
         rowKey={(x) => x.chain.index}
         total={totalGuess}
         loadPage={loadPage}
+        enrichPage={enrichPage}
         pageSize={PAGE_SIZE}
         cursorParam="block"
         cursorOf={(b) => b.block?.index}
