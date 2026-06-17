@@ -12,6 +12,7 @@ import {
   dataEntryParts,
   isRecordOfDataTxn,
 } from '../../utils/types';
+import { encodeURLSpaces } from '../../utils/url';
 import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
 import { InfiniteList } from '../common/InfiniteList';
@@ -35,7 +36,7 @@ export function Data() {
     } else {
       let url: URL;
       try {
-        url = URL.parse(params.url);
+        url = URL.parse(encodeURLSpaces(params.url));
       } catch (error) {
         setNotFound(true);
       }
