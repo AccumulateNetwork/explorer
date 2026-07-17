@@ -5,6 +5,18 @@ stages:
 variables:
   VITE_NETWORK: any
 
+# Typecheck job (runs on all branches)
+typecheck:
+  stage: build
+  image: node:20
+  script:
+    - yarn install
+    - yarn check
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
 # Build job (runs on all branches)
 build:
   stage: build

@@ -182,7 +182,7 @@ export function Signature({
 
         {'memo' in signature && signature.memo && (
           <Descriptions.Item label={labelMemo}>
-            <Content type="ASCII">{signature.memo}</Content>
+            <Content type="Text">{signature.memo}</Content>
           </Descriptions.Item>
         )}
 
