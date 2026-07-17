@@ -1,37 +1,45 @@
 /**
- * WalletContext - React context for wallet daemon integration
+ * WalletContext — React state for the local wallet integration.
  *
- * Provides wallet state and actions to the explorer components.
+ * The client talks to the same-origin `/v1` API (see walletMode.ts), so there
+ * is no endpoint to configure and no cross-origin probe. Auto-connect only
+ * runs in the local-wallet build; the production build never touches the API.
  */
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { WalletClient, WalletStatus, KeyInfo, VaultInfo, walletClient } from './WalletClient';
+import { isLocalWallet } from '../../walletMode';
+import {
+  AccountInfo,
+  KeyInfo,
+  VaultInfo,
+  WalletStatus,
+  walletClient,
+} from './WalletClient';
 
 export interface WalletContextValue {
-  // Connection state
   connected: boolean;
   connecting: boolean;
   error: string | null;
 
-  // Wallet data
   status: WalletStatus | null;
   activeVault: VaultInfo | null;
   keys: KeyInfo[];
+  accounts: AccountInfo[];
 
-  // Actions
-  connect: (endpoint?: string) => Promise<void>;
+  connect: () => Promise<void>;
   disconnect: () => void;
-  refreshKeys: () => Promise<void>;
   selectVault: (vaultName: string) => Promise<void>;
   unlockVault: (passphrase: string) => Promise<void>;
+  refresh: () => Promise<void>;
 
-  // Signing
-  canSign: (publicKeyHash: string) => boolean;
-  getSigningKey: (publicKeyHash: string) => KeyInfo | undefined;
-
-  // Settings
-  endpoint: string;
-  setEndpoint: (endpoint: string) => void;
+  /** The wallet key whose lite address matches, if any. */
+  keyForLiteAddress: (url: string) => KeyInfo | undefined;
 }
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -48,68 +56,45 @@ export function useWalletRequired(): WalletContextValue {
   return ctx;
 }
 
-interface WalletProviderProps {
-  children: React.ReactNode;
-}
-
-const STORAGE_KEY = 'accumulate-wallet-endpoint';
-const DEFAULT_ENDPOINT = 'http://127.0.0.1:8079/v1';
-
-export function WalletProvider({ children }: WalletProviderProps) {
+export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<WalletStatus | null>(null);
   const [activeVault, setActiveVault] = useState<VaultInfo | null>(null);
   const [keys, setKeys] = useState<KeyInfo[]>([]);
-  const [endpoint, setEndpointState] = useState<string>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved || DEFAULT_ENDPOINT;
-  });
+  const [accounts, setAccounts] = useState<AccountInfo[]>([]);
 
-  // Update client endpoint when it changes
-  useEffect(() => {
-    walletClient.setEndpoint(endpoint);
-    localStorage.setItem(STORAGE_KEY, endpoint);
-  }, [endpoint]);
-
-  const setEndpoint = useCallback((newEndpoint: string) => {
-    setEndpointState(newEndpoint);
-    setConnected(false);
-    setStatus(null);
-    setActiveVault(null);
-    setKeys([]);
+  const loadVault = useCallback(async (vault: VaultInfo) => {
+    setActiveVault(vault);
+    if (!vault.unlocked) {
+      setKeys([]);
+      setAccounts([]);
+      return;
+    }
+    const [vaultKeys, vaultAccounts] = await Promise.all([
+      walletClient.listKeys(vault.name),
+      walletClient.listAccounts(vault.name).catch(() => []),
+    ]);
+    setKeys(vaultKeys);
+    setAccounts(vaultAccounts);
   }, []);
 
-  const connect = useCallback(async (customEndpoint?: string) => {
-    if (customEndpoint) {
-      setEndpoint(customEndpoint);
-    }
-
+  const connect = useCallback(async () => {
     setConnecting(true);
     setError(null);
-
     try {
-      const isConnected = await walletClient.isConnected();
-      if (!isConnected) {
-        throw new Error('Cannot connect to wallet daemon');
+      if (!(await walletClient.isConnected())) {
+        throw new Error('Wallet daemon is not reachable');
       }
-
-      const walletStatus = await walletClient.getStatus();
+      const walletStatus = await walletClient.status();
       setStatus(walletStatus);
 
-      // Auto-select first unlocked vault, or first vault
-      if (walletStatus.vaults.length > 0) {
-        const unlockedVault = walletStatus.vaults.find(v => v.unlocked);
-        const vault = unlockedVault || walletStatus.vaults[0];
-        setActiveVault(vault);
-
-        if (vault.unlocked) {
-          const vaultKeys = await walletClient.listKeys(vault.name);
-          setKeys(vaultKeys);
-        }
+      const vault =
+        walletStatus.vaults.find((v) => v.unlocked) ?? walletStatus.vaults[0];
+      if (vault) {
+        await loadVault(vault);
       }
-
       setConnected(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Connection failed');
@@ -117,86 +102,55 @@ export function WalletProvider({ children }: WalletProviderProps) {
     } finally {
       setConnecting(false);
     }
-  }, [setEndpoint]);
+  }, [loadVault]);
 
   const disconnect = useCallback(() => {
     setConnected(false);
     setStatus(null);
     setActiveVault(null);
     setKeys([]);
+    setAccounts([]);
     setError(null);
   }, []);
 
-  const refreshKeys = useCallback(async () => {
-    if (!activeVault?.unlocked) {
-      setKeys([]);
-      return;
-    }
+  const selectVault = useCallback(
+    async (vaultName: string) => {
+      const vault = status?.vaults.find((v) => v.name === vaultName);
+      if (vault) await loadVault(vault);
+    },
+    [status, loadVault],
+  );
 
-    try {
-      const vaultKeys = await walletClient.listKeys(activeVault.name);
-      setKeys(vaultKeys);
-    } catch (err) {
-      console.error('Failed to refresh keys:', err);
-    }
-  }, [activeVault]);
+  const refresh = useCallback(async () => {
+    const walletStatus = await walletClient.status();
+    setStatus(walletStatus);
+    const vault = activeVault
+      ? walletStatus.vaults.find((v) => v.name === activeVault.name)
+      : undefined;
+    if (vault) await loadVault(vault);
+  }, [activeVault, loadVault]);
 
-  const selectVault = useCallback(async (vaultName: string) => {
-    if (!status) return;
+  const unlockVault = useCallback(
+    async (passphrase: string) => {
+      if (!activeVault) throw new Error('No vault selected');
+      await walletClient.unlockVault(activeVault.name, passphrase);
+      await refresh();
+    },
+    [activeVault, refresh],
+  );
 
-    const vault = status.vaults.find(v => v.name === vaultName);
-    if (!vault) return;
+  const keyForLiteAddress = useCallback(
+    (url: string) => keys.find((k) => k.liteAddress === url),
+    [keys],
+  );
 
-    setActiveVault(vault);
-
-    if (vault.unlocked) {
-      try {
-        const vaultKeys = await walletClient.listKeys(vault.name);
-        setKeys(vaultKeys);
-      } catch (err) {
-        console.error('Failed to load keys:', err);
-        setKeys([]);
-      }
-    } else {
-      setKeys([]);
-    }
-  }, [status]);
-
-  const unlockVault = useCallback(async (passphrase: string) => {
-    if (!activeVault) {
-      throw new Error('No vault selected');
-    }
-
-    await walletClient.unlockVault(activeVault.name, passphrase);
-
-    // Refresh status and keys
-    const newStatus = await walletClient.getStatus();
-    setStatus(newStatus);
-
-    const updatedVault = newStatus.vaults.find(v => v.name === activeVault.name);
-    if (updatedVault) {
-      setActiveVault(updatedVault);
-      if (updatedVault.unlocked) {
-        const vaultKeys = await walletClient.listKeys(updatedVault.name);
-        setKeys(vaultKeys);
-      }
-    }
-  }, [activeVault]);
-
-  const canSign = useCallback((publicKeyHash: string) => {
-    const normalizedHash = publicKeyHash.toLowerCase().replace(/^0x/, '');
-    return keys.some(k => k.publicKeyHash.toLowerCase() === normalizedHash);
-  }, [keys]);
-
-  const getSigningKey = useCallback((publicKeyHash: string): KeyInfo | undefined => {
-    const normalizedHash = publicKeyHash.toLowerCase().replace(/^0x/, '');
-    return keys.find(k => k.publicKeyHash.toLowerCase() === normalizedHash);
-  }, [keys]);
-
-  // Auto-connect on mount
+  // Auto-connect only in the local-wallet build. The production build must
+  // never touch the API (there is no daemon and no endpoint to probe).
   useEffect(() => {
-    connect();
-  }, []);
+    if (isLocalWallet) {
+      void connect();
+    }
+  }, [connect]);
 
   const value: WalletContextValue = {
     connected,
@@ -205,20 +159,16 @@ export function WalletProvider({ children }: WalletProviderProps) {
     status,
     activeVault,
     keys,
+    accounts,
     connect,
     disconnect,
-    refreshKeys,
     selectVault,
     unlockVault,
-    canSign,
-    getSigningKey,
-    endpoint,
-    setEndpoint,
+    refresh,
+    keyForLiteAddress,
   };
 
   return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
+    <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
   );
 }

@@ -22,6 +22,7 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
+import { WalletDock } from './wallet/WalletDock';
 import { Connect } from './web3/Connect';
 
 const { Header, Content, Footer } = Layout;
@@ -122,6 +123,7 @@ export default function Explorer() {
                 <a href="mailto:support@defidevs.io">support@defidevs.io</a>
               </p>
             </Footer>
+            <WalletDock />
           </Layout>
         </Router>
       </Connect>
