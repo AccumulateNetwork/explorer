@@ -17,6 +17,18 @@ typecheck:
     paths:
       - node_modules/
 
+# Unit tests (runs on all branches)
+test:
+  stage: build
+  image: node:20
+  script:
+    - yarn install
+    - yarn test
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
 # Build job (runs on all branches)
 build:
   stage: build
