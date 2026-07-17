@@ -17,7 +17,7 @@ import {
   RiPercentLine,
   RiShieldCheckLine,
 } from 'react-icons/ri';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 
 import Logo from '../common/Logo';
@@ -61,7 +61,7 @@ export function MainMenu({
   const [isWide, setIsWide] = useState(window.innerWidth > 750);
   addEventListener('resize', () => setIsWide(window.innerWidth > 750));
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const web3 = useWeb3();
   const [currentMenu, setCurrentMenu] = useState<any>([
     window.location.pathname,
@@ -74,7 +74,6 @@ export function MainMenu({
       setCurrentMenu([e.key]);
     }
   };
-
 
   useEffect(() => {
     setCurrentMenu(window.location.pathname);
@@ -140,7 +139,7 @@ export function MainMenu({
               {
                 label: 'Open dashboard',
                 key: 'dashboard',
-                onClick: () => history.push('/web3'),
+                onClick: () => navigate('/web3'),
                 icon: <BarsOutlined />,
               },
               {
@@ -160,7 +159,7 @@ export function MainMenu({
         : {
             key: 'web3',
             label: 'Connect Web3 Wallet',
-            onClick: () => web3.connect().then(() => history.push('/web3')),
+            onClick: () => web3.connect().then(() => navigate('/web3')),
           }),
     {
       key: 'blocks',

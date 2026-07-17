@@ -3,7 +3,7 @@ import { Alert, Button, Skeleton, Tooltip, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { URLArgs } from 'accumulate.js';
 import { TransactionArgs } from 'accumulate.js/lib/core';
@@ -24,7 +24,7 @@ const { Title } = Typography;
 
 export function Dashboard() {
   const web3 = useWeb3();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { api } = useContext(Network);
   const linkedAccounts = web3.linked?.direct?.filter(
     (x) => !web3.publicKey?.lite?.equals(x.url),
@@ -59,7 +59,7 @@ export function Dashboard() {
   const [connected] = useShared(Settings, 'connected');
   useEffect(() => {
     if (!connected) {
-      history.push('/');
+      navigate('/');
     }
   }, [connected]);
 

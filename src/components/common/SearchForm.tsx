@@ -2,7 +2,7 @@ import { Form, Input, InputRef } from 'antd';
 import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
 import moment from 'moment-timezone';
 import React, { useEffect, useRef, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
@@ -13,7 +13,7 @@ export function SearchForm({
 }: {
   searching?: (didLoad: (_: any) => void) => void;
 }) {
-  const history = useHistory();
+  const routerNavigate = useNavigate();
   const location = useLocation();
 
   const [searchTs, setSearchTs] = useState(null);
@@ -42,7 +42,7 @@ export function SearchForm({
 
   const searchRef = useRef<InputRef>(null);
   const navigate = (value) => {
-    if (history?.location?.pathname === value) {
+    if (location.pathname === value) {
       searchForm.resetFields();
       return;
     }
@@ -53,7 +53,7 @@ export function SearchForm({
         searchForm.resetFields();
       });
     }
-    history.push(value);
+    routerNavigate(value);
   };
 
   const handleSearch = async (value) => {

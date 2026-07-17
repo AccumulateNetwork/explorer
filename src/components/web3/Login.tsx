@@ -3,14 +3,14 @@ import { Button, Dropdown } from 'antd';
 import React from 'react';
 import { IconContext } from 'react-icons';
 import { FaWallet } from 'react-icons/fa';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { useWeb3 } from './Context';
 
 export default Login;
 
 export function Login() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const web3 = useWeb3();
 
   const Icon = () => (
@@ -20,7 +20,7 @@ export function Login() {
   );
 
   const goToWallet = () =>
-    history.push(
+    navigate(
       `/acc/${web3.liteIdentity.url.toString().replace(/^acc:\/\//, '')}`,
     );
 

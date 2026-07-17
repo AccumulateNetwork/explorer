@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType } from 'accumulate.js/lib/messaging';
@@ -68,10 +68,10 @@ const EnrichmentContext = createContext<EnrichmentMap | null>(null);
  * Read the current enrichment map inside a `renderItem`. Returns `null`
  * when no `enrichPage` was provided by the caller.
  */
-export function useInfiniteListEnrichment<K = unknown, V = unknown>(): ReadonlyMap<
-  K,
-  V
-> | null {
+export function useInfiniteListEnrichment<
+  K = unknown,
+  V = unknown,
+>(): ReadonlyMap<K, V> | null {
   return useContext(EnrichmentContext) as ReadonlyMap<K, V> | null;
 }
 
@@ -167,7 +167,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
   // Always call hooks unconditionally; the history/location are only
   // *used* when `cursorParam` is set. This keeps hook order stable if a
   // caller toggles the prop.
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const readCursor = useCallback((): string | null => {
@@ -303,16 +303,19 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
           if (top !== undefined) {
             const c = cursorOf(top);
             if (c !== null && c !== undefined) {
-              const current = new URLSearchParams(
-                window.location.search,
-              ).get(cursorParam);
+              const current = new URLSearchParams(window.location.search).get(
+                cursorParam,
+              );
               if (current !== String(c)) {
                 const params = new URLSearchParams(window.location.search);
                 params.set(cursorParam, String(c));
-                history.replace({
-                  pathname: window.location.pathname,
-                  search: `?${params.toString()}`,
-                });
+                navigate(
+                  {
+                    pathname: window.location.pathname,
+                    search: `?${params.toString()}`,
+                  },
+                  { replace: true },
+                );
               }
             }
           }
@@ -470,7 +473,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     sortDirections,
   } = props;
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const server = isServerTableProps(props);
   const total = server ? props.total : props.dataSource.length;
@@ -671,16 +674,19 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
           if (top !== undefined) {
             const c = cursorOf(top);
             if (c !== null && c !== undefined) {
-              const current = new URLSearchParams(
-                window.location.search,
-              ).get(cursorParam);
+              const current = new URLSearchParams(window.location.search).get(
+                cursorParam,
+              );
               if (current !== String(c)) {
                 const params = new URLSearchParams(window.location.search);
                 params.set(cursorParam, String(c));
-                history.replace({
-                  pathname: window.location.pathname,
-                  search: `?${params.toString()}`,
-                });
+                navigate(
+                  {
+                    pathname: window.location.pathname,
+                    search: `?${params.toString()}`,
+                  },
+                  { replace: true },
+                );
               }
             }
           }

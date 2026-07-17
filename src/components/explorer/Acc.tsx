@@ -2,7 +2,7 @@ import { Alert, Skeleton, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
-import { useHistory, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { URL, errors } from 'accumulate.js';
 import {
@@ -46,15 +46,18 @@ export function Acc({
   didLoad?: (_: any) => void;
 }) {
   const web3 = useWeb3();
-  const history = useHistory();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [record, setRecord] = useState<AccountRecord | MessageRecord>(null);
   const [rawDataDisplay, setRawDataDisplay] = useState(false);
   const [error, setError] = useState(null);
 
-  const params = useParams<{ hash: string; url: string }>();
-  const url = tryParseURL(
-    params.hash ? `${params.hash}@unknown` : `${params.url}`,
-  );
+  // Splat routes /acc/* and /tx/* put the (slash-containing) account or tx
+  // reference in the '*' param; /tx/ carries a bare hash, /acc/ a full URL.
+  const params = useParams();
+  const ref = params['*'] || '';
+  const isTx = location.pathname.startsWith('/tx/');
+  const url = tryParseURL(isTx ? `${ref}@unknown` : ref);
   document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
 
   queryEffect(url, { queryType: 'default' })
@@ -83,8 +86,9 @@ export function Acc({
           TransactionType.BlockValidatorAnchor) &&
       record.produced?.records?.length == 1
     ) {
-      history.replace(
+      navigate(
         `/acc/${record.produced.records[0].value.toString().replace(/^acc:\/\//, '')}`,
+        { replace: true },
       );
     }
   }, [record]);

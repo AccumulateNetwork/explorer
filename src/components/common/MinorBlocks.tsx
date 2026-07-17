@@ -13,7 +13,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine } from 'react-icons/ri';
 import { TiAnchor } from 'react-icons/ti';
-import { Link as DomLink, useHistory, useLocation } from 'react-router-dom';
+import { Link as DomLink, useLocation, useNavigate } from 'react-router-dom';
 
 import {
   BlockQueryArgsWithType,
@@ -62,7 +62,7 @@ const MinorBlocks = () => {
   const [showAnchors, setShowAnchors] = useState(true);
   const [totalEntries, setTotalEntries] = useState(-1);
 
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
   const [anchorInput, setAnchorInput] = useState<number | null>(
     readBlockFromUrl(location.search),
@@ -191,9 +191,7 @@ const MinorBlocks = () => {
             (item as any)?.value?.message?.majorBlockTime ||
             (item as any)?.value?.majorBlockTime;
           const hex = Buffer.from(item.entry).toString('hex');
-          const accountPath = item.account
-            .toString()
-            .replace(/^acc:\/\//, '');
+          const accountPath = item.account.toString().replace(/^acc:\/\//, '');
           const type = txInfo?.get(hex)?.type;
 
           return (
@@ -214,9 +212,7 @@ const MinorBlocks = () => {
                         {block.time && (
                           <>
                             {' @ '}
-                            <code>
-                              {moment(block.time).format('HH:mm:ss')}
-                            </code>
+                            <code>{moment(block.time).format('HH:mm:ss')}</code>
                           </>
                         )}
                         {rootIndex !== undefined && (
@@ -243,9 +239,7 @@ const MinorBlocks = () => {
                         {block.time && (
                           <>
                             {' @ '}
-                            <code>
-                              {moment(block.time).format('HH:mm:ss')}
-                            </code>
+                            <code>{moment(block.time).format('HH:mm:ss')}</code>
                           </>
                         )}
                       </>
@@ -405,16 +399,19 @@ const MinorBlocks = () => {
   const jumpToBlock = (n: number) => {
     if (!Number.isFinite(n) || n < 0) return;
     setAnchorInput(n);
-    history.replace({
-      pathname: location.pathname,
-      search: `?block=${n}`,
-    });
+    navigate(
+      {
+        pathname: location.pathname,
+        search: `?block=${n}`,
+      },
+      { replace: true },
+    );
     setRemountKey((k) => k + 1);
   };
 
   const resetToLatest = () => {
     setAnchorInput(null);
-    history.replace({ pathname: location.pathname, search: '' });
+    navigate({ pathname: location.pathname, search: '' }, { replace: true });
     setRemountKey((k) => k + 1);
   };
 
@@ -450,9 +447,7 @@ const MinorBlocks = () => {
         <Text strong>Anchor block:</Text>
         <InputNumber
           value={anchorInput ?? undefined}
-          onChange={(v) =>
-            setAnchorInput(typeof v === 'number' ? v : null)
-          }
+          onChange={(v) => setAnchorInput(typeof v === 'number' ? v : null)}
           onPressEnter={() => anchorInput !== null && jumpToBlock(anchorInput)}
           placeholder="Block #"
           min={0}
