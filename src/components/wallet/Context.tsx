@@ -1,19 +1,14 @@
 /**
  * WalletContext — React state for the local wallet integration.
  *
- * The client talks to the same-origin `/v1` API (see walletMode.ts), so there
- * is no endpoint to configure and no cross-origin probe. Auto-connect only
- * runs in the local-wallet build; the production build never touches the API.
+ * Network selection is lazy: the wallet is bound to the network the explorer
+ * has selected, but nothing is probed or connected until the user asks the
+ * wallet to do something. Because every wallet action (including unlocking)
+ * names the network, the user always knows which network they are acting on.
  */
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 
-import { isLocalWallet } from '../../walletMode';
+import { Network } from '../common/Network';
 import {
   AccountInfo,
   KeyInfo,
@@ -26,6 +21,10 @@ export interface WalletContextValue {
   connected: boolean;
   connecting: boolean;
   error: string | null;
+
+  /** The network wallet operations act on (the explorer's selected network). */
+  networkLabel: string;
+  networkId: string;
 
   status: WalletStatus | null;
   activeVault: VaultInfo | null;
@@ -57,6 +56,7 @@ export function useWalletRequired(): WalletContextValue {
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
+  const { network } = useContext(Network);
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,6 +64,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [activeVault, setActiveVault] = useState<VaultInfo | null>(null);
   const [keys, setKeys] = useState<KeyInfo[]>([]);
   const [accounts, setAccounts] = useState<AccountInfo[]>([]);
+
+  // Bind the client to the selected network so every request targets that
+  // network's wallet. Set synchronously (not in an effect) so it is in place
+  // before any user-triggered call fires. Network switches reload the page,
+  // so re-reading here on each render keeps this current.
+  walletClient.setNetwork(network.api[0]);
 
   const loadVault = useCallback(async (vault: VaultInfo) => {
     setActiveVault(vault);
@@ -144,18 +150,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     [keys],
   );
 
-  // Auto-connect only in the local-wallet build. The production build must
-  // never touch the API (there is no daemon and no endpoint to probe).
-  useEffect(() => {
-    if (isLocalWallet) {
-      void connect();
-    }
-  }, [connect]);
+  // No auto-connect: network selection is lazy. The wallet only touches the
+  // daemon when the user asks it to (opening the panel and connecting, or an
+  // action), at which point it acts on the currently selected network.
 
   const value: WalletContextValue = {
     connected,
     connecting,
     error,
+    networkLabel: network.label,
+    networkId: network.id,
     status,
     activeVault,
     keys,

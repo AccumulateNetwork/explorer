@@ -125,4 +125,37 @@ describe('WalletClient', () => {
     fetchMock.mockResolvedValueOnce(new Response('', { status: 403 }));
     expect(await new WalletClient().isConnected()).toBe(false);
   });
+
+  it('sends the selected network as the X-Accumulate-Api header', async () => {
+    withToken('tok');
+    let sawHeader: string | undefined;
+    fetchMock.mockImplementationOnce(
+      async (_url: string, init: RequestInit) => {
+        sawHeader = (init.headers as Record<string, string>)[
+          'X-Accumulate-Api'
+        ];
+        return rpcResult({ vaults: [] });
+      },
+    );
+
+    const client = new WalletClient();
+    client.setNetwork('https://kermit.accumulatenetwork.io');
+    await client.status();
+    expect(sawHeader).toBe('https://kermit.accumulatenetwork.io');
+  });
+
+  it('omits the network header when none is selected (lazy)', async () => {
+    withToken('tok');
+    let hadHeader = true;
+    fetchMock.mockImplementationOnce(
+      async (_url: string, init: RequestInit) => {
+        hadHeader =
+          'X-Accumulate-Api' in (init.headers as Record<string, string>);
+        return rpcResult({ vaults: [] });
+      },
+    );
+
+    await new WalletClient().status();
+    expect(hadHeader).toBe(false);
+  });
 });

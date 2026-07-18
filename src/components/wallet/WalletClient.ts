@@ -63,9 +63,20 @@ export class WalletClient {
   private endpoint: string;
   private requestId = 0;
   private token: string | null = null;
+  private networkApi: string | null = null;
 
   constructor(endpoint: string = walletApiBase()) {
     this.endpoint = endpoint;
+  }
+
+  /**
+   * Bind operations to a network by its API base (e.g.
+   * https://kermit.accumulatenetwork.io). The daemon uses this to pick that
+   * network's wallet and submit to that network. Set lazily — only when the
+   * user acts on a specific network, so nothing is chosen on page load.
+   */
+  setNetwork(apiBase: string | null) {
+    this.networkApi = apiBase;
   }
 
   /** True if the daemon is reachable and a session token is obtainable. */
@@ -186,12 +197,16 @@ export class WalletClient {
 
     // Retry once on 401 with a freshly minted token (daemon may have restarted).
     for (let attempt = 0; attempt < 2; attempt++) {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      };
+      if (this.networkApi) {
+        headers['X-Accumulate-Api'] = this.networkApi;
+      }
       const response = await fetch(this.endpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           jsonrpc: '2.0',
           id: ++this.requestId,

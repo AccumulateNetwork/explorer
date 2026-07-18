@@ -56,7 +56,12 @@ export function WalletPanel({ visible, onClose }: WalletPanelProps) {
 
   return (
     <Drawer
-      title="Accumulate Wallet"
+      title={
+        <Space>
+          Accumulate Wallet
+          {wallet && <Tag color="geekblue">{wallet.networkLabel}</Tag>}
+        </Space>
+      }
       placement="right"
       width={420}
       open={visible}
@@ -80,21 +85,25 @@ export function WalletPanel({ visible, onClose }: WalletPanelProps) {
 
 function PanelBody() {
   const wallet = useWallet()!;
-  const { connected, connecting, error, status, activeVault } = wallet;
+  const { connected, connecting, error, status, activeVault, networkLabel } =
+    wallet;
 
   if (connecting) {
-    return <Spin tip="Connecting to wallet…" />;
+    return <Spin tip={`Connecting to the ${networkLabel} wallet…`} />;
   }
 
   if (!connected) {
+    // Lazy: nothing is touched until the user connects, and the button names
+    // the network so the user knows which wallet they are about to open.
     return (
       <Space direction="vertical" style={{ width: '100%' }}>
         {error && <Alert type="warning" message={error} showIcon />}
         <Text type="secondary">
-          Start the wallet with <code>ccli webui</code> and connect.
+          Connect to your <strong>{networkLabel}</strong> wallet (served by{' '}
+          <code>ccli webui</code>).
         </Text>
         <Button type="primary" onClick={() => wallet.connect()}>
-          Connect to Wallet
+          Connect to {networkLabel} wallet
         </Button>
       </Space>
     );
@@ -145,14 +154,14 @@ function VaultSection() {
 }
 
 function UnlockForm() {
-  const { unlockVault } = useWallet()!;
+  const { unlockVault, activeVault, networkLabel } = useWallet()!;
   const [busy, setBusy] = useState(false);
 
   const onFinish = async ({ passphrase }: { passphrase: string }) => {
     setBusy(true);
     try {
       await unlockVault(passphrase);
-      message.success('Vault unlocked');
+      message.success(`${networkLabel} wallet unlocked`);
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Unlock failed');
     } finally {
@@ -160,17 +169,31 @@ function UnlockForm() {
     }
   };
 
+  // The password prompt must always identify the network being unlocked, so
+  // the user never enters a passphrase without knowing which network's wallet
+  // (and keys) it decrypts.
   return (
     <Form layout="vertical" onFinish={onFinish}>
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 12 }}
+        message={
+          <span>
+            Unlocking the <strong>{networkLabel}</strong> wallet
+            {activeVault?.name ? ` (vault “${activeVault.name}”)` : ''}
+          </span>
+        }
+      />
       <Form.Item
-        label="Passphrase"
+        label={`${networkLabel} wallet passphrase`}
         name="passphrase"
         rules={[{ required: true, message: 'Enter the vault passphrase' }]}
       >
         <Input.Password autoComplete="off" />
       </Form.Item>
       <Button type="primary" htmlType="submit" loading={busy} block>
-        Unlock Vault
+        Unlock {networkLabel} wallet
       </Button>
     </Form>
   );
