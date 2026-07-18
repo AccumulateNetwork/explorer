@@ -14,6 +14,7 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { isRecordOf } from '../../utils/types';
+import { encodeURLSpaces } from '../../utils/url';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
@@ -29,7 +30,7 @@ const { Title } = Typography;
 
 function tryParseURL(s: string) {
   try {
-    return URL.parse(s);
+    return URL.parse(encodeURLSpaces(s));
   } catch (error) {
     return new URL({
       scheme: 'acc',

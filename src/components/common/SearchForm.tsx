@@ -6,6 +6,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
+import { encodeURLSpaces } from '../../utils/url';
+
 const { Search } = Input;
 
 export function SearchForm({
@@ -57,22 +59,32 @@ export function SearchForm({
   };
 
   const handleSearch = async (value) => {
-    value = value.replaceAll(/\s/g, '');
     setSearchTs(moment());
     setSearchText(value);
-    var ishash = /^[A-Fa-f0-9]{64}$/.test(value);
-    var isnum = /^\d+$/.test(value);
-    if (isnum && Number.parseInt(value) >= 0) {
-      navigate('/block/' + value);
+
+    // Hashes, block numbers and Factoid addresses never contain spaces, so
+    // detect them using a whitespace-free copy of the input.
+    const compact = value.replaceAll(/\s/g, '');
+    var ishash = /^[A-Fa-f0-9]{64}$/.test(compact);
+    var isnum = /^\d+$/.test(compact);
+    if (isnum && Number.parseInt(compact) >= 0) {
+      navigate('/block/' + compact);
     } else if (ishash) {
-      navigate(`/tx/${value}`);
-    } else if (isValidPublicFctAddress(value)) {
+      navigate(`/tx/${compact}`);
+    } else if (isValidPublicFctAddress(compact)) {
       const liteIdentityUrl = await generateLiteIdentity(
-        addressToRcdHash(value),
+        addressToRcdHash(compact),
       );
       navigate('/acc/' + liteIdentityUrl);
     } else {
-      navigate('/acc/' + value.replace('acc://', ''));
+      // Account URLs may legitimately contain spaces (e.g.
+      // `acc://foo.acme/My Account` or a trailing space). Strip the scheme and
+      // any stray tab/newline characters from copy/paste, then percent-encode
+      // the remaining spaces so they survive routing and reach the API intact.
+      const account = value
+        .replace(/[\t\r\n]+/g, '')
+        .replace(/^acc:\/\//i, '');
+      navigate('/acc/' + encodeURLSpaces(account));
     }
   };
 
