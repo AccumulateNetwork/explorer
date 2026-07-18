@@ -208,10 +208,13 @@ function syntheticOk(
       // For devnets, skip if only one direction exists (not fully bidirectional yet)
       if (!ab || !ba) continue;
 
-      // Handle asymmetric fields: ba has 'produced', ab has 'delivered'
-      // Check if B produced for A is within threshold of A delivered from B
-      if (ba.produced != null && ab.delivered != null) {
-        if (ba.produced - ab.delivered > threshold) {
+      // Measure cross-partition delivery lag, not execution backlog: compare
+      // what B produced for A against what A has *received* from B. Using
+      // 'delivered' here counts synthetic txns that arrived but haven't yet
+      // executed as if the network were down — on a long-running network like
+      // mainnet that backlog is permanent, so it wrongly shows as not-live.
+      if (ba.produced != null && ab.received != null) {
+        if (ba.produced - ab.received > threshold) {
           return false;
         }
       }
