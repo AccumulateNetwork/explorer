@@ -77,7 +77,7 @@ export default defineConfig({
     // Override the target with WALLET_API (e.g. a custom --addr).
     proxy: {
       '/v1': {
-        target: process.env.WALLET_API || 'http://127.0.0.1:8080',
+        target: process.env.WALLET_API || 'http://127.0.0.1:8437',
         changeOrigin: false,
       },
     },
