@@ -77,22 +77,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const loadVault = useCallback(async (vault: VaultInfo) => {
     setActiveVault(vault);
     if (!vault.unlocked) {
-      // A --no-password wallet has nothing to decrypt: open it with an empty
-      // passphrase and never prompt the user.
-      if (vault.encrypted === false) {
-        try {
-          await walletClient.unlockVault(vault.name, '');
-          vault = { ...vault, unlocked: true };
-          setActiveVault(vault);
-        } catch {
-          /* fall through to the locked state */
-        }
-      }
-      if (!vault.unlocked) {
-        setKeys([]);
-        setAccounts([]);
-        return;
-      }
+      // Locked: show the unlock prompt (native pinentry, see UnlockSection).
+      setKeys([]);
+      setAccounts([]);
+      return;
     }
     const [vaultKeys, vaultAccounts] = await Promise.all([
       walletClient.listKeys(vault.name),
