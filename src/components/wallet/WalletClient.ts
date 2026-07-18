@@ -12,6 +12,8 @@ export interface VaultInfo {
   name: string;
   unlocked: boolean;
   keyCount: number;
+  /** Whether the vault is password-protected. False for --no-password wallets. */
+  encrypted?: boolean;
 }
 
 export interface WalletStatus {
@@ -100,6 +102,22 @@ export class WalletClient {
       wallet: walletPath,
     });
     return r.vaults ?? [];
+  }
+
+  /**
+   * Unlock via a NATIVE prompt (pinentry / the daemon's terminal). The
+   * passphrase never enters the browser. `networkLabel` names the network in
+   * the prompt. Rejects with "interactive unlock unavailable" when no native
+   * prompt exists, so callers can fall back to unlockVault (in-browser form).
+   */
+  unlockVaultInteractive(
+    vault: string,
+    networkLabel: string,
+  ): Promise<{ success: boolean }> {
+    return this.call('wallet.UnlockVaultInteractive', {
+      vault,
+      network: networkLabel,
+    });
   }
 
   unlockVault(

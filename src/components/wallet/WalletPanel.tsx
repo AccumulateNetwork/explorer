@@ -112,7 +112,7 @@ function PanelBody() {
   return (
     <Space direction="vertical" size="large" style={{ width: '100%' }}>
       <VaultSection />
-      {activeVault && !activeVault.unlocked && <UnlockForm />}
+      {activeVault && !activeVault.unlocked && <UnlockSection />}
       {activeVault?.unlocked && (
         <>
           <KeysSection />
@@ -153,6 +153,60 @@ function VaultSection() {
   );
 }
 
+// UnlockSection prefers a NATIVE password prompt (pinentry) so the passphrase
+// never enters the browser. It only falls back to an in-browser form if the
+// daemon reports no native prompt is available. Either way the prompt names
+// the network so the user knows which wallet they are unlocking.
+function UnlockSection() {
+  const { unlockInteractive, activeVault, networkLabel } = useWallet()!;
+  const [waiting, setWaiting] = useState(false);
+  const [useForm, setUseForm] = useState(false);
+
+  const unlockNatively = async () => {
+    setWaiting(true);
+    try {
+      await unlockInteractive();
+      message.success(`${networkLabel} wallet unlocked`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unlock failed';
+      if (msg.includes('interactive unlock unavailable')) {
+        // No pinentry / no terminal on the daemon host — fall back to a form.
+        setUseForm(true);
+      } else {
+        message.error(msg); // canceled, wrong password, etc.
+      }
+    } finally {
+      setWaiting(false);
+    }
+  };
+
+  if (useForm) {
+    return <UnlockForm />;
+  }
+
+  return (
+    <Space direction="vertical" style={{ width: '100%' }}>
+      <Alert
+        type="info"
+        showIcon
+        message={
+          <span>
+            Unlock the <strong>{networkLabel}</strong> wallet
+            {activeVault?.name ? ` (vault “${activeVault.name}”)` : ''}
+          </span>
+        }
+        description="You'll be prompted for the passphrase in a secure system dialog — it is never entered in the browser."
+      />
+      <Button type="primary" loading={waiting} block onClick={unlockNatively}>
+        {waiting
+          ? 'Waiting for the system password prompt…'
+          : `Unlock ${networkLabel} wallet`}
+      </Button>
+    </Space>
+  );
+}
+
+// Fallback only: used when the daemon has no native prompt available.
 function UnlockForm() {
   const { unlockVault, activeVault, networkLabel } = useWallet()!;
   const [busy, setBusy] = useState(false);
@@ -169,13 +223,10 @@ function UnlockForm() {
     }
   };
 
-  // The password prompt must always identify the network being unlocked, so
-  // the user never enters a passphrase without knowing which network's wallet
-  // (and keys) it decrypts.
   return (
     <Form layout="vertical" onFinish={onFinish}>
       <Alert
-        type="info"
+        type="warning"
         showIcon
         style={{ marginBottom: 12 }}
         message={
@@ -184,6 +235,7 @@ function UnlockForm() {
             {activeVault?.name ? ` (vault “${activeVault.name}”)` : ''}
           </span>
         }
+        description="No system password dialog is available, so the passphrase is entered here."
       />
       <Form.Item
         label={`${networkLabel} wallet passphrase`}

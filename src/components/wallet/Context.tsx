@@ -34,6 +34,9 @@ export interface WalletContextValue {
   connect: () => Promise<void>;
   disconnect: () => void;
   selectVault: (vaultName: string) => Promise<void>;
+  /** Unlock via native prompt (pinentry). Rejects if no native prompt exists. */
+  unlockInteractive: () => Promise<void>;
+  /** Unlock with a passphrase collected in-browser (fallback path). */
   unlockVault: (passphrase: string) => Promise<void>;
   refresh: () => Promise<void>;
 
@@ -74,9 +77,22 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const loadVault = useCallback(async (vault: VaultInfo) => {
     setActiveVault(vault);
     if (!vault.unlocked) {
-      setKeys([]);
-      setAccounts([]);
-      return;
+      // A --no-password wallet has nothing to decrypt: open it with an empty
+      // passphrase and never prompt the user.
+      if (vault.encrypted === false) {
+        try {
+          await walletClient.unlockVault(vault.name, '');
+          vault = { ...vault, unlocked: true };
+          setActiveVault(vault);
+        } catch {
+          /* fall through to the locked state */
+        }
+      }
+      if (!vault.unlocked) {
+        setKeys([]);
+        setAccounts([]);
+        return;
+      }
     }
     const [vaultKeys, vaultAccounts] = await Promise.all([
       walletClient.listKeys(vault.name),
@@ -136,6 +152,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (vault) await loadVault(vault);
   }, [activeVault, loadVault]);
 
+  const unlockInteractive = useCallback(async () => {
+    if (!activeVault) throw new Error('No vault selected');
+    await walletClient.unlockVaultInteractive(activeVault.name, network.label);
+    await refresh();
+  }, [activeVault, network.label, refresh]);
+
   const unlockVault = useCallback(
     async (passphrase: string) => {
       if (!activeVault) throw new Error('No vault selected');
@@ -167,6 +189,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     connect,
     disconnect,
     selectVault,
+    unlockInteractive,
     unlockVault,
     refresh,
     keyForLiteAddress,

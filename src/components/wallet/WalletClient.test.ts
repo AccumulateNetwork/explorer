@@ -126,6 +126,22 @@ describe('WalletClient', () => {
     expect(await new WalletClient().isConnected()).toBe(false);
   });
 
+  it('interactive unlock sends the vault and network label, no passphrase', async () => {
+    withToken('tok');
+    let body: any;
+    fetchMock.mockImplementationOnce(
+      async (_url: string, init: RequestInit) => {
+        body = JSON.parse(init.body as string);
+        return rpcResult({ success: true });
+      },
+    );
+
+    await new WalletClient().unlockVaultInteractive('main', 'Kermit Testnet');
+    expect(body.method).toBe('wallet.UnlockVaultInteractive');
+    expect(body.params).toEqual({ vault: 'main', network: 'Kermit Testnet' });
+    expect(JSON.stringify(body)).not.toContain('passphrase');
+  });
+
   it('sends the selected network as the X-Accumulate-Api header', async () => {
     withToken('tok');
     let sawHeader: string | undefined;
