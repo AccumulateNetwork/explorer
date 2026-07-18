@@ -4,8 +4,7 @@
  * This allows the WalletPanel to know what account or transaction is being viewed
  * and provide context-aware actions (sign, reject, etc.).
  */
-
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useCallback, useContext, useState } from 'react';
 
 export interface CurrentAccount {
   url: string;
@@ -21,7 +20,7 @@ export interface CurrentTransaction {
   isMultiSig: boolean;
   signatureCount: number;
   principal: string;
-  signers?: string[];  // URLs of key pages that can sign
+  signers?: string[]; // URLs of key pages that can sign
   data?: any;
 }
 
@@ -47,9 +46,13 @@ interface CurrentAccountProviderProps {
   children: React.ReactNode;
 }
 
-export function CurrentAccountProvider({ children }: CurrentAccountProviderProps) {
-  const [currentAccount, setCurrentAccountState] = useState<CurrentAccount | null>(null);
-  const [currentTransaction, setCurrentTransactionState] = useState<CurrentTransaction | null>(null);
+export function CurrentAccountProvider({
+  children,
+}: CurrentAccountProviderProps) {
+  const [currentAccount, setCurrentAccountState] =
+    useState<CurrentAccount | null>(null);
+  const [currentTransaction, setCurrentTransactionState] =
+    useState<CurrentTransaction | null>(null);
 
   const setCurrentAccount = useCallback((account: CurrentAccount | null) => {
     setCurrentAccountState(account);
@@ -68,12 +71,14 @@ export function CurrentAccountProvider({ children }: CurrentAccountProviderProps
   }, []);
 
   return (
-    <CurrentAccountContext.Provider value={{
-      currentAccount,
-      setCurrentAccount,
-      currentTransaction,
-      setCurrentTransaction,
-    }}>
+    <CurrentAccountContext.Provider
+      value={{
+        currentAccount,
+        setCurrentAccount,
+        currentTransaction,
+        setCurrentTransaction,
+      }}
+    >
       {children}
     </CurrentAccountContext.Provider>
   );

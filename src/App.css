@@ -163,7 +163,7 @@ main {
 /* Hard outlines on surface boxes so edges read cleanly in either theme. */
 .stats .ant-card,
 .minor-blocks-table .ant-table-container {
-  border: 1px solid #000 !important;
+  border: 1px solid #dfdfdf !important;
 }
 
 [data-theme='dark'] .stats .ant-card,
@@ -1174,6 +1174,35 @@ header.web3 {
   background: #ffffff !important;
 }
 
+/* Row dividers at 50% gray; frame outlines at 25% gray. Dark mode default
+ * is fine as shipped — these only apply in light mode. */
+[data-theme='light'] .ant-table-tbody > tr > td,
+[data-theme='light'] .ant-table-thead > tr > th {
+  border-bottom-color: #dfdfdf !important;
+}
+
+[data-theme='light'] .ant-list-bordered .ant-list-item,
+[data-theme='light'] .ant-list-split .ant-list-item {
+  border-color: #dfdfdf !important;
+}
+
+[data-theme='light'] .ant-list.ant-list-bordered,
+[data-theme='light'] .ant-table-container {
+  border-color: #dfdfdf !important;
+}
+
+/* antd Descriptions (Properties / Info tables) — same rule. */
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-row,
+[data-theme='light']
+  .ant-descriptions-bordered
+  .ant-descriptions-item-label,
+[data-theme='light']
+  .ant-descriptions-bordered
+  .ant-descriptions-item-content,
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view {
+  border-color: #dfdfdf !important;
+}
+
 /* ---------- Dark mode ---------- */
 /* Body: #000.
  * Table container: #1f1f1f.
@@ -1206,4 +1235,75 @@ header.web3 {
 
 [data-theme='dark'] .ant-card {
   background: #1f1f1f !important;
+}
+
+/* ---------- Depth: shadows & highlights ---------- */
+/* Lift primary surfaces off the page. Light mode uses a soft drop shadow;
+ * dark mode uses an inset top-highlight + subtle outer shadow (bevel) so
+ * the lift reads even against near-black. */
+
+[data-theme='light'] .stats .ant-card,
+[data-theme='light'] .ant-table-container,
+[data-theme='light'] .ant-list.ant-list-bordered,
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view,
+[data-theme='light'] .search-box .ant-input-wrapper {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] .stats .ant-card,
+[data-theme='dark'] .ant-table-container,
+[data-theme='dark'] .ant-list.ant-list-bordered,
+[data-theme='dark'] .ant-descriptions-bordered .ant-descriptions-view,
+[data-theme='dark'] .search-box .ant-input-wrapper {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+/* Scroll-window inset fade: signals overflow at top & bottom of a windowed
+ * list/table without a hard edge. Applies to the actual scrolling element
+ * antd renders for tables and to the MinorBlocks custom scroll wrapper. */
+[data-theme='light'] .ant-table-body,
+[data-theme='light'] .minor-blocks-scroll {
+  box-shadow:
+    inset 0 8px 8px -8px rgba(0, 0, 0, 0.18),
+    inset 0 -8px 8px -8px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme='dark'] .ant-table-body,
+[data-theme='dark'] .minor-blocks-scroll {
+  box-shadow:
+    inset 0 8px 8px -8px rgba(0, 0, 0, 0.55),
+    inset 0 -8px 8px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* Row hover elevation: subtle inset highlight on the hovered row so it
+ * feels pressable. Scoped to table rows and bordered list items; skipped
+ * on Descriptions (those are label/value pairs, not actionable). */
+[data-theme='light']
+  .ant-table-tbody
+  > tr.ant-table-row:hover
+  > td:not(.ant-table-cell-row-hover),
+[data-theme='light'] .ant-table-tbody > tr:hover > td {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme='dark']
+  .ant-table-tbody
+  > tr.ant-table-row:hover
+  > td:not(.ant-table-cell-row-hover),
+[data-theme='dark'] .ant-table-tbody > tr:hover > td {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='light'] .ant-list-bordered .ant-list-item:hover {
+  background: #fafcff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] .ant-list-bordered .ant-list-item:hover {
+  background: #262626;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }

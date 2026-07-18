@@ -1,20 +1,35 @@
 /**
- * Wallet module - Integration with Accumulate Wallet Daemon
+ * Wallet module — integration with the local Accumulate wallet API
+ * (`ccli webui`, same origin, see walletMode.ts).
  *
- * This module provides:
- * - WalletClient: JSON-RPC client for wallet daemon communication
- * - WalletContext: React context for wallet state
- * - WalletPanel: UI component for wallet interaction
- * - CurrentAccountContext: Shares currently viewed account across components
+ * - WalletClient: typed JSON-RPC client with session-token auth
+ * - WalletContext: React state for the wallet
+ * - WalletPanel: drawer UI
+ * - CurrentAccountContext: shares the currently viewed account/tx
  */
 
-export { WalletClient, walletClient } from './WalletClient';
-export type { WalletStatus, VaultInfo, KeyInfo, CachedAccount, SignRequest, SignResponse } from './WalletClient';
+export { WalletClient, WalletAuthError, walletClient } from './WalletClient';
+export type {
+  WalletStatus,
+  VaultInfo,
+  KeyInfo,
+  AccountInfo,
+  PendingTransaction,
+  SignResult,
+  ExecResult,
+} from './WalletClient';
 
 export { WalletProvider, useWallet, useWalletRequired } from './Context';
 export type { WalletContextValue } from './Context';
 
 export { WalletPanel, WalletToggleButton } from './WalletPanel';
 
-export { CurrentAccountProvider, useCurrentAccount } from './CurrentAccountContext';
-export type { CurrentAccount, CurrentTransaction, CurrentAccountContextValue } from './CurrentAccountContext';
+export {
+  CurrentAccountProvider,
+  useCurrentAccount,
+} from './CurrentAccountContext';
+export type {
+  CurrentAccount,
+  CurrentTransaction,
+  CurrentAccountContextValue,
+} from './CurrentAccountContext';

@@ -1,15 +1,12 @@
 /**
- * WalletClient - TypeScript client for the Accumulate Wallet Daemon JSON-RPC API
+ * WalletClient — typed client for the local Accumulate wallet API served by
+ * `ccli webui` at the same origin as this app (see walletMode.ts).
  *
- * This client communicates with the wallet daemon to:
- * - List vaults and keys
- * - Sign transactions
- * - Manage accounts
+ * Auth: the daemon mints a per-run session token, fetched from GET /v1/session
+ * (same-origin only) and sent as `Authorization: Bearer`. There is no CORS, so
+ * this only works when the app is served by the daemon or proxied to it.
  */
-
-export interface WalletStatus {
-  vaults: VaultInfo[];
-}
+import { fetchWalletSessionToken, walletApiBase } from '../../walletMode';
 
 export interface VaultInfo {
   name: string;
@@ -17,299 +14,216 @@ export interface VaultInfo {
   keyCount: number;
 }
 
-export interface KeyInfo {
-  label: string;
-  type: string;
-  publicKey: string;
-  publicKeyHash: string;
-  liteAccount: string;
+export interface WalletStatus {
+  vaults: VaultInfo[];
 }
 
-export interface CachedAccount {
+export interface KeyInfo {
+  label: string;
+  liteAddress: string;
+  type: string;
+  publicKey: string; // base64
+  balance?: string;
+}
+
+export interface AccountInfo {
   url: string;
   type: string;
   balance?: string;
-  tokenUrl?: string;
 }
 
-export interface SignRequest {
-  transaction: any;
-  signer: string;
-  signerVersion: number;
-  timestamp: number;
+export interface PendingTransaction {
+  txid: string;
+  type?: string;
+  account?: string;
 }
 
-export interface SignResponse {
-  signature: Uint8Array;
-  publicKey: Uint8Array;
+export interface SignResult {
+  signature: string; // base64
+  publicKey: string; // base64
 }
 
-interface JsonRpcRequest {
-  jsonrpc: '2.0';
-  id: number;
-  method: string;
-  params: any;
+export interface ExecResult {
+  success: boolean;
+  output?: string;
+  [key: string]: unknown;
 }
 
 interface JsonRpcResponse<T> {
   jsonrpc: '2.0';
   id: number;
   result?: T;
-  error?: {
-    code: number;
-    message: string;
-    data?: any;
-  };
+  error?: { code: number; message: string; data?: unknown };
 }
+
+/** Thrown when the daemon rejects auth even after refreshing the token. */
+export class WalletAuthError extends Error {}
 
 export class WalletClient {
   private endpoint: string;
-  private requestId: number = 0;
-  private authToken: Uint8Array | null = null;
+  private requestId = 0;
+  private token: string | null = null;
 
-  constructor(endpoint: string = 'http://127.0.0.1:8079/v1') {
+  constructor(endpoint: string = walletApiBase()) {
     this.endpoint = endpoint;
   }
 
-  /**
-   * Set the wallet daemon endpoint
-   */
-  setEndpoint(endpoint: string) {
-    this.endpoint = endpoint;
-    this.authToken = null; // Reset auth when endpoint changes
-  }
-
-  /**
-   * Get the current endpoint
-   */
-  getEndpoint(): string {
-    return this.endpoint;
-  }
-
-  /**
-   * Check if the wallet daemon is reachable
-   */
+  /** True if the daemon is reachable and a session token is obtainable. */
   async isConnected(): Promise<boolean> {
+    const token = await this.ensureToken();
+    if (!token) return false;
     try {
-      await this.getStatus();
+      await this.status();
       return true;
     } catch {
       return false;
     }
   }
 
-  /**
-   * Get wallet status including vault info
-   */
-  async getStatus(walletPath?: string): Promise<WalletStatus> {
-    // Include token if we have one, so the daemon knows our unlock state
-    const token = this.authToken ? Buffer.from(this.authToken).toString('base64') : null;
-    const result = await this.call<any>('wallet.Status', {
-      wallet: walletPath,
-      token,
-    });
-
-    return {
-      vaults: (result.vaults || []).map((v: any) => ({
-        name: v.name || '',
-        unlocked: v.unlocked || false,
-        keyCount: v.keyCount || 0,
-      })),
-    };
+  status(walletPath?: string): Promise<WalletStatus> {
+    return this.call('wallet.Status', { wallet: walletPath });
   }
 
-  /**
-   * Get auth token for authenticated operations
-   */
-  async getAuthToken(): Promise<Uint8Array> {
-    if (this.authToken) {
-      return this.authToken;
-    }
-
-    const result = await this.call<any>('wallet.RefreshToken', {
-      token: null,
-    });
-
-    if (result.token) {
-      this.authToken = new Uint8Array(
-        Buffer.from(result.token, 'base64')
-      );
-    }
-
-    return this.authToken!;
-  }
-
-  /**
-   * List vaults in the wallet
-   */
   async listVaults(walletPath?: string): Promise<string[]> {
-    const result = await this.call<any>('wallet.ListVaults', {
+    const r = await this.call<{ vaults: string[] }>('wallet.ListVaults', {
       wallet: walletPath,
     });
-    return result.vaults || [];
+    return r.vaults ?? [];
   }
 
-  /**
-   * Unlock a vault with password
-   */
-  async unlockVault(
-    vaultName: string,
+  unlockVault(
+    vault: string,
     passphrase: string,
-    walletPath?: string
-  ): Promise<void> {
-    console.log('WalletClient.unlockVault called:', { vaultName, hasPassphrase: !!passphrase });
-    try {
-      const token = await this.getAuthToken();
-      console.log('Got auth token, calling unlock...');
-      await this.call('wallet.UnlockVault', {
-        wallet: walletPath,
-        vault: vaultName,
-        passphrase,
-        token: Buffer.from(token).toString('base64'),
-        ttl: 3600000000000, // 1 hour in nanoseconds
-      });
-      console.log('Unlock call completed successfully');
-    } catch (err) {
-      console.error('Unlock failed with error:', err);
-      throw err; // Re-throw to propagate to caller
-    }
-  }
-
-  /**
-   * List keys in a vault
-   */
-  async listKeys(vaultName?: string, walletPath?: string): Promise<KeyInfo[]> {
-    const token = await this.getAuthToken();
-    const result = await this.call<any>('wallet.ListKeys', {
+    walletPath?: string,
+  ): Promise<{ success: boolean }> {
+    return this.call('wallet.UnlockVault', {
+      vault,
+      passphrase,
       wallet: walletPath,
-      vault: vaultName,
-      token: Buffer.from(token).toString('base64'),
     });
-
-    return (result.keys || []).map((k: any) => ({
-      label: k.labels?.names?.[0] || k.labels?.lite || 'Unnamed',
-      type: k.type || 'unknown',
-      publicKey: k.publicKey ? Buffer.from(k.publicKey, 'base64').toString('hex') : '',
-      publicKeyHash: k.publicKeyHash ? Buffer.from(k.publicKeyHash, 'base64').toString('hex') : '',
-      liteAccount: k.labels?.lite || '',
-    }));
   }
 
-  /**
-   * Get cached accounts
-   */
-  async getCachedAccounts(vaultName?: string, walletPath?: string): Promise<CachedAccount[]> {
-    const token = await this.getAuthToken();
-    const result = await this.call<any>('wallet.GetAccountCache', {
+  async listKeys(vault?: string, walletPath?: string): Promise<KeyInfo[]> {
+    const r = await this.call<{ keys: KeyInfo[] }>('wallet.ListKeys', {
+      vault,
       wallet: walletPath,
-      vault: vaultName,
-      token: Buffer.from(token).toString('base64'),
     });
-
-    return (result.accounts || []).map((a: any) => ({
-      url: a.url || '',
-      type: a.type || '',
-      balance: a.balance,
-      tokenUrl: a.tokenUrl,
-    }));
+    return r.keys ?? [];
   }
 
-  /**
-   * Sign a transaction using a wallet key
-   */
-  async sign(
+  async listAccounts(
+    vault?: string,
+    walletPath?: string,
+  ): Promise<AccountInfo[]> {
+    const r = await this.call<{ accounts: AccountInfo[] }>(
+      'wallet.ListAccounts',
+      { vault, wallet: walletPath },
+    );
+    return r.accounts ?? [];
+  }
+
+  async getAccountCache(
+    vault?: string,
+    walletPath?: string,
+  ): Promise<AccountInfo[]> {
+    const r = await this.call<{ accounts: AccountInfo[] }>(
+      'wallet.GetAccountCache',
+      { vault, wallet: walletPath },
+    );
+    return r.accounts ?? [];
+  }
+
+  async listPending(account: string): Promise<PendingTransaction[]> {
+    const r = await this.call<{ pending: PendingTransaction[] }>(
+      'wallet.ListPending',
+      { account },
+    );
+    return r.pending ?? [];
+  }
+
+  sign(req: {
+    keyLabel: string;
+    transaction: string; // base64-encoded transaction hash
+    signer: string;
+    signerVersion: number;
+    vault?: string;
+  }): Promise<SignResult> {
+    return this.call('wallet.Sign', req);
+  }
+
+  sendTokens(from: string, to: string, amount: string): Promise<ExecResult> {
+    return this.call('wallet.SendTokens', { from, to, amount });
+  }
+
+  addCredits(from: string, to: string, amount: number): Promise<ExecResult> {
+    return this.call('wallet.AddCredits', { from, to, amount });
+  }
+
+  faucet(to: string): Promise<ExecResult> {
+    return this.call('wallet.Faucet', { to });
+  }
+
+  createADI(
+    sponsor: string,
+    name: string,
     keyLabel: string,
-    transaction: any,
-    signer: string,
-    signerVersion: number,
-    vaultName?: string,
-    walletPath?: string
-  ): Promise<SignResponse> {
-    const token = await this.getAuthToken();
-    const result = await this.call<any>('wallet.Sign', {
-      wallet: walletPath,
-      vault: vaultName,
-      token: Buffer.from(token).toString('base64'),
-      key: keyLabel,
-      transaction,
-      signer,
-      signerVersion,
-      timestamp: Date.now() * 1000000, // Nanoseconds
-    });
-
-    return {
-      signature: new Uint8Array(Buffer.from(result.signature, 'base64')),
-      publicKey: new Uint8Array(Buffer.from(result.publicKey, 'base64')),
-    };
+  ): Promise<ExecResult> {
+    return this.call('wallet.CreateADI', { sponsor, name, keyLabel });
   }
 
-  /**
-   * Find keys that can sign for a given account
-   */
-  async findSignersFor(
-    accountUrl: string,
-    vaultName?: string,
-    walletPath?: string
-  ): Promise<KeyInfo[]> {
-    // This would ideally be a daemon method, but for now we can
-    // cross-reference the account's key page with our wallet keys
-    const keys = await this.listKeys(vaultName, walletPath);
-    // For now, return all keys - the UI can filter based on account authorities
-    return keys;
+  /** Fetch and cache the session token; returns null if unreachable. */
+  private async ensureToken(): Promise<string | null> {
+    if (this.token) return this.token;
+    this.token = await fetchWalletSessionToken();
+    return this.token;
   }
 
-  /**
-   * Execute a CLI command via the daemon
-   */
-  async executeCommand(command: string): Promise<{ stdout: string; stderr: string; exitCode: number }> {
-    const result = await this.call<any>('wallet.Execute', {
-      command: command.split(' '),
-    });
-
-    return {
-      stdout: result.stdout || '',
-      stderr: result.stderr || '',
-      exitCode: result.exitCode || 0,
-    };
-  }
-
-  /**
-   * Make a JSON-RPC call to the wallet daemon
-   */
-  private async call<T>(method: string, params: any): Promise<T> {
-    const request: JsonRpcRequest = {
-      jsonrpc: '2.0',
-      id: ++this.requestId,
-      method,
-      params,
-    };
-
-    const response = await fetch(this.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
+  private async call<T>(method: string, params: unknown): Promise<T> {
+    let token = await this.ensureToken();
+    if (!token) {
+      throw new WalletAuthError('wallet daemon is not reachable');
     }
 
-    const json: JsonRpcResponse<T> = await response.json();
-    console.log('Wallet API raw response:', method, JSON.stringify(json));
+    // Retry once on 401 with a freshly minted token (daemon may have restarted).
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: ++this.requestId,
+          method,
+          params: params ?? {},
+        }),
+      });
 
-    if (json.error) {
-      console.error('Wallet API error detected:', json.error);
-      const errorMessage = json.error.message || 'Unknown error';
-      console.error('Throwing error:', errorMessage);
-      throw new Error(errorMessage);
+      if (response.status === 401 && attempt === 0) {
+        this.token = null;
+        token = await this.ensureToken();
+        if (!token)
+          throw new WalletAuthError('wallet session token unavailable');
+        continue;
+      }
+      if (response.status === 401) {
+        throw new WalletAuthError('wallet daemon rejected the session token');
+      }
+      if (!response.ok) {
+        throw new Error(`wallet API HTTP ${response.status}`);
+      }
+
+      const json: JsonRpcResponse<T> = await response.json();
+      if (json.error) {
+        throw new Error(json.error.message || 'wallet API error');
+      }
+      return json.result as T;
     }
-
-    console.log('Wallet API success:', method);
-    return json.result as T;
+    // Unreachable: the loop either returns or throws.
+    throw new WalletAuthError('wallet authentication failed');
   }
 }
 
-// Singleton instance
+/** Shared client bound to the same-origin API. */
 export const walletClient = new WalletClient();

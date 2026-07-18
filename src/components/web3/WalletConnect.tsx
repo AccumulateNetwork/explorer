@@ -1,4 +1,4 @@
-import { Web3Modal, createWeb3Modal, defaultConfig } from '@web3modal/ethers';
+import { createWeb3Modal, defaultConfig } from '@web3modal/ethers';
 import { Eip1193Provider } from 'ethers';
 import { useContext, useState } from 'react';
 
@@ -6,6 +6,19 @@ import { Network } from '../common/Network';
 import { NetworkConfig } from '../common/networks';
 import { useAsyncEffect } from '../common/useAsync';
 import { Driver } from './Driver';
+
+// The v4-era modal surface this component relies on. @web3modal/ethers v5
+// types createWeb3Modal as AppKit and no longer declares these members,
+// though they still exist at runtime. Remove with the Reown migration.
+interface Web3Modal {
+  getWalletProvider(): Eip1193Provider | undefined;
+  subscribeProvider(
+    cb: (state: { provider?: Eip1193Provider; error?: unknown }) => void,
+  ): () => void;
+  subscribeState(cb: (state: { open: boolean }) => void): () => void;
+  open(opts?: { view: string }): Promise<void>;
+  disconnect(): void;
+}
 
 export function useWalletConnect() {
   const { network } = useContext(Network);
@@ -58,7 +71,7 @@ class WalletConnect {
         enableInjected: false,
         enableCoinbase: false,
       }),
-    });
+    }) as unknown as Web3Modal;
   }
 
   async connect({

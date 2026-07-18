@@ -27,16 +27,17 @@ export default Data;
 
 export function Data() {
   // Return 404 if url is not a valid URL or transaction hash
-  const params = useParams<{ url: string }>();
+  const params = useParams();
+  const dataURL = params['*'] || '';
   const [url, setUrl] = useState<URL>();
   const [notFound, setNotFound] = useState(false);
   useEffect(() => {
-    if (/^[0-9a-f]{64}$/i.test(params.url)) {
-      setUrl(URL.parse(`acc://${params.url}@unknown`));
+    if (/^[0-9a-f]{64}$/i.test(dataURL)) {
+      setUrl(URL.parse(`acc://${dataURL}@unknown`));
     } else {
       let url: URL;
       try {
-        url = URL.parse(encodeURLSpaces(params.url));
+        url = URL.parse(encodeURLSpaces(dataURL));
       } catch (error) {
         setNotFound(true);
       }
@@ -46,7 +47,7 @@ export function Data() {
       document.title = `${url.username} | Accumulate Explorer`;
       setUrl(url);
     }
-  }, [params.url]);
+  }, [dataURL]);
 
   const [record, setRecord] = useState<DataTxnRecord>(null);
   queryEffect(url, { queryType: 'default' }).then((r) => {

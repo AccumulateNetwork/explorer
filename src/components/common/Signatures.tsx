@@ -562,7 +562,7 @@ Signature.Key = function ({
           // Convert entry key hash to hex string for comparison
           const entryKeyHex = entry.publicKeyHash instanceof Uint8Array || Buffer.isBuffer(entry.publicKeyHash)
             ? Buffer.from(entry.publicKeyHash).toString('hex')
-            : entry.publicKeyHash.toString();
+            : String(entry.publicKeyHash);
 
           console.log('Comparing with entry key hash:', entryKeyHex, 'delegate:', entry.delegate?.toString());
 

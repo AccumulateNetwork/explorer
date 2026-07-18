@@ -9,7 +9,10 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import { TransactionType } from 'accumulate.js/lib/core';
+import { MessageType } from 'accumulate.js/lib/messaging';
 
 const { Text } = Typography;
 
@@ -22,13 +25,39 @@ export const SHORT_LIST_LIMIT = 10;
 /**
  * Pull a transaction-type string from a MessageRecord-shaped object.
  * Robust to missing fields so a single malformed tx doesn't break an
- * enrichment pass. Lifted from the MinorBlocks prototype so migrating
- * callers (#22, #24, #26) can drop their own copies.
+ * enrichment pass. Resolution order (each falls through to the next):
+ * 1. `body.type` as string  — user transactions (`sendTokens`, etc.)
+ * 2. `body.type` as number  — map via `TransactionType.getName`
+ * 3. `msg.type` as string   — already-stringified message type
+ * 4. `msg.type` as number   — map via `MessageType.getName`
+ * Handles records wrapped in `.value.message` (ChainEntryRecord-style) and
+ * records where the message is at the root (no `.message` wrapper).
  */
 export function extractTxType(record: any): string | undefined {
-  const msg = record?.message;
+  if (!record) return undefined;
+  const msg = record?.message ?? record?.value?.message ?? record;
   if (!msg) return undefined;
-  return msg?.transaction?.body?.type || msg?.type || undefined;
+  const bodyType = msg?.transaction?.body?.type;
+  if (typeof bodyType === 'string' && bodyType) return bodyType;
+  if (typeof bodyType === 'number') {
+    try {
+      const name = TransactionType.getName(bodyType);
+      if (name) return name;
+    } catch {
+      /* fall through */
+    }
+  }
+  const msgType = msg?.type;
+  if (typeof msgType === 'string' && msgType) return msgType;
+  if (typeof msgType === 'number') {
+    try {
+      const name = MessageType.getName(msgType);
+      if (name) return name;
+    } catch {
+      return undefined;
+    }
+  }
+  return undefined;
 }
 
 type EnrichmentMap = ReadonlyMap<unknown, unknown>;
@@ -39,10 +68,10 @@ const EnrichmentContext = createContext<EnrichmentMap | null>(null);
  * Read the current enrichment map inside a `renderItem`. Returns `null`
  * when no `enrichPage` was provided by the caller.
  */
-export function useInfiniteListEnrichment<K = unknown, V = unknown>(): ReadonlyMap<
-  K,
-  V
-> | null {
+export function useInfiniteListEnrichment<
+  K = unknown,
+  V = unknown,
+>(): ReadonlyMap<K, V> | null {
   return useContext(EnrichmentContext) as ReadonlyMap<K, V> | null;
 }
 
@@ -138,7 +167,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
   // Always call hooks unconditionally; the history/location are only
   // *used* when `cursorParam` is set. This keeps hook order stable if a
   // caller toggles the prop.
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const readCursor = useCallback((): string | null => {
@@ -210,7 +239,28 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       setEnrichment(null);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount (enrichPage was only
+      // wired into server-mode doLoadPage). Short-list callers that pass
+      // enrichPage (MsgInfo/TxnInfo cause+produced) need this to populate
+      // type labels instead of rendering `unknown`.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteList enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
@@ -253,16 +303,19 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
           if (top !== undefined) {
             const c = cursorOf(top);
             if (c !== null && c !== undefined) {
-              const current = new URLSearchParams(
-                window.location.search,
-              ).get(cursorParam);
+              const current = new URLSearchParams(window.location.search).get(
+                cursorParam,
+              );
               if (current !== String(c)) {
                 const params = new URLSearchParams(window.location.search);
                 params.set(cursorParam, String(c));
-                history.replace({
-                  pathname: window.location.pathname,
-                  search: `?${params.toString()}`,
-                });
+                navigate(
+                  {
+                    pathname: window.location.pathname,
+                    search: `?${params.toString()}`,
+                  },
+                  { replace: true },
+                );
               }
             }
           }
@@ -420,7 +473,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     sortDirections,
   } = props;
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const server = isServerTableProps(props);
   const total = server ? props.total : props.dataSource.length;
@@ -502,7 +555,26 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       setExhausted(false);
       doLoadPage(0, false);
     } else {
-      setItems(props.dataSource.slice(0, windowed ? pageSize : total));
+      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      setItems(page);
+      setEnrichment(null);
+      // Array mode used to skip enrichment on mount; mirror the InfiniteList
+      // fix so array-mode callers that pass enrichPage get their types.
+      if (enrichPage && page.length) {
+        enrichPage(page)
+          .then((map) => {
+            if (!mountedRef.current || !map?.size) return;
+            setEnrichment((prev) => {
+              const next = new Map<unknown, unknown>(prev ?? []);
+              for (const [k, v] of map) next.set(k, v);
+              return next;
+            });
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.warn('InfiniteTable enrichment failed:', e);
+          });
+      }
     }
     return () => {
       mountedRef.current = false;
@@ -602,16 +674,19 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
           if (top !== undefined) {
             const c = cursorOf(top);
             if (c !== null && c !== undefined) {
-              const current = new URLSearchParams(
-                window.location.search,
-              ).get(cursorParam);
+              const current = new URLSearchParams(window.location.search).get(
+                cursorParam,
+              );
               if (current !== String(c)) {
                 const params = new URLSearchParams(window.location.search);
                 params.set(cursorParam, String(c));
-                history.replace({
-                  pathname: window.location.pathname,
-                  search: `?${params.toString()}`,
-                });
+                navigate(
+                  {
+                    pathname: window.location.pathname,
+                    search: `?${params.toString()}`,
+                  },
+                  { replace: true },
+                );
               }
             }
           }

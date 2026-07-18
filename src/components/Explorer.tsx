@@ -1,7 +1,7 @@
 import { LoadingOutlined } from '@ant-design/icons';
 import { Layout, Spin, message } from 'antd';
 import React, { Suspense, useEffect, useState } from 'react';
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import { ErrorBoundary } from './common/ErrorBoundary';
 import MinorBlocks from './common/MinorBlocks';
@@ -22,6 +22,7 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
+import { WalletDock } from './wallet/WalletDock';
 import { Connect } from './web3/Connect';
 
 const { Header, Content, Footer } = Layout;
@@ -86,29 +87,36 @@ export default function Explorer() {
               <SearchForm searching={(x) => (searchDidLoad = x)} />
               <ErrorBoundary>
                 <Suspense fallback={<Loading />}>
-                  <Switch>
-                    <Route exact path="/" children={<Blocks />} />
-                    <Route path="/validators" children={<Validators />} />
-                    <Route path="/tokens" children={<Tokens />} />
-                    <Route path="/staking" children={<Staking />} />
-                    <Route path="/favourites" children={<Favourites />} />
-                    <Route path="/blocks" children={<MinorBlocks />} />
-                    <Route path="/network" children={<NetworkDashboard />} />
-                    <Route path="/settings" children={<Settings.Edit />} />
+                  <Routes>
+                    <Route path="/" element={<Blocks />} />
+                    <Route path="/validators" element={<Validators />} />
+                    <Route path="/tokens" element={<Tokens />} />
+                    <Route path="/staking" element={<Staking />} />
+                    <Route path="/favourites" element={<Favourites />} />
+                    <Route path="/blocks" element={<MinorBlocks />} />
+                    <Route path="/network" element={<NetworkDashboard />} />
+                    <Route path="/settings" element={<Settings.Edit />} />
 
                     {!shared.network.mainnet && (
-                      <Route exact path="/faucet" children={<Faucet />} />
+                      <Route path="/faucet" element={<Faucet />} />
                     )}
 
-                    <Route path={['/acc/:url+', '/tx/:hash+']}>
-                      <Acc didLoad={(x) => searchDidLoad?.(x)} />
-                    </Route>
+                    {/* Splat routes: the account/tx URL follows the prefix and
+                        may contain slashes (read via useParams()['*']). */}
+                    <Route
+                      path="/acc/*"
+                      element={<Acc didLoad={(x) => searchDidLoad?.(x)} />}
+                    />
+                    <Route
+                      path="/tx/*"
+                      element={<Acc didLoad={(x) => searchDidLoad?.(x)} />}
+                    />
 
-                    <Route path="/data/:url+" children={<Data />} />
-                    <Route path="/block/:index" children={<Block />} />
+                    <Route path="/data/*" element={<Data />} />
+                    <Route path="/block/:index" element={<Block />} />
 
-                    <Route children={<Error404 />} />
-                  </Switch>
+                    <Route path="*" element={<Error404 />} />
+                  </Routes>
                 </Suspense>
               </ErrorBoundary>
             </Content>
@@ -122,6 +130,7 @@ export default function Explorer() {
                 <a href="mailto:support@defidevs.io">support@defidevs.io</a>
               </p>
             </Footer>
+            <WalletDock />
           </Layout>
         </Router>
       </Connect>

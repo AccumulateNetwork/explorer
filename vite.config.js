@@ -30,7 +30,9 @@ export default defineConfig({
 
   build: {
     outDir: 'build',
-    sourcemap: true,
+    // The local-wallet build is embedded into the wallet binary, so skip
+    // sourcemaps there (~22MB) to keep the binary small. Keep them otherwise.
+    sourcemap: process.env.VITE_WALLET !== 'local',
     chunkSizeWarningLimit: 2048,
     target: 'chrome90',  // Very specific target to avoid decorator issues
     minify: false,  // Disable all minification
@@ -68,6 +70,16 @@ export default defineConfig({
 
     watch: {
       useFsEvents: true,
+    },
+
+    // Proxy wallet API calls to a locally running `ccli webui` so the dev
+    // server behaves like the embedded (same-origin) release build.
+    // Override the target with WALLET_API (e.g. a custom --addr).
+    proxy: {
+      '/v1': {
+        target: process.env.WALLET_API || 'http://127.0.0.1:8080',
+        changeOrigin: false,
+      },
     },
   },
 
