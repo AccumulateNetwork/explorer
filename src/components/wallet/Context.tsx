@@ -39,6 +39,8 @@ export interface WalletContextValue {
   /** Unlock with a passphrase collected in-browser (fallback path). */
   unlockVault: (passphrase: string) => Promise<void>;
   refresh: () => Promise<void>;
+  /** Derive a new key in the active vault and refresh; returns it. */
+  generateKey: (label: string) => Promise<KeyInfo>;
 
   /** The wallet key whose lite address matches, if any. */
   keyForLiteAddress: (url: string) => KeyInfo | undefined;
@@ -155,6 +157,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     [activeVault, refresh],
   );
 
+  const generateKey = useCallback(
+    async (label: string) => {
+      const key = await walletClient.generateKey(label, activeVault?.name);
+      await refresh();
+      return key;
+    },
+    [activeVault, refresh],
+  );
+
   const keyForLiteAddress = useCallback(
     (url: string) => keys.find((k) => k.liteAddress === url),
     [keys],
@@ -180,6 +191,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     unlockInteractive,
     unlockVault,
     refresh,
+    generateKey,
     keyForLiteAddress,
   };
 

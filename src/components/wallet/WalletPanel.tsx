@@ -6,6 +6,7 @@
  */
 import {
   Alert,
+  AutoComplete,
   Button,
   Drawer,
   Empty,
@@ -306,13 +307,27 @@ function AccountsSection() {
 }
 
 function FaucetForm() {
-  const { keys } = useWallet()!;
+  const { keys, generateKey } = useWallet()!;
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [to, setTo] = useState(keys[0]?.liteAddress ?? '');
+  const [newLabel, setNewLabel] = useState('');
 
-  const onFinish = async ({ to }: { to: string }) => {
+  // Searchable over label and address, so the user can find a key or paste an
+  // account they already know.
+  const options = keys.map((k) => ({
+    value: k.liteAddress,
+    label: `${k.label} — ${k.liteAddress}`,
+  }));
+
+  const requestTokens = async () => {
+    if (!to.trim()) {
+      message.error('Choose a key or enter a lite account');
+      return;
+    }
     setBusy(true);
     try {
-      const res = await walletClient.faucet(to);
+      const res = await walletClient.faucet(to.trim());
       if (res.success) message.success('Faucet request submitted');
       else message.error('Faucet request failed');
     } catch (err) {
@@ -322,20 +337,57 @@ function FaucetForm() {
     }
   };
 
+  const generate = async () => {
+    if (!newLabel.trim()) {
+      message.error('Enter a label for the new key');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const key = await generateKey(newLabel.trim());
+      setTo(key.liteAddress); // select the new key as the faucet target
+      setNewLabel('');
+      message.success(`Generated key “${key.label}”`);
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Generate failed');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
-    <Form layout="vertical" onFinish={onFinish}>
+    <Space direction="vertical" style={{ width: '100%' }}>
       <Text strong>Faucet</Text>
-      <Form.Item
-        name="to"
-        rules={[{ required: true, message: 'Enter a lite account URL' }]}
-        style={{ marginTop: 8 }}
-        initialValue={keys[0]?.liteAddress}
-      >
-        <Input placeholder="acc://…/ACME" />
-      </Form.Item>
-      <Button htmlType="submit" loading={busy} block>
+      <AutoComplete
+        style={{ width: '100%' }}
+        value={to}
+        onChange={setTo}
+        options={options}
+        allowClear
+        placeholder="Search your keys or paste a lite account…"
+        filterOption={(input, option) =>
+          String(option?.label ?? '')
+            .toLowerCase()
+            .includes(input.toLowerCase())
+        }
+      />
+      <Button type="primary" loading={busy} block onClick={requestTokens}>
         Request Tokens
       </Button>
-    </Form>
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        No key yet? Generate one to receive funds:
+      </Text>
+      <Space.Compact style={{ width: '100%' }}>
+        <Input
+          placeholder="New key label"
+          value={newLabel}
+          onChange={(e) => setNewLabel(e.target.value)}
+          onPressEnter={generate}
+        />
+        <Button loading={generating} onClick={generate}>
+          Generate key
+        </Button>
+      </Space.Compact>
+    </Space>
   );
 }

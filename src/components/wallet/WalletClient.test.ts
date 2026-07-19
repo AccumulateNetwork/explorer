@@ -142,6 +142,33 @@ describe('WalletClient', () => {
     expect(JSON.stringify(body)).not.toContain('passphrase');
   });
 
+  it('generateKey sends the label and unwraps the returned key', async () => {
+    withToken('tok');
+    let body: any;
+    fetchMock.mockImplementationOnce(
+      async (_url: string, init: RequestInit) => {
+        body = JSON.parse(init.body as string);
+        return rpcResult({
+          key: {
+            label: 'faucet-key',
+            liteAddress: 'acc://lite/ACME',
+            type: 'ed25519',
+            publicKey: 'AA==',
+          },
+        });
+      },
+    );
+
+    const key = await new WalletClient().generateKey('faucet-key', 'main');
+    expect(body.method).toBe('wallet.GenerateKey');
+    expect(body.params).toEqual({
+      label: 'faucet-key',
+      vault: 'main',
+      type: undefined,
+    });
+    expect(key.liteAddress).toBe('acc://lite/ACME');
+  });
+
   it('sends the selected network as the X-Accumulate-Api header', async () => {
     withToken('tok');
     let sawHeader: string | undefined;

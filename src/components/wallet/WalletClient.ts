@@ -192,6 +192,20 @@ export class WalletClient {
     return this.call('wallet.Faucet', { to });
   }
 
+  /** Derive a new key in the wallet; returns it (with its lite address). */
+  async generateKey(
+    label: string,
+    vault?: string,
+    type?: string,
+  ): Promise<KeyInfo> {
+    const r = await this.call<{ key: KeyInfo }>('wallet.GenerateKey', {
+      label,
+      vault,
+      type,
+    });
+    return r.key;
+  }
+
   createADI(
     sponsor: string,
     name: string,
