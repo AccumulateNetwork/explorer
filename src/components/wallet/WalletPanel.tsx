@@ -20,7 +20,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   RiLockLine,
   RiLockUnlockLine,
@@ -28,8 +28,13 @@ import {
   RiWallet3Line,
 } from 'react-icons/ri';
 
+import { Network } from '../common/Network';
 import { useWallet } from './Context';
-import { walletClient } from './WalletClient';
+
+// Wallet keys report a bare lite identity (hex); the faucet funds its ACME
+// token account. Leave a full acc:// URL the user typed untouched.
+const toTokenAccount = (liteAddress: string) =>
+  liteAddress.startsWith('acc://') ? liteAddress : `acc://${liteAddress}/ACME`;
 
 const { Text } = Typography;
 
@@ -308,6 +313,7 @@ function AccountsSection() {
 
 function FaucetForm() {
   const { keys, generateKey } = useWallet()!;
+  const { api } = useContext(Network);
   const [busy, setBusy] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [to, setTo] = useState(keys[0]?.liteAddress ?? '');
@@ -327,8 +333,10 @@ function FaucetForm() {
     }
     setBusy(true);
     try {
-      const res = await walletClient.faucet(to.trim());
-      if (res.success) message.success('Faucet request submitted');
+      // Fund through the selected network's faucet directly (no wallet
+      // signature needed to receive), the same path the Explorer faucet uses.
+      const res = await api.faucet(toTokenAccount(to.trim()));
+      if (res && res?.status?.txID) message.success('Faucet request submitted');
       else message.error('Faucet request failed');
     } catch (err) {
       message.error(err instanceof Error ? err.message : 'Faucet failed');

@@ -22,7 +22,7 @@ import { Settings } from './explorer/Settings';
 import Staking from './explorer/Staking';
 import Tokens from './explorer/Tokens';
 import Validators from './explorer/Validators';
-import { WalletDock } from './wallet/WalletDock';
+import { WalletDock, WalletShell } from './wallet/WalletDock';
 import { Connect } from './web3/Connect';
 
 const { Header, Content, Footer } = Layout;
@@ -70,6 +70,7 @@ export default function Explorer() {
       <Connect>
         <Router>
           <ScrollToTop />
+          <WalletShell>
           <Layout>
             <Header
               className={
@@ -132,6 +133,7 @@ export default function Explorer() {
             </Footer>
             <WalletDock />
           </Layout>
+          </WalletShell>
         </Router>
       </Connect>
     </Network.Provider>
