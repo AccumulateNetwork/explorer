@@ -101,10 +101,15 @@ export function Acc({
   // Back skips the reference that failed. (Whitespace around an `acc://` scheme
   // never gets this far — it is unambiguously not part of the name, so the
   // search bar drops it up front.)
+  // Retry on any query failure, not just NotFound: where the stray space lands
+  // decides which error comes back. In the path the node reports NotFound (404,
+  // `acc://foo.acme/tokens%20` simply does not exist), but in the authority it
+  // reports an encoding error (502) instead, because a space is not a legal
+  // host character and the URL never parses. Both mean the same thing here.
   const notFound =
     error instanceof errors.Error && error.code === errors.Status.NotFound;
   const retry = isTx ? null : retryWithoutOuterSpaces(ref);
-  const retrying = notFound && !!retry;
+  const retrying = !!error && !!retry;
   useEffect(() => {
     if (retrying) {
       navigate(`/acc/${encodeURLSpaces(retry)}`, { replace: true });
