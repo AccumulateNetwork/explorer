@@ -14,7 +14,7 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { isRecordOf } from '../../utils/types';
-import { encodeURLSpaces } from '../../utils/url';
+import { encodeURLSpaces, retryWithoutTrailingSpaces } from '../../utils/url';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
@@ -94,7 +94,24 @@ export function Acc({
     }
   }, [record]);
 
-  if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
+  // The reference is queried exactly as typed, so an account whose name really
+  // does end in a space resolves on the first attempt. Only once that has
+  // actually 404'd is a trailing space treated as a copy/paste artifact and the
+  // trimmed reference retried. Replace the history entry so Back skips the
+  // reference that failed. (Leading whitespace needs no fallback: it is dropped
+  // up front when the input carries an `acc://` scheme, which is the only case
+  // where it is unambiguously not part of the name.)
+  const notFound =
+    error instanceof errors.Error && error.code === errors.Status.NotFound;
+  const retry = isTx ? null : retryWithoutTrailingSpaces(ref);
+  const retrying = notFound && !!retry;
+  useEffect(() => {
+    if (retrying) {
+      navigate(`/acc/${encodeURLSpaces(retry)}`, { replace: true });
+    }
+  }, [retrying, retry]);
+
+  if (notFound && !retrying) {
     if (web3.publicKey?.lite?.equals(url)) {
       return <MissingLiteID />;
     }
@@ -109,7 +126,7 @@ export function Acc({
           url={URL.parse(url)}
         />
         <div>
-          {error ? (
+          {error && !retrying ? (
             <div className="skeleton-holder">
               <Alert message={`${error}`} type="error" showIcon />
             </div>

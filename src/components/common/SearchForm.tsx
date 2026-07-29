@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { Buffer, sha256 } from 'accumulate.js/lib/common';
 
-import { encodeURLSpaces } from '../../utils/url';
+import { encodeURLSpaces, stripAccScheme } from '../../utils/url';
 
 const { Search } = Input;
 
@@ -78,12 +78,13 @@ export function SearchForm({
       navigate('/acc/' + liteIdentityUrl);
     } else {
       // Account URLs may legitimately contain spaces (e.g.
-      // `acc://foo.acme/My Account` or a trailing space). Strip the scheme and
-      // any stray tab/newline characters from copy/paste, then percent-encode
-      // the remaining spaces so they survive routing and reach the API intact.
-      const account = value
-        .replace(/[\t\r\n]+/g, '')
-        .replace(/^acc:\/\//i, '');
+      // `acc://foo.acme/My Account` or a trailing space). Strip any stray
+      // tab/newline characters from copy/paste and the scheme with the
+      // whitespace around it, then percent-encode the remaining spaces so they
+      // survive routing and reach the API intact. A space that turns out to be
+      // an artifact rather than part of the name is trimmed by Acc, but only
+      // after the reference as typed has 404'd.
+      const account = stripAccScheme(value.replace(/[\t\r\n]+/g, ''));
       navigate('/acc/' + encodeURLSpaces(account));
     }
   };
