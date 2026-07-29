@@ -67,7 +67,7 @@
     "build": "vite build",
     "preview": "VITE_NETWORK=any vite build && vite preview",
     "format": "prettier -w src",
-    "check:format": "prettier src"
+    "check:format": "prettier --check src"
   },
   "prettier": {
     "semi": true,
