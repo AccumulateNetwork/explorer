@@ -175,7 +175,10 @@ export function Status(props: {
 // considered not ok.
 const okThreshold = 10;
 
-function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[], threshold = okThreshold) {
+function anchorsOk(
+  ledgers: LedgerInfo<AnchorLedger>[],
+  threshold = okThreshold,
+) {
   for (const a of ledgers) {
     for (const b of ledgers) {
       if (
@@ -185,10 +188,7 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[], threshold = okThreshold)
         continue;
       }
       const ba = b.ledger.sequence?.find((x) => x.url.equals(a.url));
-      if (
-        !ba ||
-        a.ledger.minorBlockSequenceNumber - ba.delivered > threshold
-      ) {
+      if (!ba || a.ledger.minorBlockSequenceNumber - ba.delivered > threshold) {
         return false;
       }
     }
@@ -196,7 +196,10 @@ function anchorsOk(ledgers: LedgerInfo<AnchorLedger>[], threshold = okThreshold)
   return true;
 }
 
-function syntheticOk(ledgers: LedgerInfo<SyntheticLedger>[], threshold = okThreshold) {
+function syntheticOk(
+  ledgers: LedgerInfo<SyntheticLedger>[],
+  threshold = okThreshold,
+) {
   for (const a of ledgers) {
     for (const b of ledgers) {
       const ab = a.ledger.sequence?.find((x) => x.url.equals(b.url));
@@ -234,7 +237,8 @@ function defaultNetworkName(): string {
   }
 
   // No stored selection — pick a sensible default based on hostname.
-  const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
+  const hostname =
+    typeof window !== 'undefined' ? window.location.hostname : '';
   if (hostname.includes('kermit.explorer')) return 'kermit';
   if (hostname.includes('fozzie.explorer')) return 'fozzie';
   if (hostname === 'localhost' || hostname === '127.0.0.1') return 'local';

@@ -259,8 +259,8 @@ TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
                 showInfo={false}
               />
               <Text type="secondary">
-                {Math.round((supply.circulating / supply.total) * 100)}% of total
-                supply is circulating
+                {Math.round((supply.circulating / supply.total) * 100)}% of
+                total supply is circulating
               </Text>
             </Descriptions.Item>
             <Descriptions.Item label="Staked">

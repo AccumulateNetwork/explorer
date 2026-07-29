@@ -25,6 +25,13 @@ typecheck:
   script:
     - npm run check
 
+# Formatting (runs on all branches)
+format:
+  extends: .node
+  stage: build
+  script:
+    - npm run check:format
+
 # Unit tests (runs on all branches)
 test:
   extends: .node

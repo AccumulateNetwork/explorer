@@ -2,8 +2,8 @@ import { Descriptions, Radio, Switch, Typography } from 'antd';
 import React from 'react';
 
 import { InfoTable } from '../common/InfoTable';
-import { ThemeMode } from '../common/theme';
 import { broadcast, storage, stored, useShared } from '../common/Shared';
+import { ThemeMode } from '../common/theme';
 
 const { Title } = Typography;
 

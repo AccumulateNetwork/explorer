@@ -14,6 +14,7 @@ import {
   MessageRecord,
   SignatureSetRecord,
 } from 'accumulate.js/lib/api_v3';
+import { sha256 } from 'accumulate.js/lib/common';
 import {
   AccountAuthOperationType,
   AccountType,
@@ -23,7 +24,6 @@ import {
   VoteType,
 } from 'accumulate.js/lib/core';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
-import { sha256 } from 'accumulate.js/lib/common';
 
 import { SigRecord, isRecordOf } from '../../utils/types';
 import { InfiniteList } from './InfiniteList';
@@ -473,7 +473,13 @@ function Signature({
     return <Signature.Delegated level={level} signature={signature} />;
   }
   if ('publicKey' in signature) {
-    return <Signature.Key level={level} signature={signature} delegator={delegator} />;
+    return (
+      <Signature.Key
+        level={level}
+        signature={signature}
+        delegator={delegator}
+      />
+    );
   }
   return (
     <Alert type="error" message={`Unknown signature type ${signature.type}`} />
@@ -546,24 +552,38 @@ Signature.Key = function ({
 
       if (account.type === AccountType.KeyPage) {
         // Hash the signature's public key to get the key hash
-        const pubKeyBytes = signature.publicKey instanceof Uint8Array || Buffer.isBuffer(signature.publicKey)
-          ? signature.publicKey
-          : Buffer.from(signature.publicKey, 'hex');
+        const pubKeyBytes =
+          signature.publicKey instanceof Uint8Array ||
+          Buffer.isBuffer(signature.publicKey)
+            ? signature.publicKey
+            : Buffer.from(signature.publicKey, 'hex');
 
         const sigKeyHash = Buffer.from(sha256(pubKeyBytes)).toString('hex');
 
-        console.log('Looking for key hash:', sigKeyHash, 'in', keyPageUrl.toString());
+        console.log(
+          'Looking for key hash:',
+          sigKeyHash,
+          'in',
+          keyPageUrl.toString(),
+        );
 
         // Find the key entry that matches this public key hash
         const keyEntry = account.keys?.find((entry) => {
           if (!entry.publicKeyHash) return false;
 
           // Convert entry key hash to hex string for comparison
-          const entryKeyHex = entry.publicKeyHash instanceof Uint8Array || Buffer.isBuffer(entry.publicKeyHash)
-            ? Buffer.from(entry.publicKeyHash).toString('hex')
-            : String(entry.publicKeyHash);
+          const entryKeyHex =
+            entry.publicKeyHash instanceof Uint8Array ||
+            Buffer.isBuffer(entry.publicKeyHash)
+              ? Buffer.from(entry.publicKeyHash).toString('hex')
+              : String(entry.publicKeyHash);
 
-          console.log('Comparing with entry key hash:', entryKeyHex, 'delegate:', entry.delegate?.toString());
+          console.log(
+            'Comparing with entry key hash:',
+            entryKeyHex,
+            'delegate:',
+            entry.delegate?.toString(),
+          );
 
           return entryKeyHex === sigKeyHash;
         });
@@ -602,7 +622,9 @@ Signature.Key = function ({
             </IconContext.Provider>
             {`${delegate}`}
           </Link>
-          <Tag color="blue" style={{ marginLeft: 8 }}>Delegated</Tag>
+          <Tag color="blue" style={{ marginLeft: 8 }}>
+            Delegated
+          </Tag>
         </Paragraph>
       )}
       {signature.publicKey ? (
@@ -639,7 +661,11 @@ Signature.Delegated = function ({
               </Link>
             </Paragraph>
             <Tag color="green">Delegated</Tag>
-            <Signature level={level + 1} signature={signature.signature} delegator={signature.delegator} />
+            <Signature
+              level={level + 1}
+              signature={signature.signature}
+              delegator={signature.delegator}
+            />
           </Paragraph>
         </div>
       ) : null}

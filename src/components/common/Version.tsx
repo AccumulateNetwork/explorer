@@ -19,7 +19,8 @@ export function Version() {
       // const base = executorVersion < ExecutorVersion.V2 ? 'V1' : 'V2';
       let name: string;
       try {
-        name = ExecutorVersion.getName(executorVersion) || String(executorVersion);
+        name =
+          ExecutorVersion.getName(executorVersion) || String(executorVersion);
       } catch {
         // Handle unknown executor versions (e.g., v2-jiuquan)
         name = String(executorVersion);

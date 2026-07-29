@@ -57,7 +57,8 @@ const Tokens = () => {
   ];
 
   const loadPage = async (start, count) => {
-    if (!network.metrics) throw new Error('Token metrics endpoint not configured');
+    if (!network.metrics)
+      throw new Error('Token metrics endpoint not configured');
     try {
       const response = await axios.get(
         network.metrics + '/tokens?start=' + start + '&count=' + count,
