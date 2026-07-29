@@ -5,13 +5,15 @@ This document explains how to query data account chains and their entries using 
 ## Overview
 
 Data accounts in Accumulate Network store data entries across multiple chains:
+
 - **Main Chain**: Primary data entries
-- **Scratch Chain**: Temporary/draft data entries  
+- **Scratch Chain**: Temporary/draft data entries
 - **Signature Chain**: Transaction signatures
 
 ## API Configuration
 
 ### Network Setup
+
 ```typescript
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
 
@@ -20,6 +22,7 @@ const api = new JsonRpcClient('http://127.0.1.1:26660/v3'); // Local devnet
 ```
 
 ### Environment Variables
+
 - `VITE_NETWORK=local` - Connect to local devnet
 - `VITE_NETWORK=mainnet` - Connect to mainnet
 - `VITE_NETWORK=any` - Allow network switching in UI
@@ -31,6 +34,7 @@ const api = new JsonRpcClient('http://127.0.1.1:26660/v3'); // Local devnet
 These examples demonstrate direct HTTP queries to the Accumulate mainnet API.
 
 ### Basic Account Query
+
 ```bash
 # Query a data account (using a real mainnet data account)
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -46,6 +50,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 **Response shows data entries in the `entry` field:**
+
 ```json
 {
   "result": {
@@ -66,6 +71,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Decoding Data Entries
+
 The `data` arrays contain hex-encoded strings. To read the actual data:
 
 ```bash
@@ -73,7 +79,7 @@ The `data` arrays contain hex-encoded strings. To read the actual data:
 echo "4163637532" | xxd -r -p
 # Output: "Acc52"
 
-echo "616374696f6e547970653d6164644163636f756e74" | xxd -r -p  
+echo "616374696f6e547970653d6164644163636f756e74" | xxd -r -p
 # Output: "actionType=addAccount"
 
 echo "6163636f756e743d6163633a2f2f746573746965746573742e61636d652f7374616b696e67" | xxd -r -p
@@ -81,6 +87,7 @@ echo "6163636f756e743d6163633a2f2f746573746965746573742e61636d652f7374616b696e67
 ```
 
 ### Query Main Chain
+
 ```bash
 # Get main chain entries with pagination
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -105,6 +112,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Data Entries (writeData transactions)
+
 ```bash
 # Get recent data entries - look for writeData transactions in the results
 # Note: You need to filter the results for transactions with body.type = "writeData"
@@ -130,6 +138,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Scratch Chain
+
 ```bash
 # Get scratch chain entries
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -154,6 +163,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Chain Summary
+
 ```bash
 # Get chain counts and metadata
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -172,6 +182,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Pending Transactions
+
 ```bash
 # Get pending transactions
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -195,6 +206,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Directory (for ADI accounts)
+
 ```bash
 # Get sub-accounts in an ADI (using accumulate.acme as example)
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -218,6 +230,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Query Specific Transaction
+
 ```bash
 # Query by transaction ID
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -233,6 +246,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 ### Submit Transaction (Write Data)
+
 ```bash
 # Submit a writeData transaction
 curl -X POST https://mainnet.accumulatenetwork.io/v3 \
@@ -274,6 +288,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ### Response Format Examples
 
 #### Successful Account Query Response
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -297,6 +312,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 #### Chain Query Response
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -335,6 +351,7 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ```
 
 #### Error Response
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -353,9 +370,11 @@ curl -X POST https://mainnet.accumulatenetwork.io/v3 \
 ## Basic Account Queries
 
 ### Get Account Information
+
 ```typescript
-import { fetchAccount } from './components/common/query';
 import { DataAccount, LiteDataAccount } from 'accumulate.js/lib/core';
+
+import { fetchAccount } from './components/common/query';
 
 // Query any data account
 const account = await api.query(accountUrl).catch(isErrorRecord);
@@ -368,51 +387,55 @@ const liteDataAccount = await fetchAccount(api, accountUrl, LiteDataAccount);
 ## Chain Queries
 
 ### Query Specific Chains
+
 ```typescript
 // Query main chain
 const mainChain = await api.query(accountUrl, {
   queryType: 'chain',
   name: 'main',
-  range: { 
-    start: 0, 
+  range: {
+    start: 0,
     count: 10,
-    expand: true  // Include full transaction details
-  }
+    expand: true, // Include full transaction details
+  },
 });
 
 // Query scratch chain
 const scratchChain = await api.query(accountUrl, {
-  queryType: 'chain', 
+  queryType: 'chain',
   name: 'scratch',
-  range: { expand: true }
+  range: { expand: true },
 });
 
 // Query signature chain
 const signatureChain = await api.query(accountUrl, {
   queryType: 'chain',
-  name: 'signature', 
-  range: { expand: true }
+  name: 'signature',
+  range: { expand: true },
 });
 ```
 
 ### Query All Chains Summary
+
 ```typescript
 // Get chain counts and metadata
-const chainSummary = await api.query(accountUrl, { 
-  queryType: 'chain' 
+const chainSummary = await api.query(accountUrl, {
+  queryType: 'chain',
 });
 
 // Returns counts for main, scratch, and signature chains
 const counts = {
-  main: chainSummary.records.find(r => r.name === 'main')?.total || 0,
-  scratch: chainSummary.records.find(r => r.name === 'scratch')?.total || 0, 
-  signature: chainSummary.records.find(r => r.name === 'signature')?.total || 0
+  main: chainSummary.records.find((r) => r.name === 'main')?.total || 0,
+  scratch: chainSummary.records.find((r) => r.name === 'scratch')?.total || 0,
+  signature:
+    chainSummary.records.find((r) => r.name === 'signature')?.total || 0,
 };
 ```
 
 ## Data Entry Queries
 
 ### Using DataChain Class
+
 ```typescript
 import { DataChain } from './utils/DataChain';
 
@@ -423,11 +446,12 @@ const dataChain = new DataChain(accountUrl, api);
 await dataChain.getRange({ start: 0, count: 20 });
 
 // Access results
-const entries = dataChain.records;      // Combined entries from both chains
-const total = dataChain.total;          // Total entry count
+const entries = dataChain.records; // Combined entries from both chains
+const total = dataChain.total; // Total entry count
 ```
 
 ### Manual Chain Filtering
+
 ```typescript
 import { ChainFilter } from './utils/ChainFilter';
 
@@ -436,7 +460,7 @@ const mainDataFilter = new ChainFilter(
   api,
   accountUrl,
   { queryType: 'chain', name: 'main', range: { expand: true } },
-  (record) => isRecordOfDataTxn(record)  // Filter function
+  (record) => isRecordOfDataTxn(record), // Filter function
 );
 
 // Get filtered results
@@ -446,50 +470,53 @@ const dataEntries = await mainDataFilter.getRange({ start: 0, count: 10 });
 ## Pending Transactions
 
 ### Query Pending Transactions
+
 ```typescript
 // Get pending transaction count
 const pendingCount = await api.query(accountUrl, {
   queryType: 'pending',
-  range: { count: 0 }  // Just get count, no records
+  range: { count: 0 }, // Just get count, no records
 });
 
 // Get pending transactions with details
 const pendingTxns = await api.query(accountUrl, {
-  queryType: 'pending', 
-  range: { 
+  queryType: 'pending',
+  range: {
     start: 0,
     count: 10,
-    expand: true
-  }
+    expand: true,
+  },
 });
 ```
 
 ## React Integration Patterns
 
 ### Using queryEffect Hook
+
 ```typescript
 import { queryEffect } from './components/common/query';
 
 // In React component
 const MyComponent = ({ accountUrl }) => {
   const [entries, setEntries] = useState([]);
-  
+
   // Query data entries
   queryEffect(accountUrl, {
     queryType: 'chain',
-    name: 'main', 
+    name: 'main',
     range: { expand: true }
   }).then((result) => {
     if (result.recordType === RecordType.Range) {
       setEntries(result.records);
     }
   });
-  
+
   return <div>{/* Render entries */}</div>;
 };
 ```
 
 ### Pagination Example
+
 ```typescript
 const DataLedger = ({ scope }) => {
   const { api } = useContext(Network);
@@ -506,14 +533,14 @@ const DataLedger = ({ scope }) => {
   useEffect(() => {
     const { current, pageSize } = pagination;
     const start = (current - 1) * pageSize;
-    
+
     dataChain.getRange({ start, count: pageSize }).then(() => {
       setEntries(dataChain.records.slice(start, start + pageSize));
     });
   }, [pagination]);
 
   return (
-    <Table 
+    <Table
       dataSource={entries}
       pagination={pagination}
       onChange={setPagination}
@@ -525,56 +552,66 @@ const DataLedger = ({ scope }) => {
 ## Advanced Query Patterns
 
 ### Directory Queries (for ADI accounts)
+
 ```typescript
 // Query sub-accounts in an ADI
 const directory = await api.query(adiUrl, {
   queryType: 'directory',
-  range: { 
-    start: 0, 
+  range: {
+    start: 0,
     count: 50,
-    expand: false  // Just get URLs, not full account details
-  }
+    expand: false, // Just get URLs, not full account details
+  },
 });
 ```
 
 ### Transaction History with Filtering
+
 ```typescript
 // Get all transactions for an account
 const allChains = await Promise.all([
-  api.query(accountUrl, { queryType: 'chain', name: 'main', range: { expand: true } }),
-  api.query(accountUrl, { queryType: 'chain', name: 'scratch', range: { expand: true } }),
-  api.query(accountUrl, { queryType: 'pending', range: { expand: true } })
+  api.query(accountUrl, {
+    queryType: 'chain',
+    name: 'main',
+    range: { expand: true },
+  }),
+  api.query(accountUrl, {
+    queryType: 'chain',
+    name: 'scratch',
+    range: { expand: true },
+  }),
+  api.query(accountUrl, { queryType: 'pending', range: { expand: true } }),
 ]);
 
 // Combine and sort by timestamp
 const allTransactions = allChains
-  .flatMap(chain => chain.records || [])
-  .filter(record => record.value?.received)  // Has timestamp
+  .flatMap((chain) => chain.records || [])
+  .filter((record) => record.value?.received) // Has timestamp
   .sort((a, b) => (b.value.received || 0) - (a.value.received || 0));
 ```
 
 ## Error Handling
 
 ### Robust Query Pattern
+
 ```typescript
 const queryAccountSafely = async (url) => {
   try {
     const result = await api.query(url).catch(isErrorRecord);
-    
+
     if (isRecordOf(result, Status.NotFound)) {
       return { error: 'Account not found' };
     }
-    
+
     if (result.recordType === RecordType.Error) {
       return { error: result.value.message };
     }
-    
+
     if (result.recordType === RecordType.Account) {
       return { account: result.account };
     }
-    
+
     return { error: 'Unexpected response type' };
-    
   } catch (error) {
     return { error: error.message };
   }
@@ -584,26 +621,30 @@ const queryAccountSafely = async (url) => {
 ## Performance Considerations
 
 ### Efficient Data Loading
+
 ```typescript
 // Use expand: true only when you need full transaction details
 const lightweightQuery = {
   queryType: 'chain',
   name: 'main',
-  range: { 
-    start: 0, 
+  range: {
+    start: 0,
     count: 100,
-    expand: false  // Faster, less data
-  }
+    expand: false, // Faster, less data
+  },
 };
 
 // Use filtering to reduce data transfer
 const dataOnlyFilter = (record) => {
-  return record.value?.message?.type === MessageType.Transaction &&
-         record.value.message.transaction.body.type === 'writeData';
+  return (
+    record.value?.message?.type === MessageType.Transaction &&
+    record.value.message.transaction.body.type === 'writeData'
+  );
 };
 ```
 
 ### Caching Strategy
+
 ```typescript
 // Cache frequently accessed data
 const accountCache = new Map();
@@ -613,7 +654,7 @@ const getCachedAccount = async (url) => {
   if (accountCache.has(key)) {
     return accountCache.get(key);
   }
-  
+
   const account = await fetchAccount(api, url);
   accountCache.set(key, account);
   return account;
@@ -795,7 +836,7 @@ export class DataChain {
       seen.add(h);
       return true;
     });
-    
+
     // Sort by chain name and index/timestamp
     this.#results.records.sort((a, b) => {
       if (a.name === b.name) {
@@ -881,7 +922,7 @@ export class ChainFilter<R extends Record & { index?: number }> {
           fromEnd: true,
         }),
       )) as unknown as RecordRange<R>;
-      
+
       if (!r.total) {
         this.#results.total = 0;
         return;
@@ -1013,24 +1054,28 @@ export async function fetchDataEntries(
 ## Common Query Examples
 
 ### Get Latest Data Entries
+
 ```typescript
 const getLatestDataEntries = async (accountUrl, limit = 10) => {
   const dataChain = new DataChain(accountUrl, api);
   await dataChain.getRange({ start: 0, count: limit });
-  
+
   return dataChain.records
-    .filter(entry => entry.value?.message?.transaction?.body?.type === 'writeData')
+    .filter(
+      (entry) => entry.value?.message?.transaction?.body?.type === 'writeData',
+    )
     .slice(0, limit);
 };
 ```
 
 ### Search for Specific Data
+
 ```typescript
 const searchDataEntries = async (accountUrl, searchTerm) => {
   const dataChain = new DataChain(accountUrl, api);
   await dataChain.getRange({ start: 0, count: 1000 }); // Adjust as needed
-  
-  return dataChain.records.filter(entry => {
+
+  return dataChain.records.filter((entry) => {
     const data = entry.value?.message?.transaction?.body?.entry?.data;
     return data && Buffer.from(data).toString().includes(searchTerm);
   });
@@ -1038,21 +1083,28 @@ const searchDataEntries = async (accountUrl, searchTerm) => {
 ```
 
 ### Monitor Account Activity
+
 ```typescript
 const monitorAccount = async (accountUrl, callback) => {
   let lastKnownCount = 0;
-  
+
   const checkForUpdates = async () => {
     const summary = await api.query(accountUrl, { queryType: 'chain' });
-    const currentCount = summary.records.reduce((sum, chain) => sum + (chain.total || 0), 0);
-    
+    const currentCount = summary.records.reduce(
+      (sum, chain) => sum + (chain.total || 0),
+      0,
+    );
+
     if (currentCount > lastKnownCount) {
-      const newEntries = await getLatestDataEntries(accountUrl, currentCount - lastKnownCount);
+      const newEntries = await getLatestDataEntries(
+        accountUrl,
+        currentCount - lastKnownCount,
+      );
       callback(newEntries);
       lastKnownCount = currentCount;
     }
   };
-  
+
   // Poll every 5 seconds
   setInterval(checkForUpdates, 5000);
 };

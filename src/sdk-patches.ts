@@ -10,7 +10,10 @@ ExecutorVersion.byName = function (name: string): number {
   try {
     return originalByName(name);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Unknown ExecutorVersion')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Unknown ExecutorVersion')
+    ) {
       console.warn(`Unknown ExecutorVersion '${name}', treating as -1`);
       return -1;
     }
@@ -26,7 +29,10 @@ ExecutorVersion.byName = function (name: string): number {
   try {
     return originalGetName(v);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('Unknown ExecutorVersion')) {
+    if (
+      error instanceof Error &&
+      error.message.includes('Unknown ExecutorVersion')
+    ) {
       console.warn(`Unknown ExecutorVersion ${v}, treating as 'unknown'`);
       return 'unknown';
     }

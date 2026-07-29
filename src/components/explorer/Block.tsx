@@ -1,11 +1,4 @@
-import {
-  Alert,
-  Descriptions,
-  Skeleton,
-  Switch,
-  Tag,
-  Typography,
-} from 'antd';
+import { Alert, Descriptions, Skeleton, Switch, Tag, Typography } from 'antd';
 import moment from 'moment-timezone';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';

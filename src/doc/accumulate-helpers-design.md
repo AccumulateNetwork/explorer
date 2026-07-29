@@ -7,6 +7,7 @@ This document outlines the design and implementation of helper functions for int
 ## Architecture
 
 The helper functions are organized into several categories:
+
 1. Account Creation (Lite accounts, ADIs, Token accounts, Data accounts)
 2. Token Management (Supply, Transfer)
 3. Credit Management
@@ -19,83 +20,88 @@ The helper functions are organized into several categories:
 ### 1. Account Creation
 
 #### Lite Account Functions
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `generateLiteAccountKey` | Generates a key pair for a lite account | `accumulate_helpers.go` |
-| `requestFaucetFunds` | Requests funds from the faucet for a lite account | `accumulate_helpers.go` |
+
+| Function                 | Description                                       | File Location           |
+| ------------------------ | ------------------------------------------------- | ----------------------- |
+| `generateLiteAccountKey` | Generates a key pair for a lite account           | `accumulate_helpers.go` |
+| `requestFaucetFunds`     | Requests funds from the faucet for a lite account | `accumulate_helpers.go` |
 
 #### ADI Creation Functions
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `CreateADI` | Creates a new Accumulate Digital Identifier | `accumulate_helpers.go` |
-| `generateADIKey` | Generates a key pair for an ADI | `accumulate_helpers.go` |
+
+| Function         | Description                                 | File Location           |
+| ---------------- | ------------------------------------------- | ----------------------- |
+| `CreateADI`      | Creates a new Accumulate Digital Identifier | `accumulate_helpers.go` |
+| `generateADIKey` | Generates a key pair for an ADI             | `accumulate_helpers.go` |
 
 #### Token Account Functions
-| Function | Description | File Location |
-|----------|-------------|---------------|
+
+| Function             | Description                          | File Location           |
+| -------------------- | ------------------------------------ | ----------------------- |
 | `CreateTokenAccount` | Creates a token account under an ADI | `accumulate_helpers.go` |
-| `SupplyTokens` | Issues tokens to a token account | `accumulate_helpers.go` |
+| `SupplyTokens`       | Issues tokens to a token account     | `accumulate_helpers.go` |
 
 #### Data Account Functions
-| Function | Description | File Location |
-|----------|-------------|---------------|
+
+| Function            | Description                         | File Location           |
+| ------------------- | ----------------------------------- | ----------------------- |
 | `CreateDataAccount` | Creates a data account under an ADI | `accumulate_helpers.go` |
-| `WriteDataEntry` | Writes data to a data account | `accumulate_helpers.go` |
+| `WriteDataEntry`    | Writes data to a data account       | `accumulate_helpers.go` |
 
 #### Key Management Functions
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `CreateKeyBook` | Creates a key book for an ADI | `accumulate_helpers.go` |
+
+| Function        | Description                      | File Location           |
+| --------------- | -------------------------------- | ----------------------- |
+| `CreateKeyBook` | Creates a key book for an ADI    | `accumulate_helpers.go` |
 | `CreateKeyPage` | Creates a key page in a key book | `accumulate_helpers.go` |
-| `AddKeyToPage` | Adds a key to a key page | `accumulate_helpers.go` |
+| `AddKeyToPage`  | Adds a key to a key page         | `accumulate_helpers.go` |
 
 ### 2. Token Management
 
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `SupplyTokens` | Issues tokens to a token account | `accumulate_helpers.go` |
-| `TransferTokens` | Transfers tokens between accounts | `accumulate_helpers.go` |
+| Function                  | Description                           | File Location           |
+| ------------------------- | ------------------------------------- | ----------------------- |
+| `SupplyTokens`            | Issues tokens to a token account      | `accumulate_helpers.go` |
+| `TransferTokens`          | Transfers tokens between accounts     | `accumulate_helpers.go` |
 | `checkLiteAccountBalance` | Queries the balance of a lite account | `accumulate_helpers.go` |
 
 ### 3. Credit Management
 
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `CreateCredits` | Converts ACME tokens to credits | `accumulate_helpers.go` |
-| `AddCreditsToKeyPage` | Adds credits to a key page | `accumulate_helpers.go` |
+| Function              | Description                     | File Location           |
+| --------------------- | ------------------------------- | ----------------------- |
+| `CreateCredits`       | Converts ACME tokens to credits | `accumulate_helpers.go` |
+| `AddCreditsToKeyPage` | Adds credits to a key page      | `accumulate_helpers.go` |
 
 ### 4. Transaction Management
 
-| Function | Description | File Location |
-|----------|-------------|---------------|
+| Function             | Description                            | File Location           |
+| -------------------- | -------------------------------------- | ----------------------- |
 | `WaitForTransaction` | Waits for a transaction to be executed | `accumulate_helpers.go` |
-| `SignAndSubmitTx` | Signs and submits a transaction | `accumulate_helpers.go` |
+| `SignAndSubmitTx`    | Signs and submits a transaction        | `accumulate_helpers.go` |
 
 ### 5. Query Functions
 
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `queryDataAccount` | Queries a data account | `data_account_mainnet_test.go`, `complex_adi_interactions_test.go` |
-| `queryDataEntries` | Queries data entries from a data account | `data_account_mainnet_test.go`, `complex_adi_interactions_test.go` |
-| `queryDataAccountInfo` | Queries information about a data account | `extract_data_account_transactions_test.go` |
-| `queryDataEntriesBatch` | Queries a batch of data entries | `extract_data_account_transactions_test.go` |
-| `queryADI` | Queries an ADI | `complex_adi_interactions_test.go` |
-| `queryDirectory` | Queries an ADI's directory | `complex_adi_interactions_test.go` |
-| `queryAccount` | Queries a token account | `complex_adi_interactions_test.go` |
-| `queryKeybook` | Queries a keybook | `complex_adi_interactions_test.go` |
-| `queryRecentTransactions` | Queries recent transactions for an account | `complex_adi_interactions_test.go` |
+| Function                  | Description                                | File Location                                                      |
+| ------------------------- | ------------------------------------------ | ------------------------------------------------------------------ |
+| `queryDataAccount`        | Queries a data account                     | `data_account_mainnet_test.go`, `complex_adi_interactions_test.go` |
+| `queryDataEntries`        | Queries data entries from a data account   | `data_account_mainnet_test.go`, `complex_adi_interactions_test.go` |
+| `queryDataAccountInfo`    | Queries information about a data account   | `extract_data_account_transactions_test.go`                        |
+| `queryDataEntriesBatch`   | Queries a batch of data entries            | `extract_data_account_transactions_test.go`                        |
+| `queryADI`                | Queries an ADI                             | `complex_adi_interactions_test.go`                                 |
+| `queryDirectory`          | Queries an ADI's directory                 | `complex_adi_interactions_test.go`                                 |
+| `queryAccount`            | Queries a token account                    | `complex_adi_interactions_test.go`                                 |
+| `queryKeybook`            | Queries a keybook                          | `complex_adi_interactions_test.go`                                 |
+| `queryRecentTransactions` | Queries recent transactions for an account | `complex_adi_interactions_test.go`                                 |
 
 ### 6. Data Extraction and Analysis
 
-| Function | Description | File Location |
-|----------|-------------|---------------|
-| `extractEntryData` | Extracts data from an entry | `extract_data_account_transactions_test.go` |
-| `isPrintableASCII` | Checks if data is printable ASCII | `extract_data_account_transactions_test.go` |
-| `parseKeyValuePairs` | Parses key-value pairs from data | `extract_data_account_transactions_test.go` |
-| `determineTransactionType` | Determines transaction type from data | `extract_data_account_transactions_test.go` |
-| `analyzeTransactionParticipants` | Analyzes transaction participants | `complex_adi_interactions_test.go` |
-| `analyzeKeybookAuthorities` | Analyzes keybook authorities | `complex_adi_interactions_test.go` |
-| `countSignatures` | Counts signatures in a transaction | `complex_adi_interactions_test.go` |
+| Function                         | Description                           | File Location                               |
+| -------------------------------- | ------------------------------------- | ------------------------------------------- |
+| `extractEntryData`               | Extracts data from an entry           | `extract_data_account_transactions_test.go` |
+| `isPrintableASCII`               | Checks if data is printable ASCII     | `extract_data_account_transactions_test.go` |
+| `parseKeyValuePairs`             | Parses key-value pairs from data      | `extract_data_account_transactions_test.go` |
+| `determineTransactionType`       | Determines transaction type from data | `extract_data_account_transactions_test.go` |
+| `analyzeTransactionParticipants` | Analyzes transaction participants     | `complex_adi_interactions_test.go`          |
+| `analyzeKeybookAuthorities`      | Analyzes keybook authorities          | `complex_adi_interactions_test.go`          |
+| `countSignatures`                | Counts signatures in a transaction    | `complex_adi_interactions_test.go`          |
 
 ## Accumulate Structure Creation Flow
 
@@ -106,6 +112,7 @@ generateLiteAccountKey() -> requestFaucetFunds() -> Lite Account Created
 ```
 
 Lite accounts can be of two types:
+
 - Lite Token Account: Holds ACME tokens
 - Lite Data Account: Stores data entries
 
@@ -134,6 +141,7 @@ AddCreditsToKeyPage() -> Credits Added to Key Page
 ### Network Connectivity
 
 The helper functions support multiple networks:
+
 - Local development network (http://127.0.1.1:26660)
 - Testnet (https://testnet.accumulatenetwork.io)
 - Mainnet (https://mainnet.accumulatenetwork.io)
@@ -184,7 +192,7 @@ err = TransferTokens(ctx, client, adiKey, tokenURL, recipientURL, 500)
 for i := 0; i < 5; i++ {
     adiName := fmt.Sprintf("testadi%d", i)
     adiKey, adiURL, err := CreateADI(ctx, client, liteKey, liteURL, adiName)
-    
+
     // Create token and data accounts for each ADI
     tokenURL, err := CreateTokenAccount(ctx, client, adiKey, adiURL, "tokens")
     dataURL, err := CreateDataAccount(ctx, client, adiKey, adiURL, "data")

@@ -1,12 +1,4 @@
-import {
-  Card,
-  Progress,
-  Tabs,
-  Tag,
-  Tooltip,
-  Typography,
-  message,
-} from 'antd';
+import { Card, Progress, Tabs, Tag, Tooltip, Typography, message } from 'antd';
 import axios from 'axios';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
@@ -136,7 +128,8 @@ const Validators = () => {
   ];
 
   const loadPage = async (start, count) => {
-    if (!network.metrics) throw new Error('Validator metrics endpoint not configured');
+    if (!network.metrics)
+      throw new Error('Validator metrics endpoint not configured');
     try {
       const response = await axios.get(
         network.metrics +
@@ -245,8 +238,8 @@ const Validators = () => {
               ),
               children: (
                 <>
-                  Anyone with a minimum stake of <strong>50,000 ACME</strong> can
-                  become a validator.
+                  Anyone with a minimum stake of <strong>50,000 ACME</strong>{' '}
+                  can become a validator.
                   <br />
                   <a
                     href="https://docs.accumulatenetwork.io/accumulate/setup/validator-node-setup-with-accman"
