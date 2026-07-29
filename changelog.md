@@ -3,6 +3,29 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] - 2026-07-29
+
+### Added
+- **Vitest unit tests and a `tsc` gate in CI.** Routes, wallet client, wallet mode, URL handling and message decoding are covered (46 tests).
+- **Local-wallet build profile and dev proxy.** The dev server proxies wallet API calls to a locally running `ccli webui` so it behaves like the embedded same-origin release build.
+
+### Changed
+- **React 18 and react-router v6.** Splat routes (`/acc/*`, `/tx/*`) replace v5's `:url+` for slash-containing account and transaction references.
+- **Wallet panel rebuilt against the real API**, with a wallet dock and an explicit wallet mode.
+- **Dev proxy defaults to wallet port 8437** instead of 8080.
+- **Depth and contrast pass.** Shadows, highlights, scroll-edge fades, and lighter light-mode borders (`#bfbfbf` → `#dfdfdf`).
+
+### Fixed
+- **Cause and produced rows name the transaction instead of showing `unknown`.** Synthetic and anchor traffic arrives wrapped — a `SequencedMessage` carries the payload in `.message`, not `.transaction` — so type and principal lookups missed the body and reported the envelope. Rows now unwrap first, render types in the same title case as the Transaction Type row, and carry the full TxID as a tooltip. `unknown · 01d9eb82` becomes `Synthetic Burn Tokens · acc://acme`. ([#33](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/33))
+- **Searching an account with a stray leading or trailing space resolves instead of 404ing.** The reference is queried exactly as typed first, so an account whose name genuinely ends in a space still wins; only after that fails is the trimmed form retried. Whitespace around an `acc://` scheme is dropped up front. ([#32](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/32))
+- **Enrichment now runs for short lists.** `enrichPage` was only wired into the server-mode path, so array-mode callers (cause and produced lists) never resolved types at all. ([#31](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/31))
+- Transaction types resolve for signatures, enum message types, and numeric `body.type` values. ([#31](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/31))
+- Accounts whose URL contains spaces resolve rather than silently dropping the space and 404ing.
+- TypeScript errors across app source; `tsc` now gates CI.
+
+### Internal
+- `TxnInfo` and `MsgInfo` shared byte-identical copies of the cause/produced enrichment and row component; both are now one `RelatedTxn`. Message-decoding helpers moved to `src/utils/message.ts` so they can be unit tested without rendering, and `EnumValue` reuses the shared type-name formatter.
+
 ## [0.3.0] - 2026-04-23
 
 ### Added
