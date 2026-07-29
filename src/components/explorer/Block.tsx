@@ -16,11 +16,9 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getBlockEntries from '../../utils/getBlockEntries';
+import { extractTxType } from '../../utils/message';
 import Count from '../common/Count';
-import {
-  InfiniteTable,
-  extractTxType,
-} from '../common/InfiniteList';
+import { InfiniteTable } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';

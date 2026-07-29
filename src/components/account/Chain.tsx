@@ -40,17 +40,14 @@ import {
 } from 'accumulate.js/lib/messaging';
 
 import { ManagedRange } from '../../utils/ManagedRange';
+import { extractTxType } from '../../utils/message';
 import {
   CreditAmount,
   TokenAmount,
   recipientsOfTx,
   totalAmount,
 } from '../common/Amount';
-import {
-  InfiniteList,
-  InfiniteTable,
-  extractTxType,
-} from '../common/InfiniteList';
+import { InfiniteList, InfiniteTable } from '../common/InfiniteList';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
