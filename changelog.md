@@ -3,6 +3,12 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.1] - 2026-07-29
+
+### Fixed
+- **Transactions no longer report Success when something they produced failed or is still pending.** `getProducedStatus` recursed inside a `.map()` returned from `.then()` rather than passed through `Promise.all`, so the status array held Promises; both `>= 400` and `=== Pending` compared against a Promise and were always false, leaving `Delivered` as the only reachable outcome. A send-tokens whose synthetic deposit had errored rendered a green SUCCESS tag. ([#35](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/35))
+- **Removed a `debugger` statement that was shipping to production.** It sat at the top of the `Validators` component and survived the build, so any visitor with devtools open on an anchor transaction hit a breakpoint. ([#35](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/35))
+
 ## [0.4.0] - 2026-07-29
 
 ### Added
