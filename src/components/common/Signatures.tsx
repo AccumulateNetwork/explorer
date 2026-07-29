@@ -187,7 +187,6 @@ function Validators({
 }: {
   signatures: MessageRecord<BlockAnchor>[];
 }) {
-  debugger;
   const { api } = useContext(Network);
   const [validators, setValidators] = useState<core.ValidatorInfo[]>(null);
 

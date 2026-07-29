@@ -174,14 +174,19 @@ export function Status(props: { record?: MessageRecord; id?: TxIDArgs }) {
   );
 }
 
-async function getProducedStatus(api: JsonRpcClient, r: MessageRecord) {
+export async function getProducedStatus(api: JsonRpcClient, r: MessageRecord) {
   if (!r.produced?.records?.length) return r.status;
   if (r.status !== errors.Status.Delivered) return r.status;
 
-  const results = await Promise.all(
+  const produced = await Promise.all(
     r.produced.records.map((x) => api.query(x.value).catch(isErrorRecord)),
-  ).then((r) =>
-    r.map((r: Record) => {
+  );
+
+  // Each branch must be awaited before the comparisons below. Recursing without
+  // awaiting leaves Promises in `results`, and `Promise >= 400` is false, so
+  // every transaction with produced messages reported Delivered.
+  const results = await Promise.all(
+    produced.map(async (r: Record) => {
       if (r.recordType === RecordType.Message) {
         return getProducedStatus(api, r);
       }
