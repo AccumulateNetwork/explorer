@@ -11,9 +11,6 @@ import React, {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { TransactionType } from 'accumulate.js/lib/core';
-import { MessageType } from 'accumulate.js/lib/messaging';
-
 const { Text } = Typography;
 
 export const PAGE_SIZE = 25;
@@ -21,44 +18,6 @@ export const SCROLL_HEIGHT = 600;
 export const SCROLL_THRESHOLD_PX = 200;
 export const URL_THROTTLE_MS = 250;
 export const SHORT_LIST_LIMIT = 10;
-
-/**
- * Pull a transaction-type string from a MessageRecord-shaped object.
- * Robust to missing fields so a single malformed tx doesn't break an
- * enrichment pass. Resolution order (each falls through to the next):
- * 1. `body.type` as string  — user transactions (`sendTokens`, etc.)
- * 2. `body.type` as number  — map via `TransactionType.getName`
- * 3. `msg.type` as string   — already-stringified message type
- * 4. `msg.type` as number   — map via `MessageType.getName`
- * Handles records wrapped in `.value.message` (ChainEntryRecord-style) and
- * records where the message is at the root (no `.message` wrapper).
- */
-export function extractTxType(record: any): string | undefined {
-  if (!record) return undefined;
-  const msg = record?.message ?? record?.value?.message ?? record;
-  if (!msg) return undefined;
-  const bodyType = msg?.transaction?.body?.type;
-  if (typeof bodyType === 'string' && bodyType) return bodyType;
-  if (typeof bodyType === 'number') {
-    try {
-      const name = TransactionType.getName(bodyType);
-      if (name) return name;
-    } catch {
-      /* fall through */
-    }
-  }
-  const msgType = msg?.type;
-  if (typeof msgType === 'string' && msgType) return msgType;
-  if (typeof msgType === 'number') {
-    try {
-      const name = MessageType.getName(msgType);
-      if (name) return name;
-    } catch {
-      return undefined;
-    }
-  }
-  return undefined;
-}
 
 type EnrichmentMap = ReadonlyMap<unknown, unknown>;
 

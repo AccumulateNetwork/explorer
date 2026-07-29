@@ -25,12 +25,9 @@ import {
 
 import { FilterRanger, Ranger, apiQuery } from '../../utils/Ranger';
 import getBlockEntries from '../../utils/getBlockEntries';
+import { extractTxType } from '../../utils/message';
 import Count from './Count';
-import {
-  InfiniteTable,
-  extractTxType,
-  useInfiniteListEnrichment,
-} from './InfiniteList';
+import { InfiniteTable, useInfiniteListEnrichment } from './InfiniteList';
 import { Link } from './Link';
 import { Network } from './Network';
 
