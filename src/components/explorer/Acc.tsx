@@ -14,7 +14,7 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { isRecordOf } from '../../utils/types';
-import { encodeURLSpaces } from '../../utils/url';
+import { encodeURLSpaces, retryWithoutOuterSpaces } from '../../utils/url';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
@@ -94,7 +94,29 @@ export function Acc({
     }
   }, [record]);
 
-  if (error instanceof errors.Error && error.code === errors.Status.NotFound) {
+  // The reference is queried exactly as typed, so an account whose name really
+  // does begin or end with a space resolves on the first attempt. Only once
+  // that has actually 404'd is whitespace on either end treated as a copy/paste
+  // artifact and the trimmed reference retried. Replace the history entry so
+  // Back skips the reference that failed. (Whitespace around an `acc://` scheme
+  // never gets this far — it is unambiguously not part of the name, so the
+  // search bar drops it up front.)
+  // Retry on any query failure, not just NotFound: where the stray space lands
+  // decides which error comes back. In the path the node reports NotFound (404,
+  // `acc://foo.acme/tokens%20` simply does not exist), but in the authority it
+  // reports an encoding error (502) instead, because a space is not a legal
+  // host character and the URL never parses. Both mean the same thing here.
+  const notFound =
+    error instanceof errors.Error && error.code === errors.Status.NotFound;
+  const retry = isTx ? null : retryWithoutOuterSpaces(ref);
+  const retrying = !!error && !!retry;
+  useEffect(() => {
+    if (retrying) {
+      navigate(`/acc/${encodeURLSpaces(retry)}`, { replace: true });
+    }
+  }, [retrying, retry]);
+
+  if (notFound && !retrying) {
     if (web3.publicKey?.lite?.equals(url)) {
       return <MissingLiteID />;
     }
@@ -109,7 +131,7 @@ export function Acc({
           url={URL.parse(url)}
         />
         <div>
-          {error ? (
+          {error && !retrying ? (
             <div className="skeleton-holder">
               <Alert message={`${error}`} type="error" showIcon />
             </div>
