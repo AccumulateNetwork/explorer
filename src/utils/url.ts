@@ -39,12 +39,13 @@ export function stripAccScheme(s: string): string {
  * The account reference to retry after `ref` was not found, or null if there is
  * nothing left to try.
  *
- * A trailing space is only treated as a copy/paste artifact once the reference
- * as typed has actually 404'd, so an account whose name really does end in a
- * space still resolves on the first attempt.
+ * Whitespace on either end is only treated as a copy/paste artifact once the
+ * reference as typed has actually 404'd, so an account whose name really does
+ * begin or end with a space still resolves on the first attempt. Interior
+ * spaces are always part of the name and are never touched.
  */
-export function retryWithoutTrailingSpaces(ref: string): string | null {
-  const trimmed = ref.replace(/\s+$/, '');
+export function retryWithoutOuterSpaces(ref: string): string | null {
+  const trimmed = ref.trim();
   return trimmed === ref || trimmed === '' ? null : trimmed;
 }
 
