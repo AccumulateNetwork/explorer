@@ -19,6 +19,12 @@ describe('route matching (v6)', () => {
     expect(m?.params['*']).toBe(hash);
   });
 
+  it('matches a canonical <hash>@authority TxID via the /tx/* splat (#69)', () => {
+    const txid = `${'a'.repeat(64)}@acme`;
+    const m = matchPath('/tx/*', `/tx/${txid}`);
+    expect(m?.params['*']).toBe(txid);
+  });
+
   it('matches a data URL via the /data/* splat', () => {
     const m = matchPath('/data/*', '/data/acc://alice.acme/data');
     expect(m?.params['*']).toBe('acc://alice.acme/data');

@@ -4,6 +4,7 @@ import {
   encodeURLSpaces,
   retryWithoutOuterSpaces,
   stripAccScheme,
+  txIdFromRef,
 } from './url';
 
 // Account names may contain spaces, so search input cannot simply be trimmed
@@ -37,6 +38,22 @@ describe('stripAccScheme', () => {
 
   it('does not strip a scheme that appears mid-string', () => {
     expect(stripAccScheme('foo.acme/acc://bar')).toBe('foo.acme/acc://bar');
+  });
+});
+
+describe('txIdFromRef', () => {
+  const hash =
+    'accc878f25c1051b5e78823d20c7466f474fe67dbd3df49ffdf3e948c1621212';
+
+  it('appends @unknown to a bare hash', () => {
+    expect(txIdFromRef(hash)).toBe(`${hash}@unknown`);
+  });
+
+  it('leaves a canonical <hash>@authority TxID alone (#69)', () => {
+    // Appending a second @ would make the WHATWG parser fold `@acme` into
+    // the hash as `%40acme`, producing an unqueryable TxID.
+    expect(txIdFromRef(`${hash}@acme`)).toBe(`${hash}@acme`);
+    expect(txIdFromRef(`${hash}@unknown`)).toBe(`${hash}@unknown`);
   });
 });
 
