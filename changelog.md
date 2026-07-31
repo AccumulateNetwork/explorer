@@ -3,6 +3,15 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.2] - 2026-07-31
+
+### Fixed
+- **Canonical `<hash>@authority` transaction IDs resolve on the `/tx/` route.** `/tx/<hash>` worked but `/tx/<hash>@acme` — the form users copy from CLI output and API responses — errored. `Acc` unconditionally appended `@unknown` to make the reference queryable, and the WHATWG parser folded the inner `@` into the hash (`<hash>%40acme`), so the node was asked for an invalid hash. `@unknown` is now only appended when the reference does not already name an authority. ([#69](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/69))
+
+### Internal
+- **CI standardised on npm and installs from the lockfile.** The stale parallel `yarn.lock` is gone; CI uses `npm ci`, so builds run against the dependencies that were actually tested. ([#37](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/37))
+- **`check:format` is now a real gate.** It ran prettier without `--check` and always passed; it now fails on drift, CI enforces it, and the tree has been formatted. ([#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36), [#38](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/38))
+
 ## [0.4.1] - 2026-07-29
 
 ### Fixed
