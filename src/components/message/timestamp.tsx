@@ -35,17 +35,15 @@ export function describeTimestamp(txid: string | URL | TxID) {
         ? `${network.metrics}/timestamp/${txId}`
         : `${network.api[0]}/timestamp/${txId}@unknown`;
 
-      const response = await axios
-        .get(timestampUrl)
-        .catch((error) => {
-          setTs(0);
-          setBlock(0);
-          if (!`${error}`.includes('404')) {
-            // Silently fail - timestamps are often unavailable
-            console.warn('Failed to fetch timestamp:', error.message);
-          }
-          return null;
-        });
+      const response = await axios.get(timestampUrl).catch((error) => {
+        setTs(0);
+        setBlock(0);
+        if (!`${error}`.includes('404')) {
+          // Silently fail - timestamps are often unavailable
+          console.warn('Failed to fetch timestamp:', error.message);
+        }
+        return null;
+      });
       if (!mounted()) {
         return;
       }

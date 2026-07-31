@@ -43,7 +43,10 @@ export function DataLedger({ scope }: { scope: URL }) {
     [scope.toString(), network.id],
   );
 
-  const loadPage = async (start: number, count: number): Promise<TxnEntry[]> => {
+  const loadPage = async (
+    start: number,
+    count: number,
+  ): Promise<TxnEntry[]> => {
     const r = await dataChain.getRange({ start, count });
 
     let t = r.total;

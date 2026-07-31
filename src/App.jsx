@@ -2,8 +2,8 @@ import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 import './App.css';
-import { ThemeProvider } from './components/common/ThemeProvider';
 import Explorer from './components/Explorer';
+import { ThemeProvider } from './components/common/ThemeProvider';
 
 const App = () => {
   const [loaded, setLoaded] = useState(false);

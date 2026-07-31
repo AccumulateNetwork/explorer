@@ -321,14 +321,20 @@ export function Chain(props: {
       <InfiniteList<PendingRecord>
         total={total}
         loadPage={(s, c) => loadPage<PendingRecord>(s, c)}
-        enrichPage={enrichPendingPage as (items: PendingRecord[]) => Promise<ReadonlyMap<unknown, unknown>>}
-        rowKey={(item, i) => (item instanceof ErrorRecord ? `e-${i}` : item.id?.toString() || `i-${i}`)}
+        enrichPage={
+          enrichPendingPage as (
+            items: PendingRecord[],
+          ) => Promise<ReadonlyMap<unknown, unknown>>
+        }
+        rowKey={(item, i) =>
+          item instanceof ErrorRecord
+            ? `e-${i}`
+            : item.id?.toString() || `i-${i}`
+        }
         cursorParam={CURSOR_PARAMS.pending}
         cursorOf={() => undefined}
         pageSize={pageSize}
-        renderItem={(item) => (
-          <Chain.PendingRow item={item} icon={<Icon />} />
-        )}
+        renderItem={(item) => <Chain.PendingRow item={item} icon={<Icon />} />}
       />
     );
   }
@@ -340,7 +346,11 @@ export function Chain(props: {
       loadPage={(s, c) => loadPage<ChainRecord>(s, c)}
       columns={visibleColumns}
       rowKey="index"
-      enrichPage={enrichChainPage as (items: ChainRecord[]) => Promise<ReadonlyMap<unknown, unknown>>}
+      enrichPage={
+        enrichChainPage as (
+          items: ChainRecord[],
+        ) => Promise<ReadonlyMap<unknown, unknown>>
+      }
       pageSize={pageSize}
     />
   );
@@ -365,10 +375,9 @@ Chain.PendingRow = function ({
   const timestamp = formatTime(item.lastBlockTime);
 
   const pathSuffix = path ? `/${path}` : '';
-  const label =
-    type
-      ? `${type} · ${adi ?? 'unknown'}${pathSuffix}${timestamp ? ` @ ${timestamp}` : ''}`
-      : `${short} · unknown`;
+  const label = type
+    ? `${type} · ${adi ?? 'unknown'}${pathSuffix}${timestamp ? ` @ ${timestamp}` : ''}`
+    : `${short} · unknown`;
 
   return (
     <Link to={item.id}>

@@ -14,7 +14,11 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import { isRecordOf } from '../../utils/types';
-import { encodeURLSpaces, retryWithoutOuterSpaces } from '../../utils/url';
+import {
+  encodeURLSpaces,
+  retryWithoutOuterSpaces,
+  txIdFromRef,
+} from '../../utils/url';
 import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
@@ -54,11 +58,12 @@ export function Acc({
   const [error, setError] = useState(null);
 
   // Splat routes /acc/* and /tx/* put the (slash-containing) account or tx
-  // reference in the '*' param; /tx/ carries a bare hash, /acc/ a full URL.
+  // reference in the '*' param; /tx/ carries a bare hash or a full
+  // <hash>@authority TxID, /acc/ a full URL.
   const params = useParams();
   const ref = params['*'] || '';
   const isTx = location.pathname.startsWith('/tx/');
-  const url = tryParseURL(isTx ? `${ref}@unknown` : ref);
+  const url = tryParseURL(isTx ? txIdFromRef(ref) : ref);
   document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
 
   queryEffect(url, { queryType: 'default' })

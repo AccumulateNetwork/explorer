@@ -5,45 +5,50 @@ stages:
 variables:
   VITE_NETWORK: any
 
-# Typecheck job (runs on all branches)
-typecheck:
-  stage: build
+# `npm ci` installs exactly what package-lock.json records and fails if the
+# lockfile and package.json disagree. `yarn install` re-resolved the tree on
+# every run, so CI could build against dependencies nobody had tested.
+# Cache ~/.npm rather than node_modules, which `npm ci` deletes.
+.node:
   image: node:20
-  script:
-    - yarn install
-    - yarn check
   cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
-      - node_modules/
+      - .npm/
+  before_script:
+    - npm ci --cache .npm --prefer-offline
+
+# Typecheck job (runs on all branches)
+typecheck:
+  extends: .node
+  stage: build
+  script:
+    - npm run check
+
+# Formatting (runs on all branches)
+format:
+  extends: .node
+  stage: build
+  script:
+    - npm run check:format
 
 # Unit tests (runs on all branches)
 test:
+  extends: .node
   stage: build
-  image: node:20
   script:
-    - yarn install
-    - yarn test
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - node_modules/
+    - npm test
 
 # Build job (runs on all branches)
 build:
+  extends: .node
   stage: build
-  image: node:20
   script:
-    - yarn install
-    - yarn build
+    - npm run build
   artifacts:
     paths:
       - build/
     expire_in: 1 hour
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - node_modules/
 
 # GitLab Pages (for GitLab's built-in pages feature)
 pages:

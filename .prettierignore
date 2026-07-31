@@ -1,0 +1,9 @@
+# The prettier config enables @trivago/prettier-plugin-sort-imports, which
+# reorders imports. In index.tsx that moves the `./sdk-patches` side-effect
+# import after `./App`, so App's whole module graph would be evaluated before
+# the SDK patches are applied — contradicting the comment above that import.
+# The plugin offers no per-statement escape hatch, so the file is excluded.
+#
+# Remove this once the patches are applied by an explicit call rather than a
+# side-effect import (see #53, which already touches this file).
+src/index.tsx

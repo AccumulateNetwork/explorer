@@ -49,6 +49,21 @@ export function retryWithoutOuterSpaces(ref: string): string | null {
   return trimmed === ref || trimmed === '' ? null : trimmed;
 }
 
+/**
+ * Convert a `/tx/` route reference into a queryable transaction ID.
+ *
+ * The route usually carries a bare hash, which needs `@unknown` appended so
+ * the API treats it as a TxID with an unspecified authority. But the canonical
+ * TxID form (`<hash>@authority`, as copied from CLI output or API responses)
+ * already names its authority, and appending a second `@` breaks it: the
+ * WHATWG parser takes everything before the *last* `@` as userinfo,
+ * percent-encoding the inner `@`, so `<hash>@acme@unknown` queries as the
+ * invalid hash `<hash>%40acme`.
+ */
+export function txIdFromRef(ref: string): string {
+  return ref.includes('@') ? ref : `${ref}@unknown`;
+}
+
 export function getParentUrl(url: URLArgs) {
   url = URL.parse(url);
   const path = url.path.replace(/^\/|\/$/g, '');

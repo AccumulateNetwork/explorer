@@ -2,11 +2,7 @@ import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFolder2Line } from 'react-icons/ri';
 
-import {
-  AccountRecord,
-  RecordType,
-  UrlRecord,
-} from 'accumulate.js/lib/api_v3';
+import { AccountRecord, RecordType, UrlRecord } from 'accumulate.js/lib/api_v3';
 
 import { InfiniteTable } from '../common/InfiniteList';
 import { Link } from '../common/Link';
@@ -18,7 +14,10 @@ export function Directory({ record }: { record: AccountRecord }) {
   const { api } = useContext(Network);
   const total = record.directory?.total || 0;
 
-  const loadPage = async (start: number, count: number): Promise<DirEntry[]> => {
+  const loadPage = async (
+    start: number,
+    count: number,
+  ): Promise<DirEntry[]> => {
     const r = await api.query(record.account.url, {
       queryType: 'directory',
       range: { start, count },

@@ -49,12 +49,12 @@ header {
 
 header.testnet,
 header.testnet > .ant-menu {
-  background-color: #2D1640;
+  background-color: #2d1640;
 }
 
 header.local,
 header.local > .ant-menu {
-  background-color: #4B0000;
+  background-color: #4b0000;
 }
 
 main {
@@ -176,11 +176,11 @@ main {
 }
 
 .stats small {
-  color: rgba(0, 0, 0, 0.70);
+  color: rgba(0, 0, 0, 0.7);
 }
 
 [data-theme='dark'] .stats small {
-  color: rgba(255, 255, 255, 0.70);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .stats .ant-skeleton-content .ant-skeleton-title {
@@ -1079,12 +1079,15 @@ header.web3 {
 }
 
 [data-theme='dark'] h2.ant-typography,
-[data-theme='dark']
-  h4.ant-typography:not(.ant-typography-secondary) {
+[data-theme='dark'] h4.ant-typography:not(.ant-typography-secondary) {
   color: rgba(255, 255, 255, 0.85) !important;
 }
 
-[data-theme='dark'] .anchor-info .ant-tabs-top-content > .ant-tabs-tabpane .content {
+[data-theme='dark']
+  .anchor-info
+  .ant-tabs-top-content
+  > .ant-tabs-tabpane
+  .content {
   background: #1f1f1f !important;
   box-shadow: 0 0 0 1px #303030 !important;
 }
@@ -1193,12 +1196,8 @@ header.web3 {
 
 /* antd Descriptions (Properties / Info tables) — same rule. */
 [data-theme='light'] .ant-descriptions-bordered .ant-descriptions-row,
-[data-theme='light']
-  .ant-descriptions-bordered
-  .ant-descriptions-item-label,
-[data-theme='light']
-  .ant-descriptions-bordered
-  .ant-descriptions-item-content,
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-item-label,
+[data-theme='light'] .ant-descriptions-bordered .ant-descriptions-item-content,
 [data-theme='light'] .ant-descriptions-bordered .ant-descriptions-view {
   border-color: #dfdfdf !important;
 }
