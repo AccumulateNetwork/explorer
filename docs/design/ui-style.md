@@ -204,11 +204,15 @@ page header (§3):
 - **The ground is the network**: the rounded square is filled with the
   network header token — mainnet `#0958d9`, testnet `#2d1640`,
   local/devnet `#4b0000`. A Kermit tab must not look like a mainnet tab.
-- **The mark is the tool, in the tool's own color** — one hue per tool,
-  never reused, constant across networks. Tool colors are bright picks
-  that survive all three grounds (the grounds are all dark, so mid-dark
-  hues like geekblue disappear — pick from the bright end of the antd
-  palette).
+- **The mark is the tool** — the drawn shape is the identity and never
+  changes. Its color is an aesthetic choice: whatever looks good against
+  the network/tool combination. Each tool has a nominal hue (table below)
+  for recognition, but tune the shade per ground when the nominal one
+  sits badly — the grounds are all dark, so this usually means reaching
+  for a brighter step of the same antd family (e.g. Reports uses
+  link-blue `#69b1ff` on the mainnet ground where geekblue vanishes).
+  Keep it legible at 16 px and don't wander into a hue another tool owns
+  on the same ground.
 - **Marks are drawn SVG paths, or plain capital letters with
   `font-family='sans-serif'`** — never symbol characters (`▤`, `⊞`, `✎`):
   favicon renderers fall back to whatever font is installed, so symbol
@@ -223,7 +227,7 @@ page header (§3):
   known — the explorer's static PNGs predate this rule and becoming
   network-aware is follow-up work under #36.
 
-| Tool | Mark | Mark color |
+| Tool | Mark | Nominal mark color |
 |---|---|---|
 | Explorer | Accumulate logo in white circle | white (the brand mark is the one legitimate white) |
 | Wallet WebUI | wallet with clasp | `#faad14` gold |
@@ -237,7 +241,8 @@ Copy-paste favicons, as data URIs (`#` URL-encoded as `%23`). The
 instances below are mainnet; substitute the ground fill (`%230958d9`) with
 `%232d1640` (testnet) or `%234b0000` (local) — interior cutout details
 (the wallet clasp, the nib slit and breather hole) are drawn in the
-**ground** color and must follow it; the mark color never changes:
+**ground** color and must follow it; adjust mark shades per ground where
+it improves the result:
 
 ```html
 <!-- Wallet WebUI -->
@@ -254,9 +259,9 @@ instances below are mainnet; substitute the ground fill (`%230958d9`) with
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='%23fa8c16'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='%23fa8c16'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='%23fa8c16' opacity='.55'/></svg>">
 ```
 
-Adding a new tool? Design a one-concept drawn mark, pick an unused bright
-hue, add the row here, and use the template — the ground color is never
-yours to pick; it comes from the network.
+Adding a new tool? Design a one-concept drawn mark, pick a hue no other
+tool is using, add the row here, and use the template. The ground color
+comes from the network; the mark color is yours to tune against it.
 
 ## 10. Sources
 
