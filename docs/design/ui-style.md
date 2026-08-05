@@ -238,6 +238,7 @@ page header (§3):
 | Staking-Signer Watch | pen nib | `#13c2c2` cyan |
 | Reports Dashboard | ascending bar chart | `#69b1ff` link-blue (bright — geekblue vanished on the mainnet ground) |
 | ANAF Dashboard | capital A | `#eb2f96` magenta |
+| Staking Requests | inbox tray with incoming arrow | `#9254de` purple |
 | DTRules Editor | decision table — header row, two branch cells, one dimmed | white mark on its own fixed `#fa8c16` orange ground (network-agnostic) |
 
 Copy-paste favicons, as data URIs (`#` URL-encoded as `%23`). The
@@ -258,6 +259,8 @@ it improves the result:
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
 <!-- ANAF Dashboard -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23eb2f96'>A</text></svg>">
+<!-- Staking Requests -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%239254de' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%239254de'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%239254de'/></svg>">
 <!-- DTRules Editor — fixed orange ground, network-agnostic: never substitute -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fa8c16'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='white'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='white'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='white' opacity='.55'/></svg>">
 ```
