@@ -16,6 +16,12 @@ export class ChainFilter<R extends Record & { index?: number }> {
   readonly #filter?: (r: R) => boolean;
   readonly #results = new RecordRange<R>({ records: [] });
 
+  // Lowest chain index scanned so far, or undefined before the first fetch.
+  // Progress must be tracked independently of #results: a page may contribute
+  // zero matching entries, and deriving the next page from the last *kept*
+  // entry's index would refetch the same page forever (#41).
+  #low?: number;
+
   constructor(
     api: JsonRpcClient,
     scope: URLArgs,
@@ -68,7 +74,7 @@ export class ChainFilter<R extends Record & { index?: number }> {
 
   async #getNext() {
     const maxCount = 50;
-    if (this.#results.records.length == 0) {
+    if (this.#low === undefined) {
       const r = (await this.#api.query(
         this.#scope,
         this.#makeQuery({
@@ -85,6 +91,13 @@ export class ChainFilter<R extends Record & { index?: number }> {
         r.records = [];
       }
 
+      // The API answers a fromEnd range with start = total - count, so this
+      // page covers [r.start, total). Recording r.start (not the kept-entry
+      // count) is what makes the whole-chain test below correct: the previous
+      // condition, r.start + r.records.length >= r.total, is satisfied by
+      // *every* fromEnd page, which fixed the filtered total to the matches
+      // within the newest 50 entries and made older entries unreachable (#41).
+      this.#low = r.start;
       for (const entry of r.records.reverse()) {
         if (!this.#filter || this.#filter(entry)) {
           this.#results.records.push(entry);
@@ -92,23 +105,22 @@ export class ChainFilter<R extends Record & { index?: number }> {
       }
       if (!this.#filter) {
         this.#results.total = r.total;
-      } else if (r.start + r.records.length >= r.total) {
+      } else if (this.#low == 0) {
         this.#results.total = this.#results.records.length;
       }
       return;
     }
 
-    const end = this.#results.records[this.#results.records.length - 1].index;
-    if (end == 0) {
+    if (this.#low == 0) {
       this.#results.total = this.#results.records.length;
       return;
     }
 
-    let start = end - maxCount;
+    let start = this.#low - maxCount;
     let count = maxCount;
     if (start < 0) {
       start = 0;
-      count = end;
+      count = this.#low;
     }
 
     const { records } = (await this.#api.query(
@@ -121,6 +133,7 @@ export class ChainFilter<R extends Record & { index?: number }> {
       }),
     )) as unknown as RecordRange<R>;
 
+    this.#low = start;
     for (const r of records.reverse()) {
       if (!this.#filter || this.#filter(r)) {
         this.#results.records.push(r);
