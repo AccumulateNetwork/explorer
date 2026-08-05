@@ -31,9 +31,14 @@ export function Content(props: {
   const [textJSON, setTextJSON] = useState(null);
   useEffect(() => {
     if (props.type) {
+      setType(props.type);
       return;
     }
 
+    // Re-detect for every new payload, and clear textJSON on the non-JSON
+    // paths: this component is reused across navigations, and a stale
+    // textJSON left a phantom "JSON" option in the selector for payloads
+    // that are not JSON (#42).
     try {
       utf8.decode(bytes);
       try {
@@ -41,10 +46,12 @@ export function Content(props: {
         setType('JSON');
       } catch (_) {
         // Not valid JSON
+        setTextJSON(null);
         setType('Text');
       }
     } catch (_) {
       // Not valid UTF-8
+      setTextJSON(null);
       setType('Hex');
     }
   }, [`${props.children}`, props.type]);
@@ -69,7 +76,11 @@ export function Content(props: {
       default:
         break;
     }
-  }, [type]);
+    // Keyed on the payload as well as the mode: with [type] alone, navigating
+    // /data/<hashA> -> /data/<hashB> where both entries are the same type
+    // (usually Text) never recomputed `current`, so entry A's payload rendered
+    // under entry B's txid (#42).
+  }, [type, textJSON, `${props.children}`]);
 
   const shortLimit = 16;
   useEffect(() => {
