@@ -11,30 +11,21 @@
 
 ## Deployment (MOST IMPORTANT)
 
-### Live Sites
+Beta and production are hosted on **different infrastructure**. See
+`DEPLOYMENT.md` for the full, verified procedure.
 
-- **Production:** https://explorer.accumulatenetwork.io
-- **Beta:** https://beta.explorer.accumulatenetwork.io
-- **Hosting:** Netlify (auto-deploy from GitHub)
-
-### How to Deploy
-
-**Deploy to Beta:**
-```bash
-git push github develop:updates
-```
-
-**Deploy to Production:**
-```bash
-git push github develop:main
-```
-
-**That's it!** Netlify watches GitHub and auto-deploys.
+- **Production:** https://explorer.accumulatenetwork.io — nginx on server1
+  (206.191.154.164), served from `/var/www/explorer`. Deployed **manually**:
+  `VITE_NETWORK=any npm run build`, then rsync `build/` to
+  `server1:/var/www/explorer/`. Pushing to GitHub does NOT deploy production.
+- **Beta:** https://beta.explorer.accumulatenetwork.io — Netlify
+  (`accumulate-beta.netlify.app`), auto-builds the GitHub mirror's `main`
+  branch: `git push github develop:main`. Beta's DNS is IPv6-only.
 
 ### Why Two Repositories?
 
 - **GitLab (origin):** Primary development, issue tracking, CI/CD
-- **GitHub (github):** Netlify integration, auto-deployment
+- **GitHub (github):** Mirror; feeds the Netlify beta site
 
 ### Git Remotes
 
@@ -49,7 +40,7 @@ github  git@github.com:AccumulateNetwork/explorer.git
 
 ```bash
 npm install       # Install dependencies
-npm start         # Dev server (localhost:5173)
+npm start         # Dev server (localhost:3000)
 npm run build     # Production build
 npm run check     # TypeScript check
 ```
@@ -93,7 +84,7 @@ metrics-service/          # Go metrics API service
 1. Identify field name mismatch (e.g., `supply.stakedTokens` vs `supply.staked`)
 2. Update frontend to use correct field name
 3. Commit fix
-4. Deploy: `git push github develop:updates`
+4. Deploy beta (`git push github develop:main`), then rsync to production per DEPLOYMENT.md
 
 ### Metrics API
 
@@ -132,7 +123,7 @@ Explorer auto-detects network from hostname:
 **Quick Test:**
 ```bash
 npm start
-# Open http://localhost:5173
+# Open http://localhost:3000
 # Check console for errors
 # Test network switching
 ```
@@ -174,15 +165,14 @@ npm run check     # Check TypeScript errors
 ```
 
 ### Deployment not working
-- Check GitHub remote: `git remote -v`
-- Verify branch pushed: `git push github develop:updates`
-- Check Netlify dashboard for build logs
+- Beta: check GitHub remote (`git remote -v`), verify `git push github develop:main` landed, check the Netlify dashboard
+- Production: it only changes when a build is rsynced to server1 — see DEPLOYMENT.md
 
 ## Key Insights for AI
 
-1. **Deployment is via GitHub, not GitLab** - The GitLab CI/CD is optional
-2. **Two branches matter:** `updates` (beta) and `main` (production)
-3. **Netlify auto-deploys** - No manual build/upload needed
+1. **Production deploys are manual** — rsync a `VITE_NETWORK=any` build to server1; pushing GitHub deploys only beta
+2. **GitHub `main` feeds the Netlify beta site** — GitLab (origin) is the primary repo and CI
+3. **Netlify auto-deploys beta only** — production never auto-deploys
 4. **Metrics API is separate** - Go service, deployed independently
 5. **Field names matter** - API returns `staked`, frontend must use `staked` (not `stakedTokens`)
 
@@ -205,11 +195,8 @@ Before making changes:
 ## Emergency Rollback
 
 **Beta:**
-```bash
-git push github main:updates  # Revert beta to production version
-```
+- Netlify dashboard → "Publish deploy" on the last working version
+- Or push a previous commit: `git push github <commit-hash>:main --force-with-lease`
 
 **Production:**
-- Check Netlify dashboard for previous deployments
-- Click "Publish deploy" on last working version
-- Or push previous commit: `git push github <commit-hash>:main`
+- Restore a backup on server1: `ssh server1 'cd /var/www && tar -xzf /root/explorer-backup-<timestamp>.tar.gz'`
