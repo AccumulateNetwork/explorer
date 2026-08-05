@@ -10,6 +10,7 @@ import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getBlockEntries from '../../utils/getBlockEntries';
 import { extractTxType } from '../../utils/message';
+import { utcOffsetLabel } from '../../utils/time';
 import Count from '../common/Count';
 import { InfiniteTable } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
@@ -52,8 +53,7 @@ const Block = () => {
   const [error, setError] = useState(null);
   const [rawDataDisplay, setRawDataDisplay] = useState('none');
 
-  let utcOffset = moment().utcOffset() / 60;
-  let utcOffsetString = utcOffset < 0 ? '-' : '+' + utcOffset;
+  const utcOffsetString = utcOffsetLabel(moment().utcOffset());
 
   const toggleRawData = (checked) => {
     checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');

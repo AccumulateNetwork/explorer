@@ -206,8 +206,12 @@ export function Chain(props: {
   const loadPage = async <T,>(start: number, count: number): Promise<T[]> => {
     const current = Math.floor(start / count) + 1;
     const resp = await managed.getPage({ current, pageSize: count });
-    // Preserve the existing reverse-ordering from the prior implementation.
-    return ((resp.records as unknown as T[]) || []).slice().reverse();
+    const records = (resp.records as unknown as T[]) || [];
+    // main/scratch/signature ranges are fetched fromEnd, so reversing each
+    // page yields correct global newest-first order. The pending range is
+    // not fromEnd: its pages arrive ascending, and per-page reversal
+    // scrambled every page after the first (24…0, 49…25, …) (#47).
+    return type === 'pending' ? records : records.slice().reverse();
   };
 
   const enrichChainPage = async (

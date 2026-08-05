@@ -120,7 +120,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
           </Descriptions.Item>
         )}
 
-        {cause.length && (
+        {cause.length > 0 && (
           <Descriptions.Item label={labelCause}>
             <InfiniteList<TxIDRecord>
               dataSource={cause}
@@ -131,7 +131,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
           </Descriptions.Item>
         )}
 
-        {produced.length && (
+        {produced.length > 0 && (
           <Descriptions.Item label={labelProduced}>
             <InfiniteList<TxIDRecord>
               dataSource={produced}

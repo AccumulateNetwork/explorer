@@ -166,7 +166,7 @@ export function TxnInfo({
           </Descriptions.Item>
         )}
 
-        {cause.length && (
+        {cause.length > 0 && (
           <Descriptions.Item label={labelCause}>
             <InfiniteList<TxIDRecord>
               dataSource={cause}
@@ -177,7 +177,7 @@ export function TxnInfo({
           </Descriptions.Item>
         )}
 
-        {produced.length && (
+        {produced.length > 0 && (
           <Descriptions.Item label={labelProduced}>
             <InfiniteList<TxIDRecord>
               dataSource={produced}

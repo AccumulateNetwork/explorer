@@ -192,7 +192,7 @@ export function Signature({
           </Descriptions.Item>
         )}
 
-        {delegators?.length && (
+        {!!delegators?.length && (
           <Descriptions.Item label={labelDelegators}>
             {delegators.map((delegator) => (
               <div key={delegator.toString()}>

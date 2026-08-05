@@ -26,6 +26,7 @@ import {
 import { FilterRanger, Ranger, apiQuery } from '../../utils/Ranger';
 import getBlockEntries from '../../utils/getBlockEntries';
 import { extractTxType } from '../../utils/message';
+import { utcOffsetLabel } from '../../utils/time';
 import Count from './Count';
 import { InfiniteTable, useInfiniteListEnrichment } from './InfiniteList';
 import { Link } from './Link';
@@ -94,7 +95,7 @@ const MinorBlocks = () => {
       },
     },
     {
-      title: 'Timestamp (UTC' + (utcOffset < 0 ? '-' : '+') + utcOffset + ')',
+      title: 'Timestamp (UTC' + utcOffsetLabel(moment().utcOffset()) + ')',
       width: 225,
       render: ({ block: row }: BlockData) => {
         if (row) {
