@@ -201,7 +201,11 @@ Operators run several Accumulate tools at once; the tab strip is a UI
 surface too. Every tool gets a **distinct favicon glyph on a distinct
 accent color**, so a crowded tab strip reads at a glance. Rules:
 
-- One color per tool, never reused; glyph must survive 16×16.
+- One color per tool, never reused; the mark must survive 16×16.
+- **Marks are drawn SVG paths, or plain capital letters with
+  `font-family='sans-serif'`** — never symbol characters (`▤`, `⊞`, `✎`):
+  favicon renderers fall back to whatever font is installed, so symbol
+  glyphs shift shape per platform or show as tofu.
 - The favicon identifies the **tool**; the **network** is signalled by the
   page header color (§3) and the title suffix — not by swapping favicons.
 - Title convention: `<subject> | <Tool>` on mainnet;
@@ -211,39 +215,32 @@ accent color**, so a crowded tab strip reads at a glance. Rules:
   `#0958d9`; a tool that knows its network at serve time uses that
   network's header color instead).
 
-| Tool | Glyph | Tab color | Favicon |
-|---|---|---|---|
-| Explorer | Accumulate logo in white circle | `#0958d9` blue | existing `favicon-*.png` (keep) |
-| Wallet WebUI | `W` | `#faad14` gold | SVG below |
-| Staking Browser | `%` | `#52c41a` green | SVG below |
-| Staking-Signer Watch | `✎` | `#13c2c2` cyan | SVG below |
-| Reports Dashboard | `▤` | `#2f54eb` geekblue | SVG below |
-| ANAF Dashboard | `A` | `#eb2f96` magenta | SVG below |
-| DTRules Editor | `⊞` | `#fa541c` volcano | SVG below |
+| Tool | Mark | Tab color |
+|---|---|---|
+| Explorer | Accumulate logo in white circle (existing `favicon-*.png`) | `#0958d9` blue |
+| Wallet WebUI | wallet with clasp | `#faad14` gold |
+| Staking Browser | token stack (three bars) | `#52c41a` green |
+| Staking-Signer Watch | pen nib | `#13c2c2` cyan |
+| Reports Dashboard | ascending bar chart | `#2f54eb` geekblue |
+| ANAF Dashboard | capital A | `#eb2f96` magenta |
+| DTRules Editor | decision table — header row, two branch cells, one dimmed | `#fa541c` volcano |
 
-Copy-paste favicon — a rounded square in the tool color with a white
-glyph; substitute `FILL` (URL-encoded, `#` → `%23`) and `GLYPH`
-(URL-encoded, `%` → `%25`):
-
-```html
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='FILL'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>GLYPH</text></svg>">
-```
-
-Concrete instances:
+Copy-paste favicons — a rounded square (`rx='7'`) in the tool color with a
+white drawn mark, as a data URI (`#` URL-encoded as `%23`):
 
 ```html
 <!-- Wallet WebUI -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23faad14'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>W</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23faad14'/><rect x='6' y='9' width='20' height='15' rx='3' fill='white'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%23faad14'/><circle cx='21.5' cy='16.5' r='1.6' fill='white'/></svg>">
 <!-- Staking Browser -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2352c41a'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>%25</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2352c41a'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='white'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='white'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='white'/></svg>">
 <!-- Staking-Signer Watch -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2313c2c2'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>✎</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%2313c2c2'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='white'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%2313c2c2' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%2313c2c2'/></svg>">
 <!-- Reports Dashboard -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f54eb'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>▤</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232f54eb'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='white'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='white'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='white'/></svg>">
 <!-- ANAF Dashboard -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23eb2f96'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>A</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23eb2f96'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='white'>A</text></svg>">
 <!-- DTRules Editor -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fa541c'/><text x='16' y='23' font-family='IBM Plex Sans,sans-serif' font-size='19' font-weight='600' text-anchor='middle' fill='white'>⊞</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fa541c'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='white'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='white'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='white' opacity='.55'/></svg>">
 ```
 
 The explorer keeps its existing logo favicons (the logo *is* its glyph) and
