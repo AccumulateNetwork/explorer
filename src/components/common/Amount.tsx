@@ -59,6 +59,20 @@ export function CreditAmount({
   );
 }
 
+/**
+ * Credits purchased (in credit balance units, precision 2) for an ACME spend.
+ *
+ * Mirrors the protocol executor (add_credits.go):
+ *   credits = amount · oracle · CreditUnitsPerFiatUnit / (AcmeOraclePrecision · AcmePrecision)
+ *           = amount · oracle · 1e4 / (1e4 · 1e8)
+ *           = amount · oracle / 1e8
+ * where `amount` is ACME balance units (1e8/ACME) and `oracle` is the price in
+ * 100·USD per ACME (1e4 precision). Truncating division, like the executor.
+ */
+export function creditsFromAcme(amount: number | bigint, oracle: number) {
+  return (BigInt(amount) * BigInt(oracle)) / 10n ** 8n;
+}
+
 export function CreditAmountFromACME({
   amount,
   oracle,
@@ -67,8 +81,7 @@ export function CreditAmountFromACME({
   amount: number | bigint;
   oracle: number;
 } & Omit<Parameters<typeof Amount>[0], 'label' | 'amount'>) {
-  amount = (BigInt(amount) * BigInt(oracle)) / 10n ** 10n;
-  return <CreditAmount amount={amount} {...rest} />;
+  return <CreditAmount amount={creditsFromAcme(amount, oracle)} {...rest} />;
 }
 
 export function OracleValue({
@@ -166,12 +179,10 @@ export function recipientsOfTx(
       ];
 
     case TransactionType.AddCredits:
-      const credits =
-        (tx.body.amount * BigInt(tx.body.oracle)) / BigInt(10 ** 8);
       return [
         new CreditRecipient({
           url: tx.body.recipient,
-          amount: Number(credits),
+          amount: Number(creditsFromAcme(tx.body.amount, tx.body.oracle)),
         }),
       ];
 
