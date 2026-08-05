@@ -3,6 +3,13 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.4] - 2026-08-05
+
+### Added
+- **The Accumulate UI style guide now lives in this repo**, as the authoritative `docs/design/ui-style.md` — moved from the staking repo, which keeps a pointer stub, so a visual change and its documentation land in the same MR. ([#71](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/71))
+- **Browser-tab identity for every Accumulate tool** (guide §9, settled through design review): white tool marks — the real logo star, wallet, token stack, oval keyhole, chart bars, capital A, inbox tray — on network-colored grounds (`#1890ff` mainnet / `#531dab` testnet / `#a8071a` local, favicon-specific tokens legible at 16px), with DTRules network-agnostic on fixed orange. Includes 22 copy-paste favicon snippets and the rule that the favicon swaps when the user switches network. The explorer's own network-aware favicon swap is queued under [#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36).
+- `<meta name="theme-color">` (`#0958d9`) tints browser chrome to the mainnet header color.
+
 ## [0.4.3] - 2026-08-04
 
 ### Fixed
