@@ -49,6 +49,7 @@
     "@vitejs/plugin-react": "^4.3.1",
     "buffer": "^6.0.3",
     "jsdom": "^25.0.1",
+    "playwright-core": "^1.62.1",
     "prettier": "^3.2.5",
     "terser": "^5.44.0",
     "typescript": "^5.4.5",
@@ -67,7 +68,8 @@
     "build": "vite build",
     "preview": "VITE_NETWORK=any vite build && vite preview",
     "format": "prettier -w src",
-    "check:format": "prettier --check src"
+    "check:format": "prettier --check src",
+    "smoke": "node scripts/smoke.cjs"
   },
   "prettier": {
     "semi": true,
