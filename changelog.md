@@ -3,6 +3,29 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.3] - 2026-08-04
+
+### Fixed
+- **Chain tables no longer show a different account's transactions.** The query range behind a chain table captured the URL of the first render, and navigating between two accounts of the same kind reused it — account B's Transactions and Signatures tables listed A's entries with links to A's txids. The range now rebinds (and the tables remount) whenever the target changes. ([#39](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/39))
+- **Array-backed lists re-sync when their content changes.** Items were re-derived only when the array *length* changed, so the `/network` node table stayed permanently blank, the Favourites star never visually toggled, and `/block/N` → `/block/N+1` kept block N's transactions when both had the same count. ([#40](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/40))
+- **Data-entry lists are no longer truncated to the newest 50 chain entries.** The API answers a from-end range with `start = total − count`, which the filter's termination test misread as "scanned everything" on every first page; the total was fixed to the matches within the newest 50 and older entries were unreachable. ([#41](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/41))
+- **The data viewer renders the entry being viewed.** Navigating between two text entries re-rendered the previous entry's payload under the new txid, and a stale "JSON" option lingered in the selector. ([#42](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/42))
+- **Staking rows and signature authorities no longer leak across navigations.** Both were fetched in mount-only effects on components that are reused between pages. ([#43](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/43))
+- **Anchor transactions show their signature list when the validator table cannot render.** `<Validators/> || fallback` never rendered the fallback — a JSX element is always truthy — so those pages showed an empty Signatures section. Also fixed a latent hooks-order violation, a crash on unsequenced anchors, and per-key debug logging in the same file. ([#44](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/44))
+- **Malformed references render cleanly and empty ones 404.** The URL fallback rendered `acc://ACME undefined` (unset components stringified literally) and `/acc/` crashed to the ErrorBoundary screen. ([#45](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/45))
+- **Navigating between accounts with and without explicit authorities no longer crashes the page.** Hooks ran after four early returns, so the hook count changed with the account kind. ([#46](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/46))
+- **AddCredits pages show the credits actually purchased.** The display path divided by 1e10 where the protocol executor divides by 1e8, underreporting every credit purchase 100×. ([#66](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/66))
+- **Timezone labels, stray zeros, `/data/` crash, pending order.** `Timestamp (UTC-)` and `UTC--5` are now `UTC-5`; empty cause/produced lists no longer render a stray `0`; `/data/` 404s instead of crashing; pending transactions past the first page are no longer scrambled. ([#47](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/47))
+- **Network liveness measures delivery, not execution backlog.** The synthetic-ledger check compared `produced` against `delivered`, counting arrived-but-unexecuted transactions as downtime — on a long-running network that backlog is permanent, so mainnet could show as not-live. It now compares against `received`. ([#70](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/70))
+
+### Added
+- **BigInt amount arithmetic is tested** — all nine recipient-producing transaction types, truncation semantics, and beyond-2^53 exactness, pinned to the protocol executor's formula. ([#66](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/66))
+- **`npm run smoke`** drives headless Chrome through the pages users actually hit (both `/tx/` forms, account, staking, `/network`) against any environment — the verification step for every release and deploy.
+- Unit tests for `ChainFilter` pagination, the chain-range factory, route-reference parsing, and timezone labels (100 tests total, up from 58).
+
+### Documentation
+- **DEPLOYMENT.md now describes the real deploy process.** Production is nginx on server1 fed by rsync — not Netlify — and requires a `VITE_NETWORK=any` build; beta is Netlify off the GitHub mirror's `main`. The old doc's fiction cost three months of unshipped fixes. ([#34](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/34))
+
 ## [0.4.2] - 2026-07-31
 
 ### Fixed
