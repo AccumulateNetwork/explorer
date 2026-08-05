@@ -3,7 +3,7 @@ import {
   CloseOutlined,
   InfoCircleTwoTone,
 } from '@ant-design/icons';
-import { Alert, Table, TableProps, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Spin, Table, TableProps, Tag, Tooltip, Typography } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountCircleLine, RiPenNibLine } from 'react-icons/ri';
@@ -116,7 +116,9 @@ export function Signatures(props: {
 
       setAuthorities(authorities);
     } catch (error) {
-      console.log(error);
+      // Degrade to the plain signature list (authorities stays null), but
+      // leave a trace — this used to be swallowed entirely (#44).
+      console.warn('Failed to resolve required authorities:', error);
     }
   };
 
@@ -150,8 +152,13 @@ export function Signatures(props: {
   }
 
   useEffect(() => {
+    // Keyed on the transaction: this component is reused across navigations,
+    // and a mount-only effect kept the first transaction's authority list for
+    // every subsequent transaction (#43). Reset so a slow query never leaves
+    // the previous transaction's authorities showing.
+    setAuthorities(null);
     getAllAuthorities(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [transaction]);
 
   return (
     <div style={{ marginBottom: '20px' }}>
@@ -164,9 +171,14 @@ export function Signatures(props: {
       {blockAnchors.length &&
       (transaction.body instanceof core.DirectoryAnchor ||
         transaction.body instanceof core.BlockValidatorAnchor) ? (
-        <Validators signatures={blockAnchors} /> || (
-          <Signature.List bordered dataSource={signatures} />
-        )
+        // The fallback must be a prop: `<Validators/> || <fallback/>` never
+        // rendered the fallback because a JSX element is always truthy, so
+        // anchor transactions whose partition could not be resolved showed
+        // an empty Signatures section instead of the signature list (#44).
+        <Validators
+          signatures={blockAnchors}
+          fallback={<Signature.List bordered dataSource={signatures} />}
+        />
       ) : !signatures.length ? (
         <Text disabled>N/A</Text>
       ) : !authorities?.length ? (
@@ -184,23 +196,26 @@ export function Signatures(props: {
 
 function Validators({
   signatures,
+  fallback = null,
 }: {
   signatures: MessageRecord<BlockAnchor>[];
+  fallback?: React.ReactNode;
 }) {
+  // Hooks run before any conditional return — this component re-renders with
+  // varying props, and an early return above the effect made the hook count
+  // depend on them (#44).
   const { api } = useContext(Network);
   const [validators, setValidators] = useState<core.ValidatorInfo[]>(null);
 
-  if (!signatures.length) {
-    return false;
-  }
-
-  const source =
-    signatures[0].message.anchor instanceof SequencedMessage &&
-    signatures[0].message.anchor.source;
-  const m = source.authority.match(/^(?:bvn-)(\w+)\.acme$/i);
+  // A BlockAnchor's anchor is not necessarily sequenced; deriving the source
+  // with `instanceof X && value` produced `false` and crashed on
+  // `.authority` (#44).
+  const anchor = signatures[0]?.message.anchor;
+  const source = anchor instanceof SequencedMessage ? anchor.source : null;
+  const m = source?.authority.match(/^(?:bvn-)(\w+)\.acme$/i);
   const partition = m
     ? m[1]
-    : source.authority === 'dn.acme'
+    : source?.authority === 'dn.acme'
       ? 'Directory'
       : null;
 
@@ -226,8 +241,13 @@ function Validators({
     [partition],
   );
 
+  // Cannot render a validator table for this anchor — show the signature
+  // list instead of an empty section.
+  if (!signatures.length || !partition) {
+    return <>{fallback}</>;
+  }
   if (!validators) {
-    return false;
+    return <Spin />;
   }
 
   const didSign = Object.fromEntries(
@@ -560,13 +580,6 @@ Signature.Key = function ({
 
         const sigKeyHash = Buffer.from(sha256(pubKeyBytes)).toString('hex');
 
-        console.log(
-          'Looking for key hash:',
-          sigKeyHash,
-          'in',
-          keyPageUrl.toString(),
-        );
-
         // Find the key entry that matches this public key hash
         const keyEntry = account.keys?.find((entry) => {
           if (!entry.publicKeyHash) return false;
@@ -578,25 +591,15 @@ Signature.Key = function ({
               ? Buffer.from(entry.publicKeyHash).toString('hex')
               : String(entry.publicKeyHash);
 
-          console.log(
-            'Comparing with entry key hash:',
-            entryKeyHex,
-            'delegate:',
-            entry.delegate?.toString(),
-          );
-
           return entryKeyHex === sigKeyHash;
         });
 
-        console.log('Found key entry:', keyEntry);
-
         if (keyEntry && keyEntry.delegate) {
-          console.log('Setting delegate:', keyEntry.delegate.toString());
           setDelegate(keyEntry.delegate);
         }
       }
     } catch (error) {
-      console.log('Error looking up delegate for key:', error);
+      console.warn('Error looking up delegate for key:', error);
     } finally {
       setLoading(false);
     }

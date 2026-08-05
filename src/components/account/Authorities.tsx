@@ -1,5 +1,5 @@
 import { Spin, Tag, Typography } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
 
@@ -66,11 +66,54 @@ function Render({
   );
 }
 
+/** The explicit authority list, for the account types that carry one. */
+function explicitAuthorities(account: Account): AuthorityEntry[] | undefined {
+  return 'authorities' in account ? account.authorities : undefined;
+}
+
+/** Account types that render no authorities section at all. */
+const noAuthoritySection = new Set([
+  AccountType.Unknown,
+  AccountType.UnknownSigner,
+
+  AccountType.LiteIdentity,
+  AccountType.LiteTokenAccount,
+  AccountType.LiteDataAccount,
+
+  AccountType.SystemLedger,
+  AccountType.BlockLedger,
+  AccountType.AnchorLedger,
+  AccountType.SyntheticLedger,
+]);
+
 export default function Authorities(
   props:
     | { items: AuthorityEntryArgs[] }
     | { account: Account; inherited?: boolean },
 ) {
+  const account = 'account' in props ? props.account : undefined;
+
+  // An account with no explicit authorities inherits them from its parent,
+  // which must be queried.
+  const wantsParent =
+    !!account &&
+    !noAuthoritySection.has(account.type) &&
+    account.type !== AccountType.KeyPage &&
+    !explicitAuthorities(account)?.length;
+
+  // The hooks must run on every render, before any conditional return: this
+  // component instance is reused across navigations, and with four early
+  // returns above them the hook count changed whenever the account kind
+  // changed, killing the page with "Rendered more hooks than during the
+  // previous render" (#46). Reset the parent when the target changes so one
+  // account's authorities are never shown against another's page.
+  const [parent, setParent] = useState<Account>(null);
+  const parentUrl = wantsParent ? getParentUrl(account.url) : null;
+  useEffect(() => setParent(null), [`${parentUrl}`]);
+  queryEffect(parentUrl, { queryType: 'default' }).then((r) =>
+    setParent((r as AccountRecord).account),
+  );
+
   if (!('account' in props)) {
     return (
       <Render
@@ -78,40 +121,26 @@ export default function Authorities(
       />
     );
   }
-  const { account } = props;
-  switch (account.type) {
-    case AccountType.Unknown:
-    case AccountType.UnknownSigner:
 
-    case AccountType.LiteIdentity:
-    case AccountType.LiteTokenAccount:
-    case AccountType.LiteDataAccount:
-
-    case AccountType.SystemLedger:
-    case AccountType.BlockLedger:
-    case AccountType.AnchorLedger:
-    case AccountType.SyntheticLedger:
-      return null;
-
-    case AccountType.KeyPage:
-      const entry = new AuthorityEntry({ url: getParentUrl(account.url) });
-      return <Render authorities={[entry]} />;
+  if (noAuthoritySection.has(account.type)) {
+    return null;
   }
 
-  if (account.authorities?.length) {
+  if (account.type === AccountType.KeyPage) {
+    const entry = new AuthorityEntry({ url: getParentUrl(account.url) });
+    return <Render authorities={[entry]} />;
+  }
+
+  const authorities = explicitAuthorities(account);
+  if (authorities?.length) {
     return (
       <Render
         from={account.url}
-        authorities={account.authorities}
+        authorities={authorities}
         inherited={props.inherited}
       />
     );
   }
-
-  const [parent, setParent] = useState<Account>(null);
-  queryEffect(getParentUrl(account.url), { queryType: 'default' }).then((r) =>
-    setParent((r as AccountRecord).account),
-  );
 
   if (!parent) {
     return <Spin />;

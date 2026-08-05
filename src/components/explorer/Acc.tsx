@@ -16,6 +16,7 @@ import { MessageType, SequencedMessage } from 'accumulate.js/lib/messaging';
 import { isRecordOf } from '../../utils/types';
 import {
   encodeURLSpaces,
+  parseRouteRef,
   retryWithoutOuterSpaces,
   txIdFromRef,
 } from '../../utils/url';
@@ -31,17 +32,6 @@ import Error404 from './Error404';
 import { Settings } from './Settings';
 
 const { Title } = Typography;
-
-function tryParseURL(s: string) {
-  try {
-    return URL.parse(encodeURLSpaces(s));
-  } catch (error) {
-    return new URL({
-      scheme: 'acc',
-      hostname: s,
-    } as any);
-  }
-}
 
 export function Acc({
   parentCallback,
@@ -63,8 +53,10 @@ export function Acc({
   const params = useParams();
   const ref = params['*'] || '';
   const isTx = location.pathname.startsWith('/tx/');
-  const url = tryParseURL(isTx ? txIdFromRef(ref) : ref);
-  document.title = `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`;
+  const url = parseRouteRef(isTx ? txIdFromRef(ref) : ref);
+  document.title = url
+    ? `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`
+    : 'Not Found | Accumulate Explorer';
 
   queryEffect(url, { queryType: 'default' })
     .then((r) => {
@@ -120,6 +112,12 @@ export function Acc({
       navigate(`/acc/${encodeURLSpaces(retry)}`, { replace: true });
     }
   }, [retrying, retry]);
+
+  // An empty reference (/acc/ or /tx/ with nothing after it) names nothing.
+  // This must come after the hooks above so the hook count stays constant.
+  if (!url) {
+    return <Error404 />;
+  }
 
   if (notFound && !retrying) {
     if (web3.publicKey?.lite?.equals(url)) {

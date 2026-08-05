@@ -39,7 +39,11 @@ export function Data() {
       try {
         url = URL.parse(encodeURLSpaces(dataURL));
       } catch (error) {
+        // Without this return, execution fell through to url.username with
+        // url still undefined — a TypeError from the effect put the
+        // ErrorBoundary screen up instead of the intended 404 (#47).
         setNotFound(true);
+        return;
       }
       if (!/[0-9a-f]{64}/i.test(url.username)) {
         setNotFound(true);

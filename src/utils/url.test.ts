@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   encodeURLSpaces,
+  parseRouteRef,
   retryWithoutOuterSpaces,
   stripAccScheme,
   txIdFromRef,
@@ -54,6 +55,34 @@ describe('txIdFromRef', () => {
     // the hash as `%40acme`, producing an unqueryable TxID.
     expect(txIdFromRef(`${hash}@acme`)).toBe(`${hash}@acme`);
     expect(txIdFromRef(`${hash}@unknown`)).toBe(`${hash}@unknown`);
+  });
+});
+
+describe('parseRouteRef', () => {
+  it('parses a normal account reference', () => {
+    const url = parseRouteRef('alice.acme/tokens');
+    expect(url.authority).toBe('alice.acme');
+    expect(url.path).toBe('/tokens');
+  });
+
+  it('keeps the username of a TxID reference', () => {
+    const hash = 'a'.repeat(64);
+    expect(parseRouteRef(`${hash}@unknown`).username).toBe(hash);
+  });
+
+  it('falls back cleanly for a name the WHATWG parser rejects (#45)', () => {
+    // URL.parse('ACME%20') throws, so this exercises the fallback. It used
+    // to render 'acc://ACME undefined' from the unset pathname.
+    const url = parseRouteRef('ACME ');
+    expect(url.toString()).toBe('acc://ACME ');
+    expect(url.username).toBe('');
+    expect(`${url.username || url.toString().replace(/^acc:\/\//, '')}`).toBe(
+      'ACME ',
+    );
+  });
+
+  it('returns null for an empty reference instead of throwing (#45)', () => {
+    expect(parseRouteRef('')).toBeNull();
   });
 });
 

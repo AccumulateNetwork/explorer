@@ -71,8 +71,13 @@ export function TokenAccount({
   };
 
   useEffect(() => {
+    // Keyed on the account: this component is reused across navigations, and
+    // a mount-only effect left account A's Staking Type and Staking Rewards
+    // rows rendered on account B's page (#43) — indefinitely, if B is not a
+    // staking account, because no response ever replaced them.
+    setStakingAccount(null);
     getStakingInfo(account.url);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [`${account.url}`, network.metrics]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const labelURL = (
     <span>
