@@ -208,7 +208,7 @@ page header (§3):
 
   | Network | Header (§3) | Favicon ground |
   |---|---|---|
-  | mainnet | `#0958d9` | `#0958d9` (unchanged) |
+  | mainnet | `#0958d9` | `#1890ff` (primary — lighter than the header, for contrast against the testnet purple) |
   | testnet | `#2d1640` | `#531dab` |
   | local/devnet | `#4b0000` | `#a8071a` |
 
@@ -235,13 +235,13 @@ page header (§3):
 
 ### Mark-color matrix (the exercised spec)
 
-| Tool | Mainnet `#0958d9` | Testnet `#531dab` | Local `#a8071a` | Why |
+| Tool | Mainnet `#1890ff` | Testnet `#531dab` | Local `#a8071a` | Why |
 |---|---|---|---|---|
 | Explorer | `white` | `white` | `white` | the brand mark; the one legitimate white |
 | Wallet WebUI | `#faad14` | `#faad14` | `#faad14` | gold holds on all three grounds |
 | Staking Browser | `#52c41a` | `#52c41a` | `#52c41a` | green holds on all three grounds |
 | Staking-Signer Watch | `#36cfc9` | `#13c2c2` | `#13c2c2` | one step brighter on mainnet, where blue sits next to teal |
-| Reports Dashboard | `#69b1ff` | `#69b1ff` | `#69b1ff` | link-blue holds on all three grounds; geekblue vanished on mainnet |
+| Reports Dashboard | `#d6e4ff` | `#69b1ff` | `#69b1ff` | link-blue; palest step on the mainnet ground, which is bright blue itself |
 | ANAF Dashboard | `#f759ab` | `#f759ab` | `#ff85c0` | brighter than nominal; brighter still on the red ground, its neighbour |
 | Staking Requests | `#b37feb` | `#d3adf7` | `#b37feb` | brighter than nominal; lightest on the testnet ground, which IS purple |
 | DTRules Editor | `white` on fixed `#fa8c16` ground | — same — | — same — | network-agnostic |
@@ -254,19 +254,19 @@ tool has one `<link>` per network below; serve the one matching the active
 network and swap it on network change.
 
 ```html
-<!-- ═══ mainnet — ground #0958d9 ═══ -->
+<!-- ═══ mainnet — ground #1890ff ═══ -->
 <!-- Wallet WebUI -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='6' y='9' width='20' height='15' rx='3' fill='%23faad14'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%230958d9'/><circle cx='21.5' cy='16.5' r='1.6' fill='%23faad14'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><rect x='6' y='9' width='20' height='15' rx='3' fill='%23faad14'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%231890ff'/><circle cx='21.5' cy='16.5' r='1.6' fill='%23faad14'/></svg>">
 <!-- Staking Browser -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='%2352c41a'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='%2352c41a'/></svg>">
 <!-- Staking-Signer Watch -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2336cfc9'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%230958d9' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%230958d9'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2336cfc9'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%231890ff' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%231890ff'/></svg>">
 <!-- Reports Dashboard -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%23d6e4ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%23d6e4ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%23d6e4ff'/></svg>">
 <!-- ANAF Dashboard -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23f759ab'>A</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23f759ab'>A</text></svg>">
 <!-- Staking Requests -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%23b37feb' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%23b37feb'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%23b37feb'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%231890ff'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%23b37feb' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%23b37feb'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%23b37feb'/></svg>">
 ```
 
 ```html
