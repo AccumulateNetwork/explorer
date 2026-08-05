@@ -28,7 +28,7 @@ export function Transaction({ record }: { record: TxnRecord }) {
     <div>
       <Show record={record} />
 
-      {record.signatures?.records?.length && (
+      {!!record.signatures?.records?.length && (
         <Signatures transaction={txn} signatures={record.signatures.records} />
       )}
     </div>

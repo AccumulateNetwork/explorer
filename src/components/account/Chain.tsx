@@ -15,6 +15,7 @@ import {
   AccountRecord,
   ChainEntryRecord,
   ErrorRecord,
+  JsonRpcClient,
   MessageRecord,
   RangeOptionsArgs,
   Record,
@@ -90,6 +91,41 @@ function formatTime(t: Date | string | undefined): string | undefined {
   return moment(t).format('HH:mm:ss');
 }
 
+/**
+ * The query range behind a chain table, bound to one account and chain.
+ * A new range must be created whenever the target changes (#39) — exported
+ * for tests.
+ */
+export function makeChainRange(
+  api: JsonRpcClient,
+  url: URL,
+  type: 'main' | 'scratch' | 'pending' | 'signature',
+) {
+  if (type === 'pending') {
+    return new ManagedRange((range) =>
+      api.query(url, {
+        queryType: 'pending',
+        range: {
+          expand: true,
+          ...range,
+        } as RangeOptionsArgs & { expand: true },
+      }),
+    );
+  }
+  return new ManagedRange(
+    (range) =>
+      api.query(url, {
+        queryType: 'chain',
+        name: type,
+        range: {
+          expand: true,
+          ...range,
+        },
+      }) as Promise<RecordRange<ChainRecord>>,
+    true,
+  );
+}
+
 export function Chain(props: {
   url: URLArgs;
   type: 'main' | 'scratch' | 'pending' | 'signature';
@@ -98,29 +134,16 @@ export function Chain(props: {
   const url = URL.parse(props.url);
 
   const { api, network } = useContext(Network);
-  const [managed] = useState(
-    props.type === 'pending'
-      ? new ManagedRange((range) =>
-          api.query(url, {
-            queryType: 'pending',
-            range: {
-              expand: true,
-              ...range,
-            } as RangeOptionsArgs & { expand: true },
-          }),
-        )
-      : new ManagedRange(
-          (range) =>
-            api.query(url, {
-              queryType: 'chain',
-              name: props.type,
-              range: {
-                expand: true,
-                ...range,
-              },
-            }) as Promise<RecordRange<ChainRecord>>,
-          true,
-        ),
+  // Recreated when the target changes. useState captured the url of the
+  // first render, and /acc/* renders one persistent <Acc>, so navigating
+  // between two accounts of the same kind (token -> token, ADI -> ADI)
+  // reused this instance and kept querying account A while the page showed
+  // account B: B's Transactions and Signatures tables listed A's entries,
+  // with links to A's txids (#39).
+  const managed = useMemo(
+    () => makeChainRange(api, url, props.type),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [`${url}`, props.type, api],
   );
 
   const [total, setTotal] = useState<number | null>(null);
@@ -135,6 +158,10 @@ export function Chain(props: {
         return;
       }
 
+      // Reset so account A's From/To/Amount columns never render against
+      // account B's rows while B's account query is in flight.
+      setAccount(null);
+      setIssuer(null);
       const r = (await api.query(url)) as AccountRecord;
       if (!mounted()) return;
       switch (r.account.type) {
@@ -179,8 +206,12 @@ export function Chain(props: {
   const loadPage = async <T,>(start: number, count: number): Promise<T[]> => {
     const current = Math.floor(start / count) + 1;
     const resp = await managed.getPage({ current, pageSize: count });
-    // Preserve the existing reverse-ordering from the prior implementation.
-    return ((resp.records as unknown as T[]) || []).slice().reverse();
+    const records = (resp.records as unknown as T[]) || [];
+    // main/scratch/signature ranges are fetched fromEnd, so reversing each
+    // page yields correct global newest-first order. The pending range is
+    // not fromEnd: its pages arrive ascending, and per-page reversal
+    // scrambled every page after the first (24…0, 49…25, …) (#47).
+    return type === 'pending' ? records : records.slice().reverse();
   };
 
   const enrichChainPage = async (
@@ -319,6 +350,7 @@ export function Chain(props: {
   if (type === 'pending') {
     return (
       <InfiniteList<PendingRecord>
+        key={`${url}|${type}`}
         total={total}
         loadPage={(s, c) => loadPage<PendingRecord>(s, c)}
         enrichPage={
@@ -341,6 +373,7 @@ export function Chain(props: {
 
   return (
     <InfiniteTable<ChainRecord>
+      key={`${url}|${type}`}
       className={`chain-table chain-table-${type}`}
       total={total}
       loadPage={(s, c) => loadPage<ChainRecord>(s, c)}

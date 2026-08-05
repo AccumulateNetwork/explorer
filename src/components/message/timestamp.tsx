@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { TxID, URL } from 'accumulate.js';
 
 import tooltipDescs from '../../utils/lang';
+import { utcOffsetLabel } from '../../utils/time';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
 import { useAsyncEffect } from '../common/useAsync';
@@ -86,8 +87,7 @@ export function describeTimestamp(txid: string | URL | TxID) {
             <RiQuestionLine />
           </Tooltip>
         </IconContext.Provider>
-        Timestamp (UTC{utcOffset < 0 ? '-' : '+'}
-        {utcOffset})
+        Timestamp (UTC{utcOffsetLabel(moment().utcOffset())})
       </Nobr>
     </span>
   );
