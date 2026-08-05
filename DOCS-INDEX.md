@@ -19,6 +19,7 @@ Quick navigation to all Explorer documentation.
 
 ### Development
 - [AI-README.md](AI-README.md) - Quick reference (good for humans too!)
+- [docs/design/ui-style.md](docs/design/ui-style.md) - **UI style definition (authoritative)** - the canonical Accumulate look; update it in the same MR as any visual change
 - `src/` - Source code
 - `mcp/` - MCP server for AI integration
 - `metrics-service/` - Go metrics API service
