@@ -204,6 +204,9 @@ page header (§3):
 - **The ground is the network**: the rounded square is filled with the
   network header token — mainnet `#0958d9`, testnet `#2d1640`,
   local/devnet `#4b0000`. A Kermit tab must not look like a mainnet tab.
+  A tool that is **not bound to any network** supplies its own fixed
+  ground instead — DTRules' "network color" IS orange (`#fa8c16`), on
+  every machine, always. Such tools also take no network title suffix.
 - **The mark is the tool** — the drawn shape is the identity and never
   changes. Its color is an aesthetic choice: whatever looks good against
   the network/tool combination. Each tool has a nominal hue (table below)
@@ -235,7 +238,7 @@ page header (§3):
 | Staking-Signer Watch | pen nib | `#13c2c2` cyan |
 | Reports Dashboard | ascending bar chart | `#69b1ff` link-blue (bright — geekblue vanished on the mainnet ground) |
 | ANAF Dashboard | capital A | `#eb2f96` magenta |
-| DTRules Editor | decision table — header row, two branch cells, one dimmed | `#fa8c16` orange |
+| DTRules Editor | decision table — header row, two branch cells, one dimmed | white mark on its own fixed `#fa8c16` orange ground (network-agnostic) |
 
 Copy-paste favicons, as data URIs (`#` URL-encoded as `%23`). The
 instances below are mainnet; substitute the ground fill (`%230958d9`) with
@@ -255,8 +258,8 @@ it improves the result:
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
 <!-- ANAF Dashboard -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23eb2f96'>A</text></svg>">
-<!-- DTRules Editor -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='%23fa8c16'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='%23fa8c16'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='%23fa8c16' opacity='.55'/></svg>">
+<!-- DTRules Editor — fixed orange ground, network-agnostic: never substitute -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fa8c16'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='white'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='white'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='white' opacity='.55'/></svg>">
 ```
 
 Adding a new tool? Design a one-concept drawn mark, pick a hue no other
