@@ -123,6 +123,36 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
   const loadingRef = useRef(false); // Guards against scroll-spam during fetch.
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // Latest props, for async callbacks: doLoadPage used to read the `props`
+  // captured when its memo was created, re-slicing a stale dataSource after
+  // the caller replaced it (#40).
+  const latest = useRef(props);
+  latest.current = props;
+  const itemsCountRef = useRef(0);
+  itemsCountRef.current = items.length;
+
+  // Array-mode content identity: a new array of the same length — or the same
+  // array with replaced elements — must re-sync the visible rows. Keying the
+  // reset effect on the length alone left the /network table permanently
+  // blank (its 2s poll rebuilds same-length entries), the Favourites star
+  // never visually toggled, and /block/N -> /block/N+1 kept block N's rows
+  // under block N+1's heading when both had the same count (#40). The compare
+  // runs against a snapshot copy so in-place element replacement is caught.
+  const contentVersion = useRef(0);
+  const contentSnapshot = useRef<readonly T[] | null>(null);
+  if (!server) {
+    const cur = props.dataSource;
+    const prev = contentSnapshot.current;
+    if (
+      !prev ||
+      prev.length !== cur.length ||
+      cur.some((x, i) => x !== prev[i])
+    ) {
+      contentVersion.current++;
+      contentSnapshot.current = cur.slice();
+    }
+  }
+
   // Always call hooks unconditionally; the history/location are only
   // *used* when `cursorParam` is set. This keeps hook order stable if a
   // caller toggles the prop.
@@ -151,10 +181,11 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       setError(null);
       try {
         let page: T[];
-        if (server) {
-          page = await props.loadPage(startOffset, pageSize);
+        const p = latest.current;
+        if (isServerProps(p)) {
+          page = await p.loadPage(startOffset, pageSize);
         } else {
-          page = props.dataSource.slice(startOffset, startOffset + pageSize);
+          page = p.dataSource.slice(startOffset, startOffset + pageSize);
         }
         if (!mountedRef.current) return;
 
@@ -198,7 +229,11 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       setEnrichment(null);
       doLoadPage(0, false);
     } else {
-      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      // Keep as many rows visible as were already loaded, so a content
+      // refresh (poll, favourite toggle) doesn't yank a scrolled list back
+      // to the first page.
+      const keep = windowed ? Math.max(itemsCountRef.current, pageSize) : total;
+      const page = props.dataSource.slice(0, keep);
       setItems(page);
       setEnrichment(null);
       // Array mode used to skip enrichment on mount (enrichPage was only
@@ -225,7 +260,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server, total]);
+  }, [server, total, contentVersion.current]);
 
   // Scroll listener for infinite-scroll + URL cursor updates. Only attaches
   // in windowed mode where there's a scroll container.
@@ -448,6 +483,26 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
   const mountedRef = useRef(true);
   const loadingRef = useRef(false);
 
+  // Same staleness fixes as InfiniteList — see the comments there (#40).
+  const latest = useRef(props);
+  latest.current = props;
+  const itemsCountRef = useRef(0);
+  itemsCountRef.current = items.length;
+  const contentVersion = useRef(0);
+  const contentSnapshot = useRef<readonly T[] | null>(null);
+  if (!server) {
+    const cur = props.dataSource;
+    const prev = contentSnapshot.current;
+    if (
+      !prev ||
+      prev.length !== cur.length ||
+      cur.some((x, i) => x !== prev[i])
+    ) {
+      contentVersion.current++;
+      contentSnapshot.current = cur.slice();
+    }
+  }
+
   const hasMoreServer = server && !exhausted && items.length < total;
   const hasMoreArray =
     !server && windowed && items.length < props.dataSource.length;
@@ -470,10 +525,11 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       setError(null);
       try {
         let page: T[];
-        if (server) {
-          page = await props.loadPage(startOffset, pageSize);
+        const p = latest.current;
+        if (isServerTableProps(p)) {
+          page = await p.loadPage(startOffset, pageSize);
         } else {
-          page = props.dataSource.slice(startOffset, startOffset + pageSize);
+          page = p.dataSource.slice(startOffset, startOffset + pageSize);
         }
         if (!mountedRef.current) return;
         setItems((prev) => (append ? [...prev, ...page] : page));
@@ -514,7 +570,8 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       setExhausted(false);
       doLoadPage(0, false);
     } else {
-      const page = props.dataSource.slice(0, windowed ? pageSize : total);
+      const keep = windowed ? Math.max(itemsCountRef.current, pageSize) : total;
+      const page = props.dataSource.slice(0, keep);
       setItems(page);
       setEnrichment(null);
       // Array mode used to skip enrichment on mount; mirror the InfiniteList
@@ -539,7 +596,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       mountedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [server, total]);
+  }, [server, total, contentVersion.current]);
 
   // After each load, if a target cursor was present at mount, try to scroll
   // the matching row to the top. If not yet in view, keep loading more pages
