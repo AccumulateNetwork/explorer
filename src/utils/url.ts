@@ -64,6 +64,35 @@ export function txIdFromRef(ref: string): string {
   return ref.includes('@') ? ref : `${ref}@unknown`;
 }
 
+/**
+ * Parse a route reference into an Accumulate URL, tolerating names the WHATWG
+ * parser rejects (e.g. a name with an encoded space in the authority).
+ *
+ * The fallback wraps the raw reference as the authority of an `acc://` URL. It
+ * must spell out every other component: `parseURL` passes plain objects
+ * through untouched, so an omitted `pathname`/`username` stays `undefined` and
+ * `toString()` renders it literally — `/acc/ACME%20` used to query the
+ * nonexistent `acc://ACME undefined` and title the tab with it (#45).
+ *
+ * An empty reference (`/acc/`, `/tx/`) names nothing and returns null — render
+ * a 404, not an ErrorBoundary crash from `URL.parse('')` throwing.
+ */
+export function parseRouteRef(s: string): URL | null {
+  if (!s) return null;
+  try {
+    return URL.parse(encodeURLSpaces(s));
+  } catch (error) {
+    return new URL({
+      scheme: 'acc',
+      hostname: s,
+      username: '',
+      pathname: '',
+      search: '',
+      hash: '',
+    } as ConstructorParameters<typeof URL>[0]);
+  }
+}
+
 export function getParentUrl(url: URLArgs) {
   url = URL.parse(url);
   const path = url.path.replace(/^\/|\/$/g, '');
