@@ -150,8 +150,13 @@ export function Signatures(props: {
   }
 
   useEffect(() => {
+    // Keyed on the transaction: this component is reused across navigations,
+    // and a mount-only effect kept the first transaction's authority list for
+    // every subsequent transaction (#43). Reset so a slow query never leaves
+    // the previous transaction's authorities showing.
+    setAuthorities(null);
     getAllAuthorities(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [transaction]);
 
   return (
     <div style={{ marginBottom: '20px' }}>
