@@ -201,73 +201,114 @@ Operators run several Accumulate tools at once, often against more than one
 network; the tab strip is a UI surface too. Two channels, mirroring the
 page header (§3):
 
-- **The ground is the network**: the rounded square is filled with the
-  network header token — mainnet `#0958d9`, testnet `#2d1640`,
-  local/devnet `#4b0000`. A Kermit tab must not look like a mainnet tab.
+- **The ground is the network — in favicon-specific tokens.** The header's
+  testnet (`#2d1640`) and local (`#4b0000`) tokens are too dark to read at
+  16px: both collapse to an indistinguishable black square in a tab strip.
+  The favicon uses the same hue at legible strength:
+
+  | Network | Header (§3) | Favicon ground |
+  |---|---|---|
+  | mainnet | `#0958d9` | `#0958d9` (unchanged) |
+  | testnet | `#2d1640` | `#531dab` |
+  | local/devnet | `#4b0000` | `#a8071a` |
+
   A tool that is **not bound to any network** supplies its own fixed
-  ground instead — DTRules' "network color" IS orange (`#fa8c16`), on
-  every machine, always. Such tools also take no network title suffix.
-- **The mark is the tool** — the drawn shape is the identity and never
-  changes. Its color is an aesthetic choice: whatever looks good against
-  the network/tool combination. Each tool has a nominal hue (table below)
-  for recognition, but tune the shade per ground when the nominal one
-  sits badly — the grounds are all dark, so this usually means reaching
-  for a brighter step of the same antd family (e.g. Reports uses
-  link-blue `#69b1ff` on the mainnet ground where geekblue vanishes).
-  Keep it legible at 16 px and don't wander into a hue another tool owns
-  on the same ground.
-- **Marks are drawn SVG paths, or plain capital letters with
-  `font-family='sans-serif'`** — never symbol characters (`▤`, `⊞`, `✎`):
-  favicon renderers fall back to whatever font is installed, so symbol
-  glyphs shift shape per platform or show as tofu.
+  ground instead — DTRules' "network color" IS orange (`#fa8c16`),
+  always, with no network title suffix.
+- **The mark is the tool** — a drawn SVG shape (or a plain capital letter
+  with `font-family='sans-serif'`; never symbol characters, which shift
+  per platform). The shape never changes.
+- **The mark color is chosen to look good on the ground.** That rule
+  produced the matrix below, and the matrix is the spec: consuming repos
+  copy these values and do not repeat the exercise. Revisit a cell only
+  through this doc.
+- **The favicon must change when the user changes network.** A tool that
+  switches networks in-app (the explorer's network selector, the wallet)
+  swaps the favicon and `<meta name="theme-color">` live, together with
+  its header color. Tools that know their network at serve time bake it
+  in. (Explorer implementation: follow-up under #36 — its static PNGs
+  predate this rule.)
 - Title convention: `<subject> | <Tool>` on mainnet;
-  `<subject> | <Tool> · <Network>` elsewhere
-  (e.g. `watch | Staking Signer · Kermit`).
-- `<meta name="theme-color">` = the network header color.
-- A tool that knows its network at serve time (the Go-served staking
-  surfaces) bakes the ground color in; a tool that resolves it at runtime
-  (the explorer) swaps the favicon and theme-color when the network is
-  known — the explorer's static PNGs predate this rule and becoming
-  network-aware is follow-up work under #36.
+  `<subject> | <Tool> · <Network>` elsewhere.
+- `<meta name="theme-color">` = the header color (§3), which tints
+  browser chrome, not the tab icon.
 
-| Tool | Mark | Nominal mark color |
-|---|---|---|
-| Explorer | Accumulate logo in white circle | white (the brand mark is the one legitimate white) |
-| Wallet WebUI | wallet with clasp | `#faad14` gold |
-| Staking Browser | token stack (three bars) | `#52c41a` green |
-| Staking-Signer Watch | pen nib | `#13c2c2` cyan |
-| Reports Dashboard | ascending bar chart | `#69b1ff` link-blue (bright — geekblue vanished on the mainnet ground) |
-| ANAF Dashboard | capital A | `#eb2f96` magenta |
-| Staking Requests | inbox tray with incoming arrow | `#9254de` purple |
-| DTRules Editor | decision table — header row, two branch cells, one dimmed | white mark on its own fixed `#fa8c16` orange ground (network-agnostic) |
+### Mark-color matrix (the exercised spec)
 
-Copy-paste favicons, as data URIs (`#` URL-encoded as `%23`). The
-instances below are mainnet; substitute the ground fill (`%230958d9`) with
-`%232d1640` (testnet) or `%234b0000` (local) — interior cutout details
-(the wallet clasp, the nib slit and breather hole) are drawn in the
-**ground** color and must follow it; adjust mark shades per ground where
-it improves the result:
+| Tool | Mainnet `#0958d9` | Testnet `#531dab` | Local `#a8071a` | Why |
+|---|---|---|---|---|
+| Explorer | `white` | `white` | `white` | the brand mark; the one legitimate white |
+| Wallet WebUI | `#faad14` | `#faad14` | `#faad14` | gold holds on all three grounds |
+| Staking Browser | `#52c41a` | `#52c41a` | `#52c41a` | green holds on all three grounds |
+| Staking-Signer Watch | `#36cfc9` | `#13c2c2` | `#13c2c2` | one step brighter on mainnet, where blue sits next to teal |
+| Reports Dashboard | `#69b1ff` | `#69b1ff` | `#69b1ff` | link-blue holds on all three grounds; geekblue vanished on mainnet |
+| ANAF Dashboard | `#f759ab` | `#f759ab` | `#ff85c0` | brighter than nominal; brighter still on the red ground, its neighbour |
+| Staking Requests | `#b37feb` | `#d3adf7` | `#b37feb` | brighter than nominal; lightest on the testnet ground, which IS purple |
+| DTRules Editor | `white` on fixed `#fa8c16` ground | — same — | — same — | network-agnostic |
+
+### Favicons — copy-paste, all combinations
+
+The explorer keeps its logo favicons (its white-circle logo is the mark;
+the network-aware swap uses the SVG equivalent). Every other network-bound
+tool has one `<link>` per network below; serve the one matching the active
+network and swap it on network change.
 
 ```html
+<!-- ═══ mainnet — ground #0958d9 ═══ -->
 <!-- Wallet WebUI -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='6' y='9' width='20' height='15' rx='3' fill='%23faad14'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%230958d9'/><circle cx='21.5' cy='16.5' r='1.6' fill='%23faad14'/></svg>">
 <!-- Staking Browser -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='%2352c41a'/></svg>">
 <!-- Staking-Signer Watch -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2313c2c2'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%230958d9' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%230958d9'/></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2336cfc9'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%230958d9' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%230958d9'/></svg>">
 <!-- Reports Dashboard -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
 <!-- ANAF Dashboard -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23eb2f96'>A</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23f759ab'>A</text></svg>">
 <!-- Staking Requests -->
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%239254de' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%239254de'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%239254de'/></svg>">
-<!-- DTRules Editor — fixed orange ground, network-agnostic: never substitute -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230958d9'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%23b37feb' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%23b37feb'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%23b37feb'/></svg>">
+```
+
+```html
+<!-- ═══ testnet — ground #531dab ═══ -->
+<!-- Wallet WebUI -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><rect x='6' y='9' width='20' height='15' rx='3' fill='%23faad14'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%23531dab'/><circle cx='21.5' cy='16.5' r='1.6' fill='%23faad14'/></svg>">
+<!-- Staking Browser -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='%2352c41a'/></svg>">
+<!-- Staking-Signer Watch -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2313c2c2'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%23531dab' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%23531dab'/></svg>">
+<!-- Reports Dashboard -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
+<!-- ANAF Dashboard -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23f759ab'>A</text></svg>">
+<!-- Staking Requests -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23531dab'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%23d3adf7' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%23d3adf7'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%23d3adf7'/></svg>">
+```
+
+```html
+<!-- ═══ local — ground #a8071a ═══ -->
+<!-- Wallet WebUI -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><rect x='6' y='9' width='20' height='15' rx='3' fill='%23faad14'/><rect x='17' y='13.5' width='9' height='6' rx='3' fill='%23a8071a'/><circle cx='21.5' cy='16.5' r='1.6' fill='%23faad14'/></svg>">
+<!-- Staking Browser -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><rect x='8' y='7.5' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='13.75' width='16' height='4.5' rx='2.25' fill='%2352c41a'/><rect x='8' y='20' width='16' height='4.5' rx='2.25' fill='%2352c41a'/></svg>">
+<!-- Staking-Signer Watch -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><path d='M16 27 L23 17.5 Q23.5 10.5 16 5 Q8.5 10.5 9 17.5 Z' fill='%2313c2c2'/><line x1='16' y1='8.5' x2='16' y2='15.8' stroke='%23a8071a' stroke-width='2'/><circle cx='16' cy='17.3' r='1.9' fill='%23a8071a'/></svg>">
+<!-- Reports Dashboard -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><rect x='7' y='17' width='4.5' height='7' rx='1.5' fill='%2369b1ff'/><rect x='13.75' y='12' width='4.5' height='12' rx='1.5' fill='%2369b1ff'/><rect x='20.5' y='7' width='4.5' height='17' rx='1.5' fill='%2369b1ff'/></svg>">
+<!-- ANAF Dashboard -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><text x='16' y='23.5' font-family='sans-serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23ff85c0'>A</text></svg>">
+<!-- Staking Requests -->
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23a8071a'/><line x1='16' y1='5.5' x2='16' y2='10.5' stroke='%23b37feb' stroke-width='2.5'/><path d='M11.8 9.5 L16 14.5 L20.2 9.5 Z' fill='%23b37feb'/><path d='M6.5 16 L6.5 22.5 Q6.5 25 9 25 L23 25 Q25.5 25 25.5 22.5 L25.5 16 L20.5 16 Q20.5 19.5 16 19.5 Q11.5 19.5 11.5 16 Z' fill='%23b37feb'/></svg>">
+```
+
+```html
+<!-- ═══ DTRules Editor — fixed ground, every network ═══ -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23fa8c16'/><rect x='7.5' y='7.5' width='17' height='5' rx='1.5' fill='white'/><rect x='7.5' y='14.5' width='8' height='10' rx='1.5' fill='white'/><rect x='16.5' y='14.5' width='8' height='10' rx='1.5' fill='white' opacity='.55'/></svg>">
 ```
 
-Adding a new tool? Design a one-concept drawn mark, pick a hue no other
-tool is using, add the row here, and use the template. The ground color
-comes from the network; the mark color is yours to tune against it.
+Adding a new tool? Design a one-concept drawn mark, run the same exercise
+— pick the shade that looks good on each ground, avoiding hues other
+tools own — and record the results here.
 
 ## 10. Sources
 
