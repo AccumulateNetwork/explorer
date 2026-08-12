@@ -52,7 +52,7 @@ export default function Explorer() {
     // The only place a network is persisted: this is the user choosing one.
     // Other tabs on this origin share the same storage, so the broadcast
     // handler above does not need to write it again.
-    Settings.networkName = item.id;
+    Settings.selectedNetwork = item.id;
     setShared(new Network.Context(onApiError, item));
     Network.Context.postBroadcast({
       type: 'didChangeNetwork',
