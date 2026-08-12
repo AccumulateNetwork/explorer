@@ -11,7 +11,11 @@ export const Settings = new (
   @storage(localStorage)
   class Settings {
     @stored accessor enableDevMode: boolean = false;
-    @stored accessor networkName: string = 'mainnet';
+    // Empty means "the user has not chosen a network", which is distinct
+    // from having chosen mainnet. While the default was 'mainnet' the two
+    // were indistinguishable, and the hostname defaults in Network.tsx could
+    // never run (#73).
+    @stored accessor networkName: string = '';
     @stored accessor favourites: string[] = [];
     @broadcast @stored accessor themeMode: ThemeMode = 'light';
 
