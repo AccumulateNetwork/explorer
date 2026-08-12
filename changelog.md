@@ -3,6 +3,16 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.5] - 2026-08-12
+
+### Fixed
+- **Kermit and Fozzie deep links open on their own network.** `kermit.explorer.accumulatenetwork.io` opened on Mainnet, so a real Kermit transaction appeared not to exist. The stored network setting defaulted to `mainnet`, which made "the user has not chosen a network" indistinguishable from "the user chose mainnet" — the hostname defaults below that check were unreachable. The setting now defaults to empty, and a network is persisted only where the user actually selects one; previously it was written on every context construction, so a network nobody chose became sticky. ([#73](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/73))
+- **Browsers that already visited a network-specific host are recovered.** One visit to the Kermit host under the old code wrote `networkName="mainnet"`, and that value is indistinguishable from a real choice — so the fix above would have left every previous visitor on Mainnet. The setting moves to a new key and the old one is swept once; everyone falls back to the hostname default a single time, and only selections made from now on are remembered. ([#73](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/73))
+
+### Note
+- `localhost` no longer maps to the local devnet — that branch was unreachable too, and reviving it would point development and the smoke script at a devnet that is usually not running. Pin it explicitly with `VITE_NETWORK=local`, or use the network selector.
+- A structural successor to this fix — one build and document root per network, the selector as navigation, and cross-network hash lookup by redirect — is [#74](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/74).
+
 ## [0.4.4] - 2026-08-05
 
 ### Added
