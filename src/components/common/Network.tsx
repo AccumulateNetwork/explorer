@@ -233,14 +233,14 @@ function syntheticOk(
  * without a DOM or storage; both default to the live values.
  *
  * A stored selection only means something if the user actually made one,
- * which is why {@link Settings.networkName} defaults to empty rather than
- * 'mainnet'. While the two were the same value, this function returned at
+ * which is why {@link Settings.selectedNetwork} defaults to empty rather
+ * than 'mainnet'. While the two were one value, this function returned at
  * the first branch on every fresh browser and the hostname defaults below
  * were unreachable — so kermit.explorer opened on Mainnet and its deep links
  * appeared not to exist (#73).
  */
 export function defaultNetworkName(
-  stored: string = Settings.networkName,
+  stored: string = Settings.selectedNetwork,
   hostname: string = typeof window !== 'undefined'
     ? window.location.hostname
     : '',
