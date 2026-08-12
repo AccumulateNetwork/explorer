@@ -63,7 +63,10 @@ export class Context {
     this.#onApiError = onApiError;
     this.#network = network;
     this.#api = new JsonRpcClient(`${network.api[0]}/v3`);
-    Settings.networkName = network.id;
+    // Deliberately not persisted here. This runs on every construction —
+    // including the one that merely applied a hostname default — which made
+    // a network the user never chose look like an explicit choice (#73).
+    // Only an explicit selection is stored; see Explorer's onSelectNetwork.
   }
 
   get network() {
@@ -223,28 +226,46 @@ function syntheticOk(
   return true;
 }
 
-function defaultNetworkName(): string {
+/**
+ * The network to open on, absent an explicit choice.
+ *
+ * Takes the stored selection and hostname as parameters so it can be tested
+ * without a DOM or storage; both default to the live values.
+ *
+ * A stored selection only means something if the user actually made one,
+ * which is why {@link Settings.networkName} defaults to empty rather than
+ * 'mainnet'. While the two were the same value, this function returned at
+ * the first branch on every fresh browser and the hostname defaults below
+ * were unreachable — so kermit.explorer opened on Mainnet and its deep links
+ * appeared not to exist (#73).
+ */
+export function defaultNetworkName(
+  stored: string = Settings.networkName,
+  hostname: string = typeof window !== 'undefined'
+    ? window.location.hostname
+    : '',
+): string {
   if (import.meta.env.VITE_APP_API_PATH) {
     return import.meta.env.VITE_APP_API_PATH;
   }
+  // A build pinned to one network (VITE_NETWORK=kermit) always wins.
   if (!Context.canChangeNetwork && import.meta.env.VITE_NETWORK) {
     return import.meta.env.VITE_NETWORK;
   }
 
   // Honor the user's last explicit selection if it's still a known network.
-  if (Settings.networkName && getNetwork(Settings.networkName)) {
-    return Settings.networkName;
-  }
-  if (Settings.networkName) {
-    Settings.networkName = '';
+  // An unknown one (a network since removed) is ignored, not cleared: this
+  // function has no side effects.
+  if (stored && getNetwork(stored)) {
+    return stored;
   }
 
-  // No stored selection — pick a sensible default based on hostname.
-  const hostname =
-    typeof window !== 'undefined' ? window.location.hostname : '';
+  // No explicit choice — a network-specific host names its own network.
+  // localhost is deliberately absent: it would point development and the
+  // smoke script at a devnet that is usually not running. Pin it explicitly
+  // with VITE_NETWORK=local, or switch networks in the UI.
   if (hostname.includes('kermit.explorer')) return 'kermit';
   if (hostname.includes('fozzie.explorer')) return 'fozzie';
-  if (hostname === 'localhost' || hostname === '127.0.0.1') return 'local';
   return 'mainnet';
 }
 
