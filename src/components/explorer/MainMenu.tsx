@@ -22,7 +22,7 @@ import { Link } from 'react-router-dom';
 
 import Logo from '../common/Logo';
 import { Network } from '../common/Network';
-import networks, { NetworkConfig } from '../common/networks';
+import { NetworkConfig, offeredNetworks } from '../common/networks';
 import { ThemeMode, useThemeMode } from '../common/theme';
 import { useWeb3 } from '../web3/Context';
 import { Login } from '../web3/Login';
@@ -95,7 +95,7 @@ export function MainMenu({
   }, []);
 
   const networkMenuItems: MenuProps['items'][0][] = shared.canChangeNetwork
-    ? Object.values(networks).map((item) => ({
+    ? offeredNetworks().map((item) => ({
         key: item.label,
         label: (
           <a onClick={() => onSelectNetwork(item)}>
@@ -103,7 +103,7 @@ export function MainMenu({
           </a>
         ),
       }))
-    : Object.values(networks)
+    : offeredNetworks()
         .filter((item) => item.explorer)
         .map((item) => ({
           key: item.label,
