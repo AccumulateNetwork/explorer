@@ -6,6 +6,13 @@ export interface NetworkConfig {
   api: string[];
   eth?: string[];
   metrics?: string;
+  /**
+   * Configured but not currently installed. Kept so a pinned build, a
+   * hostname default or a stored selection still resolves it, but not
+   * offered in the network menu — picking a network that is not deployed
+   * only yields failed queries.
+   */
+  reserved?: boolean;
 }
 
 export const Mainnet: NetworkConfig = {
@@ -33,6 +40,9 @@ export const Kermit: NetworkConfig = {
 
 export const Fozzie: NetworkConfig = {
   id: 'fozzie',
+  // Held in reserve, not installed: the API does not answer, though a
+  // stale DNS record remains. Drop this line when it is deployed again.
+  reserved: true,
   label: 'Fozzie Testnet',
   explorer: 'https://fozzie.explorer.accumulatenetwork.io',
   api: ['https://fozzie.accumulatenetwork.io'],
@@ -46,6 +56,14 @@ const Local: NetworkConfig = {
 };
 
 const networks = { Mainnet, Kermit, Fozzie, Local };
+
+/**
+ * The networks to offer the user. Reserved networks stay configured and
+ * resolvable but are not listed — see {@link NetworkConfig.reserved}.
+ */
+export function offeredNetworks(): NetworkConfig[] {
+  return Object.values(networks).filter((x) => !x.reserved);
+}
 
 export function getNetwork(s: string) {
   for (const network of Object.values(networks)) {
