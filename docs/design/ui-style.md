@@ -122,6 +122,18 @@ let them blend into one gray blob.
 - Header action buttons: transparent fill, `2px solid #fff` border, white
   600 text; hover fills `rgba(255,255,255,.22)`.
 
+### 5.1 Home navigation — every application
+
+Every application has a HOME page from which the user navigates, and
+every page links back to it with an **icon in the top right corner**
+(where this makes sense — e.g. not on the home page itself, and not in
+embedded/iframe contexts). The affordance is the application's logo mark
+in a fixed pill: `position: fixed; top: 14px; right: 16px`, mark plus
+optional short label, pill fill `rgba(22,33,62,.92)` with a subtle
+border, `title` and `aria-label` naming the destination ("<App> — home").
+Text links ("← back to …") are not the navigation convention; the logo
+is. (Codified 2026-08-06 from the staking browser family.)
+
 ## 6. Layout
 
 - Content column: centered, `max-width: 1600px`; full-width below that.
