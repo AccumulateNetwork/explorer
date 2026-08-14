@@ -25,6 +25,7 @@ import {
 } from 'accumulate.js/lib/core';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
+import { computeSignatureState } from '../../utils/signatureState';
 import { SigRecord, isRecordOf } from '../../utils/types';
 import { InfiniteList } from './InfiniteList';
 import Key from './Key';
@@ -168,6 +169,8 @@ export function Signatures(props: {
         </IconContext.Provider>
         Signatures
       </Title>
+      <Progress signatures={props.signatures} />
+
       {blockAnchors.length &&
       (transaction.body instanceof core.DirectoryAnchor ||
         transaction.body instanceof core.BlockValidatorAnchor) ? (
@@ -190,6 +193,95 @@ export function Signatures(props: {
           principalSigs={principalSigs}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * What the transaction is waiting on, entry by entry on the governing page.
+ *
+ * The count alone cannot show this: a signature sitting below its own page's
+ * threshold has been recorded and paid for but has voted for nothing, and
+ * used to be indistinguishable from a vote (#75, #76).
+ */
+function Progress({ signatures }: { signatures: SignatureSetRecord[] }) {
+  const state = computeSignatureState(signatures);
+  if (!state) {
+    return null;
+  }
+
+  const columns: TableProps<(typeof state.entries)[0]>['columns'] = [
+    {
+      title: 'Signer',
+      className: 'no-break',
+      render: (entry) =>
+        entry.label.startsWith('acc://') ? (
+          <Link to={entry.label}>
+            <IconContext.Provider value={{ className: 'react-icons' }}>
+              <RiAccountCircleLine />
+            </IconContext.Provider>
+            {entry.label}
+          </Link>
+        ) : (
+          <Text type="secondary">{entry.label}</Text>
+        ),
+    },
+    {
+      title: 'State',
+      className: 'no-break',
+      render: ({ state: s }) => {
+        switch (s.kind) {
+          case 'voted':
+            return (
+              <Tag color={s.vote === 'reject' ? 'red' : 'green'}>
+                {s.vote === 'accept' ? 'voted' : s.vote}
+              </Tag>
+            );
+          case 'signed':
+            return <Tag color="orange">signed, not counted</Tag>;
+          default:
+            return <Text type="secondary">—</Text>;
+        }
+      },
+    },
+    {
+      title: 'Detail',
+      render: ({ state: s }) => {
+        switch (s.kind) {
+          case 'voted':
+            return <Text type="secondary">via {s.via}</Text>;
+          case 'signed':
+            return (
+              <Text type="secondary">
+                {s.page} has {s.have} of {s.need} required
+              </Text>
+            );
+          default:
+            return null;
+        }
+      },
+    },
+  ];
+
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <Paragraph style={{ marginBottom: 8 }}>
+        <Text strong>
+          {state.votes} of {state.threshold}
+        </Text>{' '}
+        <Text type="secondary">
+          required signatures on <Link to={state.page}>{state.page}</Link>
+        </Text>
+      </Paragraph>
+      <Table
+        className="signature-progress"
+        columns={columns}
+        dataSource={state.entries}
+        rowKey={(x) => x.label}
+        pagination={false}
+        size="small"
+        showHeader={false}
+      />
     </div>
   );
 }
