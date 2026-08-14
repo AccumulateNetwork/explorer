@@ -5,10 +5,10 @@
 Beta and production are hosted on **different infrastructure**. They must not be
 confused: beta deploys itself, production does not.
 
-| Site | URL | Hosting | Deploys when |
-|---|---|---|---|
-| Beta | https://beta.explorer.accumulatenetwork.io | Netlify (`accumulate-beta.netlify.app`) | GitHub mirror is pushed |
-| Production | https://explorer.accumulatenetwork.io | nginx on server1 (206.191.154.164) | someone rsyncs a build there |
+| Site       | URL                                        | Hosting                                 | Deploys when                 |
+| ---------- | ------------------------------------------ | --------------------------------------- | ---------------------------- |
+| Beta       | https://beta.explorer.accumulatenetwork.io | Netlify (`accumulate-beta.netlify.app`) | GitHub mirror is pushed      |
+| Production | https://explorer.accumulatenetwork.io      | nginx on server1 (206.191.154.164)      | someone rsyncs a build there |
 
 ---
 
@@ -28,8 +28,10 @@ VITE_NETWORK=any npm run build
 # 2. Back up the current deployment (server1 is defined in ~/.ssh/config)
 ssh server1 'cd /var/www && tar -czf /root/explorer-backup-$(date +%Y%m%d-%H%M%S).tar.gz explorer'
 
-# 3. Deploy
-rsync -az --delete build/ server1:/var/www/explorer/
+# 3. Deploy. Exclude the source maps: the build emits them 'hidden' (not
+#    referenced from the bundle) for local debugging, but they carry full
+#    sourcesContent and must not be served publicly (#48).
+rsync -az --delete --exclude='*.map' build/ server1:/var/www/explorer/
 ssh server1 'chown -R ubuntu:ubuntu /var/www/explorer'
 
 # 4. Verify — the served bundle name must match the one in build/index.html

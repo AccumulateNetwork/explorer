@@ -31,11 +31,20 @@ export default defineConfig({
   build: {
     outDir: 'build',
     // The local-wallet build is embedded into the wallet binary, so skip
-    // sourcemaps there (~22MB) to keep the binary small. Keep them otherwise.
-    sourcemap: process.env.VITE_WALLET !== 'local',
-    chunkSizeWarningLimit: 2048,
-    target: 'chrome90',  // Very specific target to avoid decorator issues
-    minify: false,  // Disable all minification
+    // sourcemaps there (~22MB) to keep the binary small. Otherwise emit them
+    // 'hidden': generated for local debugging and Sentry, but not referenced
+    // from the bundle. They are excluded from the production rsync as well —
+    // they were being served publicly with full sourcesContent (#48).
+    sourcemap: process.env.VITE_WALLET === 'local' ? false : 'hidden',
+    // Restored to something that warns. Raised to 2048 while minification
+    // was off; a real chunk should not reach half a megabyte.
+    chunkSizeWarningLimit: 500,
+    target: 'chrome90', // Very specific target to avoid decorator issues
+    // Minification was disabled during the SDK decorator work. Decorators
+    // are lowered by @babel/plugin-proposal-decorators before esbuild sees
+    // them, so it is safe — verified against the wallet, signing and
+    // account/transaction pages (#48).
+    minify: 'esbuild',
     commonjsOptions: {
       transformMixedEsModules: true,
     },
@@ -66,7 +75,13 @@ export default defineConfig({
     // this sets a default port to 3000
     port: 3000,
 
-    host: '0.0.0.0',
+    // Loopback only. The dev server proxies /v1 to a locally running wallet
+    // (below), and that API's entire auth model is same-origin with a
+    // per-run session token — binding every interface hands anyone on the
+    // LAN a mintable token and, with auto-connect keeping the vault
+    // unlocked, the ability to sign and send without a passphrase (#58).
+    // Set VITE_DEV_HOST=0.0.0.0 deliberately for mobile testing.
+    host: process.env.VITE_DEV_HOST || '127.0.0.1',
 
     watch: {
       useFsEvents: true,
