@@ -3,6 +3,14 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.6] - 2026-08-14
+
+### Fixed
+- **A pending multisig transaction no longer reads as complete.** The header counted key-signature messages and explicitly skipped authority signatures — the only records the accept threshold counts — so the number shown was the complement of the right set. The mainnet staking distribution for pay period 193 displayed "SIGNATURES: 5" against a threshold of 4 while sitting pending for days with two votes. The header now reads votes against the threshold, e.g. `3 of 4`. ([#75](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/75))
+- **Signatures that cannot count are no longer indistinguishable from votes.** The Signatures section now breaks a transaction down entry by entry on the governing page: *voted* (a delegate delivered an authority signature, or a key matching the entry signed the page directly), *signed but not counted* — shown with the delegate page's own progress, e.g. "CodeForj.acme/book/2 has 1 of 2 required" — or nothing. Operators whose signature can never count could previously see it on the page with no way to tell. ([#76](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/76))
+- Votes are attributed by where a signature landed rather than by its authority field, so a nested delegate's vote counts once for the entry it arrived through instead of twice.
+- **An executed transaction signed by a since-rotated key reports its full count.** The key page returned with a transaction is its state *now*, not when it was signed, so a vote from a key later rotated off the page went missing — under-reporting a delivered transaction. Those votes are counted and labelled instead of dropped.
+
 ## [0.4.5] - 2026-08-12
 
 ### Fixed
