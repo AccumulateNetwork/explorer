@@ -1,0 +1,139 @@
+{
+  "request": {
+    "transaction": {
+      "header": {
+        "principal": "acc://alice.acme/tokens"
+      },
+      "body": {
+        "type": "sendTokens",
+        "to": [
+          {
+            "url": "acc://bob.acme/tokens",
+            "amount": "100"
+          }
+        ]
+      }
+    },
+    "signature": {
+      "type": "typedData",
+      "publicKey": "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+      "signer": "acc://alice.acme/book/1",
+      "signerVersion": 1,
+      "timestamp": 1700000000000,
+      "chainID": "281"
+    }
+  },
+  "response": {
+    "types": {
+      "EIP712Domain": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "string"
+        },
+        {
+          "name": "chainId",
+          "type": "uint256"
+        }
+      ],
+      "SendTokens": [
+        {
+          "name": "to",
+          "type": "TokenRecipient[]"
+        }
+      ],
+      "SignatureMetadata": [
+        {
+          "name": "publicKey",
+          "type": "bytes"
+        },
+        {
+          "name": "signer",
+          "type": "string"
+        },
+        {
+          "name": "signerVersion",
+          "type": "uint64"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint64"
+        },
+        {
+          "name": "type",
+          "type": "string"
+        }
+      ],
+      "TokenRecipient": [
+        {
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "name": "url",
+          "type": "string"
+        }
+      ],
+      "Transaction": [
+        {
+          "name": "header",
+          "type": "TransactionHeader"
+        },
+        {
+          "name": "sendTokens",
+          "type": "SendTokens"
+        },
+        {
+          "name": "signature",
+          "type": "SignatureMetadata"
+        }
+      ],
+      "TransactionHeader": [
+        {
+          "name": "principal",
+          "type": "string"
+        }
+      ]
+    },
+    "primaryType": "Transaction",
+    "domain": {
+      "name": "Accumulate",
+      "version": "1.0.0",
+      "chainId": "281"
+    },
+    "message": {
+      "header": {
+        "authorities": [],
+        "initiator": "",
+        "memo": "",
+        "metadata": "",
+        "principal": "acc://alice.acme/tokens"
+      },
+      "sendTokens": {
+        "hash": "",
+        "meta": "",
+        "to": [
+          {
+            "amount": "100",
+            "url": "acc://bob.acme/tokens"
+          }
+        ],
+        "type": ""
+      },
+      "signature": {
+        "data": "",
+        "delegators": [],
+        "memo": "",
+        "publicKey": "0x0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798",
+        "signer": "acc://alice.acme/book/1",
+        "signerVersion": 1,
+        "timestamp": 1700000000000,
+        "type": "typedData",
+        "vote": ""
+      }
+    }
+  }
+}

@@ -5,10 +5,10 @@
 Beta and production are hosted on **different infrastructure**. They must not be
 confused: beta deploys itself, production does not.
 
-| Site | URL | Hosting | Deploys when |
-|---|---|---|---|
-| Beta | https://beta.explorer.accumulatenetwork.io | Netlify (`accumulate-beta.netlify.app`) | GitHub mirror is pushed |
-| Production | https://explorer.accumulatenetwork.io | nginx on server1 (206.191.154.164) | someone rsyncs a build there |
+| Site       | URL                                        | Hosting                                 | Deploys when                 |
+| ---------- | ------------------------------------------ | --------------------------------------- | ---------------------------- |
+| Beta       | https://beta.explorer.accumulatenetwork.io | Netlify (`accumulate-beta.netlify.app`) | GitHub mirror is pushed      |
+| Production | https://explorer.accumulatenetwork.io      | nginx on server1 (206.191.154.164)      | someone rsyncs a build there |
 
 ---
 
@@ -28,8 +28,10 @@ VITE_NETWORK=any npm run build
 # 2. Back up the current deployment (server1 is defined in ~/.ssh/config)
 ssh server1 'cd /var/www && tar -czf /root/explorer-backup-$(date +%Y%m%d-%H%M%S).tar.gz explorer'
 
-# 3. Deploy
-rsync -az --delete build/ server1:/var/www/explorer/
+# 3. Deploy. Exclude the source maps: the build emits them 'hidden' (not
+#    referenced from the bundle) for local debugging, but they carry full
+#    sourcesContent and must not be served publicly (#48).
+rsync -az --delete --exclude='*.map' build/ server1:/var/www/explorer/
 ssh server1 'chown -R ubuntu:ubuntu /var/www/explorer'
 
 # 4. Verify — the served bundle name must match the one in build/index.html
@@ -40,6 +42,37 @@ curl -s https://explorer.accumulatenetwork.io/ | grep -o 'index-[A-Za-z0-9_-]*\.
 Then load https://explorer.accumulatenetwork.io in a browser (or run the smoke
 script in `scripts/`) and check a transaction page, an account page, and
 `/staking`.
+
+### Security headers and CSP
+
+The vhosts include `snippets/explorer-security.conf`, kept in this repo at
+[`deploy/nginx/explorer-security.conf`](deploy/nginx/explorer-security.conf).
+It carries `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,
+`Permissions-Policy` and the Content Security Policy (#59). `netlify.toml`
+declares a similar set but only covers beta; before this existed production
+sent no security headers at all.
+
+To update it:
+
+```bash
+scp deploy/nginx/explorer-security.conf server1:/etc/nginx/snippets/
+ssh server1 'nginx -t && systemctl reload nginx'
+curl -sI https://explorer.accumulatenetwork.io/ | grep -i content-security
+```
+
+The include appears in **every** location block as well as the server block:
+nginx does not inherit `add_header` into a location that sets one of its own,
+so the cache-control locations would silently lose the headers.
+
+**The CSP is Report-Only.** It was validated against ten pages and the theme
+toggle with no violations, but the wallet connect and signing flows cannot be
+exercised headlessly and reach the most third-party origins. Connect a wallet
+once, confirm the console reports no CSP violations, then promote by renaming
+the header in the snippet:
+
+```
+Content-Security-Policy-Report-Only  ->  Content-Security-Policy
+```
 
 ### Rollback
 

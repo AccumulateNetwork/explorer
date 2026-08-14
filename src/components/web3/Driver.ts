@@ -24,6 +24,7 @@ import {
 import { encode } from 'accumulate.js/lib/encoding';
 
 import { NetworkConfig } from '../common/networks';
+import { verifyTypedData } from './verifyTypedData';
 
 declare global {
   interface Window {
@@ -390,14 +391,24 @@ class AccKey extends BaseKey {
         ),
       );
 
+    // Check the endpoint described the transaction we asked about before
+    // handing it to the wallet. Nothing authenticates this exchange, so
+    // otherwise a compromised or intercepted endpoint could return typed data
+    // for a different transaction and the only backstop would be the user
+    // reading the wallet prompt closely (#60). Check before conditioning,
+    // while the values are still the JSON the endpoint sent.
+    verifyTypedData(
+      typedData.message,
+      message.asObject() as Record<string, any>,
+      signature.asObject() as Record<string, any>,
+    );
+
     // Convert strings to Uint8Array to make ethers happy
     typedData.message = conditionTypedData(
       typedData.message,
       typedData.primaryType,
       typedData.types,
     );
-
-    // Verify the result matches the request?
 
     return this.#sign(typedData);
   }
