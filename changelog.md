@@ -3,6 +3,21 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.7] - 2026-08-14
+
+Security and delivery pass (phase 2 of [#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)).
+
+### Security
+- **The dev server no longer exposes the local wallet API to the network.** It listened on every interface while proxying `/v1` to a locally running wallet, whose entire auth model is same-origin with a per-run session token — so anyone on the same LAN, VPN or conference wifi could mint a token and drive signing and sending, without a passphrase, because auto-connect keeps the vault unlocked. Now bound to loopback; set `VITE_DEV_HOST` deliberately for cases like testing on a phone. ([#58](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/58))
+- **Typed data returned by an eth endpoint is checked before it is signed.** The app posted a transaction to the endpoint and handed the response straight to the wallet, so a compromised or intercepted endpoint could describe a different transaction and the only backstop was the user reading the wallet prompt closely. The response must now match the request in both directions — which is what rejects an *added* recipient alongside your own payment. ([#60](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/60))
+- **Production sends security headers and a Content Security Policy.** `netlify.toml` declared them but only covers beta; the live nginx site sent none. The CSP is Report-Only pending a wallet-flow check. ([#59](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/59))
+- **Source maps are no longer published.** They were served with full `sourcesContent`; they are now emitted `hidden` and excluded from the deploy. ([#48](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/48))
+- **`preact` is patched** — 10.27.2 shipped in the bundle via the Coinbase SDK with a high-severity JSON VNode injection issue, the one genuinely browser-side advisory in the tree. axios raised to 1.19.0. ([#61](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/61))
+
+### Changed
+- **The bundle is 42% smaller.** Minification had been disabled during SDK decorator work and was never restored: 11.65 MB of JavaScript becomes 6.7 MB, and 2.37 MB gzipped becomes 1.77 MB. ([#48](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/48))
+- `VULNERABILITIES.md` rewritten. It claimed 23 advisories and "approved for production" while `npm audit` reported 54; it now separates what reaches a browser from build-time noise, and records why each override exists. The `esbuild` override was removed — it pinned a version *below* the fix for the advisory it appeared to address. ([#61](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/61))
+
 ## [0.4.6] - 2026-08-14
 
 ### Fixed
