@@ -8,6 +8,7 @@ import { MessageRecord } from 'accumulate.js/lib/api_v3';
 import { SignatureType, TransactionType } from 'accumulate.js/lib/core';
 import { MessageType, TransactionMessage } from 'accumulate.js/lib/messaging';
 
+import { computeSignatureState } from '../../utils/signatureState';
 import { EnumValue } from '../common/EnumValue';
 import { InfoTable } from '../common/InfoTable';
 import { Status } from './Status';
@@ -21,6 +22,12 @@ export function TxnHeader({
   record: MessageRecord<TransactionMessage>;
   tags?: React.ReactNode;
 }) {
+  // Votes against the threshold, when there is a governing page. The old
+  // count summed key-signature messages and skipped authority signatures —
+  // precisely the records that are votes — so a stalled multisig read as
+  // complete (#75). Fall back to that count only where no page governs.
+  const sigState = computeSignatureState(record.signatures?.records);
+
   let sigCount = 0;
   for (const set of record.signatures?.records || []) {
     for (const sig of set.signatures?.records || []) {
@@ -40,10 +47,22 @@ export function TxnHeader({
       <div style={{ marginBottom: '20px' }}>
         <Status record={record} />
 
-        {sigCount > 0 && (
-          <Tag style={{ textTransform: 'uppercase' }}>
-            Signatures: <strong>{sigCount}</strong>
+        {sigState ? (
+          <Tag
+            style={{ textTransform: 'uppercase' }}
+            color={sigState.votes >= sigState.threshold ? 'green' : 'orange'}
+          >
+            Signatures:{' '}
+            <strong>
+              {sigState.votes} of {sigState.threshold}
+            </strong>
           </Tag>
+        ) : (
+          sigCount > 0 && (
+            <Tag style={{ textTransform: 'uppercase' }}>
+              Signatures: <strong>{sigCount}</strong>
+            </Tag>
+          )
         )}
 
         {tags}
