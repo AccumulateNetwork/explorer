@@ -10,7 +10,7 @@
     "@web3modal/ethers": "^5.0.6",
     "accumulate.js": "^0.11.7",
     "antd": "^5.29.3",
-    "axios": "^1.7.9",
+    "axios": "^1.19.0",
     "eth-sig-util": "^3.0.1",
     "ethereumjs-util": "^7.1.5",
     "ethers": "^6.13.1",
@@ -29,8 +29,8 @@
     "tweetnacl": "^1.0.3"
   },
   "overrides": {
-    "esbuild": "^0.21.0",
-    "axios": "^1.7.9"
+    "axios": "^1.19.0",
+    "preact": "^10.29.8"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
