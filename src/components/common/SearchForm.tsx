@@ -1,6 +1,5 @@
 import { Form, Input, InputRef } from 'antd';
-import { addressToRcdHash, isValidPublicFctAddress } from 'factom';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -9,6 +8,22 @@ import { Buffer, sha256 } from 'accumulate.js/lib/common';
 import { encodeURLSpaces, stripAccScheme } from '../../utils/url';
 
 const { Search } = Input;
+
+/**
+ * Whether the input is a public Factoid address.
+ *
+ * factom is 353 KB for two functions used only when someone pastes an FA
+ * address, so it is loaded on demand rather than eagerly (#54). The cheap
+ * prefix and length test avoids paying for the import on ordinary searches —
+ * every other branch of the search handler runs without it.
+ */
+async function isFactoidAddress(s: string): Promise<boolean> {
+  if (!/^FA[1-9A-HJ-NP-Za-km-z]{50}$/.test(s)) {
+    return false;
+  }
+  const { isValidPublicFctAddress } = await import('factom');
+  return isValidPublicFctAddress(s);
+}
 
 export function SearchForm({
   searching,
@@ -71,7 +86,8 @@ export function SearchForm({
       navigate('/block/' + compact);
     } else if (ishash) {
       navigate(`/tx/${compact}`);
-    } else if (isValidPublicFctAddress(compact)) {
+    } else if (await isFactoidAddress(compact)) {
+      const { addressToRcdHash } = await import('factom');
       const liteIdentityUrl = await generateLiteIdentity(
         addressToRcdHash(compact),
       );

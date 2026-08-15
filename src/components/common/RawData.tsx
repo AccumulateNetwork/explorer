@@ -1,7 +1,7 @@
 import { Switch } from 'antd';
 import React from 'react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+
+import { Json } from './Json';
 
 export function RawData({
   data,
@@ -12,9 +12,7 @@ export function RawData({
 }) {
   return (
     <div className="entry-content" style={style}>
-      <SyntaxHighlighter style={colorBrewer} language="json">
-        {JSON.stringify(data, null, 4)}
-      </SyntaxHighlighter>
+      <Json>{JSON.stringify(data, null, 4)}</Json>
     </div>
   );
 }

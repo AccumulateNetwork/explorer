@@ -1,12 +1,10 @@
 import { Alert, Descriptions, Skeleton, Switch, Tag, Typography } from 'antd';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiInformationLine } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { colorBrewer } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 import getBlockEntries from '../../utils/getBlockEntries';
 import { extractTxType } from '../../utils/message';
@@ -14,6 +12,7 @@ import { utcOffsetLabel } from '../../utils/time';
 import Count from '../common/Count';
 import { InfiniteTable } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
+import { Json } from '../common/Json';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import Error404 from './Error404';
@@ -186,9 +185,7 @@ const Block = () => {
             className="entry-content"
             style={{ marginTop: 0, display: rawDataDisplay }}
           >
-            <SyntaxHighlighter style={colorBrewer} language="json">
-              {JSON.stringify(block, null, 4)}
-            </SyntaxHighlighter>
+            <Json>{JSON.stringify(block, null, 4)}</Json>
           </div>
         </div>
       ) : (

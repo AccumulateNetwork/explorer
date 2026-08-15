@@ -8,7 +8,7 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { IconContext, IconType } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine } from 'react-icons/ri';

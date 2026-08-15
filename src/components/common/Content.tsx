@@ -2,7 +2,8 @@ import { Input, Select, Skeleton, Typography } from 'antd';
 import { TextProps } from 'antd/lib/typography/Text';
 import { Base64 } from 'js-base64';
 import React, { useEffect, useState } from 'react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
+
+import { Json } from './Json';
 
 type ContentType = 'Text' | 'JSON' | 'Base64' | 'Hex';
 
@@ -190,7 +191,7 @@ Content.Render = function ({
     case 'JSON':
       return (
         <Text {...attrs}>
-          <SyntaxHighlighter language="json">{text}</SyntaxHighlighter>
+          <Json>{text}</Json>
         </Text>
       );
     case 'Text':

@@ -2,7 +2,6 @@ import { Input, Tag, Typography } from 'antd';
 import React, { useContext, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiFileList2Line } from 'react-icons/ri';
-import SyntaxHighlighter from 'react-syntax-highlighter';
 
 import { URL } from 'accumulate.js';
 
@@ -11,6 +10,7 @@ import { DataTxnEntry, TxnEntry, dataEntryParts } from '../../utils/types';
 import { Content } from '../common/Content';
 import Count from '../common/Count';
 import { InfiniteTable } from '../common/InfiniteList';
+import { Json } from '../common/Json';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
@@ -142,9 +142,7 @@ DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
       <Input.Group compact className="extid">
         <Text className="extid-type">Web3 Backup</Text>
         <Text className="extid-text extid-json">
-          <SyntaxHighlighter language="json">
-            {JSON.stringify(storeEntry)}
-          </SyntaxHighlighter>
+          <Json>{JSON.stringify(storeEntry)}</Json>
         </Text>
       </Input.Group>
     );
