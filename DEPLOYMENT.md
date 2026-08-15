@@ -31,7 +31,11 @@ ssh server1 'cd /var/www && tar -czf /root/explorer-backup-$(date +%Y%m%d-%H%M%S
 # 3. Deploy. Exclude the source maps: the build emits them 'hidden' (not
 #    referenced from the bundle) for local debugging, but they carry full
 #    sourcesContent and must not be served publicly (#48).
-rsync -az --delete --exclude='*.map' build/ server1:/var/www/explorer/
+#    --delete-excluded is required, not optional: --exclude also protects
+#    matching files on the server from --delete, so maps from an earlier
+#    deploy would survive every future one. They were still fetchable after
+#    the first excluded deploy until this was added.
+rsync -az --delete --delete-excluded --exclude='*.map' build/ server1:/var/www/explorer/
 ssh server1 'chown -R ubuntu:ubuntu /var/www/explorer'
 
 # 4. Verify — the served bundle name must match the one in build/index.html
