@@ -59,7 +59,9 @@ export default defineConfig({
           // factom is deliberately not listed: naming it here puts it in the
           // initial graph, which defeats the dynamic import in SearchForm
           // (#54). Let Rollup split it at the import boundary instead.
-          'vendor-walletconnect': ['@web3modal/ethers'],
+          // @web3modal/ethers is deliberately not listed, for the same
+          // reason as factom: naming it keeps it in the initial graph and
+          // defeats the dynamic import in WalletConnect (#49).
           'vendor-web3': [
             'ethers',
             'eth-sig-util',

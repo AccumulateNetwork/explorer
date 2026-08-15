@@ -1,11 +1,9 @@
-import { createWeb3Modal, defaultConfig } from '@web3modal/ethers';
-import { Eip1193Provider } from 'ethers';
-import { useContext, useState } from 'react';
+// Type-only, so it is erased and does not pull ethers into this module.
+import type { Eip1193Provider } from 'ethers';
+import { useContext, useEffect, useMemo, useRef } from 'react';
 
 import { Network } from '../common/Network';
 import { NetworkConfig } from '../common/networks';
-import { useAsyncEffect } from '../common/useAsync';
-import { Driver } from './Driver';
 
 // The v4-era modal surface this component relies on. @web3modal/ethers v5
 // types createWeb3Modal as AppKit and no longer declares these members,
@@ -20,23 +18,67 @@ interface Web3Modal {
   disconnect(): void;
 }
 
-export function useWalletConnect() {
+/** What callers need from WalletConnect, without holding the modal itself. */
+export interface WalletConnectHandle {
+  connect(opts: { headless?: boolean }): Promise<Eip1193Provider | undefined>;
+  disconnect(): void;
+}
+
+/**
+ * WalletConnect, built on first use rather than on mount.
+ *
+ * This used to construct the modal in an effect, which meant every visitor
+ * paid for the whole web3modal/WalletConnect stack — and an eth_chainId
+ * round trip — on every page load, whether or not they owned a wallet (#49).
+ *
+ * Availability is a property of the network rather than something to probe:
+ * WalletConnect needs an eth endpoint, and `getChainID` returns nothing
+ * without one. So the button's enabled state is known synchronously and the
+ * stack is only imported when someone actually connects.
+ */
+export function useWalletConnect(): [WalletConnectHandle | null] {
   const { network } = useContext(Network);
-  const [modal, setModal] = useState<WalletConnect>(null);
+  const available = !!network?.eth?.length;
+  const pending = useRef<Promise<WalletConnect> | null>(null);
 
-  useAsyncEffect(
-    async (mounted) => {
-      const chainId = await Driver.getChainID(network);
-      if (typeof chainId !== 'string' || !mounted()) {
-        return;
-      }
+  // A modal is bound to one chain; drop it if the network changes.
+  useEffect(() => {
+    pending.current = null;
+  }, [network?.id]);
 
-      setModal(new WalletConnect(network, Number(chainId)));
-    },
-    [network],
-  );
+  const handle = useMemo<WalletConnectHandle | null>(() => {
+    if (!available) {
+      return null;
+    }
+    const modal = () => (pending.current ??= WalletConnect.create(network));
+    return {
+      connect: (opts) => modal().then((m) => m.connect(opts)),
+      disconnect: () => {
+        pending.current?.then((m) => m.disconnect()).catch(() => {});
+      },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [available, network?.id]);
 
-  return [modal];
+  return [handle];
+}
+
+/** The chain id of the network's eth endpoint. Kept here so this module does
+ * not import Driver, which would pull ethers back into the eager graph. */
+async function getChainID(network: NetworkConfig): Promise<string | undefined> {
+  if (!network?.eth?.length) {
+    return;
+  }
+  const r = await fetch(network.eth[0], {
+    method: 'POST',
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_chainId',
+      params: {},
+    }),
+  }).then((r) => r.json());
+  return r?.result;
 }
 
 class WalletConnect {
@@ -44,7 +86,26 @@ class WalletConnect {
 
   readonly modal: Web3Modal;
 
-  constructor(network: NetworkConfig, chainId: number) {
+  /** Import the stack and build the modal. Only called on first connect. */
+  static async create(network: NetworkConfig): Promise<WalletConnect> {
+    const chainId = await getChainID(network);
+    if (typeof chainId !== 'string') {
+      throw new Error('The network did not report a chain id');
+    }
+    const { createWeb3Modal, defaultConfig } = await import(
+      '@web3modal/ethers'
+    );
+    return new WalletConnect(network, Number(chainId), {
+      createWeb3Modal,
+      defaultConfig,
+    });
+  }
+
+  private constructor(
+    network: NetworkConfig,
+    chainId: number,
+    { createWeb3Modal, defaultConfig }: typeof import('@web3modal/ethers'),
+  ) {
     this.modal = createWeb3Modal({
       projectId: '87d71f5b1e0cc9b87ea7c38d85b43b4a',
       enableAnalytics: false,
