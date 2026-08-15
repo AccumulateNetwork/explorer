@@ -56,8 +56,12 @@ export default defineConfig({
           'vendor-sdk': ['accumulate.js'],
           'vendor-antd': ['antd', '@ant-design/icons', 'rc-field-form'],
           'vendor-highlight': ['react-syntax-highlighter'],
-          'vendor-factom': ['factom'],
-          'vendor-walletconnect': ['@web3modal/ethers'],
+          // factom is deliberately not listed: naming it here puts it in the
+          // initial graph, which defeats the dynamic import in SearchForm
+          // (#54). Let Rollup split it at the import boundary instead.
+          // @web3modal/ethers is deliberately not listed, for the same
+          // reason as factom: naming it keeps it in the initial graph and
+          // defeats the dynamic import in WalletConnect (#49).
           'vendor-web3': [
             'ethers',
             'eth-sig-util',

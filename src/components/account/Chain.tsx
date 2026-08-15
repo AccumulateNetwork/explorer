@@ -1,6 +1,6 @@
 import { Skeleton, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
-import moment from 'moment-timezone';
+import moment from 'moment';
 import React, { useContext, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
