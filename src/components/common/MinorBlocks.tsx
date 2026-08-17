@@ -9,7 +9,13 @@ import {
   Typography,
 } from 'antd';
 import moment from 'moment';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { IconContext, IconType } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine } from 'react-icons/ri';
 import { TiAnchor } from 'react-icons/ti';
@@ -75,73 +81,77 @@ const MinorBlocks = () => {
     setAnchorInput(readBlockFromUrl(location.search));
   }, [location.search]);
 
-  const utcOffset = moment().utcOffset() / 60;
-
-  const columns: TableProps<BlockData>['columns'] = [
-    {
-      title: 'Block',
-      className: 'code',
-      width: 30,
-      render: ({ block: row }: BlockData) => {
-        if (row) {
-          return (
-            <div>
-              <DomLink to={'/block/' + row.index}>{row.index}</DomLink>
-            </div>
-          );
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
-      },
-    },
-    {
-      title: 'Timestamp (UTC' + utcOffsetLabel(moment().utcOffset()) + ')',
-      width: 225,
-      render: ({ block: row }: BlockData) => {
-        if (row) {
-          if (row.time) {
+  // Memoized because antd re-renders every row when this identity changes,
+  // and it changed on each keystroke in the anchor-block input (#56). The
+  // definitions close over nothing that varies.
+  const columns: TableProps<BlockData>['columns'] = useMemo(
+    () => [
+      {
+        title: 'Block',
+        className: 'code',
+        width: 30,
+        render: ({ block: row }: BlockData) => {
+          if (row) {
             return (
-              <Text className="code">
-                {moment(row.time).format('YYYY-MM-DD HH:mm:ss')}
-              </Text>
+              <div>
+                <DomLink to={'/block/' + row.index}>{row.index}</DomLink>
+              </div>
             );
           } else {
-            return <Text disabled>Timestamp not recorded</Text>;
+            return <Text disabled>N/A</Text>;
           }
-        } else {
-          return <Text disabled>N/A</Text>;
-        }
+        },
       },
-    },
-    {
-      title: 'Transactions',
-      render: (data: BlockData) => {
-        if (!data) {
-          return <Text disabled>N/A</Text>;
-        }
-        if (!data?.block.entries) {
-          return <Text disabled>Empty block</Text>;
-        }
-        return <BlockTxs data={data} />;
+      {
+        title: 'Timestamp (UTC' + utcOffsetLabel(moment().utcOffset()) + ')',
+        width: 225,
+        render: ({ block: row }: BlockData) => {
+          if (row) {
+            if (row.time) {
+              return (
+                <Text className="code">
+                  {moment(row.time).format('YYYY-MM-DD HH:mm:ss')}
+                </Text>
+              );
+            } else {
+              return <Text disabled>Timestamp not recorded</Text>;
+            }
+          } else {
+            return <Text disabled>N/A</Text>;
+          }
+        },
       },
-    },
-    {
-      title: 'Number of txs',
-      className: 'code',
-      width: 88,
-      align: 'center',
-      render: ({ block, anchors, transactions }: BlockData) => {
-        if (!block.entries?.records?.length) {
-          return <Text disabled>—</Text>;
-        }
-        return (
-          <Text>
-            {(showAnchors ? anchors.length : 0) + transactions.length}
-          </Text>
-        );
+      {
+        title: 'Transactions',
+        render: (data: BlockData) => {
+          if (!data) {
+            return <Text disabled>N/A</Text>;
+          }
+          if (!data?.block.entries) {
+            return <Text disabled>Empty block</Text>;
+          }
+          return <BlockTxs data={data} />;
+        },
       },
-    },
-  ];
+      {
+        title: 'Number of txs',
+        className: 'code',
+        width: 88,
+        align: 'center',
+        render: ({ block, anchors, transactions }: BlockData) => {
+          if (!block.entries?.records?.length) {
+            return <Text disabled>—</Text>;
+          }
+          return (
+            <Text>
+              {(showAnchors ? anchors.length : 0) + transactions.length}
+            </Text>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   const isAnchor = (e: ChainEntryRecord) =>
     e.name == 'anchor-sequence' ||

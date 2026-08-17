@@ -108,7 +108,7 @@ export function DataAccount({
       <DataLedger scope={account.url} />
 
       {/* Chains and pending transactions */}
-      <AccChains account={account.url} />
+      <AccChains account={account.url} record={account} />
     </div>
   );
 }

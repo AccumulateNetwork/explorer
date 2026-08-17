@@ -1,7 +1,7 @@
 import { Skeleton, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import moment from 'moment';
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -129,6 +129,12 @@ export function makeChainRange(
 export function Chain(props: {
   url: URLArgs;
   type: 'main' | 'scratch' | 'pending' | 'signature';
+  /**
+   * The account, when the caller already has it. Every Chain on an account
+   * page used to re-query the account its parent had just fetched — four
+   * chains, four redundant round trips (#57).
+   */
+  account?: Account;
 }) {
   const { type } = props;
   const url = URL.parse(props.url);
@@ -162,8 +168,10 @@ export function Chain(props: {
       // account B's rows while B's account query is in flight.
       setAccount(null);
       setIssuer(null);
-      const r = (await api.query(url)) as AccountRecord;
+      const acct =
+        props.account ?? ((await api.query(url)) as AccountRecord).account;
       if (!mounted()) return;
+      const r = { account: acct };
       switch (r.account.type) {
         case AccountType.TokenAccount:
         case AccountType.LiteTokenAccount:
@@ -190,22 +198,31 @@ export function Chain(props: {
     [props.url.toString(), network.id],
   );
 
-  // Prime the total so InfiniteList/Table can decide short vs windowed.
-  // Uses a 1-element fetch; the component will drive the real pages.
-  useAsyncEffect(
-    async (mounted) => {
-      const resp = await managed.getPage({ current: 1, pageSize: 1 });
-      if (!mounted()) return;
-      setTotal(resp.total ?? 0);
-    },
-    [props.url.toString(), props.type, network.id],
+  const pageSize = 25;
+
+  // The total and the first page come from one request. This used to fetch a
+  // single record purely to learn the total, and the list then fetched page
+  // one separately — two round trips per chain, four chains to a page (#57).
+  const firstPage = useMemo(
+    () => managed.getPage({ current: 1, pageSize }),
+    [managed],
   );
 
-  const pageSize = 25;
+  useAsyncEffect(
+    async (mounted) => {
+      const resp = await firstPage.catch(() => null);
+      if (!mounted()) return;
+      setTotal(resp?.total ?? 0);
+    },
+    [firstPage],
+  );
 
   const loadPage = async <T,>(start: number, count: number): Promise<T[]> => {
     const current = Math.floor(start / count) + 1;
-    const resp = await managed.getPage({ current, pageSize: count });
+    const resp =
+      start === 0 && count === pageSize
+        ? await firstPage
+        : await managed.getPage({ current, pageSize: count });
     const records = (resp.records as unknown as T[]) || [];
     // main/scratch/signature ranges are fetched fromEnd, so reversing each
     // page yields correct global newest-first order. The pending range is
@@ -214,118 +231,134 @@ export function Chain(props: {
     return type === 'pending' ? records : records.slice().reverse();
   };
 
-  const enrichChainPage = async (
-    items: ChainRecord[],
-  ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
-    const map = new Map<ChainRecord, EnrichedRow>();
-    for (const item of items) {
-      if (item.value instanceof ErrorRecord) continue;
-      const value = item.value as MessageRecord | undefined;
-      const { adi, path } = splitAccount(item.account);
-      map.set(item, {
-        type: extractTxType(value),
-        timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
-        adi,
-        path,
-      });
-    }
-    return map;
-  };
+  // Stable identities. These are passed as `enrichPage`, which sits in
+  // InfiniteList's doLoadPage useCallback deps, which the scroll-listener
+  // effect depends on — so recreating them on each render detached and reattached
+  // the scroll listener on every render (#56).
+  const enrichChainPage = useCallback(
+    async (
+      items: ChainRecord[],
+    ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
+      const map = new Map<ChainRecord, EnrichedRow>();
+      for (const item of items) {
+        if (item.value instanceof ErrorRecord) continue;
+        const value = item.value as MessageRecord | undefined;
+        const { adi, path } = splitAccount(item.account);
+        map.set(item, {
+          type: extractTxType(value),
+          timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
+          adi,
+          path,
+        });
+      }
+      return map;
+    },
+    [],
+  );
 
-  const enrichPendingPage = async (
-    items: PendingRecord[],
-  ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
-    const map = new Map<PendingRecord, EnrichedRow>();
-    for (const item of items) {
-      if (item instanceof ErrorRecord) continue;
-      const u = item.id ? URL.parse(item.id.toString()) : undefined;
-      const { adi, path } = splitAccount(u);
-      map.set(item, {
-        type: extractTxType(item),
-        timestamp: formatTime(item.lastBlockTime),
-        adi,
-        path,
-      });
-    }
-    return map;
-  };
+  const enrichPendingPage = useCallback(
+    async (
+      items: PendingRecord[],
+    ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
+      const map = new Map<PendingRecord, EnrichedRow>();
+      for (const item of items) {
+        if (item instanceof ErrorRecord) continue;
+        const u = item.id ? URL.parse(item.id.toString()) : undefined;
+        const { adi, path } = splitAccount(u);
+        map.set(item, {
+          type: extractTxType(item),
+          timestamp: formatTime(item.lastBlockTime),
+          adi,
+          path,
+        });
+      }
+      return map;
+    },
+    [],
+  );
 
-  const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [
-    {
-      title: '#',
-      className: 'no-break',
-      render(r: ChainRecord) {
-        return <Chain.Index entry={r} />;
+  // Memoized on exactly what the definitions close over. Previously they were
+  // rebuilt every render and the derived list below was memoized on
+  // [account, issuer] with the dependency check suppressed — correct only for
+  // as long as nothing else crept into the closure (#56).
+  const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = useMemo(
+    () => [
+      {
+        title: '#',
+        className: 'no-break',
+        render(r: ChainRecord) {
+          return <Chain.Index entry={r} />;
+        },
       },
-    },
-    {
-      title: 'ID',
-      className: 'no-break',
-      render({ value, entry }: ChainRecord) {
-        if (value instanceof ErrorRecord) {
-          return <Text type="secondary">{shortHash(entry)}</Text>;
-        }
-        return <Chain.ID record={value} entry={entry} />;
+      {
+        title: 'ID',
+        className: 'no-break',
+        render({ value, entry }: ChainRecord) {
+          if (value instanceof ErrorRecord) {
+            return <Text type="secondary">{shortHash(entry)}</Text>;
+          }
+          return <Chain.ID record={value} entry={entry} />;
+        },
       },
-    },
-    {
-      title: 'Type',
-      className: 'no-break',
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) {
-          return <Tag color="red">{Status.getName(value.value.code)}</Tag>;
-        }
-        return <Chain.Type message={value.message} />;
+      {
+        title: 'Type',
+        className: 'no-break',
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) {
+            return <Tag color="red">{Status.getName(value.value.code)}</Tag>;
+          }
+          return <Chain.Type message={value.message} />;
+        },
       },
-    },
 
-    {
-      title: 'From',
-      className: 'no-break',
-      hidden: !account,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnFrom account={account} txn={value.message.transaction} />
-        );
+      {
+        title: 'From',
+        className: 'no-break',
+        hidden: !account,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnFrom account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    },
-    {
-      title: 'To',
-      className: 'no-break',
-      hidden: !account || account.type === AccountType.LiteIdentity,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnTo account={account} txn={value.message.transaction} />
-        );
+      {
+        title: 'To',
+        className: 'no-break',
+        hidden: !account || account.type === AccountType.LiteIdentity,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnTo account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    },
-    {
-      title: 'Amount',
-      className: 'no-break',
-      align: 'right',
-      hidden: !account,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnAmount
-            account={account}
-            issuer={issuer}
-            txn={value.message.transaction}
-          />
-        );
+      {
+        title: 'Amount',
+        className: 'no-break',
+        align: 'right',
+        hidden: !account,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnAmount
+              account={account}
+              issuer={issuer}
+              txn={value.message.transaction}
+            />
+          );
+        },
       },
-    },
-  ];
+    ],
+    [account, issuer],
+  );
 
   const visibleColumns = useMemo(
     () => columns.filter((x) => !x.hidden),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [account, issuer],
+    [columns],
   );
 
   function Icon() {

@@ -125,7 +125,7 @@ Account.Generic = function ({ record }: { record: AccountRecord }) {
       <Authorities account={account} />
 
       {/* Chains and pending transactions */}
-      <AccChains account={account.url} />
+      <AccChains account={account.url} record={account} />
     </div>
   );
 };

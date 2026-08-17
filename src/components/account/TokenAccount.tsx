@@ -248,7 +248,7 @@ export function TokenAccount({
       <Authorities account={account} />
 
       {/* Chains and pending transactions */}
-      <AccChains account={account.url} />
+      <AccChains account={account.url} record={account} />
     </div>
   );
 }
