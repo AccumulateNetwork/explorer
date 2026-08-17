@@ -10,6 +10,7 @@ import {
 
 import { TxIDArgs, errors } from 'accumulate.js';
 import {
+  Record as AnyRecord,
   JsonRpcClient,
   MessageRecord,
   Record,
@@ -174,21 +175,75 @@ export function Status(props: { record?: MessageRecord; id?: TxIDArgs }) {
   );
 }
 
-export async function getProducedStatus(api: JsonRpcClient, r: MessageRecord) {
+/**
+ * Runaway guard, not a correctness limit. Reporting a transaction's own
+ * status once the chain is this deep could mask a failure below it — the
+ * defect #35 fixed — so it is set far beyond any real synthetic chain and
+ * exists only so a cycle the visited set somehow misses cannot spin.
+ */
+const MAX_PRODUCED_DEPTH = 10;
+
+function hydrate(x: unknown): Record | null {
+  if (!x || typeof x !== 'object') {
+    return null;
+  }
+  if (typeof (x as Record).recordType === 'number') {
+    return x as Record;
+  }
+  try {
+    return AnyRecord.fromObject(x as never);
+  } catch {
+    return null;
+  }
+}
+
+export async function getProducedStatus(
+  api: JsonRpcClient,
+  r: MessageRecord,
+  seen: Set<string> = new Set(),
+  depth = 0,
+) {
   if (!r.produced?.records?.length) return r.status;
   if (r.status !== errors.Status.Delivered) return r.status;
+  if (depth >= MAX_PRODUCED_DEPTH) return r.status;
 
-  const produced = await Promise.all(
-    r.produced.records.map((x) => api.query(x.value).catch(isErrorRecord)),
-  );
+  // One request per branch, not one per produced message, and never the same
+  // id twice: this recursion ran a query per record with no memory of what it
+  // had already fetched, and every Status on the page started its own (#50).
+  const ids: string[] = [];
+  for (const x of r.produced.records) {
+    const id = `${x.value}`;
+    if (!seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  }
+  if (!ids.length) return r.status;
+
+  const produced = await api
+    .call(
+      ids.map((scope) => ({
+        method: 'query',
+        params: { scope, query: { queryType: 'default' } },
+      })),
+    )
+    // The batch returns plain JSON, where recordType is 'message' and error
+    // codes are strings; hydrate those so the comparisons below see the same
+    // enums api.query would have given. Anything already shaped passes
+    // through.
+    .then((rs) => rs.map(hydrate))
+    .catch(() => [] as (Record | null)[]);
 
   // Each branch must be awaited before the comparisons below. Recursing without
   // awaiting leaves Promises in `results`, and `Promise >= 400` is false, so
   // every transaction with produced messages reported Delivered.
   const results = await Promise.all(
-    produced.map(async (r: Record) => {
+    produced.map(async (r: Record | null) => {
+      if (!r) {
+        return 0;
+      }
       if (r.recordType === RecordType.Message) {
-        return getProducedStatus(api, r);
+        return getProducedStatus(api, r, seen, depth + 1);
       }
       if (r.recordType !== RecordType.Error) {
         // Ignore unexpected record types

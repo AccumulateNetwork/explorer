@@ -29,15 +29,27 @@ function errorRecord(code: number): any {
   return { recordType: RecordType.Error, value: { code } };
 }
 
-/** Fake JsonRpcClient: resolves an id to whatever the test registered. */
+/**
+ * Fake JsonRpcClient. getProducedStatus batches its lookups (#50), so the
+ * fake answers `call` with one result per request, in order. `calls` records
+ * how many round trips were made, which is the point of the batching.
+ */
 function fakeApi(graph: Record<string, any>) {
-  return {
-    query: async (id: any) => {
-      const r = graph[`${id}`];
-      if (!r) throw new Error(`test graph has no record for ${id}`);
-      return r;
+  const api: any = {
+    calls: 0,
+    ids: [] as string[],
+    call: async (requests: any[]) => {
+      api.calls++;
+      return requests.map((rq) => {
+        const id = rq.params.scope;
+        api.ids.push(id);
+        const r = graph[id];
+        if (!r) throw new Error(`test graph has no record for ${id}`);
+        return r;
+      });
     },
-  } as any;
+  };
+  return api;
 }
 
 describe('getProducedStatus', () => {
@@ -106,5 +118,31 @@ describe('getProducedStatus', () => {
     const root = msg('root', Pending, ['child']);
     const api = fakeApi({ child: msg('child', 500) });
     expect(await getProducedStatus(api, root)).toBe(Pending);
+  });
+
+  it('fetches one branch per round trip, not one message (#50)', async () => {
+    const root = msg('root', Delivered, ['a', 'b', 'c']);
+    const api = fakeApi({
+      a: msg('a', Delivered),
+      b: msg('b', Delivered),
+      c: msg('c', Delivered),
+    });
+    expect(await getProducedStatus(api, root)).toBe(Delivered);
+    expect(api.calls).toBe(1);
+    expect(api.ids).toEqual(['a', 'b', 'c']);
+  });
+
+  it('never asks about the same message twice (#50)', async () => {
+    // Two branches produce the same message — and it produces itself, which
+    // used to recurse without limit.
+    const root = msg('root', Delivered, ['a', 'b']);
+    const api = fakeApi({
+      a: msg('a', Delivered, ['shared']),
+      b: msg('b', Delivered, ['shared']),
+      shared: msg('shared', Delivered, ['shared']),
+    });
+    expect(await getProducedStatus(api, root)).toBe(Delivered);
+    expect(api.ids).toEqual(['a', 'b', 'shared']);
+    expect(new Set(api.ids).size).toBe(api.ids.length);
   });
 });
