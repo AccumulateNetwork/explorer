@@ -17,7 +17,12 @@ import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
-import { RelatedTxn, enrichTxIdRecords, txidKey } from './RelatedTxn';
+import {
+  RelatedTxn,
+  RelatedTxnStatus,
+  enrichTxIdRecords,
+  txidKey,
+} from './RelatedTxn';
 import { Status } from './Status';
 import { describeTimestamp } from './timestamp';
 
@@ -140,7 +145,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
               renderItem={(item) => (
                 <>
                   <MsgInfo.Related record={item} />
-                  <Status id={item.value} />
+                  <RelatedTxnStatus record={item} />
                 </>
               )}
             />
