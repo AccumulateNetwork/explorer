@@ -105,7 +105,7 @@ export function KeyBook({ record }: { record: AccountRecordOf<core.KeyBook> }) {
       )}
 
       {/* Chains and pending transactions */}
-      <AccChains account={account.url} />
+      <AccChains account={account.url} record={account} />
     </div>
   );
 }

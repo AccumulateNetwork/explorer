@@ -5,14 +5,23 @@ import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 
 import { URLArgs } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
+import { Account } from 'accumulate.js/lib/core';
 
 import Count from '../common/Count';
+import { WhenVisible } from '../common/WhenVisible';
 import { queryEffect } from '../common/query';
 import { Chain } from './Chain';
 
 const { Title } = Typography;
 
-export function AccChains({ account }: { account: URLArgs }) {
+export function AccChains({
+  account,
+  record,
+}: {
+  account: URLArgs;
+  /** The loaded account, passed to each Chain so it need not re-query (#57). */
+  record?: Account;
+}) {
   const [pendingCount, setPendingCount] = useState(null);
   const [count, setCount] = useState({
     main: null,
@@ -59,7 +68,9 @@ export function AccChains({ account }: { account: URLArgs }) {
             Pending
             <Count count={pendingCount} />
           </Title>
-          <Chain url={account} type="pending" />
+          <WhenVisible>
+            <Chain url={account} type="pending" />
+          </WhenVisible>
         </div>
       )}
 
@@ -70,7 +81,7 @@ export function AccChains({ account }: { account: URLArgs }) {
         Transactions
         <Count count={count.main} />
       </Title>
-      <Chain url={account} type="main" />
+      <Chain url={account} type="main" account={record} />
 
       {count.scratch > 0 && (
         <div>
@@ -81,7 +92,9 @@ export function AccChains({ account }: { account: URLArgs }) {
             Scratch transactions
             <Count count={count.scratch} />
           </Title>
-          <Chain url={account} type="scratch" />
+          <WhenVisible>
+            <Chain url={account} type="scratch" account={record} />
+          </WhenVisible>
         </div>
       )}
 
@@ -94,7 +107,9 @@ export function AccChains({ account }: { account: URLArgs }) {
             Signatures
             <Count count={count.signature} />
           </Title>
-          <Chain url={account} type="signature" />
+          <WhenVisible>
+            <Chain url={account} type="signature" />
+          </WhenVisible>
         </div>
       )}
     </div>

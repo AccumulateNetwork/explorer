@@ -131,7 +131,7 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
       {/* A key page does not have its own authority - it is always governed by the key book */}
 
       {/* Chains and pending transactions */}
-      <AccChains account={account.url} />
+      <AccChains account={account.url} record={account} />
     </div>
   );
 }

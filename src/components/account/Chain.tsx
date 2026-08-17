@@ -129,6 +129,12 @@ export function makeChainRange(
 export function Chain(props: {
   url: URLArgs;
   type: 'main' | 'scratch' | 'pending' | 'signature';
+  /**
+   * The account, when the caller already has it. Every Chain on an account
+   * page used to re-query the account its parent had just fetched — four
+   * chains, four redundant round trips (#57).
+   */
+  account?: Account;
 }) {
   const { type } = props;
   const url = URL.parse(props.url);
@@ -162,8 +168,10 @@ export function Chain(props: {
       // account B's rows while B's account query is in flight.
       setAccount(null);
       setIssuer(null);
-      const r = (await api.query(url)) as AccountRecord;
+      const acct =
+        props.account ?? ((await api.query(url)) as AccountRecord).account;
       if (!mounted()) return;
+      const r = { account: acct };
       switch (r.account.type) {
         case AccountType.TokenAccount:
         case AccountType.LiteTokenAccount:
@@ -190,22 +198,31 @@ export function Chain(props: {
     [props.url.toString(), network.id],
   );
 
-  // Prime the total so InfiniteList/Table can decide short vs windowed.
-  // Uses a 1-element fetch; the component will drive the real pages.
-  useAsyncEffect(
-    async (mounted) => {
-      const resp = await managed.getPage({ current: 1, pageSize: 1 });
-      if (!mounted()) return;
-      setTotal(resp.total ?? 0);
-    },
-    [props.url.toString(), props.type, network.id],
+  const pageSize = 25;
+
+  // The total and the first page come from one request. This used to fetch a
+  // single record purely to learn the total, and the list then fetched page
+  // one separately — two round trips per chain, four chains to a page (#57).
+  const firstPage = useMemo(
+    () => managed.getPage({ current: 1, pageSize }),
+    [managed],
   );
 
-  const pageSize = 25;
+  useAsyncEffect(
+    async (mounted) => {
+      const resp = await firstPage.catch(() => null);
+      if (!mounted()) return;
+      setTotal(resp?.total ?? 0);
+    },
+    [firstPage],
+  );
 
   const loadPage = async <T,>(start: number, count: number): Promise<T[]> => {
     const current = Math.floor(start / count) + 1;
-    const resp = await managed.getPage({ current, pageSize: count });
+    const resp =
+      start === 0 && count === pageSize
+        ? await firstPage
+        : await managed.getPage({ current, pageSize: count });
     const records = (resp.records as unknown as T[]) || [];
     // main/scratch/signature ranges are fetched fromEnd, so reversing each
     // page yields correct global newest-first order. The pending range is
