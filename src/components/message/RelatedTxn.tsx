@@ -98,7 +98,16 @@ export function RelatedTxnStatus({ record }: { record: TxIDRecord }) {
  * which account it acts on. Falls back to a short hash only when the lookup
  * gave us nothing to say.
  */
-export function RelatedTxn({ record }: { record: TxIDRecord }) {
+/**
+ * Memoized: one of these renders per row of a cause/produced list, and the
+ * enrichment map arrives after the rows mount, so every row re-rendered on
+ * each parent render (#56).
+ */
+export const RelatedTxn = React.memo(function RelatedTxn({
+  record,
+}: {
+  record: TxIDRecord;
+}) {
   const enrichment = useInfiniteListEnrichment<string, TxEnrichment>();
   const data = enrichment?.get(txidKey(record));
   const id = txidKey(record);
@@ -115,4 +124,4 @@ export function RelatedTxn({ record }: { record: TxIDRecord }) {
       </span>
     </Link>
   );
-}
+});

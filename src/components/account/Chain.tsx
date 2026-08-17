@@ -1,7 +1,7 @@
 import { Skeleton, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import moment from 'moment';
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -214,118 +214,134 @@ export function Chain(props: {
     return type === 'pending' ? records : records.slice().reverse();
   };
 
-  const enrichChainPage = async (
-    items: ChainRecord[],
-  ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
-    const map = new Map<ChainRecord, EnrichedRow>();
-    for (const item of items) {
-      if (item.value instanceof ErrorRecord) continue;
-      const value = item.value as MessageRecord | undefined;
-      const { adi, path } = splitAccount(item.account);
-      map.set(item, {
-        type: extractTxType(value),
-        timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
-        adi,
-        path,
-      });
-    }
-    return map;
-  };
+  // Stable identities. These are passed as `enrichPage`, which sits in
+  // InfiniteList's doLoadPage useCallback deps, which the scroll-listener
+  // effect depends on — so recreating them on each render detached and reattached
+  // the scroll listener on every render (#56).
+  const enrichChainPage = useCallback(
+    async (
+      items: ChainRecord[],
+    ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
+      const map = new Map<ChainRecord, EnrichedRow>();
+      for (const item of items) {
+        if (item.value instanceof ErrorRecord) continue;
+        const value = item.value as MessageRecord | undefined;
+        const { adi, path } = splitAccount(item.account);
+        map.set(item, {
+          type: extractTxType(value),
+          timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
+          adi,
+          path,
+        });
+      }
+      return map;
+    },
+    [],
+  );
 
-  const enrichPendingPage = async (
-    items: PendingRecord[],
-  ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
-    const map = new Map<PendingRecord, EnrichedRow>();
-    for (const item of items) {
-      if (item instanceof ErrorRecord) continue;
-      const u = item.id ? URL.parse(item.id.toString()) : undefined;
-      const { adi, path } = splitAccount(u);
-      map.set(item, {
-        type: extractTxType(item),
-        timestamp: formatTime(item.lastBlockTime),
-        adi,
-        path,
-      });
-    }
-    return map;
-  };
+  const enrichPendingPage = useCallback(
+    async (
+      items: PendingRecord[],
+    ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
+      const map = new Map<PendingRecord, EnrichedRow>();
+      for (const item of items) {
+        if (item instanceof ErrorRecord) continue;
+        const u = item.id ? URL.parse(item.id.toString()) : undefined;
+        const { adi, path } = splitAccount(u);
+        map.set(item, {
+          type: extractTxType(item),
+          timestamp: formatTime(item.lastBlockTime),
+          adi,
+          path,
+        });
+      }
+      return map;
+    },
+    [],
+  );
 
-  const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = [
-    {
-      title: '#',
-      className: 'no-break',
-      render(r: ChainRecord) {
-        return <Chain.Index entry={r} />;
+  // Memoized on exactly what the definitions close over. Previously they were
+  // rebuilt every render and the derived list below was memoized on
+  // [account, issuer] with the dependency check suppressed — correct only for
+  // as long as nothing else crept into the closure (#56).
+  const columns: (ColumnType<ChainRecord> & { hidden?: boolean })[] = useMemo(
+    () => [
+      {
+        title: '#',
+        className: 'no-break',
+        render(r: ChainRecord) {
+          return <Chain.Index entry={r} />;
+        },
       },
-    },
-    {
-      title: 'ID',
-      className: 'no-break',
-      render({ value, entry }: ChainRecord) {
-        if (value instanceof ErrorRecord) {
-          return <Text type="secondary">{shortHash(entry)}</Text>;
-        }
-        return <Chain.ID record={value} entry={entry} />;
+      {
+        title: 'ID',
+        className: 'no-break',
+        render({ value, entry }: ChainRecord) {
+          if (value instanceof ErrorRecord) {
+            return <Text type="secondary">{shortHash(entry)}</Text>;
+          }
+          return <Chain.ID record={value} entry={entry} />;
+        },
       },
-    },
-    {
-      title: 'Type',
-      className: 'no-break',
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) {
-          return <Tag color="red">{Status.getName(value.value.code)}</Tag>;
-        }
-        return <Chain.Type message={value.message} />;
+      {
+        title: 'Type',
+        className: 'no-break',
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) {
+            return <Tag color="red">{Status.getName(value.value.code)}</Tag>;
+          }
+          return <Chain.Type message={value.message} />;
+        },
       },
-    },
 
-    {
-      title: 'From',
-      className: 'no-break',
-      hidden: !account,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnFrom account={account} txn={value.message.transaction} />
-        );
+      {
+        title: 'From',
+        className: 'no-break',
+        hidden: !account,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnFrom account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    },
-    {
-      title: 'To',
-      className: 'no-break',
-      hidden: !account || account.type === AccountType.LiteIdentity,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnTo account={account} txn={value.message.transaction} />
-        );
+      {
+        title: 'To',
+        className: 'no-break',
+        hidden: !account || account.type === AccountType.LiteIdentity,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnTo account={account} txn={value.message.transaction} />
+          );
+        },
       },
-    },
-    {
-      title: 'Amount',
-      className: 'no-break',
-      align: 'right',
-      hidden: !account,
-      render({ value }: ChainRecord) {
-        if (value instanceof ErrorRecord) return null;
-        if (value.message.type !== MessageType.Transaction) return null;
-        return (
-          <Chain.TxnAmount
-            account={account}
-            issuer={issuer}
-            txn={value.message.transaction}
-          />
-        );
+      {
+        title: 'Amount',
+        className: 'no-break',
+        align: 'right',
+        hidden: !account,
+        render({ value }: ChainRecord) {
+          if (value instanceof ErrorRecord) return null;
+          if (value.message.type !== MessageType.Transaction) return null;
+          return (
+            <Chain.TxnAmount
+              account={account}
+              issuer={issuer}
+              txn={value.message.transaction}
+            />
+          );
+        },
       },
-    },
-  ];
+    ],
+    [account, issuer],
+  );
 
   const visibleColumns = useMemo(
     () => columns.filter((x) => !x.hidden),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [account, issuer],
+    [columns],
   );
 
   function Icon() {

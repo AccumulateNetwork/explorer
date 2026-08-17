@@ -1,5 +1,5 @@
 import { Descriptions, Tooltip, Typography } from 'antd';
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiExchangeLine,
@@ -96,7 +96,13 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
   const { api } = useContext(Network);
   const cause = record.cause?.records || [];
   const produced = record.produced?.records || [];
-  const enrich = (items: TxIDRecord[]) => enrichTxIdRecords(api, items);
+  // Stable identity: this is passed as `enrichPage`, which feeds
+  // InfiniteList's doLoadPage memo and in turn its scroll-listener effect
+  // (#56).
+  const enrich = useCallback(
+    (items: TxIDRecord[]) => enrichTxIdRecords(api, items),
+    [api],
+  );
 
   return (
     <>
