@@ -3,6 +3,25 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.8] - 2026-08-19
+
+Bundle size and request volume (phase 3 of [#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)). The initial download drops from 6.7 MB to roughly 2.3 MB, a transaction page makes 41 requests instead of 256, and account pages make about a quarter fewer.
+
+### Changed
+- **A transaction page makes 41 requests instead of 256.** Cause and produced lists queried once per row, each row's status re-queried the id it had just fetched, and the produced-status walk recursed one query at a time with no memory of what it had already seen — once per status shown on the page. Lookups are now batched and shared. ([#50](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/50))
+- **Syntax highlighting no longer ships ~190 language grammars to highlight JSON** — 892 KB becomes 37 KB, on the landing page's critical path. ([#52](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/52))
+- **The IANA timezone database is no longer downloaded.** It was most of the main chunk, for a timezone API nothing calls; the index chunk drops from 984 KB to 336 KB. ([#51](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/51))
+- **The WalletConnect stack loads when someone connects a wallet**, not on every page view, which also removes a network round trip from every page load. ([#49](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/49))
+- **Factom loads only when an FA address is searched**, and Sentry initializes at idle instead of during boot — and not at all in the local-wallet build. ([#54](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/54), [#55](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/55))
+- **Account pages fetch less.** They fetched a single record purely to learn a total before fetching the page they wanted, re-queried the account already loaded by the page around them, and mounted every chain at once; chains below the fold now load when scrolled to. `/acc/ACME` goes from 19 requests to 14. ([#57](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/57))
+- **Typing in the anchor-block field no longer re-renders the whole block list** — 350 DOM mutations over seven keystrokes becomes none. The scroll listener also stopped detaching and reattaching on every render. ([#56](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/56))
+
+### Fixed
+- **Sentry no longer reports which accounts you browse.** Page URLs name the account or transaction being viewed and were sent verbatim; the route shape is kept and the subject redacted. ([#55](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/55))
+
+### Internal
+- Removed an `import 'rxjs'` whose comment admitted nobody knew why it was needed. The reason was a Ledger import that was shadowed on the next screen and never called; both are gone, and rxjs is no longer a direct dependency. ([#53](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/53))
+
 ## [0.4.7] - 2026-08-14
 
 Security and delivery pass (phase 2 of [#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)).
