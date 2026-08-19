@@ -5,7 +5,7 @@
  * @param fn The function.
  * @param props Properties of the returned value.
  */
-export function bind<Self, In extends Array<unknown>, Out, Props extends any>(
+export function bind<Self, In extends Array<unknown>, Out, Props>(
   self: Self,
   fn: (this: Self, ..._: In) => Out,
   props?: Props,

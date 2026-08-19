@@ -54,7 +54,7 @@ export async function enrichTxIdRecords(
     );
   } catch (e) {
     // Rows fall back to a short hash, as before.
-    // eslint-disable-next-line no-console
+
     console.warn('Related-txn enrichment failed:', (e as Error)?.message);
     items.forEach((it) => map.set(txidKey(it), {}));
     return map;

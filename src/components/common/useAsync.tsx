@@ -6,7 +6,7 @@ export function useAsyncEffect<V>(
 ) {
   let resolve: () => void;
   let reject: (_?: any) => void;
-  let promise = new Promise<void>((r, j) => ((resolve = r), (reject = j)));
+  const promise = new Promise<void>((r, j) => ((resolve = r), (reject = j)));
 
   useEffect(function () {
     let mounted = true;

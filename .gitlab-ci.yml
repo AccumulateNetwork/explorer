@@ -32,6 +32,15 @@ format:
   script:
     - npm run check:format
 
+# Lint (runs on all branches). Fails on errors only: the codebase carries
+# ~200 warnings (mostly `any` and unused vars), which are the floor to work
+# down rather than a gate nobody can pass. See #65.
+lint:
+  extends: .node
+  stage: build
+  script:
+    - npm run lint
+
 # Unit tests (runs on all branches)
 test:
   extends: .node
@@ -96,6 +105,6 @@ deploy_production:
     url: https://explorer.accumulatenetwork.io
   only:
     - main
-  when: manual  # Require manual trigger for production safety
+  when: manual # Require manual trigger for production safety
   dependencies:
     - build

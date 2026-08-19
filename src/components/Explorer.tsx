@@ -29,6 +29,34 @@ const { Header, Content, Footer } = Layout;
 
 const Acc = lazy2(() => import('./explorer/Acc'), 'Acc');
 
+/**
+ * Every path the router serves.
+ *
+ * Exported so routes.test.ts can drive itself off the real table. It used to
+ * hardcode the same strings, which meant it verified react-router's matchPath
+ * rather than this application: changing a path here left the test passing
+ * (#67).
+ */
+export const ROUTES = {
+  home: '/',
+  validators: '/validators',
+  tokens: '/tokens',
+  staking: '/staking',
+  favourites: '/favourites',
+  blocks: '/blocks',
+  network: '/network',
+  settings: '/settings',
+  faucet: '/faucet',
+  account: '/acc/*',
+  transaction: '/tx/*',
+  data: '/data/*',
+  block: '/block/:index',
+  notFound: '*',
+} as const;
+
+/** Every path the router serves, in the order it matches them. */
+export const ROUTE_PATHS = Object.values(ROUTES);
+
 export default function Explorer() {
   const onApiError = (error) => {
     console.error(error);
@@ -92,34 +120,37 @@ export default function Explorer() {
               <ErrorBoundary>
                 <Suspense fallback={<Loading />}>
                   <Routes>
-                    <Route path="/" element={<Blocks />} />
-                    <Route path="/validators" element={<Validators />} />
-                    <Route path="/tokens" element={<Tokens />} />
-                    <Route path="/staking" element={<Staking />} />
-                    <Route path="/favourites" element={<Favourites />} />
-                    <Route path="/blocks" element={<MinorBlocks />} />
-                    <Route path="/network" element={<NetworkDashboard />} />
-                    <Route path="/settings" element={<Settings.Edit />} />
+                    <Route path={ROUTES.home} element={<Blocks />} />
+                    <Route path={ROUTES.validators} element={<Validators />} />
+                    <Route path={ROUTES.tokens} element={<Tokens />} />
+                    <Route path={ROUTES.staking} element={<Staking />} />
+                    <Route path={ROUTES.favourites} element={<Favourites />} />
+                    <Route path={ROUTES.blocks} element={<MinorBlocks />} />
+                    <Route
+                      path={ROUTES.network}
+                      element={<NetworkDashboard />}
+                    />
+                    <Route path={ROUTES.settings} element={<Settings.Edit />} />
 
                     {!shared.network.mainnet && (
-                      <Route path="/faucet" element={<Faucet />} />
+                      <Route path={ROUTES.faucet} element={<Faucet />} />
                     )}
 
                     {/* Splat routes: the account/tx URL follows the prefix and
                         may contain slashes (read via useParams()['*']). */}
                     <Route
-                      path="/acc/*"
+                      path={ROUTES.account}
                       element={<Acc didLoad={(x) => searchDidLoad?.(x)} />}
                     />
                     <Route
-                      path="/tx/*"
+                      path={ROUTES.transaction}
                       element={<Acc didLoad={(x) => searchDidLoad?.(x)} />}
                     />
 
-                    <Route path="/data/*" element={<Data />} />
-                    <Route path="/block/:index" element={<Block />} />
+                    <Route path={ROUTES.data} element={<Data />} />
+                    <Route path={ROUTES.block} element={<Block />} />
 
-                    <Route path="*" element={<Error404 />} />
+                    <Route path={ROUTES.notFound} element={<Error404 />} />
                   </Routes>
                 </Suspense>
               </ErrorBoundary>

@@ -51,7 +51,7 @@ export function UpdateKeyPage({
   );
 }
 
-UpdateKeyPage.Operation = function ({
+UpdateKeyPage.Operation = function Operation({
   operation,
 }: {
   operation: KeyPageOperation;
@@ -77,13 +77,13 @@ UpdateKeyPage.Operation = function ({
       break;
     case KeyPageOperationType.UpdateAllowed:
       bits = [
-        ...operation.allow?.map((type, i) => (
+        ...(operation.allow ?? []).map((type, i) => (
           <Tag>
             +{' '}
             <EnumValue key={`allow${i}`} type={TransactionType} value={type} />
           </Tag>
         )),
-        ...operation.deny?.map((type, i) => (
+        ...(operation.deny ?? []).map((type, i) => (
           <Tag>
             - <EnumValue key={`deny${i}`} type={TransactionType} value={type} />
           </Tag>

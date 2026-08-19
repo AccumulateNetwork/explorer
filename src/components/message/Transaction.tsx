@@ -65,7 +65,7 @@ function Show({ record }: { record: TxnRecord }) {
   return <Transaction.Generic record={record} />;
 }
 
-Transaction.Generic = function ({ record }: { record: TxnRecord }) {
+Transaction.Generic = function Generic({ record }: { record: TxnRecord }) {
   const txn = record.message.transaction;
   const txnObj = txn.asObject();
   return (

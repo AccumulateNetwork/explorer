@@ -48,7 +48,7 @@ export function Account({ record }: { record: AccountRecord }) {
   return <Account.Generic record={record} />;
 }
 
-Account.Generic = function ({ record }: { record: AccountRecord }) {
+Account.Generic = function Generic({ record }: { record: AccountRecord }) {
   // This is a hack to make it easier to check sequences
   const { account } = record;
   switch (account.type) {

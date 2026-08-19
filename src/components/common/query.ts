@@ -43,6 +43,11 @@ import {
 import { Network } from './Network';
 import { useAsyncEffect } from './useAsync';
 
+/* eslint-disable react-hooks/rules-of-hooks --
+   queryEffect is a hook — it calls useContext and useAsyncEffect — but is not
+   named use*, so the rule cannot see it. The naming hides a real constraint:
+   callers must invoke it unconditionally. Renaming it is #63's job, which
+   replaces this primitive with a conventional hook outright. */
 export function queryEffect(
   scope: URLArgs | TxID,
   query?: DefaultQueryArgsWithType,

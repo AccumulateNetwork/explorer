@@ -205,7 +205,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
             })
             .catch((e) => {
               // Enrichment is non-fatal; rows fall back to un-enriched.
-              // eslint-disable-next-line no-console
+
               console.warn('InfiniteList enrichment failed:', e);
             });
         }
@@ -251,7 +251,6 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
             });
           })
           .catch((e) => {
-            // eslint-disable-next-line no-console
             console.warn('InfiniteList enrichment failed:', e);
           });
       }
@@ -548,7 +547,6 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
               });
             })
             .catch((e) => {
-              // eslint-disable-next-line no-console
               console.warn('InfiniteTable enrichment failed:', e);
             });
         }
@@ -559,7 +557,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
         if (mountedRef.current) setLoading(false);
       }
     },
-    [server, enrichPage, pageSize], // eslint-disable-line react-hooks/exhaustive-deps
+    [server, enrichPage, pageSize],
   );
 
   useEffect(() => {
@@ -587,7 +585,6 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
             });
           })
           .catch((e) => {
-            // eslint-disable-next-line no-console
             console.warn('InfiniteTable enrichment failed:', e);
           });
       }

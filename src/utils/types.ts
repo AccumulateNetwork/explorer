@@ -156,7 +156,7 @@ function checkRecordType(r: Record, type: Ctor | Status): boolean {
 
   // Get the discriminator enum type from the constructor
   const enc = Encoding.forClass(type);
-  const [field] = enc?.fields;
+  const [field] = enc?.fields ?? [];
   if (!(field?.type instanceof Enum)) {
     return false;
   }

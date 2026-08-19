@@ -136,7 +136,7 @@ export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
   );
 }
 
-KeyPage.Entries = function ({ account }: { account: core.KeyPage }) {
+KeyPage.Entries = function Entries({ account }: { account: core.KeyPage }) {
   if (!account.keys?.length) {
     return (
       <Paragraph>
@@ -159,7 +159,7 @@ KeyPage.Entries = function ({ account }: { account: core.KeyPage }) {
   );
 };
 
-KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
+KeyPage.Blacklist = function Blacklist({ account }: { account: core.KeyPage }) {
   if (!account.transactionBlacklist?.length) {
     return false;
   }
@@ -184,7 +184,7 @@ KeyPage.Blacklist = function ({ account }: { account: core.KeyPage }) {
   );
 };
 
-KeyPage.Entry = function ({ entry }: { entry: core.KeySpec }) {
+KeyPage.Entry = function Entry({ entry }: { entry: core.KeySpec }) {
   const web3 = useWeb3();
   const isETH =
     web3.publicKey &&

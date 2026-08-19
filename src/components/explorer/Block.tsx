@@ -55,7 +55,7 @@ const Block = () => {
   const utcOffsetString = utcOffsetLabel(moment().utcOffset());
 
   const toggleRawData = (checked) => {
-    checked === true ? setRawDataDisplay('block') : setRawDataDisplay('none');
+    setRawDataDisplay(checked === true ? 'block' : 'none');
   };
 
   const columns = [

@@ -48,7 +48,7 @@ export function UpdateAccountAuth({
   );
 }
 
-UpdateAccountAuth.Operation = function ({
+UpdateAccountAuth.Operation = function Operation({
   operation,
 }: {
   operation: AccountAuthOperation;

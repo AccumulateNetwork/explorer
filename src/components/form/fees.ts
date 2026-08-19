@@ -22,8 +22,8 @@ export function calculateTransactionFee(
   txn: Transaction,
   schedule?: FeeSchedule,
 ) {
-  let size = encode(txn).length;
-  let oversize = Math.ceil(size / 256) - 1;
+  const size = encode(txn).length;
+  const oversize = Math.ceil(size / 256) - 1;
   if (size > 20 << 10) {
     throw new Error('Cannot submit transaction: too large');
   }

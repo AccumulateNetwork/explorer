@@ -598,7 +598,7 @@ function Signature({
   );
 }
 
-Signature.List = function ({
+Signature.List = function List({
   dataSource,
 }: {
   dataSource: SigRecord[];
@@ -634,7 +634,7 @@ Signature.List = function ({
   );
 };
 
-Signature.Key = function ({
+Signature.Key = function SignatureKey({
   level = 0,
   signature,
   delegator,
@@ -735,7 +735,7 @@ Signature.Key = function ({
   );
 };
 
-Signature.Delegated = function ({
+Signature.Delegated = function Delegated({
   level = 0,
   signature,
 }: {
