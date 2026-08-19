@@ -1,7 +1,7 @@
 import { Skeleton, Tag, Typography } from 'antd';
 import { ColumnType } from 'antd/lib/table';
 import moment from 'moment';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiAccountCircleLine,
@@ -58,21 +58,7 @@ type ChainRecord =
   | ChainEntryRecord<MessageRecord>
   | ChainEntryRecord<ErrorRecord>;
 
-interface EnrichedRow {
-  type?: string;
-  timestamp?: string;
-  adi?: string;
-  path?: string;
-}
-
 const { Text } = Typography;
-
-const CURSOR_PARAMS = {
-  pending: 'pending_start',
-  main: 'main_start',
-  scratch: 'scratch_start',
-  signature: 'signature_start',
-} as const;
 
 function shortHash(entry: Uint8Array | undefined): string {
   if (!entry || !entry.length) return 'unknown';
@@ -231,52 +217,6 @@ export function Chain(props: {
     return type === 'pending' ? records : records.slice().reverse();
   };
 
-  // Stable identities. These are passed as `enrichPage`, which sits in
-  // InfiniteList's doLoadPage useCallback deps, which the scroll-listener
-  // effect depends on — so recreating them on each render detached and reattached
-  // the scroll listener on every render (#56).
-  const enrichChainPage = useCallback(
-    async (
-      items: ChainRecord[],
-    ): Promise<ReadonlyMap<ChainRecord, EnrichedRow>> => {
-      const map = new Map<ChainRecord, EnrichedRow>();
-      for (const item of items) {
-        if (item.value instanceof ErrorRecord) continue;
-        const value = item.value as MessageRecord | undefined;
-        const { adi, path } = splitAccount(item.account);
-        map.set(item, {
-          type: extractTxType(value),
-          timestamp: formatTime(value?.lastBlockTime ?? item.lastBlockTime),
-          adi,
-          path,
-        });
-      }
-      return map;
-    },
-    [],
-  );
-
-  const enrichPendingPage = useCallback(
-    async (
-      items: PendingRecord[],
-    ): Promise<ReadonlyMap<PendingRecord, EnrichedRow>> => {
-      const map = new Map<PendingRecord, EnrichedRow>();
-      for (const item of items) {
-        if (item instanceof ErrorRecord) continue;
-        const u = item.id ? URL.parse(item.id.toString()) : undefined;
-        const { adi, path } = splitAccount(u);
-        map.set(item, {
-          type: extractTxType(item),
-          timestamp: formatTime(item.lastBlockTime),
-          adi,
-          path,
-        });
-      }
-      return map;
-    },
-    [],
-  );
-
   // Memoized on exactly what the definitions close over. Previously they were
   // rebuilt every render and the derived list below was memoized on
   // [account, issuer] with the dependency check suppressed — correct only for
@@ -386,18 +326,11 @@ export function Chain(props: {
         key={`${url}|${type}`}
         total={total}
         loadPage={(s, c) => loadPage<PendingRecord>(s, c)}
-        enrichPage={
-          enrichPendingPage as (
-            items: PendingRecord[],
-          ) => Promise<ReadonlyMap<unknown, unknown>>
-        }
         rowKey={(item, i) =>
           item instanceof ErrorRecord
             ? `e-${i}`
             : item.id?.toString() || `i-${i}`
         }
-        cursorParam={CURSOR_PARAMS.pending}
-        cursorOf={() => undefined}
         pageSize={pageSize}
         renderItem={(item) => <Chain.PendingRow item={item} icon={<Icon />} />}
       />
@@ -412,11 +345,6 @@ export function Chain(props: {
       loadPage={(s, c) => loadPage<ChainRecord>(s, c)}
       columns={visibleColumns}
       rowKey="index"
-      enrichPage={
-        enrichChainPage as (
-          items: ChainRecord[],
-        ) => Promise<ReadonlyMap<unknown, unknown>>
-      }
       pageSize={pageSize}
     />
   );
