@@ -119,6 +119,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
   const [loading, setLoading] = useState(server); // Server mode starts loading.
   const [error, setError] = useState<unknown>(null);
   const [enrichment, setEnrichment] = useState<EnrichmentMap | null>(null);
+  const [exhausted, setExhausted] = useState(false);
   const mountedRef = useRef(true);
   const loadingRef = useRef(false); // Guards against scroll-spam during fetch.
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -168,7 +169,10 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
   // mount so scroll updates don't fight with programmatic restoration.
   const targetCursorRef = useRef<string | null>(readCursor());
 
-  const hasMoreServer = server && items.length < total;
+  // Without this, a server-mode list whose `total` is a guess re-requests
+  // forever, because nothing notices a short page. InfiniteTable has had it
+  // all along; the two copies had drifted (#62).
+  const hasMoreServer = server && !exhausted && items.length < total;
   const hasMoreArray =
     !server && windowed && items.length < props.dataSource.length;
   const hasMore = server ? hasMoreServer : hasMoreArray;
@@ -190,6 +194,8 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
         if (!mountedRef.current) return;
 
         setItems((prev) => (append ? [...prev, ...page] : page));
+        // A short page (fewer than requested) means the source is exhausted.
+        if (isServerProps(p) && page.length < pageSize) setExhausted(true);
 
         // Fire-and-forget enrichment: a slow batch query shouldn't block
         // the row-level render.
@@ -227,6 +233,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
     if (server) {
       setItems([]);
       setEnrichment(null);
+      setExhausted(false);
       doLoadPage(0, false);
     } else {
       // Keep as many rows visible as were already loaded, so a content
@@ -280,7 +287,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
         doLoadPage(items.length, true);
       }
 
-      if (!cursorParam || !history || !cursorOf || throttle) return;
+      if (!cursorParam || !cursorOf || throttle) return;
       throttle = setTimeout(() => {
         throttle = null;
         const rows = body.querySelectorAll<HTMLElement>('[data-row-key]');
@@ -322,16 +329,7 @@ export function InfiniteList<T>(props: InfiniteListProps<T>) {
       body.removeEventListener('scroll', onScroll);
       if (throttle) clearTimeout(throttle);
     };
-  }, [
-    windowed,
-    hasMore,
-    items,
-    doLoadPage,
-    cursorParam,
-    cursorOf,
-    rowKey,
-    history,
-  ]);
+  }, [windowed, hasMore, items, doLoadPage, cursorParam, cursorOf, rowKey]);
 
   const retry = useCallback(() => {
     doLoadPage(items.length, items.length > 0);
@@ -614,8 +612,12 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
           ? document.querySelector<HTMLElement>(`.${className}`)
           : null;
         const body =
-          (root?.querySelector('.ant-table-body') as HTMLElement | null) ||
-          document.querySelector<HTMLElement>('.ant-table-body');
+          // Scoped to this table only. Falling back to a document-wide
+          // lookup bound every instance to the first table on the page —
+          // NetworkDashboard renders one per partition with no className
+          // (#62).
+          (root?.querySelector('.ant-table-body') as HTMLElement | null) ??
+          null;
         const rows = body?.querySelectorAll<HTMLElement>('tr.ant-table-row');
         if (body && rows?.[idx]) {
           const bodyTop = body.getBoundingClientRect().top;
@@ -649,8 +651,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
       ? document.querySelector<HTMLElement>(`.${className}`)
       : null;
     const body =
-      (root?.querySelector('.ant-table-body') as HTMLElement | null) ||
-      document.querySelector<HTMLElement>('.ant-table-body');
+      (root?.querySelector('.ant-table-body') as HTMLElement | null) ?? null;
     if (!body) return;
 
     let throttle: ReturnType<typeof setTimeout> | null = null;
@@ -665,7 +666,7 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
         doLoadPage(items.length, true);
       }
 
-      if (!cursorParam || !history || !cursorOf || throttle) return;
+      if (!cursorParam || !cursorOf || throttle) return;
       if (!restoredRef.current) return;
       throttle = setTimeout(() => {
         throttle = null;
@@ -722,7 +723,6 @@ export function InfiniteTable<T extends object>(props: InfiniteTableProps<T>) {
     cursorParam,
     cursorOf,
     rowKey,
-    history,
   ]);
 
   return (
