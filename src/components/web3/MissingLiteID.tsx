@@ -83,7 +83,13 @@ export function MissingLiteID() {
   );
 }
 
-MissingLiteID.Create = function ({ lite, eth }: { lite: URL; eth: string }) {
+MissingLiteID.Create = function Create({
+  lite,
+  eth,
+}: {
+  lite: URL;
+  eth: string;
+}) {
   const { api, network } = useContext(Network);
   const [faucetRq, setFaucetRq] = useState<Sign.WaitForRequest<Submission>>();
 

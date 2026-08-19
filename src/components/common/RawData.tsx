@@ -17,7 +17,7 @@ export function RawData({
   );
 }
 
-RawData.Toggle = function ({
+RawData.Toggle = function Toggle({
   value,
   onChange,
   disabled,

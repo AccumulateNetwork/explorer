@@ -17,6 +17,8 @@ import { useAsyncEffect } from '../common/useAsync';
 
 const { Text } = Typography;
 
+/* eslint-disable react-hooks/rules-of-hooks --
+   describeTimestamp is a hook that is not named use*; see #63. */
 export function describeTimestamp(txid: string | URL | TxID) {
   const utcOffset = moment().utcOffset() / 60;
   const { network } = useContext(Network);
@@ -29,7 +31,7 @@ export function describeTimestamp(txid: string | URL | TxID) {
     async (mounted) => {
       setTs(null);
       setBlock(null);
-      let txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
+      const txId = `${txid}`.replace(/^acc:\/\/|@.*$/g, '');
 
       // Use metrics service if available for caching, otherwise fall back to direct API
       const timestampUrl = network.metrics

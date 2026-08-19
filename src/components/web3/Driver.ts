@@ -208,7 +208,6 @@ export class Driver {
 
     // Parse the status code
     if ('statusCode' in error) {
-      // eslint-disable-next-line default-case
       switch (error.statusCode) {
         case 0x6d02:
         case 0x6511:
@@ -457,7 +456,9 @@ function hashMessage(message: Uint8Array | string) {
   if (typeof message === 'string') {
     message = Buffer.from(message);
   }
-  var preamble = Buffer.from(`\x19Ethereum Signed Message:\n${message.length}`);
-  var ethMessage = Buffer.concat([preamble, message]);
+  const preamble = Buffer.from(
+    `\x19Ethereum Signed Message:\n${message.length}`,
+  );
+  const ethMessage = Buffer.concat([preamble, message]);
   return Buffer.from(keccak256(ethMessage));
 }

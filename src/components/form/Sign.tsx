@@ -143,7 +143,7 @@ export function Sign({
   );
 }
 
-Sign.WaitFor = function <T>({
+Sign.WaitFor = function WaitFor<T>({
   request,
   title,
   canCloseEarly,
@@ -171,7 +171,7 @@ Sign.WaitFor = function <T>({
       setClosable(canCloseEarly);
       try {
         request.initiated = true;
-        let update = push(<Pending>Submitting</Pending>);
+        const update = push(<Pending>Submitting</Pending>);
         let results = await submit().catch((error) => {
           update(
             <Failure>

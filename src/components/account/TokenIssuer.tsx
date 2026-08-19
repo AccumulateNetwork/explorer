@@ -125,7 +125,11 @@ export function TokenIssuer({
   );
 }
 
-TokenIssuer.Supply = function ({ account }: { account: core.TokenIssuer }) {
+TokenIssuer.Supply = function Supply({
+  account,
+}: {
+  account: core.TokenIssuer;
+}) {
   const [supply, setSupply] = useState(null);
 
   const { network } = useContext(Network);

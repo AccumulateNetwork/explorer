@@ -144,9 +144,11 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return r.result;
   };
 
-  const showModal = <T extends unknown>(
-    props: Omit<ModalOptions<T>, 'resolve'>,
-  ) => {
+  // The trailing comma is not a typo: in a .tsx file a lone <T> parses as
+  // JSX, so the type parameter needs disambiguating. ESLint's
+  // no-unnecessary-type-constraint flags the usual `<T extends unknown>`
+  // workaround without knowing why it is there.
+  const showModal = <T,>(props: Omit<ModalOptions<T>, 'resolve'>) => {
     let resolve: (_: T) => void;
     const p = new Promise<T>((r) => (resolve = r));
     setModal({ ...props, resolve });
@@ -222,7 +224,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
           driver = new Driver(window.ethereum as any);
           break;
 
-        case 'WalletConnect':
+        case 'WalletConnect': {
           const provider = await walletConnect?.connect({
             headless: request.action === 'init',
           });
@@ -231,6 +233,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
           }
           driver = new Driver(provider);
           break;
+        }
 
         default:
           throw new Error(`Invalid driver type ${connected}`);

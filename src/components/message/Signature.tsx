@@ -44,7 +44,7 @@ export function Signature({
     delegators = signature.delegator;
   }
 
-  let signer =
+  const signer =
     signature instanceof core.AuthoritySignature
       ? signature.origin
       : 'signer' in signature
@@ -222,7 +222,7 @@ export function Signature({
   );
 }
 
-Signature.Type = function ({
+Signature.Type = function Type({
   signature,
 }: {
   signature: core.Signature & { vote?: VoteType };

@@ -21,6 +21,8 @@ export function describeParent(account: Account) {
 
     case AccountType.LiteTokenAccount:
       lite = true;
+    // A lite token account is also page-like.
+    // falls through
     case AccountType.KeyPage:
       page = true;
   }

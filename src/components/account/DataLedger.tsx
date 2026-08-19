@@ -99,7 +99,7 @@ export function DataLedger({ scope }: { scope: URL }) {
   );
 }
 
-DataLedger.Index = function ({ entry }: { entry: DataTxnEntry }) {
+DataLedger.Index = function Index({ entry }: { entry: DataTxnEntry }) {
   return (
     <div>
       <Tag color={entry.name === 'scratch' ? 'gray' : 'green'}>
@@ -110,7 +110,7 @@ DataLedger.Index = function ({ entry }: { entry: DataTxnEntry }) {
   );
 };
 
-DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
+DataLedger.ID = function ID({ entry }: { entry: DataTxnEntry }) {
   return (
     <Link to={entry.value.id} dataEntry>
       <IconContext.Provider value={{ className: 'react-icons' }}>
@@ -121,7 +121,7 @@ DataLedger.ID = function ({ entry }: { entry: DataTxnEntry }) {
   );
 };
 
-DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
+DataLedger.EntryData = function EntryData({ entry }: { entry: DataTxnEntry }) {
   const [hash, setHash] = useState<string>();
   const web3 = useWeb3();
 
@@ -156,7 +156,7 @@ DataLedger.EntryData = function ({ entry }: { entry: DataTxnEntry }) {
       {item}
     </Content>
   ));
-  let extra = data.length - 3;
+  const extra = data.length - 3;
   if (extra > 0) {
     items.push(
       <Tag className="extid-tag" key="extra">

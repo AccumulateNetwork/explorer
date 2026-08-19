@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    // jsx/js included too: 11 .jsx files exist and their tests were
+    // silently skipped by a ts/tsx-only glob (#67).
+    include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}'],
   },
 });

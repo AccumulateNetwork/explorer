@@ -47,7 +47,11 @@ export function Directory({ record }: { record: AccountRecord }) {
   );
 }
 
-Directory.Entry = function ({ record }: { record: UrlRecord | AccountRecord }) {
+Directory.Entry = function Entry({
+  record,
+}: {
+  record: UrlRecord | AccountRecord;
+}) {
   if (record.recordType === RecordType.Url) {
     return (
       <Link to={record.value}>

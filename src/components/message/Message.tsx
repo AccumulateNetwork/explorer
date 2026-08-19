@@ -30,7 +30,7 @@ export function Message({ record }: { record: MessageRecord }) {
   return <Message.Generic record={record} />;
 }
 
-Message.Generic = function ({ record }: { record: MessageRecord }) {
+Message.Generic = function Generic({ record }: { record: MessageRecord }) {
   const msgObj = record.message.asObject();
   return (
     <>

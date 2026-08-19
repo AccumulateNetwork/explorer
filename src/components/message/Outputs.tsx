@@ -54,7 +54,7 @@ export function Outputs({
   );
 }
 
-Outputs.Output = function ({
+Outputs.Output = function Output({
   url,
   ...rest
 }: {
@@ -92,7 +92,7 @@ Outputs.Output = function ({
   );
 };
 
-Outputs.Amount = function ({
+Outputs.Amount = function OutputAmount({
   amount = 0,
   issuer,
   credits,

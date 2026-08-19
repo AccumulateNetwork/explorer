@@ -92,6 +92,8 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
   }
 }
 
+/* eslint-disable react-hooks/rules-of-hooks --
+   debounce and formUtils are hooks that are not named use*; see #63. */
 export function debounce<I extends Array<any>>(
   cb: (..._: I) => void | Promise<void>,
   time: number,

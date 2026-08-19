@@ -422,7 +422,7 @@ export function Chain(props: {
   );
 }
 
-Chain.PendingRow = function ({
+Chain.PendingRow = function PendingRow({
   item,
   icon,
 }: {
@@ -455,7 +455,7 @@ Chain.PendingRow = function ({
   );
 };
 
-Chain.Index = function ({ entry }: { entry: ChainEntryRecord<Record> }) {
+Chain.Index = function Index({ entry }: { entry: ChainEntryRecord<Record> }) {
   return (
     <div>
       <Text>{entry.index}</Text>
@@ -463,7 +463,7 @@ Chain.Index = function ({ entry }: { entry: ChainEntryRecord<Record> }) {
   );
 };
 
-Chain.ID = function ({
+Chain.ID = function ID({
   record,
   entry,
 }: {
@@ -484,7 +484,7 @@ Chain.ID = function ({
   );
 };
 
-Chain.Type = function ({ message }: { message: Message }) {
+Chain.Type = function Type({ message }: { message: Message }) {
   let type: string;
   switch (message.type) {
     case MessageType.Transaction:
@@ -500,7 +500,7 @@ Chain.Type = function ({ message }: { message: Message }) {
   return <Tag color="green">{type}</Tag>;
 };
 
-Chain.TxnFrom = function ({
+Chain.TxnFrom = function TxnFrom({
   txn,
   account,
 }: {
@@ -520,6 +520,8 @@ Chain.TxnFrom = function ({
       if (account.type === AccountType.LiteIdentity) {
         return null;
       }
+    // A deposit to a non-lite account is rendered like a credit deposit.
+    // falls through
     case TransactionType.SyntheticDepositCredits:
       if (txn.body.isRefund) {
         return (
@@ -562,7 +564,7 @@ Chain.TxnFrom = function ({
   );
 };
 
-Chain.TxnTo = function ({
+Chain.TxnTo = function TxnTo({
   txn,
   account,
 }: {
@@ -600,7 +602,7 @@ Chain.TxnTo = function ({
   );
 };
 
-Chain.TxnAmount = function ({
+Chain.TxnAmount = function TxnAmount({
   txn,
   account,
   issuer,
@@ -629,6 +631,8 @@ Chain.TxnAmount = function ({
       if (account.type === AccountType.LiteIdentity) {
         return null;
       }
+    // Both show a token amount.
+    // falls through
     case TransactionType.SyntheticBurnTokens:
       return <TokenAmount issuer={issuer} amount={txn.body.amount} />;
 

@@ -96,7 +96,7 @@ export function Content(props: {
     );
   }, [current]);
 
-  let cssClass = props.compact ? 'extid-compact' : '';
+  const cssClass = props.compact ? 'extid-compact' : '';
 
   const handleChange = (event) => {
     setType(event);
@@ -182,7 +182,7 @@ export function Content(props: {
   );
 }
 
-Content.Render = function ({
+Content.Render = function Render({
   as,
   text,
   ...attrs
@@ -207,7 +207,7 @@ Content.Render = function ({
 
   // This is conservative to ensure it's not possible to inject dangerous
   // elements
-  const linkRegex = /(https?|acc):\/\/[\w-._#?=%\/]+/;
+  const linkRegex = /(https?|acc):\/\/[\w-._#?=%/]+/;
 
   // This is a for-loop to prevent pathological cases and limit the impact of
   // bugs

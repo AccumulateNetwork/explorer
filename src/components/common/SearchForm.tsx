@@ -80,8 +80,8 @@ export function SearchForm({
     // Hashes, block numbers and Factoid addresses never contain spaces, so
     // detect them using a whitespace-free copy of the input.
     const compact = value.replaceAll(/\s/g, '');
-    var ishash = /^[A-Fa-f0-9]{64}$/.test(compact);
-    var isnum = /^\d+$/.test(compact);
+    const ishash = /^[A-Fa-f0-9]{64}$/.test(compact);
+    const isnum = /^\d+$/.test(compact);
     if (isnum && Number.parseInt(compact) >= 0) {
       navigate('/block/' + compact);
     } else if (ishash) {
