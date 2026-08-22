@@ -13,6 +13,10 @@
 
 # misc
 .DS_Store
+# `.env` itself was never ignored, only the .local variants — a plain .env
+# would have been committed by `git add -A`. Closed after the 2026-08-14
+# mirror compromise, whose first move was un-ignoring .env.local.
+.env
 .env.local
 .env.development.local
 .env.test.local
