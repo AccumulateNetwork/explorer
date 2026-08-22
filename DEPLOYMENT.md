@@ -100,12 +100,31 @@ Beta is the Netlify site `accumulate-beta.netlify.app` behind
 git push github develop:main
 ```
 
+Verify the mirror matches GitLab after pushing:
+
+```bash
+git ls-remote --heads github        # main and develop must both equal
+git rev-parse origin/develop        # this
+```
+
 Caveats:
 
 - Beta's DNS is **IPv6-only**; from an IPv4-only network it cannot be reached,
   which is not a deployment failure.
-- The mirror's branches have historically diverged from GitLab by line-ending
-  duplicate commits; if a push is rejected, use `--force-with-lease`.
+- **A rejected push to the mirror is a signal, not an obstacle.** GitLab is the
+  only source of truth; nothing should ever land on the mirror that did not
+  come from GitLab, so a non-fast-forward means someone else wrote to it.
+  Inspect what is there — `git fetch github && git log --format='%an %ci %s'
+  github/main` — before doing anything else.
+
+> **This document previously said the mirror "has historically diverged from
+> GitLab by line-ending duplicate commits" and to force past a rejected push
+> with `--force-with-lease`. That advice is why the 2026-08-14 compromise went
+> unnoticed:** an attacker replaced the `0.4.6` release commit with a copy
+> carrying a remote-code-execution payload in `vite.config.js`, and because
+> their commit had CRLF line endings it was indistinguishable from the
+> "expected" line-ending divergence the reader had been told to force past.
+> Treat the mirror as untrusted output, never as input.
 
 ---
 
