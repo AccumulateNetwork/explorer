@@ -140,26 +140,26 @@ mcp/
 
 ## Deployment
 
-### Quick Deployment (Netlify)
+### Nothing deploys itself
 
-Both production and beta are hosted on Netlify with auto-deployment:
+**Pushing to GitHub deploys nothing.** Production is a manual rsync to nginx on
+server1; there is no auto-deployment and no Netlify site. Believing otherwise
+is how production came to serve the 2026-04-23 build until 2026-07-29.
 
-**Deploy to Beta:**
 ```bash
-git push github develop:updates
+VITE_NETWORK=any npm run build     # the flag is required
+rsync -az --delete --delete-excluded --exclude='*.map' build/ server1:/var/www/explorer/
 ```
 
-**Deploy to Production:**
-```bash
-git push github develop:main
-```
-
-Netlify automatically builds and deploys in ~2 minutes.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the backup, verification, and rollback
+steps — do not deploy from this summary alone.
 
 ### Sites
-- **Production:** https://explorer.accumulatenetwork.io (GitHub `main` branch)
-- **Beta:** https://beta.explorer.accumulatenetwork.io (GitHub `updates` branch)
-- **Build Config:** `netlify.toml`
+- **Production:** https://explorer.accumulatenetwork.io (nginx on server1, manual rsync)
+- **Beta:** decommissioned around March 2026. `beta.explorer.accumulatenetwork.io`
+  is a dangling CNAME awaiting removal; see DEPLOYMENT.md.
+- **Build Config:** `netlify.toml` — inert, retained only as a record of the
+  former beta build.
 
 ### Detailed Guide
 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment documentation.
