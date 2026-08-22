@@ -59,6 +59,11 @@ npm start
 
 **Environment:** beta.explorer.accumulatenetwork.io
 
+> **Beta no longer exists** (decommissioned around March 2026). There is no
+> staging environment; validate against a local `npm start` and then against
+> production after deploying. The beta steps below are retained only as a
+> description of what staging validation covered. See DEPLOYMENT.md.
+
 **Build Process:**
 ```bash
 # Clean build
