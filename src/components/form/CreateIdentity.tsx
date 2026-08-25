@@ -19,7 +19,7 @@ import { useWeb3 } from '../web3/Context';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputAuthority } from './InputAccount';
 import { Sign } from './Sign';
-import { formUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
+import { useFormUtils, useFormWatchEffect, useFormWatchMemo } from './utils';
 
 interface Fields {
   url: string;
@@ -30,7 +30,7 @@ export function CreateIdentity(props: TxnFormProps) {
   const [form] = Form.useForm<Fields>();
   const web3 = useWeb3();
   const { api } = useContext(Network);
-  const { setError, clearError, setValidating } = formUtils(form);
+  const { setError, clearError, setValidating } = useFormUtils(form);
   const [externallyOwned, setExternallyOwned] = useState(false);
 
   const submit = ({ url, authorities }: Fields): TransactionArgs => {

@@ -1,5 +1,5 @@
 import { Tag, Tooltip } from 'antd';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiCheckLine,
@@ -20,8 +20,9 @@ import { MessageType } from 'accumulate.js/lib/messaging';
 
 import { EnumValue } from '../common/EnumValue';
 import { Network } from '../common/Network';
-import { isErrorRecord, queryEffect } from '../common/query';
+import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import { useQuery } from '../common/useQuery';
 
 export function Status(props: { record: MessageRecord }): React.ReactNode;
 export function Status(props: { id: TxIDArgs }): React.ReactNode;
@@ -31,8 +32,14 @@ export function Status(props: { record?: MessageRecord; id?: TxIDArgs }) {
   const [record, setRecord] = useState(props.record);
   const [producedStatus, setProducedStatus] = useState<errors.Status>();
 
-  queryEffect(props.id).then((r) => {
-    if (props.record) {
+  // A caller-supplied record wins; the query only fills in for an id. The
+  // absence of a record is itself meaningful here — a message the node has
+  // never seen is pending, not missing — so this maps outcomes to a synthetic
+  // record rather than deriving one.
+  const queried = useQuery(props.id);
+  useEffect(() => {
+    const r = queried.data;
+    if (props.record || !r) {
       return;
     }
     if (r.recordType === RecordType.Message) {
@@ -42,17 +49,17 @@ export function Status(props: { record?: MessageRecord; id?: TxIDArgs }) {
     if (r.recordType !== RecordType.Error) {
       return;
     }
-    if (r.value.code === errors.Status.NotFound) {
-      setRecord(new MessageRecord({ status: errors.Status.Pending }));
-    } else {
-      setRecord(
-        new MessageRecord({
-          status: errors.Status.InternalError,
-          error: { message: 'Unable to retrieve the status of this message' },
-        }),
-      );
-    }
-  });
+    setRecord(
+      r.value.code === errors.Status.NotFound
+        ? new MessageRecord({ status: errors.Status.Pending })
+        : new MessageRecord({
+            status: errors.Status.InternalError,
+            error: {
+              message: 'Unable to retrieve the status of this message',
+            },
+          }),
+    );
+  }, [queried.data, props.record]);
 
   useAsyncEffect(
     async (mounted) => {

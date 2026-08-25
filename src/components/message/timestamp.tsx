@@ -17,9 +17,7 @@ import { useAsyncEffect } from '../common/useAsync';
 
 const { Text } = Typography;
 
-/* eslint-disable react-hooks/rules-of-hooks --
-   describeTimestamp is a hook that is not named use*; see #63. */
-export function describeTimestamp(txid: string | URL | TxID) {
+export function useDescribeTimestamp(txid: string | URL | TxID) {
   const utcOffset = moment().utcOffset() / 60;
   const { network } = useContext(Network);
 

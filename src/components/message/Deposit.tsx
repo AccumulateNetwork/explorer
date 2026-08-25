@@ -20,7 +20,7 @@ import { TxnRecord, isRecordOf } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { Outputs } from './Outputs';
 import { TxnHeader } from './TxnHeader';
 import { TxnInfo } from './TxnInfo';
@@ -38,14 +38,14 @@ export function Deposit({
   // Load the token issuer. This serves no purpose for SyntheticDepositCredits,
   // but React does not like conditional effects.
   const txn = record.message.transaction;
-  const [issuer, setIssuer] = useState<TokenIssuer>();
-  queryEffect('token' in txn.body ? txn.body.token : txn.header.principal, {
-    queryType: 'default',
-  }).then((r) => {
-    if (isRecordOf(r, TokenIssuer)) {
-      setIssuer(r.account);
-    }
-  });
+  const issued = useQuery(
+    'token' in txn.body ? txn.body.token : txn.header.principal,
+    { queryType: 'default' },
+  );
+  const issuer =
+    issued.data && isRecordOf(issued.data, TokenIssuer)
+      ? issued.data.account
+      : undefined;
 
   let title = 'Deposit';
   switch (txn.body.type) {

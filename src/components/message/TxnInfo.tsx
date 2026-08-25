@@ -24,7 +24,7 @@ import {
   txidKey,
 } from './RelatedTxn';
 import { Status } from './Status';
-import { describeTimestamp } from './timestamp';
+import { useDescribeTimestamp } from './timestamp';
 
 const { Title, Text } = Typography;
 
@@ -148,7 +148,7 @@ export function TxnInfo({
       </Title>
 
       <InfoTable>
-        {describeTimestamp(record.id)}
+        {useDescribeTimestamp(record.id)}
 
         <Descriptions.Item label={labelID}>
           <Text copyable>{record.id.toString()}</Text>

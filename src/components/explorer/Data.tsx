@@ -17,7 +17,7 @@ import { Content } from '../common/Content';
 import { EnumValue } from '../common/EnumValue';
 import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { TxnInfo } from '../message/TxnInfo';
 import Error404 from './Error404';
 
@@ -54,14 +54,20 @@ export function Data() {
   }, [dataURL]);
 
   const [record, setRecord] = useState<DataTxnRecord>(null);
-  queryEffect(url, { queryType: 'default' }).then((r) => {
-    if (!isRecordOfDataTxn(r)) {
+  const entry = useQuery(url, { queryType: 'default' });
+  useEffect(() => {
+    if (!entry.data) {
+      return;
+    }
+    if (!isRecordOfDataTxn(entry.data)) {
       setNotFound(true);
       return;
     }
-    setRecord(r);
-    setUrl(r.id.asUrl());
-  });
+    setRecord(entry.data);
+    // Canonicalizes the URL the query itself runs against. Safe because the
+    // query key is the URL's text, which this does not change.
+    setUrl(entry.data.id.asUrl());
+  }, [entry.data]);
 
   if (notFound) {
     return <Error404 />;

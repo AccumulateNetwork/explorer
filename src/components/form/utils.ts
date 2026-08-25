@@ -92,9 +92,7 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
   }
 }
 
-/* eslint-disable react-hooks/rules-of-hooks --
-   debounce and formUtils are hooks that are not named use*; see #63. */
-export function debounce<I extends Array<any>>(
+export function useDebounce<I extends Array<any>>(
   cb: (..._: I) => void | Promise<void>,
   time: number,
 ): (..._: I) => void | Promise<void> {
@@ -114,18 +112,18 @@ interface FormUtils<Fields> {
   setValidating(field: NamePath<Fields>, validating: boolean): void;
 }
 
-export function formUtils<Fields>(
+export function useFormUtils<Fields>(
   form: FormInstance<Fields>,
 ): FormUtils<Fields>;
 
-export function formUtils<Fields>(
+export function useFormUtils<Fields>(
   form: FormInstance<Fields>,
   field: keyof Fields | NamePath<Fields>,
 ): {
   [P in keyof FormUtils<Fields>]: ReturnType<SplitFirst<FormUtils<Fields>[P]>>;
 };
 
-export function formUtils<Fields>(
+export function useFormUtils<Fields>(
   form: FormInstance<Fields>,
   name?: NamePath<Fields>,
 ) {
@@ -176,7 +174,7 @@ export function useFormWatchEffect<F, K extends keyof F>(
   dependencies: any[] = [],
   debounceTime = 200,
 ) {
-  effect = debounce(effect, debounceTime);
+  effect = useDebounce(effect, debounceTime);
   const value = Form.useWatch(key, form);
   useEffect(() => {
     let mounted = true;

@@ -15,10 +15,10 @@ import { Status } from 'accumulate.js/lib/errors';
 import { omit } from '../../utils/typemagic';
 import { isRecordOf } from '../../utils/types';
 import { TokenAmount } from '../common/Amount';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputTokenAccount } from './InputAccount';
-import { formUtils } from './utils';
+import { useFormUtils } from './utils';
 
 const { Text, Paragraph } = Typography;
 
@@ -35,7 +35,7 @@ export function SendTokens(
   } & TxnFormProps,
 ) {
   const [form] = Form.useForm<Fields>();
-  const { setError, clearError } = formUtils(form);
+  const { setError, clearError } = useFormUtils(form);
 
   const submit = ({ from, to, amount }: Fields): TransactionArgs => {
     if (amount && issuer) {
@@ -61,25 +61,35 @@ export function SendTokens(
   }, [`${from?.tokenUrl}`, `${to?.tokenUrl}`]);
 
   // Load the issuer
-  const [issuer, setIssuer] = useState<TokenIssuer>();
-  queryEffect(from?.tokenUrl).then((r) => {
-    if (r.recordType == RecordType.Error) {
-      if (r.value.code === Status.NotFound) {
-        setError('from', 'Unable to load the token type');
-      } else {
-        setError('from', r.value);
-      }
+  const issued = useQuery(from?.tokenUrl);
+  const issuer =
+    issued.data && isRecordOf(issued.data, TokenIssuer)
+      ? issued.data.account
+      : undefined;
+
+  // Writing the form's error state is a side effect, so it stays an effect.
+  useEffect(() => {
+    const r = issued.data;
+    if (!r) {
       return;
     }
-
+    if (r.recordType == RecordType.Error) {
+      setError(
+        'from',
+        r.value.code === Status.NotFound
+          ? 'Unable to load the token type'
+          : r.value,
+      );
+      return;
+    }
     if (!isRecordOf(r, TokenIssuer)) {
       setError('from', 'Unable to load the token type');
       return;
     }
-
-    setIssuer(r.account);
     clearError('from');
-  });
+    // setError/clearError come from useFormUtils and are rebuilt each render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [issued.data]);
 
   return (
     <BaseTxnForm
