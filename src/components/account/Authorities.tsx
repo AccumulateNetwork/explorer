@@ -4,7 +4,7 @@ import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
-import { AccountRecord } from 'accumulate.js/lib/api_v3';
+import { AccountRecord, RecordType } from 'accumulate.js/lib/api_v3';
 import {
   Account,
   AccountType,
@@ -16,7 +16,7 @@ import { getParentUrl } from '../../utils/url';
 import Count from '../common/Count';
 import { InfiniteList } from '../common/InfiniteList';
 import { Link } from '../common/Link';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 
 const { Title } = Typography;
 
@@ -107,12 +107,16 @@ export default function Authorities(
   // changed, killing the page with "Rendered more hooks than during the
   // previous render" (#46). Reset the parent when the target changes so one
   // account's authorities are never shown against another's page.
-  const [parent, setParent] = useState<Account>(null);
   const parentUrl = wantsParent ? getParentUrl(account.url) : null;
-  useEffect(() => setParent(null), [`${parentUrl}`]);
-  queryEffect(parentUrl, { queryType: 'default' }).then((r) =>
-    setParent((r as AccountRecord).account),
-  );
+  // Derived, so it cannot lag behind `parentUrl`. This used to be state plus
+  // a reset effect, because otherwise the previous target's parent stayed on
+  // screen while the new one loaded (#46); useQuery drops the old answer when
+  // the scope changes, so the reset is no longer needed.
+  const parentRecord = useQuery(parentUrl, { queryType: 'default' });
+  const parent =
+    parentRecord.data?.recordType === RecordType.Account
+      ? parentRecord.data.account
+      : null;
 
   if (!('account' in props)) {
     return (

@@ -24,7 +24,7 @@ import {
   txidKey,
 } from './RelatedTxn';
 import { Status } from './Status';
-import { describeTimestamp } from './timestamp';
+import { useDescribeTimestamp } from './timestamp';
 
 const { Title } = Typography;
 
@@ -114,7 +114,7 @@ export function MsgInfo({ record }: { record: MessageRecord }) {
       </Title>
 
       <InfoTable>
-        {describeTimestamp(record.id)}
+        {useDescribeTimestamp(record.id)}
 
         <Descriptions.Item key="id" label={labelID}>
           {record.id.toString()}

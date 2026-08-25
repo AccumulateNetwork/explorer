@@ -13,8 +13,8 @@ import {
 } from 'accumulate.js/lib/core';
 
 import { Network } from '../common/Network';
-import { queryEffect } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
+import { useQuery } from '../common/useQuery';
 import { AddCredits } from '../form/AddCredits';
 import { CreateIdentity } from '../form/CreateIdentity';
 import { CreateSubADI } from '../form/CreateSubADI';
@@ -41,17 +41,16 @@ export function Actions({ account: accountUrl }: { account: URL }) {
     | 'createIdentity'
     | 'createSubADI';
   const web3 = useWeb3();
-  const [acc, setAcc] = useState<core.Account>();
   const [signers, setSigners] = useState<Signer[]>([]);
   const [items, setItems] = useState<DropdownProps['menu']['items']>([]);
   const [toFrom, setToFrom] = useState<ToFrom>({});
   const [open, setOpen] = useState<FormKey>();
 
-  queryEffect(accountUrl).then((r) => {
-    if (r.recordType === RecordType.Account) {
-      setAcc(r.account);
-    }
-  });
+  const account = useQuery(accountUrl);
+  const acc =
+    account.data?.recordType === RecordType.Account
+      ? account.data.account
+      : undefined;
 
   const item = ({
     label,

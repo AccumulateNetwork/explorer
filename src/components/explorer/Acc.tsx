@@ -24,7 +24,7 @@ import { Account } from '../account/Account';
 import { AccTitle } from '../common/AccTitle';
 import { ErrorBoundary } from '../common/ErrorBoundary';
 import { RawData } from '../common/RawData';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { Message } from '../message/Message';
 import { useWeb3 } from '../web3/Context';
 import { MissingLiteID } from '../web3/MissingLiteID';
@@ -58,18 +58,27 @@ export function Acc({
     ? `${url.username || url.toString().replace(/^acc:\/\//, '')} | Accumulate Explorer`
     : 'Not Found | Accumulate Explorer';
 
-  queryEffect(url, { queryType: 'default' })
-    .then((r) => {
-      if (r.recordType === RecordType.Error) {
-        setError(r.value);
-        return;
-      }
-      setError(null);
-      setRecord(r);
-      parentCallback?.(r.asObject());
-      return r;
-    })
-    .finally((x) => didLoad?.(x));
+  const account = useQuery(url, { queryType: 'default' });
+  useEffect(() => {
+    const r = account.data;
+    if (!r) {
+      return;
+    }
+    if (r.recordType === RecordType.Error) {
+      setError(r.value);
+      didLoad?.(undefined);
+      return;
+    }
+    setError(null);
+    setRecord(r);
+    parentCallback?.(r.asObject());
+    didLoad?.(r);
+    // `parentCallback` and `didLoad` are read when the record arrives rather
+    // than captured at registration. Under queryEffect the callbacks were
+    // captured in the render that last changed the deps, so a parent that
+    // passed a new didLoad afterwards never heard back (#63).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [account.data]);
 
   // If the record is Sequenced(Transaction(Anchor)), redirect to the
   // transaction

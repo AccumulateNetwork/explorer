@@ -17,7 +17,7 @@ import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputCreditRecipient, InputTokenAccount } from './InputAccount';
-import { formUtils } from './utils';
+import { useFormUtils } from './utils';
 
 const { Text, Paragraph } = Typography;
 
@@ -36,7 +36,7 @@ export function AddCredits(
   } & TxnFormProps,
 ) {
   const [form] = Form.useForm<Fields>();
-  const { setError, clearError } = formUtils(form);
+  const { setError, clearError } = useFormUtils(form);
 
   // Get the oracle
   const { api } = useContext(Network);

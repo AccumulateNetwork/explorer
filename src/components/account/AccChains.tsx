@@ -1,5 +1,5 @@
 import { Typography } from 'antd';
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine, RiShieldCheckLine, RiTimerLine } from 'react-icons/ri';
 
@@ -9,7 +9,7 @@ import { Account } from 'accumulate.js/lib/core';
 
 import Count from '../common/Count';
 import { WhenVisible } from '../common/WhenVisible';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { Chain } from './Chain';
 
 const { Title } = Typography;
@@ -22,40 +22,31 @@ export function AccChains({
   /** The loaded account, passed to each Chain so it need not re-query (#57). */
   record?: Account;
 }) {
-  const [pendingCount, setPendingCount] = useState(null);
-  const [count, setCount] = useState({
-    main: null,
-    scratch: null,
-    signature: null,
-  });
-
-  queryEffect(account, {
+  const pending = useQuery(account, {
     queryType: 'pending',
     range: { count: 0 },
-  }).then((r) => {
-    if (r.recordType !== RecordType.Range) {
-      return;
-    }
-    setPendingCount(r.total);
   });
+  const chains = useQuery(account, { queryType: 'chain' });
 
-  queryEffect(account, { queryType: 'chain' }).then((r) => {
-    if (r.recordType !== RecordType.Range) {
-      return;
+  // Both counts are read straight off the record, so they are derived rather
+  // than mirrored into state. `null` means "not known yet" and drives the
+  // placeholder, which is why an error record leaves them null.
+  const pendingCount =
+    pending.data?.recordType === RecordType.Range ? pending.data.total : null;
+
+  const count = useMemo(() => {
+    const counts = { main: null, scratch: null, signature: null };
+    if (chains.data?.recordType !== RecordType.Range) {
+      return counts;
     }
-
-    const counts = {
-      main: 0,
-      scratch: 0,
-      signature: 0,
-    };
-    for (const { name, count } of r.records || []) {
+    counts.main = counts.scratch = counts.signature = 0;
+    for (const { name, count } of chains.data.records || []) {
       if (count) {
         counts[name] = count;
       }
     }
-    setCount(counts);
-  });
+    return counts;
+  }, [chains.data]);
 
   return (
     <div>

@@ -19,9 +19,9 @@ import { Status } from 'accumulate.js/lib/errors';
 import { omit } from '../../utils/typemagic';
 import { Ctor, isRecordOf } from '../../utils/types';
 import { isLite } from '../../utils/url';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { useWeb3 } from '../web3/Context';
-import { debounce, formUtils } from './utils';
+import { useDebounce, useFormUtils } from './utils';
 
 interface InputAccountProps
   extends Omit<FormItemProps, 'children' | 'onChange'> {
@@ -49,7 +49,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
     const web3 = useWeb3();
     const form = Form.useFormInstance();
     const [url, setURL] = useState<string>();
-    const { set, setError } = formUtils(form, props.name);
+    const { set, setError } = useFormUtils(form, props.name);
 
     useEffect(() => {
       setURL(initialValue && `${initialValue}`);
@@ -89,7 +89,12 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       return;
     };
 
-    queryEffect(url).then((r) => {
+    const queried = useQuery(url);
+    useEffect(() => {
+      const r = queried.data;
+      if (!r) {
+        return;
+      }
       if (r.recordType == RecordType.Error) {
         handleError(r.value);
         return;
@@ -101,9 +106,10 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         return;
       }
 
-      const value = r.account;
-      set({ value, errors: [] });
-    });
+      set({ value: r.account, errors: [] });
+      // handleError/set/setError are rebuilt every render by useFormUtils.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [queried.data]);
 
     const [baseOpts, setBaseOpts] = useState<BaseOptionType[]>();
     const [allOpts, setAllOpts] = useState<BaseOptionType[]>();
@@ -142,7 +148,7 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
       />
     );
 
-    const slowValueChange = debounce(setURL, 200);
+    const slowValueChange = useDebounce(setURL, 200);
     return (
       <Form.Item
         {...omit(props, 'style')}

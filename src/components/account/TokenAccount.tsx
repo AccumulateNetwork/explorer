@@ -28,7 +28,7 @@ import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
 import { Network } from '../common/Network';
 import { Nobr } from '../common/Nobr';
-import { queryEffect } from '../common/query';
+import { useQuery } from '../common/useQuery';
 import { AccChains } from './AccChains';
 import Authorities from './Authorities';
 import { describeParent } from './parent';
@@ -42,16 +42,13 @@ export function TokenAccount({
 }) {
   const { account } = record;
 
-  const [issuer, setIssuer] = useState<core.TokenIssuer>();
   const [stakingAccount, setStakingAccount] = useState(null);
 
-  queryEffect(account.tokenUrl, {
-    queryType: 'default',
-  }).then((r) => {
-    if (isRecordOf(r, core.TokenIssuer)) {
-      setIssuer(r.account);
-    }
-  });
+  const issued = useQuery(account.tokenUrl, { queryType: 'default' });
+  const issuer =
+    issued.data && isRecordOf(issued.data, core.TokenIssuer)
+      ? issued.data.account
+      : undefined;
 
   const { network } = useContext(Network);
   const getStakingInfo = async (url) => {
