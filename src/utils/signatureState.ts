@@ -16,8 +16,8 @@ import { SigRecord, isRecordOf } from './types';
  *   signatures are recorded and paid for and count for nothing yet; if the
  *   page can never reach its threshold they are stranded permanently.
  * - `invalidated` — the entry did vote, and the executor has since thrown that
- *   vote away: the page's version changed and the active signature set was
- *   replaced. The signature is still in the response, and is worth nothing.
+ *   vote away: a signature at a higher signer version replaced the active set.
+ *   The signature is still in the response, and is worth nothing.
  * - `none` — nothing has arrived.
  */
 export type EntryState =
@@ -47,7 +47,7 @@ export interface SignatureState {
   threshold: number;
   /** Entries satisfied — the numerator the header should show. */
   votes: number;
-  /** Entries whose vote a version change discarded. */
+  /** Entries whose vote a higher-version signature discarded. */
   invalidated: number;
   entries: AuthorityEntry[];
 }
@@ -77,9 +77,10 @@ function signaturesOf(set: SignatureSetRecord): SigRecord[] {
 
 /**
  * The node marks a signature `historical` when it is not in the account's
- * active set — the very set the executor tallies (`SignerWillVote`). A
- * signature made against an older page version is dropped from that set the
- * moment a signature at the new version arrives, and is flagged from then on.
+ * active set — the very set the executor tallies (`SignerWillVote`). This is
+ * the chain's own verdict, and the only one worth asking: a signature is
+ * dropped from that set when a signature at a higher signer version replaces
+ * it, not when the page is edited.
  *
  * This is only a statement about *invalidity* while the transaction is
  * pending. Once it executes, the active set is cleared and every signature on
@@ -122,13 +123,23 @@ function destinationOf(signature: core.Signature): string | undefined {
  * threshold, look identical in that total — so a stalled transaction read as
  * complete (#76).
  *
- * A vote is also not permanent. Changing the governing page — adding a signer
- * is enough — bumps its version, and the next signature at the new version
- * *replaces* the active set rather than joining it, discarding every signature
- * made against the old one. Those signatures stay in the response, flagged
- * `historical`; counting them reported a stalled distribution as ready to
- * execute (#81). Pass `pending` so they can be told apart from the historical
- * signatures of a transaction that has already executed.
+ * A vote is also not permanent. When a signature arrives at a *higher* signer
+ * version than the active set holds, `addSignature` REPLACES the set rather
+ * than joining it, and every signature already on it is discarded. Those
+ * signatures stay in the response, flagged `historical`; counting them
+ * reported a stalled distribution as ready to execute (#81). Pass `pending` so
+ * they can be told apart from the historical signatures of a transaction that
+ * has already executed.
+ *
+ * Note what does NOT invalidate a signature: editing the page. Bumping the
+ * version unmakes nothing on its own — the set is replaced only by a signature
+ * at the higher version, so a signature made against an older version keeps
+ * counting until then. Deciding this by comparing versions gets it backwards
+ * in the dangerous direction, calling live votes dead; the staking signer
+ * measured a real 3-of-4 lost that way (core/staking!481, and see
+ * `heldSignature` in its cmd/asp/signpath.go). The chain publishes its own
+ * verdict as `historical`, which is the only test used here — `signedVersion`
+ * is carried for the operator-facing explanation and never for the decision.
  *
  * Returns null when there is no governing page to reason about (a single
  * signer, an anchor, a synthetic message), leaving the caller to fall back.

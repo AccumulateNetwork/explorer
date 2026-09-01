@@ -5,6 +5,7 @@ import { MessageRecord } from 'accumulate.js/lib/api_v3';
 
 import deliveredRotatedKey from './__fixtures__/delivered-rotated-key.json';
 import payPeriod193 from './__fixtures__/pay-period-193.json';
+import pendingLiveOlder from './__fixtures__/pending-live-older-version.json';
 import pendingVersionBump from './__fixtures__/pending-page-version-bump.json';
 import { computeSignatureState } from './signatureState';
 
@@ -220,5 +221,54 @@ describe('computeSignatureState, after the page version was bumped', () => {
     // Which is why the caller passes the transaction's status, and the
     // delivered case does not opt in.
     expect(computeSignatureState(sets)!.votes).toBe(4);
+  });
+});
+
+// The same distribution, one signature earlier — and the case that makes the
+// obvious rule dangerous. The page was ALREADY version 12 (saisne had been
+// installed) while all three signatures on it were made against version 11,
+// and the chain still counted every one of them: 3 of 4. Bumping a page's
+// version unmakes nothing on its own. `addSignature` replaces a signer's
+// active set only when a signature at a HIGHER version arrives, and that is
+// what saisne's signature then did, taking this to 1 of 4.
+//
+// Judging by `signerVersion < page.version` gets this fixture exactly
+// backwards, calling three live votes dead. The staking signer shipped that
+// rule and measured a real 3-of-4 destroyed by it: told to sign again, each
+// validator's replacement discarded the other two (core/staking!481). Only the
+// node's `historical` flag is a verdict; `signedVersion` is explanation.
+//
+// Derived from the fixture above by removing saisne's version-12 signature and
+// clearing the flag the arrival of that signature set — i.e. the same record,
+// one block earlier. It matches core/staking's tx196-before-resign.json set
+// for set, and both implementations tally it at 3.
+describe('computeSignatureState, live signatures at an older version', () => {
+  const older = computeSignatureState(
+    (
+      new MessageRecord(
+        pendingLiveOlder as never,
+      ) as MessageRecord<messaging.TransactionMessage>
+    ).signatures.records,
+    { pending: true },
+  );
+
+  it('counts a live signature whose version is older than the page’s', () => {
+    expect(older!.version).toBe(12);
+    expect(older!.votes).toBe(3);
+    expect(older!.invalidated).toBe(0);
+  });
+
+  it('does not invalidate anything merely because the page moved on', () => {
+    for (const label of [
+      'acc://kompendium.acme/book',
+      'acc://CodeForj.acme/book',
+      'acc://PennyRocket.acme/book',
+    ]) {
+      expect(
+        older!.entries.find(
+          (x) => x.label.toLowerCase() === label.toLowerCase(),
+        )?.state.kind,
+      ).toBe('voted');
+    }
   });
 });

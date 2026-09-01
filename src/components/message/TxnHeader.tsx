@@ -66,7 +66,7 @@ export function TxnHeader({
             </Tag>
             {sigState.invalidated > 0 && (
               <Tag color="red" style={{ textTransform: 'uppercase' }}>
-                <strong>{sigState.invalidated}</strong> invalidated
+                <strong>{sigState.invalidated}</strong> invalid
               </Tag>
             )}
           </>

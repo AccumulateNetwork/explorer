@@ -252,7 +252,7 @@ function Progress({
           case 'signed':
             return <Tag color="orange">signed, not counted</Tag>;
           case 'invalidated':
-            return <Tag color="red">vote discarded</Tag>;
+            return <Tag color="red">invalidated</Tag>;
           default:
             return <Text type="secondary">—</Text>;
         }
@@ -304,15 +304,19 @@ function Progress({
           type="warning"
           showIcon
           style={{ marginBottom: 12 }}
-          message={`${state.invalidated} signature(s) were discarded when the page changed`}
+          message={`${state.invalidated} signature(s) are no longer counted`}
           description={
             <span>
-              {state.page} has been modified, so its version
-              {state.version ? ` is now ${state.version}` : ' has changed'}. The
-              executor keeps only the signatures made against the current
-              version; every earlier one was dropped the moment the first
-              signature at the new version arrived. Those signers must sign
-              again for this transaction to execute.
+              A signature made against
+              {state.version
+                ? ` version ${state.version} of `
+                : ' a newer version of '}
+              <Link to={state.page}>{state.page}</Link> replaced that page's
+              active signature set, discarding every signature already on it.
+              Those signers must sign again for this transaction to execute.
+              Editing the page does not by itself discard anything: a signature
+              made against an older version keeps counting until a newer one
+              replaces the set.
             </span>
           }
         />
