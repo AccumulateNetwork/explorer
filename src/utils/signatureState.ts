@@ -15,11 +15,22 @@ import { SigRecord, isRecordOf } from './types';
  *   that page has not reached *its* threshold, so it has emitted nothing. The
  *   signatures are recorded and paid for and count for nothing yet; if the
  *   page can never reach its threshold they are stranded permanently.
+ * - `invalidated` — the entry did vote, and the executor has since thrown that
+ *   vote away: the page's version changed and the active signature set was
+ *   replaced. The signature is still in the response, and is worth nothing.
  * - `none` — nothing has arrived.
  */
 export type EntryState =
   | { kind: 'voted'; vote: string; via: string }
   | { kind: 'signed'; page: string; have: number; need: number }
+  | {
+      kind: 'invalidated';
+      via: string;
+      /** The page version the signature was made against, where it is known. */
+      signedVersion?: number;
+      /** A fresh signature already accumulating on the delegate's own page. */
+      progress?: { page: string; have: number; need: number };
+    }
   | { kind: 'none' };
 
 export interface AuthorityEntry {
@@ -31,10 +42,22 @@ export interface AuthorityEntry {
 export interface SignatureState {
   /** The page whose accept threshold governs the transaction. */
   page: string;
+  /** The page's version *now* — what a live signature must be made against. */
+  version?: number;
   threshold: number;
   /** Entries satisfied — the numerator the header should show. */
   votes: number;
+  /** Entries whose vote a version change discarded. */
+  invalidated: number;
   entries: AuthorityEntry[];
+}
+
+export interface SignatureStateOptions {
+  /**
+   * Whether the transaction is still pending. It decides whether the node's
+   * `historical` flag means anything: see {@link computeSignatureState}.
+   */
+  pending?: boolean;
 }
 
 const hex = (b: Uint8Array) =>
@@ -50,6 +73,27 @@ function signaturesOf(set: SignatureSetRecord): SigRecord[] {
   return (set.signatures?.records || []).filter((x): x is SigRecord =>
     isRecordOf(x, messaging.SignatureMessage),
   );
+}
+
+/**
+ * The node marks a signature `historical` when it is not in the account's
+ * active set — the very set the executor tallies (`SignerWillVote`). A
+ * signature made against an older page version is dropped from that set the
+ * moment a signature at the new version arrives, and is flagged from then on.
+ *
+ * This is only a statement about *invalidity* while the transaction is
+ * pending. Once it executes, the active set is cleared and every signature on
+ * it is historical — including the ones that carried it (#76).
+ */
+const isActive = (r: SigRecord) => !r.historical;
+
+/** The version a key signature was made against, when it carries one. */
+function versionOf(signature: core.Signature): number | undefined {
+  let s: core.Signature = signature;
+  while (s instanceof core.DelegatedSignature && s.signature) {
+    s = s.signature;
+  }
+  return 'signerVersion' in s ? s.signerVersion : undefined;
 }
 
 /**
@@ -78,11 +122,20 @@ function destinationOf(signature: core.Signature): string | undefined {
  * threshold, look identical in that total — so a stalled transaction read as
  * complete (#76).
  *
+ * A vote is also not permanent. Changing the governing page — adding a signer
+ * is enough — bumps its version, and the next signature at the new version
+ * *replaces* the active set rather than joining it, discarding every signature
+ * made against the old one. Those signatures stay in the response, flagged
+ * `historical`; counting them reported a stalled distribution as ready to
+ * execute (#81). Pass `pending` so they can be told apart from the historical
+ * signatures of a transaction that has already executed.
+ *
  * Returns null when there is no governing page to reason about (a single
  * signer, an anchor, a synthetic message), leaving the caller to fall back.
  */
 export function computeSignatureState(
   sets: readonly SignatureSetRecord[] = [],
+  { pending = false }: SignatureStateOptions = {},
 ): SignatureState | null {
   if (!sets?.length) return null;
 
@@ -103,32 +156,72 @@ export function computeSignatureState(
 
   const threshold =
     ('acceptThreshold' in account && account.acceptThreshold) || 1;
+  const version = 'version' in account ? account.version : undefined;
+
+  // Only signatures the executor still counts. On a pending transaction the
+  // rest have been discarded; on an executed one they are all flagged and the
+  // distinction is meaningless, so keep them.
+  const counted = (records: SigRecord[]) =>
+    pending ? records.filter(isActive) : records;
 
   // Votes: authority signatures that landed on this page. The chain's first
   // element is where a signature arrived, so a nested delegate's vote (which
   // landed on an intermediate page) is not counted again here — attributing by
   // the `authority` field alone would double-count it.
-  const votes = signaturesOf(pageSet)
-    .map((x) => x.message.signature)
-    .filter(
-      (x): x is core.AuthoritySignature =>
-        x instanceof core.AuthoritySignature &&
-        sameUrl(x.delegator?.[0], pageUrl),
-    );
+  const isPageVote = (x: SigRecord): x is SigRecord<core.AuthoritySignature> =>
+    x.message.signature instanceof core.AuthoritySignature &&
+    sameUrl(x.message.signature.delegator?.[0], pageUrl);
+
+  const pageSigs = counted(signaturesOf(pageSet));
+  const deadSigs = signaturesOf(pageSet).filter((x) => !pageSigs.includes(x));
+
+  const votesOf = (records: SigRecord[]) =>
+    records.filter(isPageVote).map((x) => x.message.signature);
+  const votes = votesOf(pageSigs);
+  const deadVotes = votesOf(deadSigs);
 
   // Sidecar: a key on the page signing it directly satisfies its own entry.
-  const directKeys = new Set(
-    signaturesOf(pageSet)
-      .map((x) => x.message.signature)
-      .filter((x) => 'publicKey' in x && x.publicKey)
-      .map((x) => hex(sha256((x as core.KeySignature).publicKey))),
+  const keyHashes = (records: SigRecord[]) =>
+    new Map(
+      records
+        .map((x) => x.message.signature)
+        .filter((x) => 'publicKey' in x && x.publicKey)
+        .map((x) => [
+          hex(sha256((x as core.KeySignature).publicKey)),
+          versionOf(x),
+        ]),
+    );
+  const directKeys = keyHashes(pageSigs);
+  // A key that has also signed at the current version is not invalidated: the
+  // live signature is the one that counts.
+  const deadKeys = new Map(
+    [...keyHashes(deadSigs)].filter(([k]) => !directKeys.has(k)),
   );
+
+  /** A fresh signature accumulating on the delegate's own page, if any. */
+  const progressOf = (delegate: URL) => {
+    const book = `${delegate}`.toLowerCase();
+    const set = sets.find(
+      (s) =>
+        s.account?.url &&
+        bookOf(`${s.account.url}`) === book &&
+        counted(signaturesOf(s)).length > 0,
+    );
+    if (!set) return undefined;
+    const acct = set.account;
+    return {
+      page: `${acct.url}`,
+      have: counted(signaturesOf(set)).length,
+      need: ('acceptThreshold' in acct && acct.acceptThreshold) || 1,
+    };
+  };
 
   const matched = new Set<string>();
   const entries: AuthorityEntry[] = account.keys.map((entry) => {
     const label = entry.delegate
       ? `${entry.delegate}`
       : `key ${hex(entry.publicKeyHash || new Uint8Array()).slice(0, 8)}…`;
+    const keyHash = entry.publicKeyHash && hex(entry.publicKeyHash);
 
     const vote = votes.find((v) => sameUrl(v.authority, entry.delegate));
     if (vote) {
@@ -142,34 +235,35 @@ export function computeSignatureState(
       };
     }
 
-    if (entry.publicKeyHash && directKeys.has(hex(entry.publicKeyHash))) {
-      matched.add(hex(entry.publicKeyHash));
+    if (keyHash && directKeys.has(keyHash)) {
+      matched.add(keyHash);
       return {
         label,
         state: { kind: 'voted', vote: 'accept', via: 'a key on this page' },
       };
     }
 
+    // The entry did vote and the executor threw that vote away. Say so before
+    // anything else: to the signer it looks like they have already signed.
+    const dead = deadVotes.find((v) => sameUrl(v.authority, entry.delegate));
+    if (dead || (keyHash && deadKeys.has(keyHash))) {
+      if (keyHash && deadKeys.has(keyHash)) matched.add(keyHash);
+      return {
+        label,
+        state: {
+          kind: 'invalidated',
+          via: dead ? `${dead.origin ?? dead.authority}` : 'a key on this page',
+          signedVersion: dead ? undefined : deadKeys.get(keyHash),
+          progress: entry.delegate ? progressOf(entry.delegate) : undefined,
+        },
+      };
+    }
+
     // Nothing counted yet — is the delegate's own page part-way there?
     if (entry.delegate) {
-      const book = `${entry.delegate}`.toLowerCase();
-      const pending = sets.find(
-        (s) =>
-          s.account?.url &&
-          bookOf(`${s.account.url}`) === book &&
-          signaturesOf(s).length > 0,
-      );
-      if (pending) {
-        const acct = pending.account;
-        return {
-          label,
-          state: {
-            kind: 'signed',
-            page: `${acct.url}`,
-            have: signaturesOf(pending).length,
-            need: ('acceptThreshold' in acct && acct.acceptThreshold) || 1,
-          },
-        };
+      const progress = progressOf(entry.delegate);
+      if (progress) {
+        return { label, state: { kind: 'signed', ...progress } };
       }
     }
 
@@ -181,22 +275,23 @@ export function computeSignatureState(
   // have been signed by a key since rotated out (the account query returns no
   // history). Count those votes rather than under-report a transaction that
   // plainly executed, and say why they no longer line up.
-  for (const keyHash of directKeys) {
+  for (const [keyHash, signedVersion] of [...directKeys, ...deadKeys]) {
     if (matched.has(keyHash)) continue;
+    const via = 'a key that is no longer an entry on this page';
     entries.push({
       label: `key ${keyHash.slice(0, 8)}…`,
-      state: {
-        kind: 'voted',
-        vote: 'accept',
-        via: 'a key that is no longer an entry on this page',
-      },
+      state: directKeys.has(keyHash)
+        ? { kind: 'voted', vote: 'accept', via }
+        : { kind: 'invalidated', via, signedVersion },
     });
   }
 
   return {
     page: `${account.url}`,
+    version,
     threshold,
     votes: entries.filter((x) => x.state.kind === 'voted').length,
+    invalidated: entries.filter((x) => x.state.kind === 'invalidated').length,
     entries,
   };
 }

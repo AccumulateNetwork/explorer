@@ -5,6 +5,7 @@ import { MessageRecord } from 'accumulate.js/lib/api_v3';
 
 import deliveredRotatedKey from './__fixtures__/delivered-rotated-key.json';
 import payPeriod193 from './__fixtures__/pay-period-193.json';
+import pendingVersionBump from './__fixtures__/pending-page-version-bump.json';
 import { computeSignatureState } from './signatureState';
 
 // The fixture is the mainnet staking distribution for pay period 193
@@ -25,7 +26,9 @@ const record = new MessageRecord(
   payPeriod193 as never,
 ) as MessageRecord<messaging.TransactionMessage>;
 
-const state = computeSignatureState(record.signatures.records);
+const state = computeSignatureState(record.signatures.records, {
+  pending: true,
+});
 const entry = (label: string) =>
   state!.entries.find((x) => x.label.toLowerCase() === label.toLowerCase());
 
@@ -122,5 +125,100 @@ describe('computeSignatureState, after the page has changed', () => {
       kind: 'voted',
       via: 'a key that is no longer an entry on this page',
     });
+  });
+});
+
+// acc://11a685e4…@ACME, the staking distribution that was pending when
+// acc://saisne.acme/book was added to acc://staking.acme/book/2. The page went
+// from version 11 with 7 entries to version 12 with 8; saisne's signature, the
+// first at version 12, REPLACED the active set rather than joining it, so the
+// three version-11 votes already on the page were discarded. The response
+// still carries them, flagged `historical`, and counting them rendered a
+// stalled distribution as 4 of 4 in green (#81).
+describe('computeSignatureState, after the page version was bumped', () => {
+  const sets = (
+    new MessageRecord(
+      pendingVersionBump as never,
+    ) as MessageRecord<messaging.TransactionMessage>
+  ).signatures.records;
+
+  const pending = computeSignatureState(sets, { pending: true });
+  const at = (label: string) =>
+    pending!.entries.find((x) => x.label.toLowerCase() === label.toLowerCase());
+
+  it('counts only the signatures the executor still holds', () => {
+    expect(pending!.page.toLowerCase()).toBe('acc://staking.acme/book/2');
+    expect(pending!.version).toBe(12);
+    expect(pending!.threshold).toBe(4);
+    expect(pending!.votes).toBe(1);
+    expect(pending!.invalidated).toBe(3);
+  });
+
+  it('reports the discarded votes as discarded, not as votes', () => {
+    // A delegate's authority signature, delivered to the page and then dropped.
+    expect(at('acc://kompendium.acme/book')?.state).toMatchObject({
+      kind: 'invalidated',
+      via: 'acc://kompendium.acme/book/1',
+    });
+
+    // A key on the page signing it directly — the version it signed against is
+    // in the signature, so say which one.
+    expect(at('acc://CodeForj.acme/book')?.state).toMatchObject({
+      kind: 'invalidated',
+      via: 'a key on this page',
+      signedVersion: 11,
+    });
+  });
+
+  it('keeps the live vote', () => {
+    expect(at('acc://saisne.acme/book')?.state).toMatchObject({
+      kind: 'voted',
+      vote: 'accept',
+      via: 'a key on this page',
+    });
+  });
+
+  it('still reports a fresh signature accumulating on the delegate’s page', () => {
+    // PennyRocket's sidecar vote died with the version bump, but they have a
+    // new signature part-way through their own page. Both facts matter.
+    expect(at('acc://PennyRocket.acme/book')?.state).toMatchObject({
+      kind: 'invalidated',
+      signedVersion: 11,
+      progress: {
+        page: 'acc://PennyRocket.acme/book/3',
+        have: 1,
+        need: 2,
+      },
+    });
+  });
+
+  it('reports entries that never signed as such', () => {
+    for (const label of [
+      'acc://defacto.acme/book',
+      'acc://staking.acme/governance',
+      'acc://TFA.acme/book',
+      'acc://HighStakes.acme/book',
+    ]) {
+      expect(at(label)?.state).toEqual({ kind: 'none' });
+    }
+  });
+
+  it('does not apply the flag to a transaction that has executed', () => {
+    // The trap: EVERY signature on a delivered transaction is historical,
+    // because the active set is cleared when it executes. Reading the flag
+    // there would report the transaction that paid out as unsigned.
+    const delivered = computeSignatureState(
+      (
+        new MessageRecord(
+          deliveredRotatedKey as never,
+        ) as MessageRecord<messaging.TransactionMessage>
+      ).signatures.records,
+      { pending: true },
+    );
+    expect(delivered!.votes).toBe(0);
+
+    // Which is why the caller passes the transaction's status, and the
+    // delivered case does not opt in.
+    expect(computeSignatureState(sets)!.votes).toBe(4);
   });
 });

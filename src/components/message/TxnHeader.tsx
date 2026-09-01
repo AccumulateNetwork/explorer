@@ -26,7 +26,13 @@ export function TxnHeader({
   // count summed key-signature messages and skipped authority signatures —
   // precisely the records that are votes — so a stalled multisig read as
   // complete (#75). Fall back to that count only where no page governs.
-  const sigState = computeSignatureState(record.signatures?.records);
+  //
+  // Pending matters: only while the transaction is pending does the node's
+  // `historical` flag mean a signature was discarded (#81).
+  const pending = record.status === errors.Status.Pending;
+  const sigState = computeSignatureState(record.signatures?.records, {
+    pending,
+  });
 
   let sigCount = 0;
   for (const set of record.signatures?.records || []) {
@@ -48,15 +54,22 @@ export function TxnHeader({
         <Status record={record} />
 
         {sigState ? (
-          <Tag
-            style={{ textTransform: 'uppercase' }}
-            color={sigState.votes >= sigState.threshold ? 'green' : 'orange'}
-          >
-            Signatures:{' '}
-            <strong>
-              {sigState.votes} of {sigState.threshold}
-            </strong>
-          </Tag>
+          <>
+            <Tag
+              style={{ textTransform: 'uppercase' }}
+              color={sigState.votes >= sigState.threshold ? 'green' : 'orange'}
+            >
+              Signatures:{' '}
+              <strong>
+                {sigState.votes} of {sigState.threshold}
+              </strong>
+            </Tag>
+            {sigState.invalidated > 0 && (
+              <Tag color="red" style={{ textTransform: 'uppercase' }}>
+                <strong>{sigState.invalidated}</strong> invalidated
+              </Tag>
+            )}
+          </>
         ) : (
           sigCount > 0 && (
             <Tag style={{ textTransform: 'uppercase' }}>

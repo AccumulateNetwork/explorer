@@ -3,7 +3,7 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiInformationLine } from 'react-icons/ri';
 
-import { core } from 'accumulate.js';
+import { core, errors } from 'accumulate.js';
 
 import { TxnRecord, isRecordOf, isRecordOfDataTxn } from '../../utils/types';
 import { AccTitle } from '../common/AccTitle';
@@ -29,7 +29,11 @@ export function Transaction({ record }: { record: TxnRecord }) {
       <Show record={record} />
 
       {!!record.signatures?.records?.length && (
-        <Signatures transaction={txn} signatures={record.signatures.records} />
+        <Signatures
+          transaction={txn}
+          signatures={record.signatures.records}
+          pending={record.status === errors.Status.Pending}
+        />
       )}
     </div>
   );
