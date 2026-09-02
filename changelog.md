@@ -3,6 +3,15 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.10] - 2026-09-01
+
+Follow-up to 0.4.9: the second signature table learns the same lesson as the first.
+
+### Fixed
+- **The Required table no longer files discarded signatures under the authority they were made for.** Expanding `Authority acc://staking.acme/book` on the pending ACME distribution listed four signatures — three of them the ones [#81](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/81) established are dead — presented identically to the one that counts, so a reader counted four valid authority signatures where the chain counts one. A new **Invalid** row holds what the chain no longer holds, `Authority` and `Other` keep only what it does, and every record lands in exactly one row. ([#82](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/82))
+
+  The flag behind this does not say *why* a signature left the active set: either a higher-version signature replaced the set, or the signer emitted the authority signature that supersedes it — which also clears it. The row asserts only what that supports, and names both cases rather than telling every signer to sign again.
+
 ## [0.4.9] - 2026-09-01
 
 Correctness of the signature panel, and the code health work of phase 4 ([#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)).
