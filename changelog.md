@@ -3,6 +3,31 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.9] - 2026-09-01
+
+Correctness of the signature panel, and the code health work of phase 4 ([#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)).
+
+### Fixed
+- **A pending transaction no longer counts signatures the chain has discarded.** When a signature arrives at a higher signer version than a signer's active set holds, the executor replaces the set rather than joining it, and everything already on it is dropped. The API flags those records `historical`; the explorer did not read the flag, so period 196's distribution on ACME displayed a green `SIGNATURES: 4 of 4` while the chain counted 1. Discarded votes now say so, name the version they signed against, and explain that those signers must sign again. ([#81](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/81))
+
+  Note what does **not** invalidate a signature: editing the page. The active set is replaced only by a signature at a higher version, so a signature made against an older version keeps counting until then. Deciding this by comparing versions calls live votes dead — the staking signer measured a real 3-of-4 destroyed that way — so the node's own verdict is the only test used here, and the real records either side of that replacing signature are both pinned as fixtures.
+- **Two crashes from spreading a value that can be undefined**, found by turning ESLint on. ([#67](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/67))
+
+### Changed
+- **`queryEffect` is now `useQuery`.** It was a hook that did not look like one: it returned a thenable whose `.then()` called `useAsyncEffect`, so hook ordering depended on every caller invoking `.then` exactly once, unconditionally, at the top level. Nothing enforced that, and `Authorities.tsx` had an early return three lines below one. All 23 overloads are preserved. ([#63](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/63))
+- **`InfiniteList` and `InfiniteTable` share their paging.** 773 lines with ~185 byte-identical and in order, already drifting; the paging decisions now live in a pure module with no React or DOM. ([#62](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/62))
+- **Dead pagination code deleted rather than maintained.** `Chain` built an enrichment map every page and threw it away, and four cursor entries existed for one that was never written; `Chain` drops from 663 lines to 591. This supersedes part of the memoization added in [#56](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/56) — deleting dead work beats memoizing it. ([#64](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/64))
+
+### Security
+- **The files Node executes at build time are now guarded by a test.** The 2026-08-14 mirror compromise put a 33,231-character obfuscated payload on one line of `vite.config.js`, which resolved a second stage from Ethereum RPCs and spawned a detached process that outlived the build. `tsc` does not read those files and ESLint did not lint them, and the change sat in a commit that looked like a release. The test asserts no absurdly long line, no process spawning, and no hex-identifier obfuscation — verified against the real payload, which fails three checks independently. The advice that hid the compromise is corrected.
+
+### Internal
+- **ESLint, with `react-hooks` and `typescript-eslint`.** There were 17 `eslint-disable` comments in a repo with no ESLint installed; they read as considered exceptions and suppressed nothing. The rules that earn their place are the ones that would have caught bugs already fixed by hand — `rules-of-hooks` for the conditional hooks that crashed the Authorities and Signatures panels ([#44](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/44), [#46](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/46)), `exhaustive-deps` for the mount-only effects that leaked one account's data onto another's ([#43](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/43)). ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65), [#67](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/67))
+- Tests for `ManagedRange`, `isRecordOf` and query error handling — three untested modules the whole app runs through, where a wrong answer shifts rows or renders the wrong page rather than failing.
+
+### Documentation
+- **Beta is recorded as gone, and two dangling subdomains flagged.** Certificate transparency dates its death to around March 2026 — five months before the mirror compromise, so Netlify never built the malicious commit.
+
 ## [0.4.8] - 2026-08-19
 
 Bundle size and request volume (phase 3 of [#36](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/36)). The initial download drops from 6.7 MB to roughly 2.3 MB, a transaction page makes 41 requests instead of 256, and account pages make about a quarter fewer.
