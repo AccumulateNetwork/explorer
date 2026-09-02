@@ -25,6 +25,7 @@ import {
 } from 'accumulate.js/lib/core';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
+import { bucketSignatures } from '../../utils/signatureBuckets';
 import { computeSignatureState } from '../../utils/signatureState';
 import { SigRecord, isRecordOf } from '../../utils/types';
 import { InfiniteList } from './InfiniteList';
@@ -462,42 +463,31 @@ function Required({
   const countedSigs = pending
     ? principalSigs.filter((x) => !x.historical)
     : principalSigs;
-  const signatureAuthority = (signature: core.Signature) => {
-    if (signature instanceof core.DelegatedSignature) {
-      return URL.parse(signature.delegator.toString().replace(/\/\d+$/, ''));
-    }
-    if (signature instanceof core.AuthoritySignature) {
-      return signature.authority;
-    }
-    if ('publicKey' in signature) {
-      return URL.parse(signature.signer.toString().replace(/\/\d+$/, ''));
-    }
-  };
 
-  const signaturesForAuthority = (authority: URL) => {
-    return signatures.filter((x) =>
-      signatureAuthority(x.message.signature).equals(authority),
-    );
-  };
+  // Every record lands in exactly one row. Discarded signatures used to sit
+  // under the authority they were made for, so this table listed four
+  // signatures for an authority the chain credited with one (#82).
+  const buckets = bucketSignatures(signatures, authorities, { pending });
+  const signaturesForAuthority = (authority: URL) =>
+    buckets.byAuthority.get(`${authority}`.toLowerCase()) || [];
 
   const creditPayments = principalSigs.filter(
     (x): x is MessageRecord<messaging.CreditPayment> =>
       isRecordOf(x, messaging.CreditPayment),
   );
-  const otherSigs = signatures.filter(
-    (x) =>
-      !authorities.some((y) =>
-        signatureAuthority(x.message.signature).equals(y),
-      ),
-  );
+  const otherSigs = buckets.other;
+  const invalidSigs = buckets.invalid;
 
-  type Item = 'credits' | 'other' | URL;
+  type Item = 'credits' | 'invalid' | 'other' | URL;
   const columns = [
     {
       key: 'type',
       render(_, authority: Item) {
         if (authority === 'credits') {
           return <span>Credits</span>;
+        }
+        if (authority === 'invalid') {
+          return <span>Invalid</span>;
         }
         if (authority === 'other') {
           return <span>Other</span>;
@@ -514,6 +504,9 @@ function Required({
             0,
           );
           return <span>{paid * 1e-2} paid</span>;
+        }
+        if (authority === 'invalid') {
+          return <span>{invalidSigs.length} signature(s)</span>;
         }
         if (authority === 'other') {
           return <span>{otherSigs.length} signature(s)</span>;
@@ -533,6 +526,16 @@ function Required({
       render(_, authority: Item) {
         if (authority === 'other') {
           return;
+        }
+        if (authority === 'invalid') {
+          return (
+            <Tooltip
+              overlayClassName="explorer-tooltip"
+              title="Not in the signer's active set, so nothing here counts toward a threshold: either a signature at a higher signer version replaced the set, or the signer has emitted the authority signature that supersedes it"
+            >
+              <Tag color="red">Not counted</Tag>
+            </Tooltip>
+          );
         }
         if (authority === 'credits') {
           if (creditPayments.length > 0) {
@@ -576,6 +579,9 @@ function Required({
     if (authority === 'credits') {
       return creditPayments.length > 0;
     }
+    if (authority === 'invalid') {
+      return invalidSigs.length > 0;
+    }
     if (authority === 'other') {
       return otherSigs.length > 0;
     }
@@ -600,6 +606,9 @@ function Required({
         </div>
       );
     }
+    if (authority === 'invalid') {
+      return <Signature.List dataSource={invalidSigs} />;
+    }
     if (authority === 'other') {
       return <Signature.List dataSource={otherSigs} />;
     }
@@ -612,6 +621,7 @@ function Required({
       dataSource={[
         'credits',
         ...authorities,
+        ...(invalidSigs.length > 0 ? ['invalid'] : []),
         ...(otherSigs.length > 0 ? ['other'] : []),
       ]}
       columns={columns}
