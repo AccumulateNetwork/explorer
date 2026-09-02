@@ -38,6 +38,11 @@ const { Title, Text, Paragraph } = Typography;
 export function Signatures(props: {
   transaction: core.Transaction;
   signatures: SignatureSetRecord[];
+  /**
+   * Whether the transaction is still pending. Only then does the node's
+   * `historical` flag mark a signature as discarded (#81).
+   */
+  pending?: boolean;
 }) {
   const transaction = props.transaction;
 
@@ -169,7 +174,7 @@ export function Signatures(props: {
         </IconContext.Provider>
         Signatures
       </Title>
-      <Progress signatures={props.signatures} />
+      <Progress signatures={props.signatures} pending={props.pending} />
 
       {blockAnchors.length &&
       (transaction.body instanceof core.DirectoryAnchor ||
@@ -191,6 +196,7 @@ export function Signatures(props: {
           authorities={authorities}
           signatures={signatures}
           principalSigs={principalSigs}
+          pending={props.pending}
         />
       )}
     </div>
@@ -204,8 +210,14 @@ export function Signatures(props: {
  * threshold has been recorded and paid for but has voted for nothing, and
  * used to be indistinguishable from a vote (#75, #76).
  */
-function Progress({ signatures }: { signatures: SignatureSetRecord[] }) {
-  const state = computeSignatureState(signatures);
+function Progress({
+  signatures,
+  pending,
+}: {
+  signatures: SignatureSetRecord[];
+  pending?: boolean;
+}) {
+  const state = computeSignatureState(signatures, { pending });
   if (!state) {
     return null;
   }
@@ -239,6 +251,8 @@ function Progress({ signatures }: { signatures: SignatureSetRecord[] }) {
             );
           case 'signed':
             return <Tag color="orange">signed, not counted</Tag>;
+          case 'invalidated':
+            return <Tag color="red">invalidated</Tag>;
           default:
             return <Text type="secondary">—</Text>;
         }
@@ -256,6 +270,16 @@ function Progress({ signatures }: { signatures: SignatureSetRecord[] }) {
                 {s.page} has {s.have} of {s.need} required
               </Text>
             );
+          case 'invalidated':
+            return (
+              <Text type="secondary">
+                signed via {s.via}
+                {s.signedVersion ? ` against version ${s.signedVersion}` : ''};
+                must sign again
+                {s.progress &&
+                  ` — ${s.progress.page} has ${s.progress.have} of ${s.progress.need} required`}
+              </Text>
+            );
           default:
             return null;
         }
@@ -271,8 +295,32 @@ function Progress({ signatures }: { signatures: SignatureSetRecord[] }) {
         </Text>{' '}
         <Text type="secondary">
           required signatures on <Link to={state.page}>{state.page}</Link>
+          {state.version ? `, version ${state.version}` : ''}
         </Text>
       </Paragraph>
+
+      {state.invalidated > 0 && (
+        <Alert
+          type="warning"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={`${state.invalidated} signature(s) are no longer counted`}
+          description={
+            <span>
+              A signature made against
+              {state.version
+                ? ` version ${state.version} of `
+                : ' a newer version of '}
+              <Link to={state.page}>{state.page}</Link> replaced that page's
+              active signature set, discarding every signature already on it.
+              Those signers must sign again for this transaction to execute.
+              Editing the page does not by itself discard anything: a signature
+              made against an older version keeps counting until a newer one
+              replaces the set.
+            </span>
+          }
+        />
+      )}
       <Table
         className="signature-progress"
         columns={columns}
@@ -401,11 +449,19 @@ function Required({
   authorities,
   signatures,
   principalSigs,
+  pending,
 }: {
   authorities: URL[];
   signatures: SigRecord[];
   principalSigs: MessageRecord[];
+  pending?: boolean;
 }) {
+  // A vote the executor has discarded is not a vote. While the transaction is
+  // pending, `historical` marks exactly those; once it executes every
+  // signature is historical and the flag says nothing (#81).
+  const countedSigs = pending
+    ? principalSigs.filter((x) => !x.historical)
+    : principalSigs;
   const signatureAuthority = (signature: core.Signature) => {
     if (signature instanceof core.DelegatedSignature) {
       return URL.parse(signature.delegator.toString().replace(/\/\d+$/, ''));
@@ -484,15 +540,9 @@ function Required({
           }
           return <Tag color="yellow">Pending</Tag>;
         }
-        const status = principalSigs.some(
-          (x) =>
-            isRecordOf(x, core.AuthoritySignature) &&
-            x.message.signature.authority.equals(authority),
-        );
-
         const votes = Array.from(
           new Set(
-            principalSigs
+            countedSigs
               .filter((x): x is SigRecord<core.AuthoritySignature> =>
                 isRecordOf(x, core.AuthoritySignature),
               )
