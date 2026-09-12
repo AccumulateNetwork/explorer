@@ -7,26 +7,19 @@ import { ThemeMode } from '../common/theme';
 
 const { Title } = Typography;
 
-// One-time cleanup of the retired key (#73); harmless once it is gone.
+// One-time cleanup of retired keys; harmless once they are gone. networkName
+// was written by code rather than chosen (#73); selectedNetwork was a real
+// choice, but a stored preference cannot decide what a link means, so it no
+// longer takes part in resolving one (#84).
 if (typeof localStorage !== 'undefined') {
   localStorage.removeItem('networkName');
+  localStorage.removeItem('selectedNetwork');
 }
 
 export const Settings = new (
   @storage(localStorage)
   class Settings {
     @stored accessor enableDevMode: boolean = false;
-    // Empty means "the user has not chosen a network", which is distinct
-    // from having chosen mainnet. While the default was 'mainnet' the two
-    // were indistinguishable, and the hostname defaults in Network.tsx could
-    // never run (#73).
-    //
-    // Deliberately not named networkName: every browser that ever loaded a
-    // network-specific host carries networkName="mainnet", written by the
-    // old code on each Context construction rather than by any choice. Those
-    // values cannot be told apart from real selections, so the key is retired
-    // and everyone starts from the hostname default once.
-    @stored accessor selectedNetwork: string = '';
     @stored accessor favourites: string[] = [];
     @broadcast @stored accessor themeMode: ThemeMode = 'light';
 

@@ -123,6 +123,41 @@ mcp/
 └── test-*.js                 # Health check tests
 ```
 
+## Linking to a network
+
+A link decides which network it opens on, so a link in a document or an
+application means the same thing for every reader. Name the network with
+`?network=`:
+
+```
+https://explorer.accumulatenetwork.io/tx/<hash>?network=kermit
+https://explorer.accumulatenetwork.io/acc/alice.acme?network=kermit
+```
+
+This works from any host, so whoever writes the link does not have to know
+where the explorer is deployed.
+
+Resolution order, highest first:
+
+1. a build pinned with `VITE_NETWORK` — a property of the deployment
+2. `?network=` in the URL
+3. a network-specific hostname, e.g. `kermit.explorer.accumulatenetwork.io`
+4. mainnet
+
+A link that names no network opens on **mainnet**, whatever the reader last
+selected in the app: a stored preference cannot be allowed to decide what
+somebody else's link means. Choosing a network from the menu navigates and
+puts it in the URL, so the address bar always matches what is on screen and a
+link copied from any page works for the next person.
+
+A `?network=` naming something unknown falls through to the order above rather
+than failing the page, and says so.
+
+Account URLs are the reason this matters most. `acc://ACME` and
+`acc://dn.acme/operators` exist on both mainnet and Kermit, so a link to the
+wrong network does not 404 — it renders a different real account as though it
+were the right one. Only naming the network prevents that.
+
 ## Network-Specific Features
 
 ### Local Devnet

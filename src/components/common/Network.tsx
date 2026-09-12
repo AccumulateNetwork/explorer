@@ -1,5 +1,6 @@
 import { Badge } from 'antd';
 import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { URL } from 'accumulate.js';
 import { JsonRpcClient } from 'accumulate.js/lib/api_v3';
@@ -12,7 +13,6 @@ import {
 } from 'accumulate.js/lib/core';
 
 import { Ctor, isRecordOf } from '../../utils/types';
-import { Settings } from '../explorer/Settings';
 import { NetworkConfig, getNetwork } from './networks';
 import { useAsyncState } from './useAsync';
 
@@ -226,21 +226,43 @@ function syntheticOk(
   return true;
 }
 
+/** The query parameter a link uses to name the network it means. */
+export const NETWORK_PARAM = 'network';
+
 /**
- * The network to open on, absent an explicit choice.
+ * The network named in a URL's query string, if it names a known one.
  *
- * Takes the stored selection and hostname as parameters so it can be tested
- * without a DOM or storage; both default to the live values.
- *
- * A stored selection only means something if the user actually made one,
- * which is why {@link Settings.selectedNetwork} defaults to empty rather
- * than 'mainnet'. While the two were one value, this function returned at
- * the first branch on every fresh browser and the hostname defaults below
- * were unreachable — so kermit.explorer opened on Mainnet and its deep links
- * appeared not to exist (#73).
+ * An unrecognised value resolves to nothing rather than failing the page, so
+ * a typo degrades to the ordinary default; {@link unknownNetworkParam} reports
+ * it so it is not silently ignored.
  */
-export function defaultNetworkName(
-  stored: string = Settings.selectedNetwork,
+export function networkFromSearch(search: string): string | undefined {
+  if (!search) {
+    return undefined;
+  }
+  const name = new URLSearchParams(search).get(NETWORK_PARAM);
+  return name && getNetwork(name) ? getNetwork(name).id : undefined;
+}
+
+/** A `network` parameter that names nothing, for reporting to the user. */
+export function unknownNetworkParam(search: string): string | undefined {
+  if (!search) {
+    return undefined;
+  }
+  const name = new URLSearchParams(search).get(NETWORK_PARAM);
+  return name && !getNetwork(name) ? name : undefined;
+}
+
+/**
+ * The network a URL resolves to when it does not name one: the build it was
+ * pinned to, else the host, else mainnet.
+ *
+ * This is what a link carrying no `?network=` means, and what
+ * {@link defaultNetworkName} falls back to. Exported so the app can tell
+ * whether the parameter needs to be in the URL at all — on kermit.explorer it
+ * does not, because the host already says so.
+ */
+export function ambientNetworkName(
   hostname: string = typeof window !== 'undefined'
     ? window.location.hostname
     : '',
@@ -248,28 +270,122 @@ export function defaultNetworkName(
   if (import.meta.env.VITE_APP_API_PATH) {
     return import.meta.env.VITE_APP_API_PATH;
   }
-  // A build pinned to one network (VITE_NETWORK=kermit) always wins.
+  // A build pinned to one network (VITE_NETWORK=kermit) always wins: it is a
+  // property of the deployment, not of the link.
   if (!Context.canChangeNetwork && import.meta.env.VITE_NETWORK) {
     return import.meta.env.VITE_NETWORK;
   }
 
-  // Honor the user's last explicit selection if it's still a known network.
-  // An unknown one (a network since removed) is ignored, not cleared: this
-  // function has no side effects.
-  if (stored && getNetwork(stored)) {
-    return stored;
-  }
-
-  // No explicit choice — a network-specific host names its own network.
-  // localhost is deliberately absent: it would point development and the
-  // smoke script at a devnet that is usually not running. Pin it explicitly
-  // with VITE_NETWORK=local, or switch networks in the UI.
+  // A network-specific host names its own network. localhost is deliberately
+  // absent: it would point development and the smoke script at a devnet that
+  // is usually not running. Pin it with VITE_NETWORK=local, or name it in the
+  // URL.
   if (hostname.includes('kermit.explorer')) return 'kermit';
   if (hostname.includes('fozzie.explorer')) return 'fozzie';
   return 'mainnet';
 }
 
+/**
+ * The network to open on.
+ *
+ * Precedence, highest first:
+ *
+ * 1. a build pinned with `VITE_NETWORK`, an infrastructure fact
+ * 2. **`?network=` in the URL**
+ * 3. a network-specific hostname
+ * 4. mainnet
+ *
+ * The reader's stored selection is deliberately absent. It used to sit above
+ * the hostname, so anyone who had ever used the network selector overrode
+ * every network-specific deep link they were given — `kermit.explorer/tx/…`
+ * opened on Mainnet for them, which is the same symptom as #73 arriving by a
+ * different route. A link has to mean the same thing for every reader, so
+ * what resolves it is the link, never the reader (#84).
+ *
+ * Takes the query string and hostname as parameters so it can be tested
+ * without a DOM; both default to the live values. It has no side effects and
+ * reads no storage.
+ */
+export function defaultNetworkName(
+  search: string = typeof window !== 'undefined' ? window.location.search : '',
+  hostname: string = typeof window !== 'undefined'
+    ? window.location.hostname
+    : '',
+): string {
+  if (import.meta.env.VITE_APP_API_PATH) {
+    return import.meta.env.VITE_APP_API_PATH;
+  }
+  if (!Context.canChangeNetwork && import.meta.env.VITE_NETWORK) {
+    return import.meta.env.VITE_NETWORK;
+  }
+  return networkFromSearch(search) ?? ambientNetworkName(hostname);
+}
+
+/**
+ * The same path with the network named, or not, according to whether the URL
+ * has to carry it. On a host that already names the network the parameter is
+ * redundant and is left off.
+ */
+export function withNetworkParam(
+  pathname: string,
+  search: string,
+  networkID: string,
+  hostname?: string,
+): string {
+  const params = new URLSearchParams(search);
+  if (networkID === ambientNetworkName(hostname)) {
+    params.delete(NETWORK_PARAM);
+  } else {
+    params.set(NETWORK_PARAM, networkID);
+  }
+  const q = params.toString();
+  return q ? `${pathname}?${q}` : pathname;
+}
+
+/**
+ * Keeps the network in the URL as the reader moves around.
+ *
+ * A forced network has to survive a click, and a URL copied from a later page
+ * has to still name it — otherwise the link works once and then silently
+ * reverts to whatever the next reader defaults to. Doing that at each call
+ * site would mean touching a dozen navigations and would rot the moment a
+ * thirteenth was added, so it is enforced here instead: after any navigation,
+ * the parameter is put back.
+ *
+ * It also lets the URL win over the running app. Editing `?network=` by hand,
+ * or following a link into an already-open tab, names a network the Context
+ * was not built for; the Context is built once per load, so the honest
+ * response is to load again.
+ */
+function KeepNetworkParam() {
+  const shared = useContext(Network);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const named = networkFromSearch(location.search);
+    if (named && named !== shared.network.id) {
+      // The URL names a different network than this Context serves.
+      window.location.reload();
+      return;
+    }
+    if (named) {
+      return;
+    }
+    const wanted = withNetworkParam(
+      location.pathname,
+      location.search,
+      shared.network.id,
+    );
+    if (wanted !== location.pathname + location.search) {
+      navigate(wanted, { replace: true });
+    }
+  }, [location.pathname, location.search, shared.network.id]);
+
+  return null;
+}
+
 export const Network = Object.assign(
   React.createContext<Context>(new Context()),
-  { Context, Status },
+  { Context, Status, KeepParam: KeepNetworkParam },
 );
