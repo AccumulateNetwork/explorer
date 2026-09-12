@@ -3,6 +3,19 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.11] - 2026-09-11
+
+The signature table answers per authority, and keeps answering after a transaction finishes.
+
+### Changed
+- **Signatures are grouped by the authority they belong to.** Every authority of the principal gets a row, disabled ones included, and so does any other book that signed; each row splits into Signatures, Rejections and Historical, and every record lands in exactly one group of one row. Rejections are carved out because they are live signatures voting *no*, not because they stopped counting — reject and abstain share the group, each row tagged with which, since the executor counts any vote that is not accept as a reject. ([#83](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/83))
+
+### Fixed
+- **A completed transaction no longer collapses to one flat list.** The chain clears the active set on execution, so every record is flagged `historical` and the flag separates nothing — the very question the table exists to answer. The two rules that decide membership are replayed from the records instead: a signature at a higher signer version replaces the set, and a later signature from the same key overwrites the earlier one. On the real rejected distribution for pay period 192 this recovers the accept a signer later overrode with a rejection, and names why. While a transaction is pending nothing changes: the chain still decides, and the rules only supply the reason. ([#86](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/86))
+
+  The rule read is the cohort *within* the record — the highest signer version present — never a comparison against the key page's current version, which reports live votes as dead and has destroyed a real quorum ([#81](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/81)). A test asserts the one-directional soundness that rests on.
+- **A disabled authority no longer reads as Pending.** Its vote is not required except on `UpdateAccountAuth`, so showing it as pending said we were waiting on it. It says Not required, with a note explaining that auth checks are off and anyone may sign for it. ([#86](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/86))
+
 ## [0.4.10] - 2026-09-01
 
 Follow-up to 0.4.9: the second signature table learns the same lesson as the first.
