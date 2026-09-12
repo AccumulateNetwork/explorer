@@ -27,6 +27,7 @@ import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
 import {
   AuthorityGroup,
+  RecordStatus,
   RequiredAuthority,
   groupSignatures,
   voteOf,
@@ -207,7 +208,7 @@ export function Signatures(props: {
       ) : (
         <Required
           authorities={authorities}
-          signatures={signatures}
+          sets={props.signatures}
           principalSigs={principalSigs}
           transaction={transaction}
           pending={props.pending}
@@ -468,13 +469,13 @@ function Validators({
  */
 function Required({
   authorities,
-  signatures,
+  sets,
   principalSigs,
   transaction,
   pending,
 }: {
   authorities: RequiredAuthority[];
-  signatures: SigRecord[];
+  sets: SignatureSetRecord[];
   principalSigs: MessageRecord[];
   transaction: core.Transaction;
   pending?: boolean;
@@ -486,7 +487,7 @@ function Required({
     ? principalSigs.filter((x) => !x.historical)
     : principalSigs;
 
-  const groups = groupSignatures(signatures, authorities, { pending });
+  const { groups, status } = groupSignatures(sets, authorities, { pending });
 
   const creditPayments = principalSigs.filter(
     (x): x is MessageRecord<messaging.CreditPayment> =>
@@ -558,6 +559,12 @@ function Required({
           return null;
         }
 
+        // A disabled authority whose vote is not required is not being waited
+        // on either, and rendering it as Pending said the opposite (#86).
+        if (item.kind === 'disabled' && !disabledStillRequired) {
+          return <Tag color="default">Not required</Tag>;
+        }
+
         const votes = Array.from(
           new Set(
             countedSigs
@@ -620,6 +627,8 @@ function Required({
     return (
       <AuthorityDetail
         group={item}
+        status={status}
+        pending={pending}
         disabledStillRequired={disabledStillRequired}
       />
     );
@@ -642,9 +651,13 @@ function Required({
 /** The three groups under one authority, each labelled and counted. */
 function AuthorityDetail({
   group,
+  status,
+  pending,
   disabledStillRequired,
 }: {
   group: AuthorityGroup;
+  status: Map<string, RecordStatus>;
+  pending?: boolean;
   disabledStillRequired: boolean;
 }) {
   const sections: {
@@ -661,11 +674,23 @@ function AuthorityDetail({
       records: group.historical,
       note: (
         <Text type="secondary">
-          Historical signatures are not in the signer&rsquo;s active set and do
-          not count toward signing this transaction. A signature leaves the
-          active set when the key book changes while the transaction is in
-          flight &mdash; the page is modified, a key is removed &mdash; or when
-          the signer votes again.
+          {pending ? (
+            <>
+              Historical signatures are not in the signer&rsquo;s active set and
+              do not count toward signing this transaction. A signature leaves
+              the active set when the key book changes while the transaction is
+              in flight &mdash; the page is modified, a key is removed &mdash;
+              or when the signer votes again.
+            </>
+          ) : (
+            <>
+              This transaction has finished, and the chain clears the active set
+              when it does, so it no longer reports which signatures counted.
+              These are the ones superseded before it finished &mdash; replaced
+              when a signature at a newer key book version arrived, or
+              overridden when the signer voted again.
+            </>
+          )}
         </Text>
       ),
     },
@@ -704,6 +729,7 @@ function AuthorityDetail({
             <Signature.List
               dataSource={records}
               showVote={key !== 'signatures'}
+              annotate={(r) => <Why status={status.get(`${r.id}`)} />}
             />
           </div>
         ))}
@@ -712,6 +738,54 @@ function AuthorityDetail({
         !group.rejections.length &&
         !group.historical.length && <Text disabled>No signatures</Text>}
     </div>
+  );
+}
+
+/**
+ * Why a record does not count, where the executor's rules say so, and whether
+ * its key is still on the page. Silent when it counts and nothing is unusual:
+ * the rules detect violations, so having nothing to report is the normal case.
+ */
+function Why({ status }: { status?: RecordStatus }) {
+  if (!status) {
+    return null;
+  }
+  const parts: React.ReactNode[] = [];
+  switch (status.reason) {
+    case 'replaced':
+      parts.push(
+        status.version
+          ? `replaced — signed against key book version ${status.version}, and a newer signature has since taken its place`
+          : 'replaced — a signature at a newer key book version has taken its place',
+      );
+      break;
+    case 'overridden':
+      parts.push(
+        status.supersededBy
+          ? `overridden — the same key voted again${
+              voteOf(status.supersededBy.message.signature) === VoteType.Reject
+                ? ', to reject'
+                : ''
+            }`
+          : 'overridden — the same key voted again',
+      );
+      break;
+    case 'unknown':
+      parts.push('not in the signer’s active set');
+      break;
+    default:
+      break;
+  }
+  if (status.keyRemoved) {
+    parts.push('signed by a key that is no longer an entry on this page');
+  }
+  if (!parts.length) {
+    return null;
+  }
+  return (
+    <Paragraph style={{ marginBottom: 5 }}>
+      <Text type="secondary">{parts.join('; ')}</Text>
+    </Paragraph>
   );
 }
 
@@ -759,6 +833,7 @@ function Signature({
 Signature.List = function List({
   dataSource,
   showVote,
+  annotate,
 }: {
   dataSource: SigRecord[];
   bordered?: boolean;
@@ -768,6 +843,8 @@ Signature.List = function List({
    * rejection they replaced it with — so the list has to say which (#83).
    */
   showVote?: boolean;
+  /** Extra context for one record, rendered above it. */
+  annotate?: (_: SigRecord) => React.ReactNode;
 }) {
   return (
     <InfiniteList<SigRecord>
@@ -788,6 +865,7 @@ Signature.List = function List({
                 <VoteTag signature={r.message.signature} />
               </Paragraph>
             )}
+            {annotate?.(r)}
             <Signature signature={r.message.signature} />
           </div>
           <Link to={r.id} target="_blank">
