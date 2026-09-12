@@ -25,7 +25,12 @@ import {
 } from 'accumulate.js/lib/core';
 import { BlockAnchor, SequencedMessage } from 'accumulate.js/lib/messaging';
 
-import { bucketSignatures } from '../../utils/signatureBuckets';
+import {
+  AuthorityGroup,
+  RequiredAuthority,
+  groupSignatures,
+  voteOf,
+} from '../../utils/signatureBuckets';
 import { computeSignatureState } from '../../utils/signatureState';
 import { SigRecord, isRecordOf } from '../../utils/types';
 import { InfiniteList } from './InfiniteList';
@@ -47,7 +52,7 @@ export function Signatures(props: {
 }) {
   const transaction = props.transaction;
 
-  const [authorities, setAuthorities] = useState<URL[]>(null);
+  const [authorities, setAuthorities] = useState<RequiredAuthority[]>(null);
 
   const { api } = useContext(Network);
   const getAuthorities = async (scope: URLArgs) => {
@@ -79,17 +84,24 @@ export function Signatures(props: {
 
   const getAllAuthorities = async () => {
     try {
-      const authorities: URL[] = [];
-      const addAuth = (url: URL) => {
-        if (!authorities.find((x) => x.equals(url))) {
-          authorities.push(url);
+      const authorities: RequiredAuthority[] = [];
+      const addAuth = (url: URL, disabled = false) => {
+        const found = authorities.find((x) => x.url.equals(url));
+        if (found) {
+          // An authority named twice (an account's own, and again by an
+          // operation) is required if either mention requires it.
+          found.disabled = found.disabled && disabled;
+          return;
         }
+        authorities.push({ url, disabled });
       };
 
+      // Disabled authorities are listed, not dropped. Hiding them left no row
+      // to say the account has an authority whose checks are off (#83).
       for (const { url, disabled } of await getAuthorities(
         transaction.header.principal,
       )) {
-        if (!disabled) addAuth(url);
+        addAuth(url, disabled);
       }
 
       switch (transaction.body.type) {
@@ -197,6 +209,7 @@ export function Signatures(props: {
           authorities={authorities}
           signatures={signatures}
           principalSigs={principalSigs}
+          transaction={transaction}
           pending={props.pending}
         />
       )}
@@ -446,15 +459,24 @@ function Validators({
   );
 }
 
+/**
+ * Signatures grouped by the authority they belong to.
+ *
+ * Every authority of the principal gets a row, disabled ones included, and so
+ * does any other book that signed. Inside a row the records are split three
+ * ways: what counts, what votes against, and what the chain no longer holds.
+ */
 function Required({
   authorities,
   signatures,
   principalSigs,
+  transaction,
   pending,
 }: {
-  authorities: URL[];
+  authorities: RequiredAuthority[];
   signatures: SigRecord[];
   principalSigs: MessageRecord[];
+  transaction: core.Transaction;
   pending?: boolean;
 }) {
   // A vote the executor has discarded is not a vote. While the transaction is
@@ -464,85 +486,78 @@ function Required({
     ? principalSigs.filter((x) => !x.historical)
     : principalSigs;
 
-  // Every record lands in exactly one row. Discarded signatures used to sit
-  // under the authority they were made for, so this table listed four
-  // signatures for an authority the chain credited with one (#82).
-  const buckets = bucketSignatures(signatures, authorities, { pending });
-  const signaturesForAuthority = (authority: URL) =>
-    buckets.byAuthority.get(`${authority}`.toLowerCase()) || [];
+  const groups = groupSignatures(signatures, authorities, { pending });
 
   const creditPayments = principalSigs.filter(
     (x): x is MessageRecord<messaging.CreditPayment> =>
       isRecordOf(x, messaging.CreditPayment),
   );
-  const otherSigs = buckets.other;
-  const invalidSigs = buckets.invalid;
 
-  type Item = 'credits' | 'invalid' | 'other' | URL;
+  // UpdateAccountAuth is the one type where the executor still requires a
+  // disabled authority to vote — `transaction.go` skips a disabled entry
+  // unless the body RequireAuthorization()s. Say which case this is rather
+  // than a sentence that is wrong half the time.
+  const disabledStillRequired =
+    transaction.body?.type === TransactionType.UpdateAccountAuth;
+
+  type Item = 'credits' | AuthorityGroup;
   const columns = [
     {
       key: 'type',
-      render(_, authority: Item) {
-        if (authority === 'credits') {
+      render(_, item: Item) {
+        if (item === 'credits') {
           return <span>Credits</span>;
         }
-        if (authority === 'invalid') {
-          return <span>Invalid</span>;
-        }
-        if (authority === 'other') {
-          return <span>Other</span>;
-        }
-        return <span>Authority</span>;
+        return (
+          <span className="no-break">
+            {item.kind === 'other' ? 'Other Authority' : 'Authority'}
+          </span>
+        );
       },
     },
     {
       key: 'info',
-      render(_, authority: Item) {
-        if (authority === 'credits') {
+      render(_, item: Item) {
+        if (item === 'credits') {
           const paid = creditPayments.reduce(
             (sum, x) => sum + x.message.paid,
             0,
           );
           return <span>{paid * 1e-2} paid</span>;
         }
-        if (authority === 'invalid') {
-          return <span>{invalidSigs.length} signature(s)</span>;
-        }
-        if (authority === 'other') {
-          return <span>{otherSigs.length} signature(s)</span>;
-        }
         return (
-          <Link to={authority}>
-            <IconContext.Provider value={{ className: 'react-icons' }}>
-              <RiAccountCircleLine />
-            </IconContext.Provider>
-            {`${authority}`}
-          </Link>
+          <span>
+            <Link to={item.authority}>
+              <IconContext.Provider value={{ className: 'react-icons' }}>
+                <RiAccountCircleLine />
+              </IconContext.Provider>
+              {`${item.authority}`}
+            </Link>
+            {item.kind === 'disabled' && (
+              <Tag color="default" style={{ marginLeft: 8 }}>
+                Disabled
+              </Tag>
+            )}
+          </span>
         );
       },
     },
     {
       key: 'status',
-      render(_, authority: Item) {
-        if (authority === 'other') {
-          return;
-        }
-        if (authority === 'invalid') {
-          return (
-            <Tooltip
-              overlayClassName="explorer-tooltip"
-              title="Not in the signer's active set, so nothing here counts toward a threshold: either a signature at a higher signer version replaced the set, or the signer has emitted the authority signature that supersedes it"
-            >
-              <Tag color="red">Not counted</Tag>
-            </Tooltip>
-          );
-        }
-        if (authority === 'credits') {
+      render(_, item: Item) {
+        if (item === 'credits') {
           if (creditPayments.length > 0) {
             return <Tag color="green">Received</Tag>;
           }
           return <Tag color="yellow">Pending</Tag>;
         }
+
+        // Only the principal's own authorities have a vote to report. A book
+        // that merely signed is not being waited on.
+        if (item.kind === 'other') {
+          return null;
+        }
+
         const votes = Array.from(
           new Set(
             countedSigs
@@ -550,7 +565,7 @@ function Required({
                 isRecordOf(x, core.AuthoritySignature),
               )
               .map((x) => x.message.signature)
-              .filter((x) => x.authority.equals(authority))
+              .filter((x) => x.authority.equals(item.authority))
               .map((x) => x.vote?.toString() || 'accept'),
           ),
         );
@@ -575,21 +590,17 @@ function Required({
     },
   ];
 
-  const rowExpandable = (authority) => {
-    if (authority === 'credits') {
-      return creditPayments.length > 0;
-    }
-    if (authority === 'invalid') {
-      return invalidSigs.length > 0;
-    }
-    if (authority === 'other') {
-      return otherSigs.length > 0;
-    }
-    return signaturesForAuthority(authority).length > 0;
-  };
+  const rowExpandable = (item: Item) =>
+    item === 'credits'
+      ? creditPayments.length > 0
+      : item.kind === 'disabled' ||
+        item.signatures.length +
+          item.rejections.length +
+          item.historical.length >
+          0;
 
-  const expandedRowRender = (authority) => {
-    if (authority === 'credits') {
+  const expandedRowRender = (item: Item) => {
+    if (item === 'credits') {
       return (
         <div>
           {creditPayments.map((x) => (
@@ -606,30 +617,117 @@ function Required({
         </div>
       );
     }
-    if (authority === 'invalid') {
-      return <Signature.List dataSource={invalidSigs} />;
-    }
-    if (authority === 'other') {
-      return <Signature.List dataSource={otherSigs} />;
-    }
-    return <Signature.List dataSource={signaturesForAuthority(authority)} />;
+    return (
+      <AuthorityDetail
+        group={item}
+        disabledStillRequired={disabledStillRequired}
+      />
+    );
   };
 
   return (
     <Table
       showHeader={false}
-      dataSource={[
-        'credits',
-        ...authorities,
-        ...(invalidSigs.length > 0 ? ['invalid'] : []),
-        ...(otherSigs.length > 0 ? ['other'] : []),
-      ]}
+      dataSource={['credits' as Item, ...groups]}
       columns={columns}
-      rowKey={(authority) => authority}
+      rowKey={(item: Item) =>
+        item === 'credits' ? 'credits' : `${item.authority}`.toLowerCase()
+      }
       pagination={false}
       expandable={{ expandedRowRender, rowExpandable }}
     />
   );
+}
+
+/** The three groups under one authority, each labelled and counted. */
+function AuthorityDetail({
+  group,
+  disabledStillRequired,
+}: {
+  group: AuthorityGroup;
+  disabledStillRequired: boolean;
+}) {
+  const sections: {
+    key: string;
+    label: string;
+    records: SigRecord[];
+    note?: React.ReactNode;
+  }[] = [
+    { key: 'signatures', label: 'Signatures', records: group.signatures },
+    { key: 'rejections', label: 'Rejections', records: group.rejections },
+    {
+      key: 'historical',
+      label: 'Historical',
+      records: group.historical,
+      note: (
+        <Text type="secondary">
+          Historical signatures are not in the signer&rsquo;s active set and do
+          not count toward signing this transaction. A signature leaves the
+          active set when the key book changes while the transaction is in
+          flight &mdash; the page is modified, a key is removed &mdash; or when
+          the signer votes again.
+        </Text>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {group.kind === 'disabled' && (
+        <Paragraph style={{ marginBottom: 12 }}>
+          <Text type="secondary">
+            Auth checks are disabled for this authority: anyone may sign for it,
+            and its vote{' '}
+            {disabledStillRequired ? (
+              <Text strong type="secondary">
+                is still required
+              </Text>
+            ) : (
+              <Text strong type="secondary">
+                is not required
+              </Text>
+            )}{' '}
+            for this transaction.
+          </Text>
+        </Paragraph>
+      )}
+
+      {sections
+        .filter((x) => x.records.length > 0)
+        .map(({ key, label, records, note }) => (
+          <div key={key} style={{ marginBottom: 12 }}>
+            <Paragraph style={{ marginBottom: 4 }}>
+              <Text strong>{label}</Text>{' '}
+              <Text type="secondary">({records.length})</Text>
+            </Paragraph>
+            {note && <Paragraph style={{ marginBottom: 8 }}>{note}</Paragraph>}
+            <Signature.List
+              dataSource={records}
+              showVote={key !== 'signatures'}
+            />
+          </div>
+        ))}
+
+      {!group.signatures.length &&
+        !group.rejections.length &&
+        !group.historical.length && <Text disabled>No signatures</Text>}
+    </div>
+  );
+}
+
+/** The vote a record carried, for the lists where they are not all accepts. */
+function VoteTag({ signature }: { signature: core.Signature }) {
+  const vote = voteOf(signature);
+  switch (vote) {
+    case VoteType.Reject:
+      return <Tag color="red">reject</Tag>;
+    case VoteType.Abstain:
+      return <Tag color="orange">abstain</Tag>;
+    case VoteType.Suggest:
+      return <Tag color="blue">suggest</Tag>;
+    default:
+      return <Tag color="green">accept</Tag>;
+  }
 }
 
 function Signature({
@@ -660,9 +758,16 @@ function Signature({
 
 Signature.List = function List({
   dataSource,
+  showVote,
 }: {
   dataSource: SigRecord[];
   bordered?: boolean;
+  /**
+   * Show the vote each record carried. The rejection and historical lists are
+   * mixed — a historical entry may be an accept the signer replaced, or the
+   * rejection they replaced it with — so the list has to say which (#83).
+   */
+  showVote?: boolean;
 }) {
   return (
     <InfiniteList<SigRecord>
@@ -678,6 +783,11 @@ Signature.List = function List({
           }}
         >
           <div style={{ flex: 1 }}>
+            {showVote && (
+              <Paragraph style={{ marginBottom: 5 }}>
+                <VoteTag signature={r.message.signature} />
+              </Paragraph>
+            )}
             <Signature signature={r.message.signature} />
           </div>
           <Link to={r.id} target="_blank">

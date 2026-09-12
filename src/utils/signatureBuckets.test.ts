@@ -2,17 +2,24 @@ import { describe, expect, it } from 'vitest';
 
 import { URL, core, messaging } from 'accumulate.js';
 import { MessageRecord } from 'accumulate.js/lib/api_v3';
+import { VoteType } from 'accumulate.js/lib/core';
 
 import deliveredRotatedKey from './__fixtures__/delivered-rotated-key.json';
 import pendingLiveOlder from './__fixtures__/pending-live-older-version.json';
 import pendingVersionBump from './__fixtures__/pending-page-version-bump.json';
-import { bucketSignatures, signatureAuthority } from './signatureBuckets';
+import rejected192 from './__fixtures__/rejected-pay-period-192.json';
+import {
+  AuthorityGroup,
+  groupSignatures,
+  signatureAuthority,
+  voteOf,
+} from './signatureBuckets';
 import { SigRecord, isRecordOf } from './types';
 
 /**
- * The records the Required table lists, gathered the way `Signatures` gathers
- * them: user signatures only — a delegated signature or one carrying a key.
- * Authority signatures are votes, not records the table lists.
+ * The records the table lists, gathered the way `Signatures` gathers them:
+ * user signatures only — delegated, or carrying a key. Authority signatures
+ * are the authority's vote and drive the row's status tag instead.
  */
 function listed(fixture: unknown): SigRecord[] {
   const record = new MessageRecord(
@@ -33,90 +40,169 @@ function listed(fixture: unknown): SigRecord[] {
   return out;
 }
 
-// Both fixtures are the real mainnet period-196 distribution on acc://ACME,
-// whose sole required authority is acc://staking.acme/book.
-const required = [URL.parse('acc://staking.acme/book')];
+const staking = URL.parse('acc://staking.acme/book');
+const ops = URL.parse('acc://ops.acme/book');
+const at = (groups: AuthorityGroup[], url: string) =>
+  groups.find((x) => `${x.authority}`.toLowerCase() === url)!;
+const total = (g: AuthorityGroup) =>
+  g.signatures.length + g.rejections.length + g.historical.length;
 
-describe('bucketSignatures, on the pending distribution', () => {
+// The real mainnet period-196 distribution on acc://ACME, whose sole required
+// authority is acc://staking.acme/book. Its page moved from version 11 to 12
+// and a version-12 signature replaced the active set.
+describe('groupSignatures, on the pending distribution', () => {
   const signatures = listed(pendingVersionBump);
-  const b = bucketSignatures(signatures, required, { pending: true });
-  const forBook = b.byAuthority.get('acc://staking.acme/book')!;
-
-  it('files everything the chain no longer holds under Invalid', () => {
-    // Two version-11 sidecar keys the version-12 signature discarded, plus
-    // beastmode's, superseded by a kompendium vote that was itself discarded.
-    expect(b.invalid).toHaveLength(3);
-    expect(b.invalid.every((x) => x.historical)).toBe(true);
+  const groups = groupSignatures(signatures, [{ url: staking }], {
+    pending: true,
   });
 
-  it('leaves the authority holding only what still counts', () => {
-    // The whole defect: this row expanded to four signatures, three of them
-    // dead, so a reader counted four valid authority signatures (#82).
-    expect(forBook).toHaveLength(1);
-    expect(forBook[0].historical).toBeFalsy();
-    expect(
-      `${signatureAuthority(forBook[0].message.signature)}`.toLowerCase(),
-    ).toBe('acc://staking.acme/book');
+  it('gives the required authority its own row', () => {
+    const g = at(groups, 'acc://staking.acme/book');
+    expect(g.kind).toBe('required');
+    expect(g.signatures).toHaveLength(1);
+    expect(g.rejections).toHaveLength(0);
+    expect(g.historical).toHaveLength(3);
   });
 
-  it('keeps Other for authorities the transaction does not require', () => {
+  it('gives a book that is not an authority its own row, not a catch-all', () => {
     // PennyRocket's fresh signature, delegated through dn.acme/operators.
-    expect(b.other).toHaveLength(1);
-    expect(b.other[0].historical).toBeFalsy();
+    const g = at(groups, 'acc://dn.acme/operators');
+    expect(g.kind).toBe('other');
+    expect(g.signatures).toHaveLength(1);
   });
 
-  it('puts every record in exactly one bucket, losing none', () => {
-    const all = [...b.invalid, ...forBook, ...b.other];
+  it('orders required authorities before the rest', () => {
+    expect(groups.map((x) => x.kind)).toEqual(['required', 'other']);
+  });
+
+  it('places every record exactly once, losing none', () => {
+    const all = groups.flatMap((g) => [
+      ...g.signatures,
+      ...g.rejections,
+      ...g.historical,
+    ]);
     expect(all).toHaveLength(signatures.length);
     expect(new Set(all.map((x) => `${x.id}`)).size).toBe(signatures.length);
   });
 });
 
-describe('bucketSignatures, when nothing has been discarded', () => {
-  // The same record one block earlier: the page is already version 12 and all
-  // three signatures on it were made against version 11 and are still LIVE.
-  const b = bucketSignatures(listed(pendingLiveOlder), required, {
-    pending: true,
-  });
+// Pay period 192, acc://6ab38d74…@ACME — a real transaction that was rejected
+// and expired. PennyRocket's page carries an accept and then two rejects: the
+// signer voted, then voted again.
+describe('groupSignatures, on a transaction with real rejections', () => {
+  const signatures = listed(rejected192);
 
-  it('keeps every live signature under its authority', () => {
-    expect(b.byAuthority.get('acc://staking.acme/book')).toHaveLength(2);
+  it('carves rejections out of the signature list', () => {
+    const g = at(
+      groupSignatures(signatures, [{ url: staking }]),
+      'acc://staking.acme/book',
+    );
+    expect(g.rejections.length).toBeGreaterThan(0);
     expect(
-      b.byAuthority.get('acc://staking.acme/book')!.every((x) => !x.historical),
+      g.rejections.every(
+        (x) => voteOf(x.message.signature) !== VoteType.Accept,
+      ),
+    ).toBe(true);
+    expect(
+      g.signatures.every(
+        (x) => voteOf(x.message.signature) === VoteType.Accept,
+      ),
     ).toBe(true);
   });
 
-  it('holds only the superseded signature, not a discarded one', () => {
-    // beastmode's key signature is historical here too, but for the benign
-    // reason: its page reached its threshold and emitted the authority
-    // signature that carries it, and emitting one clears the set. Nothing on
-    // this record was discarded — the progress table reads 3 of 4 — so the
-    // bucket asserts only what `historical` supports: these do not count.
-    expect(b.invalid).toHaveLength(1);
-    expect(`${b.invalid[0].id}`).toContain('beastmode.acme/book/1');
+  it('reads the vote through the delegation that wraps it', () => {
+    // The rejections here are delegated signatures; the vote sits on the key
+    // signature inside, so reading the outer one finds nothing.
+    const rejects = signatures.filter(
+      (x) => voteOf(x.message.signature) === VoteType.Reject,
+    );
+    expect(rejects.length).toBeGreaterThan(0);
+    expect(
+      rejects.some(
+        (x) => x.message.signature instanceof core.DelegatedSignature,
+      ),
+    ).toBe(true);
+  });
+
+  it('keeps a rejection in Historical when it has left the active set', () => {
+    // The point of the group: Historical is not "the accepts that died". A
+    // signer who rejects and then signs again leaves the rejection here, so
+    // the list has to say which vote each record carried.
+    const historical = groupSignatures(signatures, [{ url: staking }], {
+      pending: true,
+    }).flatMap((x) => x.historical);
+    expect(historical).toHaveLength(signatures.length);
+    const votes = new Set(historical.map((x) => voteOf(x.message.signature)));
+    expect(votes.has(VoteType.Reject)).toBe(true);
+    expect(votes.has(VoteType.Accept)).toBe(true);
   });
 });
 
-describe('bucketSignatures, on a delivered transaction', () => {
-  // Every signature on a delivered transaction is historical — the active set
-  // is cleared on execution (#81). Bucketing by the flag here would report the
-  // distribution that actually paid out as entirely invalid.
-  const signatures = listed(deliveredRotatedKey);
+describe('groupSignatures, disabled authorities', () => {
+  const groups = groupSignatures(
+    listed(pendingVersionBump),
+    [{ url: staking }, { url: ops, disabled: true }],
+    { pending: true },
+  );
 
-  it('invalidates nothing, and buckets exactly as it did before', () => {
-    const b = bucketSignatures(signatures, required);
-    expect(signatures.every((x) => x.historical)).toBe(true);
-    expect(b.invalid).toHaveLength(0);
-    expect(
-      b.byAuthority.get('acc://staking.acme/book')!.length + b.other.length,
-    ).toBe(signatures.length);
+  it('lists a disabled authority even with nothing signed for it', () => {
+    const g = at(groups, 'acc://ops.acme/book');
+    expect(g.kind).toBe('disabled');
+    expect(total(g)).toBe(0);
   });
 
-  it('would empty the authority row if the flag were read here', () => {
-    // Guards the gate itself: drop `pending` and this is what users would see.
-    const wrong = bucketSignatures(signatures, required, { pending: true });
-    expect(wrong.invalid).toHaveLength(signatures.length);
-    expect(wrong.byAuthority.get('acc://staking.acme/book')).toHaveLength(0);
+  it('orders required, then disabled, then other', () => {
+    expect(groups.map((x) => x.kind)).toEqual([
+      'required',
+      'disabled',
+      'other',
+    ]);
+  });
+});
+
+describe('groupSignatures, on the healthy record one block earlier', () => {
+  // The page is already version 12 and both sidecar signatures on it were made
+  // against version 11 and are still LIVE — nothing was replaced, and the
+  // progress table reads 3 of 4. A version comparison would call them dead.
+  const groups = groupSignatures(listed(pendingLiveOlder), [{ url: staking }], {
+    pending: true,
+  });
+  const g = at(groups, 'acc://staking.acme/book');
+
+  it('counts a live signature whose version is older than the page’s', () => {
+    expect(g.signatures).toHaveLength(2);
+    expect(g.signatures.every((x) => !x.historical)).toBe(true);
+  });
+
+  it('files beastmode’s consumed signature as historical, by the flag', () => {
+    // beastmode's key signature left its own active set because its page
+    // reached threshold and emitted the authority signature carrying it —
+    // success, not a broken rule. The chain reports it as `historical` all the
+    // same, and we take the chain's answer rather than inferring the cause.
+    // What the group asserts is exactly what the flag supports: this is not in
+    // the active set, so it does not count toward the threshold.
+    expect(g.historical).toHaveLength(1);
+    expect(`${g.historical[0].id}`).toContain('beastmode.acme/book/1');
+  });
+});
+
+describe('groupSignatures, on a delivered transaction', () => {
+  // Every signature on a delivered transaction is historical: the active set
+  // is cleared on execution (#81). The `pending` gate is the one rule of our
+  // own, and this is what it is for.
+  const signatures = listed(deliveredRotatedKey);
+
+  it('files nothing as historical', () => {
+    expect(signatures.every((x) => x.historical)).toBe(true);
+    const groups = groupSignatures(signatures, [{ url: staking }]);
+    expect(groups.flatMap((x) => x.historical)).toHaveLength(0);
+  });
+
+  it('would file the whole distribution as historical without the gate', () => {
+    const wrong = groupSignatures(signatures, [{ url: staking }], {
+      pending: true,
+    });
+    expect(wrong.flatMap((x) => x.historical)).toHaveLength(signatures.length);
   });
 });
 
