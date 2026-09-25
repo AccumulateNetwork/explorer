@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -328,6 +329,21 @@ func main() {
 	}
 	defer timestampDB.Close()
 
+	// Token registry: seeded offline, followed online (tokens.go)
+	seedPath := os.Getenv(tokenSeedPathEnv)
+	if seedPath == "" {
+		seedPath = tokenSeedPathDef
+	}
+	tokens, err = loadTokenRegistry(timestampDB, accumulateAPI, seedPath)
+	if err != nil {
+		log.Fatalf("Failed to load token registry: %v", err)
+	}
+	if tokens == nil {
+		log.Printf("Token registry: no state and no seed at %s; token endpoints disabled", seedPath)
+	} else {
+		go tokens.Follow()
+	}
+
 	// Start background identity map updater
 	go func() {
 		ticker := time.NewTicker(30 * time.Second)
@@ -346,6 +362,13 @@ func main() {
 	router.HandleFunc("/v1/supply", getSupplyHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/v1/timestamp/{txid}", getTimestampHandler).Methods("GET", "OPTIONS")
 	router.HandleFunc("/staking/stakers/{url:.*}", getStakingAccountHandler).Methods("GET", "OPTIONS")
+	if tokens != nil {
+		router.HandleFunc("/v1/tokens/top", tokens.getTopTokensHandler).Methods("GET", "OPTIONS")
+		router.HandleFunc("/v1/tokens", tokens.getTokensHandler).Methods("GET", "OPTIONS")
+	} else {
+		router.HandleFunc("/v1/tokens/top", tokensUnavailable).Methods("GET", "OPTIONS")
+		router.HandleFunc("/v1/tokens", tokensUnavailable).Methods("GET", "OPTIONS")
+	}
 	router.HandleFunc("/health", healthHandler).Methods("GET")
 
 	// Start server
@@ -357,9 +380,10 @@ func main() {
 // Health check endpoint
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
+	json.NewEncoder(w).Encode(map[string]any{
 		"status": "healthy",
 		"time":   time.Now().Format(time.RFC3339),
+		"tokens": tokens.tokenHealth(),
 	})
 }
 
