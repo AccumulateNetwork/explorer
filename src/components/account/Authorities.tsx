@@ -1,10 +1,10 @@
 import { Spin, Tag, Typography } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
-import { AccountRecord, RecordType } from 'accumulate.js/lib/api_v3';
+import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   Account,
   AccountType,

@@ -35,8 +35,8 @@ const { Text } = Typography;
 export interface TxnFormProps {
   open: boolean;
   signer?: Signer;
-  onCancel: () => any;
-  onFinish: (ok: boolean) => any;
+  onCancel: () => void;
+  onFinish: (ok: boolean) => void;
 }
 
 type Signer = Sign.Signer & { account: KeyPage | LiteIdentity };
@@ -87,7 +87,7 @@ export function BaseTxnForm<Fields>({
       }
       setPrincipalSigners(
         signers.map(
-          ({ signer, entry }): Signer => ({
+          ({ signer }): Signer => ({
             signer: signer.url,
             signerVersion: signer instanceof KeyPage ? signer.version : 1,
             account: signer,
@@ -98,9 +98,13 @@ export function BaseTxnForm<Fields>({
     [principal],
   ).catch((err) => onApiError(err));
 
+  // Callers pass `signer` as an inline object literal, so depending on the
+  // object itself would re-run this effect (and setSigners) every render. The
+  // effect only cares whether an explicit signer was given.
+  const hasSigner = !!theSigner;
   useEffect(() => {
     setSigners([]);
-    if (theSigner || !web3?.linked) {
+    if (hasSigner || !web3?.linked) {
       return;
     }
 
@@ -144,7 +148,7 @@ export function BaseTxnForm<Fields>({
     } else {
       setSigners(allSigners);
     }
-  }, [web3, principalSigners]);
+  }, [web3, principalSigners, hasSigner]);
 
   useEffect(() => {
     if (!selectedSigner?.account) {
@@ -180,10 +184,9 @@ export function BaseTxnForm<Fields>({
       }
       onFinish(ok);
     } finally {
-      if (!isMounted.current) {
-        return;
+      if (isMounted.current) {
+        setIsSigning(false);
       }
-      setIsSigning(false);
     }
   };
 

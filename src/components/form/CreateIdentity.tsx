@@ -1,11 +1,11 @@
 import { CloseOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Form, Input, Space, Switch, Typography } from 'antd';
-import React, { useContext, useMemo, useState } from 'react';
+import { Button, Divider, Form, Input, Space, Switch } from 'antd';
+import React, { useContext, useState } from 'react';
 import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
-import { AccountType, KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
+import { KeyBook, TransactionArgs } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
 
 import tooltip from '../../utils/lang';
@@ -180,7 +180,7 @@ export function CreateIdentity(props: TxnFormProps) {
       <Form.Item label="Authorities" hidden={!externallyOwned}>
         <Form.List
           name="authorities"
-          children={(fields, { add, remove }, { errors }) => (
+          children={(fields, { add, remove }) => (
             <Space direction="vertical" size="middle" style={{ width: '100%' }}>
               {fields.map((field) => (
                 <InputAuthority

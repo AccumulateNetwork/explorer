@@ -6,7 +6,6 @@ import { TxID, URL } from 'accumulate.js';
 import { CreditRecipient, TokenRecipient } from 'accumulate.js/lib/core';
 
 import { Outputs } from '../message/Outputs';
-import { Amount, CreditAmount } from './Amount';
 import { InfiniteList, SHORT_LIST_LIMIT } from './InfiniteList';
 import { InfoTable } from './InfoTable';
 import { Link } from './Link';
@@ -21,10 +20,10 @@ export function describeProperty({
 }: {
   label?: string;
   key: string | number;
-  value: any;
-  obj: any;
+  value: unknown;
+  obj: unknown;
 }) {
-  obj = obj?.[key];
+  obj = field(obj, key);
   if (value === null || value === undefined) {
     return null;
   }
@@ -46,7 +45,8 @@ export function describeProperty({
   }
 
   if (typeof value !== 'object') {
-    return describe(label, key, value);
+    // Only strings and numbers reach here (asObject/JSON values).
+    return describe(label, key, `${value}`);
   }
 
   if (value instanceof Date) {
@@ -143,8 +143,8 @@ function renderArrayItem({
 }: {
   label: string;
   index: number;
-  value: any;
-  obj: any;
+  value: unknown;
+  obj: unknown;
 }) {
   // Object elements: recurse into each field so the nested <InfoTable>
   // shows one row per sub-property. Primitive elements: render a single
@@ -155,14 +155,22 @@ function renderArrayItem({
         label: name,
         key: name,
         value: v,
-        obj: obj?.[index],
+        obj: field(obj, index),
       }),
     );
   }
   return describeProperty({ label, key: index, value, obj });
 }
 
-function isLeafObject(value: any): boolean {
+/**
+ * `obj?.[key]` for the plain (asObject) counterpart of a value, which is
+ * untyped JSON.
+ */
+function field(obj: unknown, key: string | number): unknown {
+  return (obj as Record<string | number, unknown> | null | undefined)?.[key];
+}
+
+function isLeafObject(value: unknown): boolean {
   return (
     value instanceof Date ||
     value instanceof URL ||

@@ -17,7 +17,7 @@ import {
 import { Status } from 'accumulate.js/lib/errors';
 
 import { omit } from '../../utils/typemagic';
-import { Ctor, isRecordOf } from '../../utils/types';
+import { Ctor } from '../../utils/types';
 import { isLite } from '../../utils/url';
 import { useQuery } from '../common/useQuery';
 import { useWeb3 } from '../web3/Context';
@@ -100,7 +100,12 @@ function newFor<C extends Array<Ctor<Account>>>(...types: C) {
         return;
       }
 
-      if (!isRecordOf(r, ...(types as any))) {
+      // isRecordOf's overloads only take fixed-length tuples, and `types` is
+      // variadic. For account types it reduces to exactly this check.
+      if (
+        r.recordType !== RecordType.Account ||
+        !types.some((type) => r.account instanceof type)
+      ) {
         // TODO: Fix this error message
         setError(`${url} is not a token account`);
         return;

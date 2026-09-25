@@ -32,11 +32,12 @@ export function AddNote({ open, signer, onFinish, onCancel }: TxnFormProps) {
       }
       onFinish(ok);
     } finally {
-      if (!isMounted.current) {
-        return;
+      // No `return` here: returning from `finally` would discard an error
+      // thrown by the submission when the form has already unmounted.
+      if (isMounted.current) {
+        onCancel();
+        setPending(false);
       }
-      onCancel();
-      setPending(false);
     }
   };
 

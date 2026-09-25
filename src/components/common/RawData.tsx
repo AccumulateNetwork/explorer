@@ -7,7 +7,7 @@ export function RawData({
   data,
   style,
 }: {
-  data: any;
+  data: unknown;
   style?: React.CSSProperties;
 }) {
   return (

@@ -14,14 +14,14 @@ const info = bind(
   {
     store: new WeakMap<WeakKey, ClassInfo>(),
   },
-  function (v: any) {
+  function (v: object) {
     const ctor = typeof v === 'function' ? v : v.constructor;
     const info = this.store.get(ctor) || {};
     this.store.set(ctor, info);
     return info;
   },
   {
-    resolve<T, V>(v: any, context: Named) {
+    resolve(v: object, context: Named) {
       const { storage, prefix } = info(v);
       let { name } = context;
       if (prefix) {
@@ -63,7 +63,7 @@ export function storage<C extends Ctor>(storage: Storage) {
   };
 }
 
-export function stored<T, V>(
+export function stored<T extends object, V>(
   { get, set }: ClassAccessorDecoratorTarget<T, V>,
   context: ClassAccessorDecoratorContext<T, V> & Named,
 ): ClassAccessorDecoratorResult<T, V> {
@@ -83,7 +83,7 @@ export function stored<T, V>(
 
       try {
         return JSON.parse(s);
-      } catch (_) {
+      } catch {
         return get.call(this);
       }
     },
@@ -99,7 +99,7 @@ export function stored<T, V>(
   };
 }
 
-export function broadcast<This, Value>(
+export function broadcast<This extends object, Value>(
   target: ClassAccessorDecoratorTarget<This, Value>,
   context: ClassAccessorDecoratorContext<This, Value> & Named,
 ): ClassAccessorDecoratorResult<This, Value> {
@@ -111,28 +111,28 @@ export function broadcast<This, Value>(
   };
 }
 
-broadcast.as = function <C extends Ctor<{ asObject(): any }>>(ctor: C) {
-  return <This>(
-    target: ClassAccessorDecoratorTarget<This, InstanceType<C>>,
-    context: ClassAccessorDecoratorContext<This, InstanceType<C>> & Named,
-  ): ClassAccessorDecoratorResult<This, InstanceType<C>> => {
+broadcast.as = function <T extends { asObject(): unknown }>(ctor: Ctor<T>) {
+  return <This extends object>(
+    target: ClassAccessorDecoratorTarget<This, T>,
+    context: ClassAccessorDecoratorContext<This, T> & Named,
+  ): ClassAccessorDecoratorResult<This, T> => {
     getAccessorMetadata(context).broadcast = true;
     return {
-      set(value: any) {
+      set(value: T) {
         if (value !== null && value !== undefined && !(value instanceof ctor)) {
           value = new ctor(value);
         }
-        bSet.call(this, target, context, value, (v: any) => v?.asObject());
+        bSet.call(this, target, context, value, (v) => v?.asObject());
       },
     };
   };
 };
 
-function bSet<This, Value>(
+function bSet<This extends object, Value>(
   { get, set }: ClassAccessorDecoratorTarget<This, Value>,
   context: ClassAccessorDecoratorContext<This, Value> & Named,
   value: Value,
-  postAs?: (_: Value) => any,
+  postAs?: (_: Value) => unknown,
 ) {
   const previous = get.call(this);
   set.call(this, value);
@@ -140,22 +140,20 @@ function bSet<This, Value>(
     return;
   }
 
-  if (postAs) {
-    value = postAs(value);
-  }
+  const posted = postAs ? postAs(value) : value;
 
   const { name } = info.resolve(this, context);
-  bChannel.postMessage({ name, value });
+  bChannel.postMessage({ name, value: posted });
   bLocal.forEach((fn) => {
     try {
-      fn(name, value);
+      fn(name, posted);
     } catch (error) {
       console.log(error);
     }
   });
 }
 
-type bCallback = (name: string, value: any) => any;
+type bCallback = (name: string, value: unknown) => void;
 const bChannel = new BroadcastChannel('shared-values');
 const bLocal = new Set<bCallback>();
 bChannel.addEventListener('message', ({ data: { name, value } }) => {
@@ -168,17 +166,13 @@ bChannel.addEventListener('message', ({ data: { name, value } }) => {
   });
 });
 
-export function useShared<V, K extends keyof V & string>(
+export function useShared<V extends object, K extends keyof V & string>(
   v: V,
   k: K,
 ): [V[K], (x: V[K]) => void] {
   const [value, setValue] = useState(v?.[k]);
 
-  let cb: bCallback;
   useEffect(() => {
-    if (cb) {
-      bLocal.delete(cb);
-    }
     if (!v) {
       return;
     }
@@ -186,13 +180,15 @@ export function useShared<V, K extends keyof V & string>(
     setValue(v[k]);
 
     const { name } = info.resolve(v, { name: k });
-    cb = (n, v) => n === name && setValue(v);
+    // Values arrive over BroadcastChannel as structured-cloned data; the
+    // sender is the @broadcast setter for this same accessor, so it is V[K].
+    const cb: bCallback = (n, x) => n === name && setValue(x as V[K]);
     bLocal.add(cb);
 
     return () => {
       bLocal.delete(cb);
     };
-  }, [v]);
+  }, [v, k]);
 
   return [value, (x) => (v[k] = x)];
 }

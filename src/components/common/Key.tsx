@@ -72,11 +72,11 @@ export default function ({
         <Skeleton active title={true} paragraph={false} />
       ) : initialType !== SignatureType.Unknown ? (
         <Input.Group compact className={'key'}>
-          <Select
+          <Select<DisplayType>
             defaultValue={initialType}
             size="small"
             className="key-type"
-            onChange={setType as any}
+            onChange={setType}
           >
             {initialType === SignatureType.ED25519 && (
               <Select.Option value={SignatureType.ED25519}>

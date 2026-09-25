@@ -23,7 +23,6 @@ import {
   enrichTxIdRecords,
   txidKey,
 } from './RelatedTxn';
-import { Status } from './Status';
 import { useDescribeTimestamp } from './timestamp';
 
 const { Title, Text } = Typography;

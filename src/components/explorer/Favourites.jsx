@@ -59,7 +59,7 @@ const Favourites = () => {
               className={'acc-fav'}
               count={1}
               value={favourite.star}
-              onChange={(e) => {
+              onChange={() => {
                 handleFavChange(favourite.address);
               }}
             />

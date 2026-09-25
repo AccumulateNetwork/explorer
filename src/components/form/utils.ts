@@ -1,7 +1,18 @@
 import { Form, FormInstance } from 'antd';
 import { NamePath } from 'antd/lib/form/interface';
 import { FieldContext } from 'rc-field-form';
-import { useCallback, useContext, useEffect, useMemo } from 'react';
+import type {
+  InternalFormInstance,
+  InternalNamePath,
+} from 'rc-field-form/lib/interface';
+import {
+  DependencyList,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import { JsonRpcClient, RecordType } from 'accumulate.js/lib/api_v3';
 import {
@@ -77,11 +88,13 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
       if (i < 0) {
         return false;
       }
-      const r = await api.query(s.substring(0, i));
-      if (r.recordType !== RecordType.Account) {
-        return false;
+      {
+        const r = await api.query(s.substring(0, i));
+        if (r.recordType !== RecordType.Account) {
+          return false;
+        }
+        return resolveAuthorities(api, r.account);
       }
-      return resolveAuthorities(api, r.account);
 
     case AccountType.LiteTokenAccount:
       return [new AuthorityEntry({ url: account.url.authority })];
@@ -92,22 +105,35 @@ async function resolveAuthorities(api: JsonRpcClient, account: Account) {
   }
 }
 
-export function useDebounce<I extends Array<any>>(
+/**
+ * Returns a stable function that calls the latest `cb` once calls have stopped
+ * for `time` ms. The timer and the callback live in refs: the returned
+ * function's identity never changes (callers pass it to effects and inputs),
+ * but when the timer fires it calls the callback from the most recent render,
+ * not the first one — otherwise a debounced effect would act on the state it
+ * saw at mount.
+ */
+export function useDebounce<I extends unknown[]>(
   cb: (..._: I) => void | Promise<void>,
   time: number,
 ): (..._: I) => void | Promise<void> {
-  let id;
-  return useCallback((...args) => {
-    clearTimeout(id);
-    id = setTimeout(() => cb(...args), time);
-  }, []);
+  const id = useRef<ReturnType<typeof setTimeout>>();
+  const latest = useRef(cb);
+  latest.current = cb;
+  return useCallback(
+    (...args: I) => {
+      clearTimeout(id.current);
+      id.current = setTimeout(() => latest.current(...args), time);
+    },
+    [time],
+  );
 }
 
 type FieldData = Omit<Parameters<FormInstance['setFields']>[0][0], 'name'>;
 
 interface FormUtils<Fields> {
   set(name: NamePath<Fields>, data: FieldData): void;
-  setError(field: NamePath<Fields>, error: any): void;
+  setError(field: NamePath<Fields>, error: unknown): void;
   clearError(field: NamePath<Fields>): void;
   setValidating(field: NamePath<Fields>, validating: boolean): void;
 }
@@ -136,15 +162,19 @@ export function useFormUtils<Fields>(
 
     // Workaround for https://github.com/ant-design/ant-design/issues/23782
     if ('value' in data) {
-      (form as any).getInternalHooks('RC_FORM_INTERNAL_HOOKS').dispatch({
-        type: 'updateValue',
-        namePath: [name],
-        value: data.value,
-      });
+      // antd's FormInstance type hides rc-field-form's internal hooks, but the
+      // object is an rc-field-form instance at runtime.
+      (form as unknown as InternalFormInstance)
+        .getInternalHooks('RC_FORM_INTERNAL_HOOKS')
+        .dispatch({
+          type: 'updateValue',
+          namePath: [name] as InternalNamePath,
+          value: data.value,
+        });
     }
   };
 
-  const setError = (name: NamePath<Fields>, error: any) => {
+  const setError = (name: NamePath<Fields>, error: unknown) => {
     set(name, { errors: [unwrapError(error) || `An unknown error occurred`] });
   };
 
@@ -171,26 +201,40 @@ export function useFormWatchEffect<F, K extends keyof F>(
   form: FormInstance<F>,
   key: K | K[],
   effect: (value: F[K], mounted: () => boolean) => void | Promise<void>,
-  dependencies: any[] = [],
+  dependencies: DependencyList = [],
   debounceTime = 200,
 ) {
-  effect = useDebounce(effect, debounceTime);
+  const debounced = useDebounce(effect, debounceTime);
   const value = Form.useWatch(key, form);
-  useEffect(() => {
-    let mounted = true;
-    effect(value, () => mounted); // May be async
-    return () => {
-      mounted = false;
-    };
-  }, [value, ...dependencies]);
+  useEffect(
+    () => {
+      let mounted = true;
+      debounced(value, () => mounted); // May be async
+      return () => {
+        mounted = false;
+      };
+    },
+    // `debounced` is stable and always calls the latest `effect`. The
+    // caller's `dependencies` are spread in exactly as useEffect's own deps
+    // would be — this hook forwards them, so they cannot be listed statically.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- caller-supplied dependency list
+    [value, debounced, ...dependencies],
+  );
 }
 
 export function useFormWatchMemo<F, K extends keyof F, V>(
   form: FormInstance<F>,
   key: K,
   factory: (value: F[K]) => V,
-  dependencies: any[] = [],
+  dependencies: DependencyList = [],
 ) {
   const value = Form.useWatch(key, form);
-  return useMemo(() => factory(value), [value, ...dependencies]);
+  return useMemo(
+    () => factory(value),
+    // `factory` is an inline function (new every render); like useMemo, this
+    // hook recomputes only when `value` or the caller's `dependencies` change,
+    // and the caller is responsible for listing what `factory` closes over.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- caller-supplied dependency list
+    [value, ...dependencies],
+  );
 }

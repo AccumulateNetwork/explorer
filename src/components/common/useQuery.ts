@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { DependencyList, useContext, useEffect, useRef, useState } from 'react';
 
 import { TxID, URLArgs, messaging } from 'accumulate.js';
 import {
@@ -49,17 +49,17 @@ export interface QueryResult<T extends Record> {
 export function useQuery(
   scope: URLArgs | TxID,
   query?: DefaultQueryArgsWithType,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<AccountRecord | MessageRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<ChainQueryArgsWithType, 'queryType'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<ChainRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<ChainQueryArgsWithType, 'queryType' | 'name'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<ChainRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -67,7 +67,7 @@ export function useQuery(
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'index' | 'includeReceipt'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<ChainEntryRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -75,7 +75,7 @@ export function useQuery(
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'entry' | 'includeReceipt'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<ChainEntryRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -83,33 +83,33 @@ export function useQuery(
     ChainQueryArgsWithType,
     'queryType' | 'name' | 'range' | 'includeReceipt'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<ChainEntryRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DataQueryArgsWithType, 'queryType'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'index'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'entry'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<
   ChainEntryRecord<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DataQueryArgsWithType, 'queryType' | 'range'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<
   | RecordRange<ChainEntryRecord<MessageRecord<messaging.TransactionMessage>>>
   | ErrorRecord
@@ -119,28 +119,28 @@ export function useQuery(
   query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<UrlRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DirectoryQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<AccountRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand?: false };
   },
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<TxIDRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<PendingQueryArgsWithType, 'queryType' | 'range'> & {
     range: { expand: true };
   },
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<
   RecordRange<MessageRecord<messaging.TransactionMessage>> | ErrorRecord
 >;
@@ -150,7 +150,7 @@ export function useQuery(
     BlockQueryArgsWithType,
     'queryType' | 'minor' | 'entryRange' | 'omitEmpty'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<MinorBlockRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -158,17 +158,17 @@ export function useQuery(
     BlockQueryArgsWithType,
     'queryType' | 'major' | 'minorRange' | 'entryRange' | 'omitEmpty'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<MajorBlockRecord | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<BlockQueryArgsWithType, 'queryType' | 'minorRange' | 'omitEmpty'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<MinorBlockRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<BlockQueryArgsWithType, 'queryType' | 'majorRange' | 'omitEmpty'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<MajorBlockRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -176,7 +176,7 @@ export function useQuery(
     AnchorSearchQueryArgsWithType,
     'queryType' | 'anchor' | 'includeReceipt'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<ChainEntryRecord<never>> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -184,7 +184,7 @@ export function useQuery(
     PublicKeySearchQueryArgsWithType,
     'queryType' | 'publicKey' | 'type'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<KeyRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
@@ -192,17 +192,17 @@ export function useQuery(
     PublicKeyHashSearchQueryArgsWithType,
     'queryType' | 'publicKeyHash'
   >,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<KeyRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<DelegateSearchQueryArgsWithType, 'queryType' | 'delegate'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<KeyRecord> | ErrorRecord>;
 export function useQuery(
   scope: URLArgs,
   query: Pick<MessageHashSearchQueryArgsWithType, 'queryType' | 'hash'>,
-  dependencies?: any[],
+  dependencies?: DependencyList,
 ): QueryResult<RecordRange<MessageRecord> | ErrorRecord>;
 
 /**
@@ -223,7 +223,7 @@ export function useQuery(
 export function useQuery(
   scope: URLArgs | TxID,
   query?: QueryArgs,
-  dependencies: any[] = [],
+  dependencies: DependencyList = [],
 ): QueryResult<Record> {
   const { api, network, onApiError } = useContext(Network);
 
@@ -259,7 +259,10 @@ export function useQuery(
       .fetch(key, () =>
         // An API error is a record, not a failure: the node answering "no
         // such account" is a normal outcome the page renders.
-        api.query(scope, query as any).catch(isErrorRecord),
+        (query === undefined
+          ? api.query(scope)
+          : api.query(scope, query)
+        ).catch(isErrorRecord),
       )
       .then(
         (data) => {

@@ -8,10 +8,8 @@ import {
 } from 'react-icons/ri';
 
 import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
-import { MessageType } from 'accumulate.js/lib/messaging';
 
 import tooltipDescs from '../../utils/lang';
-import { EnumValue } from '../common/EnumValue';
 import { InfiniteList } from '../common/InfiniteList';
 import { InfoTable } from '../common/InfoTable';
 import { Link } from '../common/Link';
@@ -23,7 +21,6 @@ import {
   enrichTxIdRecords,
   txidKey,
 } from './RelatedTxn';
-import { Status } from './Status';
 import { useDescribeTimestamp } from './timestamp';
 
 const { Title } = Typography;

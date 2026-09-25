@@ -1,5 +1,5 @@
 import { Form, InputNumber, Typography } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import React from 'react';
 
 import { URLArgs } from 'accumulate.js';
@@ -54,11 +54,6 @@ export function SendTokens(
 
   const from = Form.useWatch('from', form);
   const to = Form.useWatch('to', form);
-  useEffect(() => {
-    if (from?.tokenUrl && to?.tokenUrl && !from.tokenUrl.equals(to.tokenUrl)) {
-      setError('to', `Cannot send ${issuer.symbol || issuer.url} to ${to.url}`);
-    }
-  }, [`${from?.tokenUrl}`, `${to?.tokenUrl}`]);
 
   // Load the issuer
   const issued = useQuery(from?.tokenUrl);
@@ -66,6 +61,27 @@ export function SendTokens(
     issued.data && isRecordOf(issued.data, TokenIssuer)
       ? issued.data.account
       : undefined;
+
+  // The watched values are the form store's own objects, so these keep their
+  // identity until the user picks a different account.
+  const fromTokenUrl = from?.tokenUrl;
+  const toTokenUrl = to?.tokenUrl;
+  const toUrl = to?.url;
+  useEffect(() => {
+    // Wait for the sender's issuer: it loads after `from` changes, and until it
+    // does `issuer` is missing or still the previous sender's.
+    if (
+      issuer &&
+      fromTokenUrl &&
+      toTokenUrl &&
+      !fromTokenUrl.equals(toTokenUrl)
+    ) {
+      setError('to', `Cannot send ${issuer.symbol || issuer.url} to ${toUrl}`);
+    }
+    // setError comes from useFormUtils and is rebuilt each render; listing it
+    // would re-run this (and re-set the field error) on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- setError is unstable, see above
+  }, [fromTokenUrl, toTokenUrl, toUrl, issuer]);
 
   // Writing the form's error state is a side effect, so it stays an effect.
   useEffect(() => {

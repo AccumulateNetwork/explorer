@@ -13,6 +13,13 @@ const { Title, Text } = Typography;
 
 export default NetworkDashboard;
 
+/** The fields of a peer row the validator/follower/error filter reads. */
+type PeerRow = {
+  error?: unknown;
+  part?: { lcid: string };
+  data: { validator: Record<string, { active?: boolean }> };
+};
+
 export function NetworkDashboard() {
   const [error, setError] = useState(null);
   const [peers, setPeers] = useState([]);
@@ -21,7 +28,9 @@ export function NetworkDashboard() {
   const [dynamicTabs, setDynamicTabs] = useState<TabsProps['items']>([
     { key: 'directory', label: 'Directory', children: 'Loading...' },
   ]);
-  const [filter, setFilter] = useState<(_: any) => boolean>(() => () => true);
+  const [filter, setFilter] = useState<(_: PeerRow) => boolean>(
+    () => () => true,
+  );
 
   const onError = (error) => {
     console.error(error);
@@ -31,7 +40,7 @@ export function NetworkDashboard() {
   // Fetch network global variables, such as partitions and validators. This
   // changes extremely infrequently so loading this once is sufficient.
   const [network, setNetwork] = useState(null);
-  const { api, network: apiNet } = useContext(NetworkCtx);
+  const { api } = useContext(NetworkCtx);
   useAsyncEffect(async (mounted) => {
     const { network } = await api.networkStatus();
     if (!mounted()) {
@@ -40,7 +49,7 @@ export function NetworkDashboard() {
 
     // Add a lower case ID
     for (const part of network.partitions) {
-      (part as any).lcid = part.id.toLowerCase();
+      Object.assign(part, { lcid: part.id.toLowerCase() });
     }
 
     setNetwork(network);
@@ -263,10 +272,10 @@ export function NetworkDashboard() {
     };
 
     load();
-  }, [peers, time, network]);
+  }, [api, peers, time, network]);
 
   const didChangeSelector = (values) => {
-    const fns = [];
+    const fns: ((peer: PeerRow) => unknown)[] = [];
 
     const validators = values?.includes('validators');
     const followers = values?.includes('followers');
@@ -275,7 +284,7 @@ export function NetworkDashboard() {
         // Are we a validator on...
         const isVal = peer.part
           ? peer.data.validator[peer.part.lcid]?.active // The specified partition
-          : Object.values(peer.data.validator).some((x: any) => x.active); // Any partition
+          : Object.values(peer.data.validator).some((x) => x.active); // Any partition
 
         return (isVal && validators) || (!isVal && followers);
       });
@@ -285,7 +294,7 @@ export function NetworkDashboard() {
       fns.push((peer) => peer.error);
     }
 
-    setFilter(() => (peer) => {
+    setFilter(() => (peer: PeerRow) => {
       for (const fn of fns) if (!fn(peer)) return false;
       return true;
     });

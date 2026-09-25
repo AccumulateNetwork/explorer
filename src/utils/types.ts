@@ -38,7 +38,7 @@ import {
   TransactionMessage,
 } from 'accumulate.js/lib/messaging';
 
-export type IsNameOf<T, S> = T extends { getName(_: any): infer R }
+export type IsNameOf<T, S> = T extends { getName(_: never): infer R }
   ? S extends R
     ? S
     : never
@@ -71,6 +71,10 @@ export type TxnRecord<T extends TransactionBody = TransactionBody> =
 export type TxnEntry<T extends TransactionBody = TransactionBody> =
   ChainEntryRecord<TxnRecord<T>>;
 
+// Constructor-type idiom: callers constrain on `Ctor<X>` and then `new` the
+// class with its own argument type, which only works if the parameters are
+// `any` (`never`/`unknown` would reject every real constructor or every call).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
 export type Ctor<Of = any> = new (...args: any) => Of;
 
 type TxnRecordOrEntry<T extends TransactionBody> = TxnRecord<T> | TxnEntry<T>;
@@ -258,10 +262,10 @@ export function hydrate<A, I>(
   }
 }
 
-export namespace AnyTokenAccount {
-  export function fromObject(
-    args: TokenAccountArgsWithType | LiteTokenAccountArgsWithType,
-  ) {
+// A plain object rather than a namespace: nothing merges with it, and
+// `hydrate` only needs something with a `fromObject`.
+export const AnyTokenAccount = {
+  fromObject(args: TokenAccountArgsWithType | LiteTokenAccountArgsWithType) {
     if (args instanceof LiteTokenAccount || args instanceof TokenAccount) {
       return args;
     }
@@ -273,13 +277,13 @@ export namespace AnyTokenAccount {
       case AccountType.TokenAccount:
         return new TokenAccount(args);
     }
-  }
-}
+  },
+};
 
-export namespace AnyDataAccount {
-  export function fromObject(
-    args: DataAccountArgsWithType | LiteDataAccountArgsWithType,
-  ) {
+// A plain object rather than a namespace: nothing merges with it, and
+// `hydrate` only needs something with a `fromObject`.
+export const AnyDataAccount = {
+  fromObject(args: DataAccountArgsWithType | LiteDataAccountArgsWithType) {
     if (args instanceof LiteDataAccount || args instanceof DataAccount) {
       return args;
     }
@@ -291,5 +295,5 @@ export namespace AnyDataAccount {
       case AccountType.DataAccount:
         return new DataAccount(args);
     }
-  }
-}
+  },
+};

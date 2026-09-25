@@ -38,7 +38,7 @@ export interface TypedDataMessage {
   domain: ethers.TypedDataDomain;
   types: Record<string, ethers.TypedDataField[]>;
   primaryType: string;
-  message: Record<string, any>;
+  message: Record<string, unknown>;
 }
 
 export class Driver {
@@ -203,7 +203,7 @@ export class Driver {
       try {
         const { originalError } = JSON.parse(error.message.substring(i + 1));
         if (originalError) error = originalError;
-      } catch (_) {}
+      } catch {}
     }
 
     // Parse the status code
@@ -398,8 +398,8 @@ class AccKey extends BaseKey {
     // while the values are still the JSON the endpoint sent.
     verifyTypedData(
       typedData.message,
-      message.asObject() as Record<string, any>,
-      signature.asObject() as Record<string, any>,
+      message.asObject() as Record<string, unknown>,
+      signature.asObject() as Record<string, unknown>,
     );
 
     // Convert strings to Uint8Array to make ethers happy
@@ -407,17 +407,21 @@ class AccKey extends BaseKey {
       typedData.message,
       typedData.primaryType,
       typedData.types,
-    );
+    ) as Record<string, unknown>;
 
     return this.#sign(typedData);
   }
 }
 
+/**
+ * Converts the hex strings in endpoint-supplied typed data (JSON) to bytes
+ * where the EIP-712 type says bytes. Mutates and returns `value`.
+ */
 function conditionTypedData(
-  value: any,
+  value: unknown,
   type: string,
   types: Record<string, ethers.TypedDataField[]>,
-) {
+): unknown {
   if (type === 'bytes' || type === 'bytes32' || type === 'address') {
     if (typeof value !== 'string') {
       return value;
@@ -432,21 +436,18 @@ function conditionTypedData(
     return value;
   }
 
+  const obj = value as Record<string, unknown>;
   for (const field of types[type]) {
-    if (!(field.name in value)) {
+    if (!(field.name in obj)) {
       continue;
     }
     if (field.type.endsWith('[]')) {
       const type = field.type.replace(/\[\]$/, '');
-      value[field.name] = value[field.name].map((x) =>
+      obj[field.name] = (obj[field.name] as unknown[]).map((x) =>
         conditionTypedData(x, type, types),
       );
     } else {
-      value[field.name] = conditionTypedData(
-        value[field.name],
-        field.type,
-        types,
-      );
+      obj[field.name] = conditionTypedData(obj[field.name], field.type, types);
     }
   }
   return value;

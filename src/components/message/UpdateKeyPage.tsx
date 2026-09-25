@@ -97,10 +97,7 @@ UpdateKeyPage.Operation = function Operation({
   return (
     <div>
       <Tag color="default">
-        <EnumValue
-          type={KeyPageOperationType}
-          value={(operation as any).type}
-        />
+        <EnumValue type={KeyPageOperationType} value={operation.type} />
       </Tag>
       {bits}
     </div>

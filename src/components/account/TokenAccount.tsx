@@ -61,7 +61,7 @@ export function TokenAccount({
       if (response && response.data && !response.data.error) {
         setStakingAccount(response.data);
       }
-    } catch (error) {
+    } catch {
       // no need to setError here, because an error won't prevent rendering of the page
       message.error('Can not get staking data from Metrics API');
     }
@@ -74,7 +74,11 @@ export function TokenAccount({
     // staking account, because no response ever replaced them.
     setStakingAccount(null);
     getStakingInfo(account.url);
-  }, [`${account.url}`, network.metrics]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Keyed on the URL's string form (a new URL object arrives with every
+    // record); getStakingInfo is rebuilt every render and reads only
+    // network.metrics, which is listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
+  }, [`${account.url}`, network.metrics]);
 
   const labelURL = (
     <span>

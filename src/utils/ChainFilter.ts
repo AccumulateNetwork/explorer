@@ -144,15 +144,19 @@ export class ChainFilter<R extends Record & { index?: number }> {
     }
   }
 
-  #makeQuery(range: RangeOptionsArgs): any {
+  #makeQuery(range: RangeOptionsArgs): Query {
     // Make a copy of the original arguments
     const query = this.#query.copy();
 
-    // Find a property that is a range and modify it
-    for (const prop in query) {
-      if (query[prop] instanceof RangeOptions) {
-        query[prop] = new RangeOptions({
-          ...query[prop],
+    // Find a property that is a range and modify it. Query is a union of
+    // generated classes with different range field names, so the fields are
+    // walked by name.
+    const fields = query as unknown as { [prop: string]: unknown };
+    for (const prop in fields) {
+      const value = fields[prop];
+      if (value instanceof RangeOptions) {
+        fields[prop] = new RangeOptions({
+          ...value,
           ...range,
         });
         return query;
@@ -163,6 +167,6 @@ export class ChainFilter<R extends Record & { index?: number }> {
     return Query.fromObject({
       ...query.asObject(),
       range,
-    } as any);
+    } as QueryArgs);
   }
 }

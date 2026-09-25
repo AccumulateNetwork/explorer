@@ -147,7 +147,7 @@ class WalletConnect {
 
     const unsub: (() => void)[] = [];
     try {
-      return await new Promise<Eip1193Provider | undefined>(async (r, j) => {
+      return await new Promise<Eip1193Provider | undefined>((r, j) => {
         unsub.push(
           this.modal.subscribeProvider(({ provider, error }) => {
             if (error) {
@@ -164,7 +164,9 @@ class WalletConnect {
             }
           }),
         );
-        await this.modal.open({ view: 'Connect' });
+        // Failing to open the modal must reject connect(); inside an async
+        // executor it was an unhandled rejection and connect() hung.
+        this.modal.open({ view: 'Connect' }).catch(j);
       });
     } finally {
       unsub.forEach((x) => x());

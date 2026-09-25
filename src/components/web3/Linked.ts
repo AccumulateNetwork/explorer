@@ -16,10 +16,8 @@ import {
   LiteIdentity,
   LiteIdentityArgs,
   LiteTokenAccount,
-  LiteTokenAccountArgs,
   LiteTokenAccountArgsWithType,
   TokenAccount,
-  TokenAccountArgs,
   TokenAccountArgsWithType,
 } from 'accumulate.js/lib/core';
 import { Status } from 'accumulate.js/lib/errors';
@@ -95,7 +93,7 @@ export class Linked {
             urls.delete(URL.parse(entry.url).toString().toLowerCase());
             break;
         }
-      } catch (_) {}
+      } catch {}
     }
 
     const l = new Loader(api, urls);

@@ -72,7 +72,9 @@ UpdateAccountAuth.Operation = function Operation({
         <Tag color="default">
           <EnumValue
             type={AccountAuthOperationType}
-            value={(operation as any).type}
+            // Every known type is handled above, so TypeScript narrows
+            // `operation` to never here; the SDK can still hand us a new one.
+            value={(operation as AccountAuthOperation).type}
           />
         </Tag>
       );

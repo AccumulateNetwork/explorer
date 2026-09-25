@@ -7,7 +7,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { URL, errors } from 'accumulate.js';
 import {
   AccountRecord,
+  AccountRecordArgsWithType,
   MessageRecord,
+  MessageRecordArgsWithType,
   RecordType,
 } from 'accumulate.js/lib/api_v3';
 import { TransactionType } from 'accumulate.js/lib/core';
@@ -37,8 +39,10 @@ export function Acc({
   parentCallback,
   didLoad,
 }: {
-  parentCallback?: any;
-  didLoad?: (_: any) => void;
+  parentCallback?: (
+    _: AccountRecordArgsWithType | MessageRecordArgsWithType,
+  ) => void;
+  didLoad?: (_?: AccountRecord | MessageRecord) => void;
 }) {
   const web3 = useWeb3();
   const navigate = useNavigate();
@@ -98,6 +102,11 @@ export function Acc({
         { replace: true },
       );
     }
+    // Fires only when the record changes. With BrowserRouter `navigate`
+    // changes identity on every pathname change, and `record` is not cleared
+    // when the next query fails, so re-running on `navigate` would send a user
+    // who leaves a failed redirect target straight back to it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record]);
 
   // The reference is queried exactly as typed, so an account whose name really
@@ -120,7 +129,7 @@ export function Acc({
     if (retrying) {
       navigate(`/acc/${encodeURLSpaces(retry)}`, { replace: true });
     }
-  }, [retrying, retry]);
+  }, [retrying, retry, navigate]);
 
   // An empty reference (/acc/ or /tx/ with nothing after it) names nothing.
   // This must come after the hooks above so the hook count stays constant.

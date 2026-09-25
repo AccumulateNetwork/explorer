@@ -63,34 +63,34 @@ export function MainMenu({
 
   const navigate = useNavigate();
   const web3 = useWeb3();
-  const [currentMenu, setCurrentMenu] = useState<any>([
+  const [currentMenu, setCurrentMenu] = useState<string[]>([
     window.location.pathname,
   ]);
 
   const handleMenuClick = (e) => {
     if (e.key === 'logo') {
-      setCurrentMenu('/blocks');
+      setCurrentMenu(['/blocks']);
     } else {
       setCurrentMenu([e.key]);
     }
   };
 
   useEffect(() => {
-    setCurrentMenu(window.location.pathname);
+    setCurrentMenu([window.location.pathname]);
     if (window.location.pathname.includes('blocks')) {
-      setCurrentMenu('/blocks');
+      setCurrentMenu(['/blocks']);
     }
 
     if (window.location.pathname.includes('tokens')) {
-      setCurrentMenu('/tokens');
+      setCurrentMenu(['/tokens']);
     }
 
     if (window.location.pathname.includes('staking')) {
-      setCurrentMenu('/staking');
+      setCurrentMenu(['/staking']);
     }
 
     if (window.location.pathname.includes('validators')) {
-      setCurrentMenu('/validators');
+      setCurrentMenu(['/validators']);
     }
   }, []);
 

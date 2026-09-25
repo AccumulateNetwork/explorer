@@ -9,7 +9,7 @@ import React, { createContext, useCallback, useContext, useState } from 'react';
 export interface CurrentAccount {
   url: string;
   type: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface CurrentTransaction {
@@ -21,7 +21,7 @@ export interface CurrentTransaction {
   signatureCount: number;
   principal: string;
   signers?: string[]; // URLs of key pages that can sign
-  data?: any;
+  data?: unknown;
 }
 
 export interface CurrentAccountContextValue {
