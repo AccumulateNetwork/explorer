@@ -47,10 +47,11 @@ export default tseslint.config(
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
 
-      // The codebase has ~97 `any`s and no strict mode. Turning these on as
-      // errors would mean 1,000+ failures and a red gate nobody can act on,
-      // so they are warnings: visible, and a floor to work down from rather
-      // than a wall. See #65 for the staged plan (noImplicitAny first).
+      // These were warnings so ~200 of them (97 `any`s among them) could be
+      // worked down rather than walled off. They are at zero now, and
+      // `npm run lint` passes --max-warnings 0, so a new one fails CI: fix
+      // it, or disable it on that line with the reason after `--`. See #65
+      // for the staged strict-mode plan (noImplicitAny next).
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
         'warn',

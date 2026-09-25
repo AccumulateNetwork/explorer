@@ -78,7 +78,7 @@ const Staking = () => {
       fetchSummary();
     }
     fetchLiquidStakingInfo();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [network.mainnet]);
 
   const supply = summary?.supply;
   const stakers = summary?.stakers || [];

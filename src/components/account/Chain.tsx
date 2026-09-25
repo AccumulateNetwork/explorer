@@ -134,7 +134,9 @@ export function Chain(props: {
   // with links to A's txids (#39).
   const managed = useMemo(
     () => makeChainRange(api, url, props.type),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Keyed on the URL's string form: URL.parse returns a new object every
+    // render, so `url` itself would rebuild the range every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
     [`${url}`, props.type, api],
   );
 

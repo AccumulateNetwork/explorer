@@ -157,7 +157,7 @@ const Validators = () => {
   useEffect(() => {
     document.title = 'Validators | Accumulate Explorer';
     getSupply(network, setSupply);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [network]);
 
   useEffect(() => {
     let cancelled = false;
@@ -182,7 +182,7 @@ const Validators = () => {
     return () => {
       cancelled = true;
     };
-  }, [network.id, sort.field, sort.order]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [network.id, network.metrics, sort.field, sort.order]);
 
   const onSort = (_pagination, _filters, sorter) => {
     let field = sorter?.field || 'totalStaked';

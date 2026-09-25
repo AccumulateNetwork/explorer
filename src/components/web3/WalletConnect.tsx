@@ -57,7 +57,9 @@ export function useWalletConnect(): [WalletConnectHandle | null] {
         pending.current?.then((m) => m.disconnect()).catch(() => {});
       },
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Keyed on the network's id: the context hands out the same config
+    // object for a network, and `available` is derived from it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [available, network?.id]);
 
   return [handle];
