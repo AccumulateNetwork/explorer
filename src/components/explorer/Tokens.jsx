@@ -88,7 +88,7 @@ const Tokens = () => {
     return () => {
       cancelled = true;
     };
-  }, [network.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [network.id, network.metrics]);
 
   const search = async (value, pageNo = 1) => {
     const q = value.trim();
