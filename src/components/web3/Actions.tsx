@@ -1,9 +1,9 @@
 import { SendOutlined } from '@ant-design/icons';
 import { Dropdown, DropdownProps, Typography } from 'antd';
 import { MenuItemType } from 'antd/es/menu/interface';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 
-import { URL, core } from 'accumulate.js';
+import { URL } from 'accumulate.js';
 import { RecordType } from 'accumulate.js/lib/api_v3';
 import {
   AccountType,
@@ -52,21 +52,25 @@ export function Actions({ account: accountUrl }: { account: URL }) {
       ? account.data.account
       : undefined;
 
-  const item = ({
-    label,
-    open,
-    to,
-    from,
-  }: { label: string; open: FormKey } & ToFrom): MenuItemType => {
-    return {
-      key: label,
-      label: <Text>{label}</Text>,
-      onClick() {
-        setToFrom({ to, from });
-        setOpen(open);
-      },
-    };
-  };
+  // Only uses state setters, so it is stable for the component's lifetime.
+  const item = useCallback(
+    ({
+      label,
+      open,
+      to,
+      from,
+    }: { label: string; open: FormKey } & ToFrom): MenuItemType => {
+      return {
+        key: label,
+        label: <Text>{label}</Text>,
+        onClick() {
+          setToFrom({ to, from });
+          setOpen(open);
+        },
+      };
+    },
+    [],
+  );
 
   useEffect(() => {
     switch (acc?.type) {
@@ -117,7 +121,7 @@ export function Actions({ account: accountUrl }: { account: URL }) {
         ]);
         break;
     }
-  }, [acc]);
+  }, [acc, item]);
 
   const { api } = useContext(Network);
   useAsyncEffect(

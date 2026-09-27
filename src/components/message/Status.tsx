@@ -20,7 +20,6 @@ import { MessageType } from 'accumulate.js/lib/messaging';
 
 import { EnumValue } from '../common/EnumValue';
 import { Network } from '../common/Network';
-import { isErrorRecord } from '../common/query';
 import { useAsyncEffect } from '../common/useAsync';
 import { useQuery } from '../common/useQuery';
 

@@ -32,8 +32,8 @@ export function pick<V, K extends keyof V & string>(
   ...keys: K[]
 ): Pick<V, K> {
   return Object.fromEntries(
-    Object.entries(value).filter(([key]) => keys.includes(key as any)),
-  ) as any;
+    Object.entries(value).filter(([key]) => (keys as string[]).includes(key)),
+  ) as Pick<V, K>;
 }
 
 export function omit<V, K extends keyof V & string>(
@@ -41,10 +41,14 @@ export function omit<V, K extends keyof V & string>(
   ...keys: K[]
 ): Omit<V, K> {
   return Object.fromEntries(
-    Object.entries(value).filter(([key]) => !keys.includes(key as any)),
-  ) as any;
+    Object.entries(value).filter(([key]) => !(keys as string[]).includes(key)),
+  ) as Omit<V, K>;
 }
 
+// `any` is the standard idiom for "any function": it is what the built-in
+// Parameters<> and ReturnType<> constrain on, and `never[]`/`unknown` would make
+// `fn` uncallable inside curryFirst.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- see above
 type Func = (..._: any[]) => any;
 
 type FirstArg<Fn extends Func> =
@@ -58,7 +62,7 @@ export type SplitFirst<Fn extends Func> = (
 ) => (...args: OmitFirst<Fn>) => ReturnType<Fn>;
 
 export function curryFirst<Fn extends Func>(fn: Fn): SplitFirst<Fn> {
-  return ((first: any) =>
-    (...rest: any[]) =>
-      fn(first, ...rest)) as SplitFirst<Fn>;
+  return (first: FirstArg<Fn>) =>
+    (...rest: OmitFirst<Fn>) =>
+      fn(first, ...rest);
 }

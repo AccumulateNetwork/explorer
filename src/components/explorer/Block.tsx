@@ -23,6 +23,7 @@ interface BlockMessage {
   value?: {
     id?: string;
     message?: { type?: string };
+    lastBlockTime?: Date | string;
   };
   txid?: string;
 }
@@ -68,7 +69,7 @@ const Block = () => {
         const id = row.value?.id;
         const type = row.value?.message?.type || extractTxType(row.value);
         const { adi, path } = splitAcc(id);
-        const timestamp = formatTime((row.value as any)?.lastBlockTime);
+        const timestamp = formatTime(row.value?.lastBlockTime);
         const pathSuffix = path ? `/${path}` : '';
         const label = type
           ? `${type} · ${adi ?? 'unknown'}${pathSuffix}${

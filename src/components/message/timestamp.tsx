@@ -1,4 +1,4 @@
-import { Descriptions, Skeleton, Tooltip, Typography, message } from 'antd';
+import { Descriptions, Skeleton, Tooltip, Typography } from 'antd';
 import axios from 'axios';
 import moment from 'moment';
 import { useContext, useState } from 'react';
@@ -18,7 +18,6 @@ import { useAsyncEffect } from '../common/useAsync';
 const { Text } = Typography;
 
 export function useDescribeTimestamp(txid: string | URL | TxID) {
-  const utcOffset = moment().utcOffset() / 60;
   const { network } = useContext(Network);
 
   const [ts, setTs] = useState(null);

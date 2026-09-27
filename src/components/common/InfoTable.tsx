@@ -1,4 +1,4 @@
-import { Descriptions, DescriptionsProps, Typography } from 'antd';
+import { Descriptions, DescriptionsProps } from 'antd';
 import React, { useState } from 'react';
 
 export function InfoTable(props: DescriptionsProps) {

@@ -137,7 +137,7 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
             </span>
           ),
         }}
-        onChange={(x) => setOwner(x as any)}
+        onChange={(x) => setOwner(x as typeof owner)}
         items={[
           {
             key: 'parent',
@@ -217,7 +217,7 @@ export function CreateSubADI(props: { parent: URLArgs } & TxnFormProps) {
               <Form.Item label="Authorities">
                 <Form.List
                   name="authorities"
-                  children={(fields, { add, remove }, { errors }) => (
+                  children={(fields, { add, remove }) => (
                     <Space
                       direction="vertical"
                       size="middle"

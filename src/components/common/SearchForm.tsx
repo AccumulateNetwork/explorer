@@ -28,7 +28,7 @@ async function isFactoidAddress(s: string): Promise<boolean> {
 export function SearchForm({
   searching,
 }: {
-  searching?: (didLoad: (_: any) => void) => void;
+  searching?: (didLoad: (_: unknown) => void) => void;
 }) {
   const routerNavigate = useNavigate();
   const location = useLocation();

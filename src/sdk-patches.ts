@@ -30,7 +30,7 @@ ExecutorVersion.fromObject = function (obj: number | string): number {
 };
 
 // Patch getName to handle unknown versions (including -1)
-(ExecutorVersion.getName as any) = function (v: number): string {
+ExecutorVersion.getName = function (v: number): string {
   if (v === -1) {
     return 'unknown';
   }
@@ -46,6 +46,7 @@ ExecutorVersion.fromObject = function (obj: number | string): number {
     }
     throw error;
   }
-};
+  // The SDK types getName's result as the known names; this adds 'unknown'.
+} as typeof originalGetName;
 
 console.log('[SDK Patches] ExecutorVersion patches applied');

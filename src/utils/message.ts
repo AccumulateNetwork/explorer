@@ -2,6 +2,27 @@ import { TransactionType } from 'accumulate.js/lib/core';
 import { MessageType } from 'accumulate.js/lib/messaging';
 
 /**
+ * The parts of a message these helpers read. Every field is optional because
+ * records reach them in several shapes (see {@link extractTxType}), and none
+ * of the SDK's Message classes describe all of them.
+ */
+export interface MessageLike {
+  type?: unknown;
+  message?: unknown;
+  transaction?: {
+    header?: { principal?: { toString(): string } };
+    body?: { type?: unknown };
+  };
+}
+
+/** `value[key]` when `value` is an object, otherwise undefined (like `?.`). */
+function field(value: unknown, key: string): unknown {
+  return value !== null && typeof value === 'object'
+    ? (value as Record<string, unknown>)[key]
+    : undefined;
+}
+
+/**
  * Unwrap envelope messages down to the one that carries the transaction.
  *
  * Synthetic and anchor traffic does not arrive as a bare TransactionMessage.
@@ -12,10 +33,12 @@ import { MessageType } from 'accumulate.js/lib/messaging';
  *
  * Reading the type straight off the envelope reports `sequenced`, which says
  * how the message travelled rather than what it did, so walk down to the
- * payload first. Returns the input unchanged when nothing is wrapped.
+ * payload first. Returns the input unchanged when nothing is wrapped
+ * (including null and non-objects, which is why the result is only
+ * {@link MessageLike}: callers must still check what they read).
  */
-export function unwrapMessage(msg: any): any {
-  const seen = new Set<any>();
+export function unwrapMessage(msg: unknown): MessageLike {
+  const seen = new Set<unknown>();
   while (
     msg &&
     typeof msg === 'object' &&
@@ -27,7 +50,7 @@ export function unwrapMessage(msg: any): any {
     seen.add(msg);
     msg = msg.message;
   }
-  return msg;
+  return msg as MessageLike;
 }
 
 /**
@@ -42,10 +65,12 @@ export function unwrapMessage(msg: any): any {
  * records where the message is at the root (no `.message` wrapper), and
  * envelope messages (see {@link unwrapMessage}).
  */
-export function extractTxType(record: any): string | undefined {
+export function extractTxType(record: unknown): string | undefined {
   if (!record) return undefined;
   const msg = unwrapMessage(
-    record?.message ?? record?.value?.message ?? record,
+    field(record, 'message') ??
+      field(field(record, 'value'), 'message') ??
+      record,
   );
   if (!msg) return undefined;
   const bodyType = msg?.transaction?.body?.type;
@@ -75,9 +100,11 @@ export function extractTxType(record: any): string | undefined {
  * The principal (account) a message acts on, unwrapping envelopes first so
  * synthetic traffic reports the account instead of nothing.
  */
-export function extractPrincipal(record: any): string | undefined {
+export function extractPrincipal(record: unknown): string | undefined {
   const msg = unwrapMessage(
-    record?.message ?? record?.value?.message ?? record,
+    field(record, 'message') ??
+      field(field(record, 'value'), 'message') ??
+      record,
   );
   if (!msg || typeof msg !== 'object' || !('transaction' in msg)) {
     return undefined;

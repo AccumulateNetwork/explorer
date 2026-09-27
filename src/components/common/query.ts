@@ -18,16 +18,18 @@ import {
   isRecordOfDataTxn,
 } from '../../utils/types';
 
-export function isErrorRecord(error: any) {
+export function isErrorRecord(error: unknown) {
   try {
     if (
       typeof error === 'object' &&
       'data' in error &&
       typeof error.data === 'object'
     ) {
-      return new ErrorRecord({ value: new errors.Error(error.data) });
+      return new ErrorRecord({
+        value: new errors.Error(error.data),
+      });
     }
-  } catch (_) {}
+  } catch {}
   throw error;
 }
 
@@ -77,7 +79,7 @@ async function waitForSingle(api: JsonRpcClient, txid: TxID | URLArgs) {
         continue;
       }
 
-      throw new Error(`Transaction failed: ${err2.message}`);
+      throw new Error(`Transaction failed: ${err2.message}`, { cause: error });
     }
   }
 
@@ -86,14 +88,14 @@ async function waitForSingle(api: JsonRpcClient, txid: TxID | URLArgs) {
   );
 }
 
-export function isClientError(error: any) {
+export function isClientError(error: unknown) {
   if (!(error instanceof RpcError)) throw error;
   if (error.code > -33000) throw error;
 
   let err2;
   try {
     err2 = new Error2(error.data);
-  } catch (_) {
+  } catch {
     throw error;
   }
   if (err2.code && err2.code >= 500) {

@@ -1,17 +1,15 @@
 import { DisconnectOutlined, LinkOutlined } from '@ant-design/icons';
 import { Alert, Button, Skeleton, Tooltip, Typography } from 'antd';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { RiAccountBoxLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 
 import { URLArgs } from 'accumulate.js';
-import { TransactionArgs } from 'accumulate.js/lib/core';
 
 import tooltip from '../../utils/lang';
 import { InfiniteList } from '../common/InfiniteList';
 import { Link } from '../common/Link';
-import { Network } from '../common/Network';
 import { useShared } from '../common/Shared';
 import { WithIcon } from '../common/WithIcon';
 import { AddNote } from '../form/AddNote';
@@ -25,25 +23,12 @@ const { Title } = Typography;
 export function Dashboard() {
   const web3 = useWeb3();
   const navigate = useNavigate();
-  const { api } = useContext(Network);
   const linkedAccounts = web3.linked?.direct?.filter(
     (x) => !web3.publicKey?.lite?.equals(x.url),
   );
 
   const [open, setOpen] = useState<'addNote' | 'createIdentity'>();
   const [toSign, setToSign] = useState<Sign.Request>();
-  const sign = (txn: TransactionArgs, signer?: Sign.Signer) =>
-    Sign.submit(setToSign, txn, signer);
-
-  const [enablingBackups, setEnablingBackups] = useState(false);
-  const enableBackups = async () => {
-    setEnablingBackups(true);
-    try {
-      await web3.onlineStore.setup(api, sign);
-    } finally {
-      setEnablingBackups(false);
-    }
-  };
 
   const unlink = async (url: URLArgs) => {
     const ok = await web3.dataStore.add((txn) => Sign.submit(setToSign, txn), {
@@ -61,7 +46,7 @@ export function Dashboard() {
     if (!connected) {
       navigate('/');
     }
-  }, [connected]);
+  }, [connected, navigate]);
 
   if (!web3.connected) {
     return false;

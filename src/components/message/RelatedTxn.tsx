@@ -2,7 +2,11 @@ import React from 'react';
 import { IconContext } from 'react-icons';
 import { RiExchangeLine } from 'react-icons/ri';
 
-import { MessageRecord, TxIDRecord } from 'accumulate.js/lib/api_v3';
+import {
+  MessageRecord,
+  MessageRecordArgsWithType,
+  TxIDRecord,
+} from 'accumulate.js/lib/api_v3';
 import { Buffer } from 'accumulate.js/lib/common';
 
 import {
@@ -25,12 +29,22 @@ export function txidKey(record: TxIDRecord): string {
   return record.value.toString();
 }
 
+/** A batch result is plain JSON; this picks out the message records. */
+function isMessageRecordJSON(raw: unknown): raw is MessageRecordArgsWithType {
+  return (
+    typeof raw === 'object' &&
+    raw !== null &&
+    'recordType' in raw &&
+    raw.recordType === 'message'
+  );
+}
+
 /**
  * Look up what each referenced transaction actually is, so cause/produced
  * rows can name it instead of showing a bare hash.
  */
 export async function enrichTxIdRecords(
-  api: { call: (_: unknown[]) => Promise<any[]> },
+  api: { call: (_: unknown[]) => Promise<unknown[]> },
   items: TxIDRecord[],
 ): Promise<ReadonlyMap<string, TxEnrichment>> {
   const map = new Map<string, TxEnrichment>();
@@ -41,7 +55,7 @@ export async function enrichTxIdRecords(
   // One batched call rather than a query per row. A page of 25 produced
   // messages issued 25 requests here, and 25 more from the Status beside
   // each row asking about the same ids (#50).
-  let results: any[] = [];
+  let results: unknown[] = [];
   try {
     results = await api.call(
       items.map((it) => ({
@@ -66,10 +80,9 @@ export async function enrichTxIdRecords(
     // back as 'message' rather than the enum, so Status would not recognise
     // it. Hydrate messages; leave anything else (errors, pending) undefined
     // so Status falls back to querying it itself.
-    const record =
-      raw && raw.recordType === 'message'
-        ? new MessageRecord(raw as never)
-        : undefined;
+    const record = isMessageRecordJSON(raw)
+      ? new MessageRecord(raw)
+      : undefined;
     map.set(txidKey(it), {
       type: extractTxType(record),
       principal: extractPrincipal(record),

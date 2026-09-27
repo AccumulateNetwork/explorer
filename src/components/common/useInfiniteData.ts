@@ -204,7 +204,11 @@ export function useInfiniteData<T>(opts: {
     return () => {
       mountedRef.current = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Keyed on the source's identity, deliberately. loadPage reads the
+    // current props through `latest`, and runEnrichment changes whenever a
+    // caller passes an inline enrichPage — depending on them would reset the
+    // list every render. contentVersion is a ref by design (#40).
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [server, total, contentVersion.current]);
 
   const src: Source = { server, windowed, total };

@@ -32,9 +32,9 @@ format:
   script:
     - npm run check:format
 
-# Lint (runs on all branches). Fails on errors only: the codebase carries
-# ~200 warnings (mostly `any` and unused vars), which are the floor to work
-# down rather than a gate nobody can pass. See #65.
+# Lint (runs on all branches). `npm run lint` passes --max-warnings 0, so a
+# new warning fails the pipeline: fix it, or disable it on that line with the
+# reason after `--`. See #65.
 lint:
   extends: .node
   stage: build

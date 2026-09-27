@@ -42,12 +42,12 @@ export class Context {
     `${import.meta.env.VITE_NETWORK}`.toLowerCase() === 'any';
   readonly canChangeNetwork = Context.canChangeNetwork;
 
-  #onApiError?: (_: any) => void;
+  #onApiError?: (error: unknown) => void;
   readonly #network?: NetworkConfig;
   readonly #api?: JsonRpcClient;
 
   constructor(
-    onApiError?: (_: any) => void,
+    onApiError?: (error: unknown) => void,
     name: string | NetworkConfig = defaultNetworkName(),
   ) {
     if (!name) {
@@ -110,13 +110,18 @@ export function Status(props: {
   const shared = useContext(Network);
   const [ctx, setCtx] = useState<Context>();
 
+  // Re-run when the shared context changes too (the user switched networks):
+  // the badge for the newly selected network should reuse it, and a probe
+  // context should report errors through the current handler. `props.network`
+  // is always a config object from the static registry in networks.tsx, so its
+  // identity only changes when the network does.
   useEffect(() => {
     if (props.network?.id === shared.network.id) {
       setCtx(shared);
     } else {
       setCtx(new Context(shared.onApiError, props.network));
     }
-  }, [props.network?.id]);
+  }, [props.network, shared]);
 
   const get = async <C extends Ctor<Account>>(
     p: PartitionInfo,

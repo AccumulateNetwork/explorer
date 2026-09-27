@@ -73,7 +73,7 @@
     "format": "prettier -w src",
     "check:format": "prettier --check src",
     "smoke": "node scripts/smoke.cjs",
-    "lint": "eslint src"
+    "lint": "eslint src --max-warnings 0"
   },
   "prettier": {
     "semi": true,

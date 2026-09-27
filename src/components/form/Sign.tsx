@@ -2,7 +2,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import { Alert, Modal, Spin } from 'antd';
 import React, { useContext, useState } from 'react';
 
-import { SignOptions, TxID, network } from 'accumulate.js';
+import { SignOptions, TxID } from 'accumulate.js';
 import {
   JsonRpcClient,
   MessageRecord,
@@ -23,21 +23,25 @@ import { useWeb3 } from '../web3/Context';
 const waitTime = 500;
 const waitLimit = 30_000 / waitTime;
 
+// Declaration merging: `Sign` is both the component and the namespace holding
+// its request types (Sign.Request, Sign.WaitForRequest), which callers use as
+// `Sign.Request`. Converting to module exports would change that public shape.
+// eslint-disable-next-line @typescript-eslint/no-namespace -- see above
 export declare namespace Sign {
   type Signer = SignOptions;
 
   interface Request {
     args: TransactionArgs;
     signer?: Signer;
-    onFinish(): any;
-    onCancel(): any;
+    onFinish(): unknown;
+    onCancel(): unknown;
     initiated?: boolean;
   }
 
   interface WaitForRequest<T> {
     submit: () => Promise<T | T[]>;
-    onFinish(_: T[]): any;
-    onCancel(): any;
+    onFinish(_: T[]): unknown;
+    onCancel(): unknown;
     initiated?: boolean;
   }
 }
@@ -205,7 +209,7 @@ Sign.WaitFor = function WaitFor<T>({
 
         const seen = new Set<string>();
         await Promise.all(
-          (results as any[])
+          (results as unknown[])
             .filter(
               (r): r is TxID | Submission =>
                 r instanceof TxID || r instanceof Submission,
@@ -252,7 +256,7 @@ Sign.WaitFor = function WaitFor<T>({
 
 function newMutableChildren(
   mounted: () => boolean,
-  setChildren: (_: React.ReactNode[]) => any,
+  setChildren: (_: React.ReactNode[]) => void,
 ) {
   let children: React.ReactNode[] = [];
   setChildren([]);

@@ -1,7 +1,7 @@
 import { Input, Select, Skeleton, Typography } from 'antd';
 import { TextProps } from 'antd/lib/typography/Text';
 import { Base64 } from 'js-base64';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Json } from './Json';
 
@@ -16,16 +16,32 @@ export function Content(props: {
   compact?: boolean;
   type?: ContentType;
 }) {
-  const bytes =
-    props.children instanceof Uint8Array
-      ? props.children
-      : Buffer.from(props.children, 'utf-8');
-  const textRaw =
-    typeof props.children === 'string'
-      ? props.children
-      : Buffer.from(props.children).toString('utf-8');
-  const textHex = bytes.toString('hex');
-  const text64 = Base64.fromUint8Array(bytes);
+  // Key everything on the payload's content, not its identity: a parent that
+  // hands us a fresh but identical Uint8Array must not re-run detection (which
+  // would reset the user's chosen view), while a different payload must (#42).
+  const contentKey = `${props.children}`;
+  const payload = useRef({ key: contentKey, children: props.children });
+  if (payload.current.key !== contentKey) {
+    payload.current = { key: contentKey, children: props.children };
+  }
+  const children = payload.current.children;
+
+  const { bytes, textRaw, textHex, text64 } = useMemo(() => {
+    const bytes =
+      children instanceof Uint8Array
+        ? children
+        : Buffer.from(children, 'utf-8');
+    const textRaw =
+      typeof children === 'string'
+        ? children
+        : Buffer.from(children).toString('utf-8');
+    return {
+      bytes,
+      textRaw,
+      textHex: bytes.toString('hex'),
+      text64: Base64.fromUint8Array(bytes),
+    };
+  }, [children]);
 
   // Use states because that should limit how often React re-executes this code
   const [type, setType] = useState(props.type || 'Text');
@@ -45,17 +61,17 @@ export function Content(props: {
       try {
         setTextJSON(JSON.stringify(JSON.parse(textRaw), null, 4));
         setType('JSON');
-      } catch (_) {
+      } catch {
         // Not valid JSON
         setTextJSON(null);
         setType('Text');
       }
-    } catch (_) {
+    } catch {
       // Not valid UTF-8
       setTextJSON(null);
       setType('Hex');
     }
-  }, [`${props.children}`, props.type]);
+  }, [bytes, textRaw, props.type]);
 
   const [current, setCurrent] = useState(null);
   const [currentShort, setCurrentShort] = useState(null);
@@ -81,7 +97,7 @@ export function Content(props: {
     // /data/<hashA> -> /data/<hashB> where both entries are the same type
     // (usually Text) never recomputed `current`, so entry A's payload rendered
     // under entry B's txid (#42).
-  }, [type, textJSON, `${props.children}`]);
+  }, [type, textJSON, textRaw, text64, textHex]);
 
   const shortLimit = 16;
   useEffect(() => {

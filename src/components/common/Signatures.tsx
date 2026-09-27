@@ -177,7 +177,10 @@ export function Signatures(props: {
     // every subsequent transaction (#43). Reset so a slow query never leaves
     // the previous transaction's authorities showing.
     setAuthorities(null);
-    getAllAuthorities(); // eslint-disable-next-line react-hooks/exhaustive-deps
+    getAllAuthorities();
+    // getAllAuthorities is rebuilt every render and reads `transaction`, the
+    // key; listing it would re-query on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [transaction]);
 
   return (
@@ -893,7 +896,6 @@ Signature.Key = function SignatureKey({
 }) {
   const { api } = useContext(Network);
   const [delegate, setDelegate] = useState<URL | null>(null);
-  const [loading, setLoading] = useState(false);
 
   // Look up the delegate for this public key
   useAsyncEffect(async () => {
@@ -905,7 +907,6 @@ Signature.Key = function SignatureKey({
     }
 
     try {
-      setLoading(true);
       const { account } = (await api.query(keyPageUrl, {
         queryType: 'default',
       })) as AccountRecord;
@@ -940,8 +941,6 @@ Signature.Key = function SignatureKey({
       }
     } catch (error) {
       console.warn('Error looking up delegate for key:', error);
-    } finally {
-      setLoading(false);
     }
   }, [delegator, signature.signer, signature.publicKey]);
 

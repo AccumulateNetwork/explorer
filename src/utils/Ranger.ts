@@ -134,7 +134,7 @@ export function apiQuery<R extends Record>(
       RecordRange<R>
     >;
 
-  function makeQuery(base: QueryArgs, range: RangeOptionsArgs): any {
+  function makeQuery(base: QueryArgs, range: RangeOptionsArgs): Query {
     // Make a copy of the original arguments
     const query = Query.fromObject(base).copy();
 
@@ -149,10 +149,12 @@ export function apiQuery<R extends Record>(
       }
     }
 
-    // If no range property is found, use 'range'
+    // If no range property is found, use 'range'. Not every query type
+    // declares one, so TypeScript can't prove the result is a QueryArgs; the
+    // ranged query types all call the field `range`.
     return Query.fromObject({
       ...query.asObject(),
       range,
-    } as any);
+    } as QueryArgs);
   }
 }

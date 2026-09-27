@@ -81,7 +81,7 @@ export function parseRouteRef(s: string): URL | null {
   if (!s) return null;
   try {
     return URL.parse(encodeURLSpaces(s));
-  } catch (error) {
+  } catch {
     return new URL({
       scheme: 'acc',
       hostname: s,

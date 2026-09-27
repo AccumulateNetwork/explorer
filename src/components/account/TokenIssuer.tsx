@@ -134,11 +134,14 @@ TokenIssuer.Supply = function Supply({
 
   const { network } = useContext(Network);
   const isACME = account.url.equals(ACME) && network.metrics;
+  // Keyed on the issuer and network: mount-only, it kept ACME's supply (or
+  // none) when navigation reused this component for another issuer (#43).
   useEffect(() => {
+    setSupply(null);
     if (isACME) {
       getSupply(network, setSupply);
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isACME, network]);
 
   const title = (
     <Title level={4}>

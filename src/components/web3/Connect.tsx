@@ -221,7 +221,7 @@ export function Connect({ children }: { children: React.ReactNode }) {
     if (!driver) {
       switch (connected) {
         case 'Web3':
-          driver = new Driver(window.ethereum as any);
+          driver = new Driver(window.ethereum);
           break;
 
         case 'WalletConnect': {
@@ -440,6 +440,15 @@ export function Connect({ children }: { children: React.ReactNode }) {
     return () => {
       mounted = false;
     };
+    // This effect executes `request`; the other deps are the deliberate
+    // re-triggers. Omitted on purpose: `connect` and `disconnect` are rebuilt
+    // every render, and re-runs are only gated by `request.executed`, which
+    // stays false when connect() bails out early (e.g. MetaMask locked on
+    // page load) — so including them would restart the whole flow on every
+    // render. liteIdentity/dataStore/onlineStore/linked/pubKey are handed to
+    // connect() as a snapshot and written back by this effect, so including
+    // them would re-run it on its own output.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     request,
     connected,

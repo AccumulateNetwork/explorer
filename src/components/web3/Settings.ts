@@ -10,7 +10,7 @@ export const Settings = new (
     @broadcast @stored accessor connected: ConnectedType = null;
     @broadcast @stored accessor account: string = null;
 
-    @stored accessor backup: Record<string, any> = {};
+    @stored accessor backup: Record<string, unknown> = {};
     @stored accessor #publicKeys: Record<string, string> = {};
 
     getKey(account: string): Uint8Array {

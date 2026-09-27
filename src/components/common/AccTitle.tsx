@@ -1,6 +1,6 @@
 import { LinkOutlined } from '@ant-design/icons';
 import { Rate, Tooltip, Typography } from 'antd';
-import React, { lazy, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import { TxID, URL } from 'accumulate.js';
 import { Account, AccountType } from 'accumulate.js/lib/core';
@@ -85,7 +85,7 @@ function Link({ account }: { account: Account }) {
     const ok = await web3.dataStore?.add((txn) => Sign.submit(setToSign, txn), {
       type: 'link',
       url: `${account.url}`,
-      accountType: AccountType.getName(account.type) as any,
+      accountType: AccountType.getName(account.type),
     });
     if (ok) {
       web3.reload({ dataStore: true });

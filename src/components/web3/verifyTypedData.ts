@@ -97,9 +97,9 @@ function compare(mine: unknown, theirs: unknown, path: string): string | null {
  * with the type itself carried by the typed-data schema rather than repeated.
  */
 export function verifyTypedData(
-  message: Record<string, any> | undefined,
-  transaction: Record<string, any>,
-  signature: Record<string, any>,
+  message: Record<string, unknown> | undefined,
+  transaction: { header?: unknown; body?: Record<string, unknown> },
+  signature: Record<string, unknown>,
 ): void {
   if (!message || typeof message !== 'object') {
     throw new Error('Typed data has no message');
@@ -124,7 +124,7 @@ export function verifyTypedData(
 
   // Signature metadata binds the signature to our key, signer and timestamp.
   // chainID is ours but is carried in the domain, not the message.
-  const { chainID, ...sig } = signature || {};
+  const { chainID: _chainID, ...sig } = signature || {};
   const sigBad = compare(sig, message.signature, 'signature');
   if (sigBad) problems.push(sigBad);
 

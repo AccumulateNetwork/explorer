@@ -14,7 +14,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (raw !== 'light' && raw !== 'dark') {
       Settings.themeMode = effective;
     }
-  }, []);
+    // Idempotent: once migrated the stored value is valid and this is a no-op.
+  }, [effective]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = effective;

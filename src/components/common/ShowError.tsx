@@ -1,9 +1,9 @@
 import { Alert } from 'antd';
 import React from 'react';
 
-export function unwrapError(error: any) {
+export function unwrapError(error: unknown) {
   for (;;) {
-    if (typeof error !== 'object') {
+    if (typeof error !== 'object' || error === null) {
       return `${error}`;
     }
     if ('message' in error && error.message) {
@@ -22,9 +22,9 @@ export function ShowError({
   onClose,
   bare,
 }: {
-  error: any;
+  error: unknown;
   bare?: boolean;
-  onClose?: () => any;
+  onClose?: () => void;
 }) {
   if (!error) {
     return false;

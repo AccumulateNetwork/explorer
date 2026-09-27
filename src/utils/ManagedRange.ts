@@ -1,5 +1,3 @@
-import { TablePaginationConfig } from 'antd';
-
 import {
   RangeOptionsArgs,
   Record,

@@ -38,7 +38,7 @@ export function Data() {
       let url: URL;
       try {
         url = URL.parse(encodeURLSpaces(dataURL));
-      } catch (error) {
+      } catch {
         // Without this return, execution fell through to url.username with
         // url still undefined — a TypeError from the effect put the
         // ErrorBoundary screen up instead of the intended 404 (#47).

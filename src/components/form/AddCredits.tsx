@@ -48,7 +48,7 @@ export function AddCredits(
         return;
       }
       form.setFieldsValue({ oracle: r?.oracle?.price });
-    } catch (error) {
+    } catch {
       setError('oracle', 'Failed to fetch oracle');
     }
   }, []);
@@ -62,6 +62,10 @@ export function AddCredits(
     if (!from.tokenUrl.equals(ACME)) {
       setError('from', `Cannot use ${from.tokenUrl} to purchase credits`);
     }
+    // setError is rebuilt by useFormUtils on every render (it is not memoized),
+    // so listing it would run this on every render. It only closes over the
+    // stable form instance, so the first-render copy is never stale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
   }, [from]);
 
   // Calculate the ACME amount

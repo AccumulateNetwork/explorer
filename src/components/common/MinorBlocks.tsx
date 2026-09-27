@@ -60,6 +60,126 @@ function readBlockFromUrl(search: string): number | null {
   return Number.isFinite(n) && n >= 0 ? n : null;
 }
 
+type MaybeMajorBlockTime = {
+  majorBlockTime?: Date | string;
+  message?: { majorBlockTime?: Date | string };
+};
+
+const isAnchor = (e: ChainEntryRecord) =>
+  e.name == 'anchor-sequence' ||
+  /acc:\/\/(dn|bvn-\w+)\.acme\/anchors/i.test(e.account.toString());
+
+function BlockTxs({
+  data,
+  showAnchors,
+}: {
+  data: BlockData;
+  showAnchors: boolean;
+}) {
+  const { transactions, anchors, block, chain } = data;
+  const rootIndex = chain?.value?.value?.rootIndexIndex;
+  const txInfo = useInfiniteListEnrichment<string, TxInfo>();
+
+  if (!transactions.length && !anchors.length)
+    return <Text disabled>Empty block</Text>;
+
+  const entries = showAnchors ? [...transactions, ...anchors] : transactions;
+
+  if (!entries?.length) return <Text disabled>No transactions</Text>;
+
+  return (
+    <List
+      size="small"
+      className="compact-list"
+      split={false}
+      dataSource={entries}
+      renderItem={(item: ChainEntryRecord) => {
+        let tooltip: string;
+        let Icon: IconType;
+        if (item.name == 'anchor-sequence') {
+          tooltip = 'anchor';
+          Icon = TiAnchor;
+        } else if (item.name == 'main') {
+          tooltip = 'transaction';
+          Icon = RiExchangeLine;
+        } else if (item.name == 'signature') {
+          tooltip = 'signature';
+          Icon = RiShieldCheckLine;
+        } else {
+          tooltip = item.name || 'unknown';
+          Icon = RiExchangeLine;
+        }
+
+        const anchorMode = isAnchor(item);
+        // Duck-typed: only some record/message kinds (e.g. MakeMajorBlock)
+        // carry a major block time.
+        const value = item.value as MaybeMajorBlockTime | undefined;
+        const majorBlockTime =
+          value?.message?.majorBlockTime || value?.majorBlockTime;
+        const hex = Buffer.from(item.entry).toString('hex');
+        const accountPath = item.account.toString().replace(/^acc:\/\//, '');
+        const type = txInfo?.get(hex)?.type;
+
+        return (
+          <List.Item key={item.index} style={{ background: 'none' }}>
+            <Link
+              to={item.account.withTxID(item.entry)}
+              style={{ color: anchorMode ? 'gray' : null }}
+            >
+              <Tooltip overlayClassName="explorer-tooltip" title={tooltip}>
+                <IconContext.Provider value={{ className: 'react-icons' }}>
+                  <Icon />
+                </IconContext.Provider>
+                <span>
+                  {anchorMode ? (
+                    <>
+                      anchor [{item.name || 'unknown'}]: block{' '}
+                      <code>{block.index}</code>
+                      {block.time && (
+                        <>
+                          {' @ '}
+                          <code>{moment(block.time).format('HH:mm:ss')}</code>
+                        </>
+                      )}
+                      {rootIndex !== undefined && (
+                        <>
+                          {' · root #'}
+                          <code>{rootIndex}</code>
+                        </>
+                      )}
+                      {majorBlockTime && (
+                        <>
+                          {' · major '}
+                          <code>
+                            {moment(majorBlockTime).format(
+                              'YYYY-MM-DD HH:mm:ss',
+                            )}
+                          </code>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <code>{type || `${hex.slice(0, 8)} unknown`}</code> ·{' '}
+                      {accountPath}
+                      {block.time && (
+                        <>
+                          {' @ '}
+                          <code>{moment(block.time).format('HH:mm:ss')}</code>
+                        </>
+                      )}
+                    </>
+                  )}
+                </span>
+              </Tooltip>
+            </Link>
+          </List.Item>
+        );
+      }}
+    />
+  );
+}
+
 const MinorBlocks = () => {
   const header = 'Minor Blocks';
 
@@ -83,7 +203,7 @@ const MinorBlocks = () => {
 
   // Memoized because antd re-renders every row when this identity changes,
   // and it changed on each keystroke in the anchor-block input (#56). The
-  // definitions close over nothing that varies.
+  // only thing the definitions close over is the show-anchors toggle.
   const columns: TableProps<BlockData>['columns'] = useMemo(
     () => [
       {
@@ -130,7 +250,7 @@ const MinorBlocks = () => {
           if (!data?.block.entries) {
             return <Text disabled>Empty block</Text>;
           }
-          return <BlockTxs data={data} />;
+          return <BlockTxs data={data} showAnchors={showAnchors} />;
         },
       },
       {
@@ -150,117 +270,8 @@ const MinorBlocks = () => {
         },
       },
     ],
-    [],
+    [showAnchors],
   );
-
-  const isAnchor = (e: ChainEntryRecord) =>
-    e.name == 'anchor-sequence' ||
-    /acc:\/\/(dn|bvn-\w+)\.acme\/anchors/i.test(e.account.toString());
-
-  function BlockTxs({ data }: { data: BlockData }) {
-    const { transactions, anchors, block, chain } = data;
-    const rootIndex = (chain as any)?.value?.value?.rootIndexIndex as
-      | number
-      | undefined;
-    const txInfo = useInfiniteListEnrichment<string, TxInfo>();
-
-    if (!transactions.length && !anchors.length)
-      return <Text disabled>Empty block</Text>;
-
-    const entries = showAnchors ? [...transactions, ...anchors] : transactions;
-
-    if (!entries?.length) return <Text disabled>No transactions</Text>;
-
-    return (
-      <List
-        size="small"
-        className="compact-list"
-        split={false}
-        dataSource={entries}
-        renderItem={(item: ChainEntryRecord) => {
-          let tooltip: string;
-          let Icon: IconType;
-          if (item.name == 'anchor-sequence') {
-            tooltip = 'anchor';
-            Icon = TiAnchor;
-          } else if (item.name == 'main') {
-            tooltip = 'transaction';
-            Icon = RiExchangeLine;
-          } else if (item.name == 'signature') {
-            tooltip = 'signature';
-            Icon = RiShieldCheckLine;
-          } else {
-            tooltip = item.name || 'unknown';
-            Icon = RiExchangeLine;
-          }
-
-          const anchorMode = isAnchor(item);
-          const majorBlockTime =
-            (item as any)?.value?.message?.majorBlockTime ||
-            (item as any)?.value?.majorBlockTime;
-          const hex = Buffer.from(item.entry).toString('hex');
-          const accountPath = item.account.toString().replace(/^acc:\/\//, '');
-          const type = txInfo?.get(hex)?.type;
-
-          return (
-            <List.Item key={item.index} style={{ background: 'none' }}>
-              <Link
-                to={item.account.withTxID(item.entry)}
-                style={{ color: anchorMode ? 'gray' : null }}
-              >
-                <Tooltip overlayClassName="explorer-tooltip" title={tooltip}>
-                  <IconContext.Provider value={{ className: 'react-icons' }}>
-                    <Icon />
-                  </IconContext.Provider>
-                  <span>
-                    {anchorMode ? (
-                      <>
-                        anchor [{item.name || 'unknown'}]: block{' '}
-                        <code>{block.index}</code>
-                        {block.time && (
-                          <>
-                            {' @ '}
-                            <code>{moment(block.time).format('HH:mm:ss')}</code>
-                          </>
-                        )}
-                        {rootIndex !== undefined && (
-                          <>
-                            {' · root #'}
-                            <code>{rootIndex}</code>
-                          </>
-                        )}
-                        {majorBlockTime && (
-                          <>
-                            {' · major '}
-                            <code>
-                              {moment(majorBlockTime).format(
-                                'YYYY-MM-DD HH:mm:ss',
-                              )}
-                            </code>
-                          </>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <code>{type || `${hex.slice(0, 8)} unknown`}</code> ·{' '}
-                        {accountPath}
-                        {block.time && (
-                          <>
-                            {' @ '}
-                            <code>{moment(block.time).format('HH:mm:ss')}</code>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </span>
-                </Tooltip>
-              </Link>
-            </List.Item>
-          );
-        }}
-      />
-    );
-  }
 
   const { api, network, onApiError } = useContext(Network);
   const [blocks] = useState(() => {

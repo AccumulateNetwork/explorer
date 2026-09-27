@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { DependencyList, useEffect, useState } from 'react';
 
 export function useAsyncEffect<V>(
   effect: (isMounted: () => boolean) => V | Promise<V>,
-  inputs: any[],
+  inputs: DependencyList,
 ) {
   let resolve: () => void;
-  let reject: (_?: any) => void;
+  let reject: (reason?: unknown) => void;
   const promise = new Promise<void>((r, j) => ((resolve = r), (reject = j)));
 
   useEffect(function () {
@@ -23,6 +23,11 @@ export function useAsyncEffect<V>(
     return function () {
       mounted = false;
     };
+    // This is a useEffect wrapper: `inputs` is the caller's dependency list and
+    // plays exactly the role useEffect's does. `effect` is an inline function
+    // (new every render) and resolve/reject belong to this render's promise, so
+    // listing them would re-run the effect on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- caller-supplied dependency list
   }, inputs);
 
   return promise;
@@ -30,7 +35,7 @@ export function useAsyncEffect<V>(
 
 export function useAsyncState<V>(
   effect: () => Promise<V>,
-  dependencies: any[],
+  dependencies: DependencyList,
   initial?: V,
 ) {
   const [value, setValue] = useState<V>(initial);

@@ -1,4 +1,3 @@
-import { message } from 'antd';
 import axios from 'axios';
 
 export default async function getSupply(network, setSupply, setAPR) {

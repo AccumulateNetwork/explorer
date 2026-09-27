@@ -9,7 +9,7 @@ import {
   RiQuestionLine,
 } from 'react-icons/ri';
 
-import { URL, core } from 'accumulate.js';
+import { core } from 'accumulate.js';
 import { AccountType } from 'accumulate.js/lib/core';
 
 import tooltipDescs, { tooltip } from '../../utils/lang';
@@ -30,7 +30,6 @@ const { Title, Paragraph, Text } = Typography;
 
 export function KeyPage({ record }: { record: AccountRecordOf<core.KeyPage> }) {
   const { account } = record;
-  const bookUrl = URL.parse(account.url.toString().replace(/\/\d+$/, ''));
 
   const labelURL = (
     <span>
