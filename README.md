@@ -158,8 +158,6 @@ steps — do not deploy from this summary alone.
 - **Production:** https://explorer.accumulatenetwork.io (nginx on server1, manual rsync)
 - **Beta:** decommissioned around March 2026. `beta.explorer.accumulatenetwork.io`
   is a dangling CNAME awaiting removal; see DEPLOYMENT.md.
-- **Build Config:** `netlify.toml` — inert, retained only as a record of the
-  former beta build.
 
 ### Detailed Guide
 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment documentation.
