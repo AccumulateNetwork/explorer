@@ -21,6 +21,14 @@ ExecutorVersion.byName = function (name: string): number {
   }
 };
 
+// Patch fromObject too — it is what the decoder calls, and it reaches the
+// SDK's module-local byName, not the property replaced above. Patching byName
+// alone never took effect, so Kermit's 'v2-kourou' broke every network-status
+// call (#87).
+ExecutorVersion.fromObject = function (obj: number | string): number {
+  return typeof obj === 'number' ? obj : ExecutorVersion.byName(obj);
+};
+
 // Patch getName to handle unknown versions (including -1)
 (ExecutorVersion.getName as any) = function (v: number): string {
   if (v === -1) {
