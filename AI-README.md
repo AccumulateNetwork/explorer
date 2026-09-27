@@ -66,8 +66,7 @@ metrics-service/          # Go metrics API service
 - `src/components/common/networks.tsx` - Network configurations (mainnet, testnets)
 - `src/utils/getSupply.js` - Fetches ACME supply metrics from API
 - `src/components/explorer/Staking.jsx` - Staking page UI
-- `netlify.toml` - Netlify configuration (headers, redirects)
-- `.gitlab-ci.yml` - GitLab CI/CD (builds, optional deployment)
+- `.gitlab-ci.yml` - GitLab CI (typecheck, format, lint, test, build; no deployment)
 
 ## Common Tasks
 

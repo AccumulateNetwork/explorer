@@ -51,9 +51,9 @@ script in `scripts/`) and check a transaction page, an account page, and
 The vhosts include `snippets/explorer-security.conf`, kept in this repo at
 [`deploy/nginx/explorer-security.conf`](deploy/nginx/explorer-security.conf).
 It carries `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`,
-`Permissions-Policy` and the Content Security Policy (#59). `netlify.toml`
-declares a similar set but only covers beta; before this existed production
-sent no security headers at all.
+`Permissions-Policy` and the Content Security Policy (#59). Before it
+existed production sent no security headers at all; the similar set declared
+in the old `netlify.toml` only ever covered beta.
 
 To update it:
 
@@ -104,8 +104,8 @@ certificate expired **2026-04-22**. The last archived capture of the site is
 before the 2026-08-14 mirror compromise, which means Netlify never built the
 malicious commit and no Netlify build environment was exposed by it.**
 
-`netlify.toml` is retained: it is the only record of the beta build
-configuration, and it is inert without a Netlify site.
+`netlify.toml` and the Netlify CI jobs were removed in #94. The beta build
+configuration remains in history: `git show dd525d5:netlify.toml`.
 
 ### Dangling DNS — needs removal
 

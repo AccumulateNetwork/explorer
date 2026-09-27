@@ -1,6 +1,5 @@
 stages:
   - build
-  - deploy
 
 variables:
   VITE_NETWORK: any
@@ -59,52 +58,9 @@ build:
       - build/
     expire_in: 1 hour
 
-# GitLab Pages (for GitLab's built-in pages feature)
-pages:
-  stage: deploy
-  image: node:20
-  script:
-    - mkdir -p public
-    - cp -r build/* public/
-  artifacts:
-    paths:
-      - public
-  only:
-    - main
-
-# Deploy to Netlify beta (on develop branch)
-deploy_beta:
-  stage: deploy
-  image: node:20
-  before_script:
-    - npm install -g netlify-cli
-  script:
-    - echo "Deploying to beta.explorer.accumulatenetwork.io (Netlify)..."
-    - netlify deploy --prod --site=${NETLIFY_BETA_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN} --dir=build
-    - echo "✓ Beta deployment complete"
-  environment:
-    name: beta
-    url: https://beta.explorer.accumulatenetwork.io
-  only:
-    - develop
-  dependencies:
-    - build
-
-# Deploy to Netlify production (on main branch, manual trigger)
-deploy_production:
-  stage: deploy
-  image: node:20
-  before_script:
-    - npm install -g netlify-cli
-  script:
-    - echo "Deploying to explorer.accumulatenetwork.io (Netlify)..."
-    - netlify deploy --prod --site=${NETLIFY_PROD_SITE_ID} --auth=${NETLIFY_AUTH_TOKEN} --dir=build
-    - echo "✓ Production deployment complete"
-  environment:
-    name: production
-    url: https://explorer.accumulatenetwork.io
-  only:
-    - main
-  when: manual # Require manual trigger for production safety
-  dependencies:
-    - build
+# No deploy jobs. Production is nginx on server1, deployed by hand from a
+# release build (DEPLOYMENT.md); nothing here can deploy it, and a job named
+# deploy_production that targets something else is how production once went
+# three months stale. The Netlify jobs (beta, decommissioned ~2026-03) failed
+# every develop pipeline for want of a token, and the Pages job published
+# from `main`, which does not exist (#94).
