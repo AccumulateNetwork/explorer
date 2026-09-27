@@ -1,2146 +1,2136 @@
 {
- "recordType": "message",
- "id": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
- "message": {
-  "type": "transaction",
-  "transaction": {
-   "header": {
-    "principal": "acc://ACME",
-    "initiator": "f4628f502e9d09e9de38f0d9f907d5ba7c599a97d1c048584bcc7e7d35ef83a5",
-    "memo": "Staking rewards for pay period 193"
-   },
-   "body": {
-    "type": "issueTokens",
-    "to": [
-     {
-      "url": "acc://07025b1118eaaac1ab924b7c2ec781842f48bb4f7ea8f4b5/ACME",
-      "amount": "2201866294761"
-     },
-     {
-      "url": "acc://202301026xcom.acme/QQ2023",
-      "amount": "4575871060"
-     },
-     {
-      "url": "acc://2025defipool.acme/rewards",
-      "amount": "396333695"
-     },
-     {
-      "url": "acc://280a527c7077934624fd70648bd28acbffe87770c871e527/acme",
-      "amount": "48880799854"
-     },
-     {
-      "url": "acc://647d6a56cd5a193559970e5132080f0a886f1cf8330fef5c/acme",
-      "amount": "116568733"
-     },
-     {
-      "url": "acc://85ffb080adf58b0286bcf6a9944af72ed7396113c5d66726/acme",
-      "amount": "23414189516"
-     },
-     {
-      "url": "acc://9e4bea3c0238b3d9568979a5bbf83149f2af95a541ff717f/acme",
-      "amount": "3042443952"
-     },
-     {
-      "url": "acc://a3df05743b6c4f92287527920ad12bc5eaff2ca51cd1545a/acme",
-      "amount": "11074029711"
-     },
-     {
-      "url": "acc://abirdinhand.acme/tokens",
-      "amount": "5165079549"
-     },
-     {
-      "url": "acc://accumulate.acme/grant-block",
-      "amount": "1036625835939"
-     },
-     {
-      "url": "acc://accumulate.acme/stake",
-      "amount": "353528050238"
-     },
-     {
-      "url": "acc://accumulated.acme/staking",
-      "amount": "2176613578392"
-     },
-     {
-      "url": "acc://accumulated.acme/wacme-lp-incentives",
-      "amount": "3497062014153"
-     },
-     {
-      "url": "acc://accumulator.acme/tokens",
-      "amount": "227213942"
-     },
-     {
-      "url": "acc://ACMEMining.acme/rewards",
-      "amount": "42202706288"
-     },
-     {
-      "url": "acc://anaf.acme/tokens",
-      "amount": "22416265728078"
-     },
-     {
-      "url": "acc://anticonstitutionnellement.acme/Tokens",
-      "amount": "173071890083"
-     },
-     {
-      "url": "acc://arsr.acme/staking",
-      "amount": "10960706290"
-     },
-     {
-      "url": "acc://AthensNode.acme/rewards",
-      "amount": "28342081429"
-     },
-     {
-      "url": "acc://AtlantaNode.acme/rewards",
-      "amount": "28345516135"
-     },
-     {
-      "url": "acc://azn1nvas1on.acme/staking",
-      "amount": "376949811"
-     },
-     {
-      "url": "acc://BartowStreetCapital.acme/rewards",
-      "amount": "8925224860"
-     },
-     {
-      "url": "acc://ben.acme/staking",
-      "amount": "27898126163"
-     },
-     {
-      "url": "acc://BetaNode.acme/rewards",
-      "amount": "102982667301"
-     },
-     {
-      "url": "acc://c71642ff4c9331653a2ed23b549d5f6698727c000e692ab5/acme",
-      "amount": "16240346668"
-     },
-     {
-      "url": "acc://codeforj.acme/rewards",
-      "amount": "148593486714"
-     },
-     {
-      "url": "acc://codeforj.acme/staking",
-      "amount": "51208750946"
-     },
-     {
-      "url": "acc://ConquistadorMining.acme/rewards",
-      "amount": "11483336369"
-     },
-     {
-      "url": "acc://ConsensusNetworks.acme/staking",
-      "amount": "79034283111"
-     },
-     {
-      "url": "acc://CryptoFund.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://CryptoPoint.acme/rewards",
-      "amount": "220986504699"
-     },
-     {
-      "url": "acc://CryptoPool.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://CryptoStake.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://CryptoStash.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://cybitron.acme/yield",
-      "amount": "75808192041"
-     },
-     {
-      "url": "acc://dataiq.acme/stakeit1",
-      "amount": "10003892223"
-     },
-     {
-      "url": "acc://dbgrow.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://defacto.acme/staking",
-      "amount": "262652102806"
-     },
-     {
-      "url": "acc://defacto.acme/tokens",
-      "amount": "6817140889"
-     },
-     {
-      "url": "acc://defidevs.acme/stake",
-      "amount": "2791226929132"
-     },
-     {
-      "url": "acc://dennis.acme/staking-yield",
-      "amount": "128290488154"
-     },
-     {
-      "url": "acc://DetroitLedgerTech.acme/rewards",
-      "amount": "11018167362"
-     },
-     {
-      "url": "acc://diopter-estrange-005.acme/tokens",
-      "amount": "278716255148"
-     },
-     {
-      "url": "acc://diopter-estrange-009.acme/tokens",
-      "amount": "60330913542"
-     },
-     {
-      "url": "acc://diopter-estrange-010.acme/tokens",
-      "amount": "460878758517"
-     },
-     {
-      "url": "acc://diopter-estrange-011.acme/tokens",
-      "amount": "204501124365"
-     },
-     {
-      "url": "acc://diopter-estrange-012.acme/tokens",
-      "amount": "168351039663"
-     },
-     {
-      "url": "acc://diopter-estrange-015.acme/tokens",
-      "amount": "182882255753"
-     },
-     {
-      "url": "acc://diopter-estrange-016.acme/tokens",
-      "amount": "110074806064"
-     },
-     {
-      "url": "acc://diopter-estrange-017.acme/tokens",
-      "amount": "101169973147"
-     },
-     {
-      "url": "acc://diopter-estrange-019.acme/tokens",
-      "amount": "162896195827"
-     },
-     {
-      "url": "acc://diopter-estrange-020.acme/tokens",
-      "amount": "353483763621"
-     },
-     {
-      "url": "acc://diopter-estrange-021.acme/tokens",
-      "amount": "77170757372"
-     },
-     {
-      "url": "acc://diopter-estrange-023.acme/tokens",
-      "amount": "30485813450"
-     },
-     {
-      "url": "acc://diopter-estrange-025.acme/tokens",
-      "amount": "257652404172"
-     },
-     {
-      "url": "acc://diopter-estrange-027.acme/tokens",
-      "amount": "97149819217"
-     },
-     {
-      "url": "acc://diopter-estrange-028.acme/tokens",
-      "amount": "50584986463"
-     },
-     {
-      "url": "acc://diopter-estrange-029.acme/tokens",
-      "amount": "50584986463"
-     },
-     {
-      "url": "acc://diopter-estrange-031.acme/tokens",
-      "amount": "38443330367"
-     },
-     {
-      "url": "acc://diopter-estrange-033.acme/tokens",
-      "amount": "38443330367"
-     },
-     {
-      "url": "acc://diopter-estrange-036.acme/tokens",
-      "amount": "37923336025"
-     },
-     {
-      "url": "acc://diopter-estrange-037.acme/tokens",
-      "amount": "30350991793"
-     },
-     {
-      "url": "acc://diopter-estrange-038.acme/tokens",
-      "amount": "48571244296"
-     },
-     {
-      "url": "acc://diopter-estrange-039.acme/tokens",
-      "amount": "48571344871"
-     },
-     {
-      "url": "acc://diopter-estrange-041.acme/tokens",
-      "amount": "48571244296"
-     },
-     {
-      "url": "acc://diopter-estrange-042.acme/tokens",
-      "amount": "48571244296"
-     },
-     {
-      "url": "acc://diopter-estrange-043.acme/tokens",
-      "amount": "48571244296"
-     },
-     {
-      "url": "acc://diopter-estrange-045.acme/tokens",
-      "amount": "48571244296"
-     },
-     {
-      "url": "acc://diopter-estrange-046.acme/tokens",
-      "amount": "49176761968"
-     },
-     {
-      "url": "acc://diopter-estrange-048.acme/tokens",
-      "amount": "223524975001"
-     },
-     {
-      "url": "acc://diopter-estrange-049.acme/tokens",
-      "amount": "18939260858"
-     },
-     {
-      "url": "acc://diopter-estrange-051.acme/tokens",
-      "amount": "24432230023"
-     },
-     {
-      "url": "acc://diopter-estrange-052.acme/tokens",
-      "amount": "14031370724"
-     },
-     {
-      "url": "acc://diopter-estrange-053.acme/tokens",
-      "amount": "24285622029"
-     },
-     {
-      "url": "acc://diopter-estrange-054.acme/tokens",
-      "amount": "24285622029"
-     },
-     {
-      "url": "acc://diopter-estrange-055.acme/tokens",
-      "amount": "24285622029"
-     },
-     {
-      "url": "acc://diopter-estrange-056.acme/tokens",
-      "amount": "24285622029"
-     },
-     {
-      "url": "acc://diopter-estrange-057.acme/tokens",
-      "amount": "24285622029"
-     },
-     {
-      "url": "acc://diopter-estrange-058.acme/tokens",
-      "amount": "27320672921"
-     },
-     {
-      "url": "acc://diopter-estrange-061.acme/tokens",
-      "amount": "10061300324"
-     },
-     {
-      "url": "acc://diopter-estrange-063.acme/tokens",
-      "amount": "9539164451"
-     },
-     {
-      "url": "acc://diopter-estrange-064.acme/tokens",
-      "amount": "280099564842"
-     },
-     {
-      "url": "acc://diopter-estrange-065.acme/tokens",
-      "amount": "16491210968"
-     },
-     {
-      "url": "acc://diopter-estrange-066.acme/tokens",
-      "amount": "16031589208"
-     },
-     {
-      "url": "acc://diopter-estrange-067.acme/tokens",
-      "amount": "8470492359"
-     },
-     {
-      "url": "acc://diopter-estrange-068.acme/tokens",
-      "amount": "14754512813"
-     },
-     {
-      "url": "acc://diopter-estrange-069.acme/tokens",
-      "amount": "14572839236"
-     },
-     {
-      "url": "acc://diopter-estrange-070.acme/tokens",
-      "amount": "9589598966"
-     },
-     {
-      "url": "acc://diopter-estrange-071.acme/tokens",
-      "amount": "27907219447"
-     },
-     {
-      "url": "acc://diopter-estrange-072.acme/tokens",
-      "amount": "22393397000"
-     },
-     {
-      "url": "acc://diopter-estrange-073.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-074.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-075.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-076.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-077.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-079.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-081.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-082.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-083.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-084.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-085.acme/tokens",
-      "amount": "73549853653"
-     },
-     {
-      "url": "acc://diopter-estrange-086.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-087.acme/tokens",
-      "amount": "12290479430"
-     },
-     {
-      "url": "acc://diopter-estrange-088.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-089.acme/tokens",
-      "amount": "12290645376"
-     },
-     {
-      "url": "acc://diopter-estrange-090.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-091.acme/tokens",
-      "amount": "12290645376"
-     },
-     {
-      "url": "acc://diopter-estrange-092.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-093.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-094.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-095.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-097.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-098.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-099.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-100.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-101.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-102.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-104.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-105.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-106.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-107.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-108.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-109.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-110.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-111.acme/tokens",
-      "amount": "12139145707"
-     },
-     {
-      "url": "acc://diopter-estrange-112.acme/tokens",
-      "amount": "5901837713"
-     },
-     {
-      "url": "acc://diopter-estrange-113.acme/tokens",
-      "amount": "4876745727"
-     },
-     {
-      "url": "acc://diopter-estrange-114.acme/tokens",
-      "amount": "5003400093"
-     },
-     {
-      "url": "acc://diopter-estrange-115.acme/tokens",
-      "amount": "8144076539"
-     },
-     {
-      "url": "acc://diopter-estrange-116.acme/tokens",
-      "amount": "8144076539"
-     },
-     {
-      "url": "acc://diopter-estrange-117.acme/tokens",
-      "amount": "8144076539"
-     },
-     {
-      "url": "acc://diopter-estrange-118.acme/tokens",
-      "amount": "8144076539"
-     },
-     {
-      "url": "acc://diopter-estrange-119.acme/tokens",
-      "amount": "444844997737"
-     },
-     {
-      "url": "acc://diopter-estrange-120.acme/tokens",
-      "amount": "24267515129"
-     },
-     {
-      "url": "acc://diopter-estrange-122.acme/tokens",
-      "amount": "3035098977"
-     },
-     {
-      "url": "acc://diopter-estrange-123.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-124.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-125.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-126.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-127.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-128.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-129.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-130.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-131.acme/tokens",
-      "amount": "4068372961"
-     },
-     {
-      "url": "acc://diopter-estrange-132.acme/tokens",
-      "amount": "2012259895"
-     },
-     {
-      "url": "acc://diopter-estrange-133.acme/tokens",
-      "amount": "2441023683"
-     },
-     {
-      "url": "acc://diopter-estrange-134.acme/tokens",
-      "amount": "2030521200"
-     },
-     {
-      "url": "acc://Dolphins1972.acme/rewards",
-      "amount": "6476040767"
-     },
-     {
-      "url": "acc://DrKyle.acme/Rewards",
-      "amount": "27393652444"
-     },
-     {
-      "url": "acc://DRobertB.acme/Tokens",
-      "amount": "39607614836"
-     },
-     {
-      "url": "acc://e2e6388666cebb838e7d33fa6bddaf9388f6fda3f6cf1fe9/acme",
-      "amount": "2109894082"
-     },
-     {
-      "url": "acc://eembach.acme/tokens",
-      "amount": "21704884117"
-     },
-     {
-      "url": "acc://Everest.acme/rewards",
-      "amount": "24363614493"
-     },
-     {
-      "url": "acc://fahad.acme/Fahad",
-      "amount": "284835511"
-     },
-     {
-      "url": "acc://federatethis.acme/rewards",
-      "amount": "41854521956"
-     },
-     {
-      "url": "acc://FuturaCrypto.acme/MattADIAcc",
-      "amount": "1290336737"
-     },
-     {
-      "url": "acc://GNACMEADI.acme/GNACME%20STAKE",
-      "amount": "349576215"
-     },
-     {
-      "url": "acc://GOI.acme/rewards",
-      "amount": "12037240502"
-     },
-     {
-      "url": "acc://greenfuture.acme/staked",
-      "amount": "2016065114087"
-     },
-     {
-      "url": "acc://henspop.acme/token",
-      "amount": "64836716637"
-     },
-     {
-      "url": "acc://highstakes.acme/cashcow",
-      "amount": "88537293719"
-     },
-     {
-      "url": "acc://highstakes.acme/tokens",
-      "amount": "9891379676"
-     },
-     {
-      "url": "acc://inveniam.acme/holding",
-      "amount": "1657600306668"
-     },
-     {
-      "url": "acc://inveniam.acme/staking",
-      "amount": "1223404075"
-     },
-     {
-      "url": "acc://JathinJagannath.acme/JJTOKENS",
-      "amount": "3502890451"
-     },
-     {
-      "url": "acc://kompendium.acme/staking1",
-      "amount": "2210115354743"
-     },
-     {
-      "url": "acc://lunanova.acme/staking",
-      "amount": "110840311494"
-     },
-     {
-      "url": "acc://MetisMining.acme/rewards",
-      "amount": "902787476565"
-     },
-     {
-      "url": "acc://MusicCityNode.acme/rewards",
-      "amount": "8859820817"
-     },
-     {
-      "url": "acc://NTC.acme/rewards",
-      "amount": "12203070492"
-     },
-     {
-      "url": "acc://NutshellTechnologies.acme/rewards",
-      "amount": "61720490080"
-     },
-     {
-      "url": "acc://nutshelltechnologies.acme/staking",
-      "amount": "5464084663"
-     },
-     {
-      "url": "acc://OrchardHouse.acme/rewards",
-      "amount": "39469697046"
-     },
-     {
-      "url": "acc://p16redstone.acme/staking",
-      "amount": "98651694239"
-     },
-     {
-      "url": "acc://Pavilion.acme/rewards",
-      "amount": "17720159769"
-     },
-     {
-      "url": "acc://pennyrocket.acme/staking",
-      "amount": "308818057065"
-     },
-     {
-      "url": "acc://prestigeit.acme/tokens",
-      "amount": "25904163068"
-     },
-     {
-      "url": "acc://Quentin.acme/rewards",
-      "amount": "11656873381"
-     },
-     {
-      "url": "acc://reesor.acme/rewards",
-      "amount": "582843669025"
-     },
-     {
-      "url": "acc://saisne.acme/stake",
-      "amount": "34653979894"
-     },
-     {
-      "url": "acc://saltlife.acme/BlueSeas",
-      "amount": "3950753449"
-     },
-     {
-      "url": "acc://sigrlami.acme/staking",
-      "amount": "74230596893"
-     },
-     {
-      "url": "acc://sphereon.acme/stake",
-      "amount": "76373443020"
-     },
-     {
-      "url": "acc://tfa.acme/staking",
-      "amount": "22677631133"
-     },
-     {
-      "url": "acc://tfa.acme/staking-yield",
-      "amount": "41883748144"
-     },
-     {
-      "url": "acc://tfalabs.acme/staking-yield",
-      "amount": "10909519418"
-     },
-     {
-      "url": "acc://TurtleBoat.acme/rewards",
-      "amount": "10877158072"
-     },
-     {
-      "url": "acc://Vidal.acme/tokens",
-      "amount": "11656873381"
-     },
-     {
-      "url": "acc://wipeoutxxx.acme/wipeoutxxx",
-      "amount": "3183389639"
-     },
-     {
-      "url": "acc://ZekeInvestments.acme/rewards",
-      "amount": "17031900171"
-     }
-    ]
-   }
-  }
- },
- "status": "delivered",
- "statusNo": 201,
- "result": {
-  "type": "unknown"
- },
- "produced": {
-  "recordType": "range",
-  "records": [
-   {
-    "recordType": "txID",
-    "value": "acc://03a29925fbf5297b826630ace1432dce219bf08b712db93c071d5b498bb17105@diopter-estrange-074.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0553fe503098462678c0c709c793a1babd0b8053f37dd306c04b6f5270fb8988@diopter-estrange-093.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://071790f11862f85fbe6629d081cd9f8507427b403b28c9fcf975bead3e894d72@dataiq.acme/stakeit1"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0791f88198d2f5c23f88833fa28ca4901e92fe26ef5c2cc04d374e4d7c735020@diopter-estrange-126.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://07f73f4414d1284528bacda7c05f0a04c6937853d0c322cb1cc24d76671a27d8@diopter-estrange-113.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://08738fff510b071df6ff10d651691a2da3535ea33bcf19a1587b925a996a652c@diopter-estrange-066.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://087d6111207697d4f2117fa25a52e0c927dedd70c3eeac488a9faef3c42ca53e@azn1nvas1on.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0a8d96e5c9a1b9ef6617e58d28510c80468612736e64c7eb8176338c00cd6924@AthensNode.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0b4ce80f1d256ef1275365808e2b56a875aab7c5cd153a57f7efceca6a78d8a4@diopter-estrange-091.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0ceb0fc7fbdf74c53e4efb10bd484a54f2383b82e7219eb88d422228eaf48fe8@codeforj.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0e140927d520b386018f3228ae1b83f6c15312450201d958d560e91897452f0f@diopter-estrange-106.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://0ecec4aba468357e83d727bb2c46c98be148794739722279f65fd585763f50a4@diopter-estrange-076.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://10661e2442f3e60fe14652cf9338bebb411c0cfe66b708030fe50d6235283233@diopter-estrange-038.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://10954250f13700afe3064eef9b97f27bc5f5bbafa7c66e8e9a80fbf8986b7136@BetaNode.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://10b8b552fc8ef0fa3eb38f91c4615e962aaf3ee3934343cca7e4ed2d7e8ca8ea@Quentin.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://11041dfc82572a4ccf428e78b1379506b79b99c316b5a452f3e4214767a227be@BartowStreetCapital.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://114a6e48f31dff1d1fb96b5390fb3966b93c486773f9b68785416349537f4b81@defacto.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://12c23d42f887498c3f3646042fc0667d0fe1fbb8f7fbfcae236c2f0aa32859f6@diopter-estrange-069.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://146a13ea9308e8b29cb7b5d9a4a92b93d355d56771aeb783b179bc349593b5d6@diopter-estrange-085.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://15d013490b198f70b958fd23336264eeac352de6eb7c3dd74add58d608eaf571@diopter-estrange-110.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1655218cb3130c087a7b54dc713fcd6ece49f13a3d5e0892de9b81ca1af25f95@diopter-estrange-055.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://198e63cf870ed55d5523ddc1525ee61fe05adee718a53a254b5e73dfe0eb2b36@diopter-estrange-075.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1a90cfe4e5aaff84cc66b97e12d57767bbe0180c4ff4544bae93fb30f7049fb0@diopter-estrange-019.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1c4e99c6717c07430399d17f1d4785afcfded4cbdb1bd3f91eb22f28b854408a@2025defipool.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1d50340d75f07667f0776ac3bd09263a92112c8d0b656ef694d26e3e7f1d4c0c@MusicCityNode.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1e3e0d05ae4e2734bb6d89faf18eb1e148e79799b076060c40d150e35021e6d1@diopter-estrange-122.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1ef59c9aa1c9c98ba4cc8a2a7e4b386e61a8972c49bcfba72af70e20b4a56a40@accumulate.acme/grant-block"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://1f37f288a2680249b042973ec927576bf59a160e299db520adfe6a653a3f90a7@highstakes.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://21114655f9b0f4a1a94029ac0af714843210ea30a4836ccd768c8ae1051bc7d5@diopter-estrange-017.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://214416b3585113f475a7fa10aaa17794c6691dd0f94a939d47f7cb03975e8eb5@diopter-estrange-083.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://229d3144d43d2e7952e49953e3bd212fee787f750dadaea9cc7afe0aef0a9236@AtlantaNode.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://267a16417a7db43c2ff7f285070910f95dddd05f71b3546db673ae3a95977ea0@diopter-estrange-065.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://26800b0f7ea204d53867b9c73010188687d204864fb3ae1bf056dfedd2697930@diopter-estrange-090.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://280f92eed1b231ea8c93ed04c6725ccd190790e06850b2d1800f0c3c9a0da8ff@diopter-estrange-109.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://284fe18ab3e459dbb48a578a1d565a5f4a94f795bc3444f37a96cbd9f71be2a9@diopter-estrange-027.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://2c9fb1316359f4eef894e73841f33459fe4f3e7dae87473f970832ffa9f6ab0c@FuturaCrypto.acme/MattADIAcc"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://2e3baf64896940b289293d83e0efeed57c44d79ae0cba4a6b8ebf5a3767fdddc@diopter-estrange-104.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://2f7f50155b244ff4e45c0fa656136d33bb4ea14632eea95dca580f471f6b8e6f@diopter-estrange-092.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://2fe802fef9e204c24dc75f8251376fa74b478d29ceeae82849c5080253adb991@greenfuture.acme/staked"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://30655f1e269dda089b6ce2233082776549c9451325a5ba3e3b0935aa7f4c2570@diopter-estrange-101.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://31641d249ce54b3da12f7e3634a6317506bf098dedd6fc9dea39041fdd28ebf2@diopter-estrange-057.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://31a234c7cec9b298b028f25886db582a6a98313f74882396df73736602ba6634@diopter-estrange-134.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://3283d6db59bee20db9e6fba0433002cb2d0e944e7fcf3ffafbe3f9a0b2a80f9e@diopter-estrange-105.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://3872ce3080ee0dc2d9d34d5d6ce8cffbcebf7e5ddc2be6aee74aa7ed7d886315@inveniam.acme/holding"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://3b9132314a1ae9b24894ecdc8df2bc9beb544be7fc4ae6af2f4bbd84ef110a4d@diopter-estrange-089.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://3d0f0ead1104ab363857076c520c3320e31cdd53d4ea80cdf537ed5057f53517@diopter-estrange-036.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://3da98f5907accd76256ef14e40b55448c0346935bf1e04fbdd042a221c2f101d@defacto.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://416ec9c76e23af58b4abf679a9b9261b971c99fde3fbe8a458484f24106d8f36@diopter-estrange-015.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://42126b1cb009737e0fbf65f9c4d0842cd47015d9bc859aeacf8513e94393b412@9e4bea3c0238b3d9568979a5bbf83149f2af95a541ff717f/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://44d30f9c04481a70fba91fc617ab0a0aa574c045a3e3d4d7b28a8acdd8265f13@diopter-estrange-054.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://4591c361ed29d503e4543919a10ffbacbfb9b48eb76383ea7a9b344db32942f5@lunanova.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://45ba86d5c2e2b860bc47af3390e78784d67b9fd35c5f16c83a54ec6841d21742@202301026xcom.acme/QQ2023"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://45de85fbe64534ce3c30ae1e5ef7f74b495f2c80eb11b9e0187b337496658d21@NTC.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://460ce022c78b8b75554adbb7bae25b09062dc5ed3eab125553a2ce366a96a8a1@accumulate.acme/stake"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://464ad35a5fe1a945aa9dbcbe4a553359927d86852881fbc157af2f83a2e03929@anaf.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://465d98286b4e60ad359b1dda2607a1bfa8926180e0ba88e18eb1fc85598871d0@diopter-estrange-118.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://4746f2f4f12cdef409a1ba0cd54250e5effbd2f5b893009f2d0a40af6a96b92f@defidevs.acme/stake"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://47b6a61fd6c739fbb9dcbe5e0beb9dc533e764e21ca4d09a2595efbd2b77c210@diopter-estrange-094.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://482a24761270b49b2438c308cfb12062a58fbbe827ca0bcc369af3c572ea31e5@CryptoPool.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://492d0546311ef37122e234872cd344f2695a03709b5f47b5fd8b5ec2980beaf9@diopter-estrange-079.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://4a35e6b337dfda98cff1e7fa9bf78f1fbe402b48db37cd91d98bbe12c4335566@diopter-estrange-129.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://4d3fe514b3edf4d12bf4b959af2c40821f0f878a123e22d2e6f85d61424ea95a@diopter-estrange-125.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://50090b9d2eb7e093c73eac84293537ddee4e482ca1b61f4159a419efb44ad47a@prestigeit.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://5015e91b206756b31ddee596905f50c5b2cdf9dab586a4ad3a27b333362d5120@arsr.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://50d112507d90e4d1c5a6d73474e3d939641c3c9c925593cd92d6525a81fc0c57@e2e6388666cebb838e7d33fa6bddaf9388f6fda3f6cf1fe9/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://52e3db9f8b5ebcbe1a7fd51a3a825d2e42523c1be83c9031d87a16fc228cbb93@accumulated.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://541e4a9becca46bf8c510effb8905a538210d26bca82e0c447934664d695d1c9@diopter-estrange-031.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://58f66d5be4f82b5ee1dfcc2ede0f18c1bed1e1c186291195ade8f6d96fbea4d1@diopter-estrange-095.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://5b11423aaa82a1218659732260f03a3cffb145cdc6dd01f71d53899c54a717ff@federatethis.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://5f74f7517f295761c638849dadde8212107462e0af89743d3aa5eaa27b943bc2@diopter-estrange-029.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://60314af7809903849ed4b1525cfafe6672825ad30e8916b7808da509595a65a3@accumulated.acme/wacme-lp-incentives"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://619db47865f1666df697006933a9355ba909d5108f1dbd7f68c97dbeb2f4c737@diopter-estrange-087.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://62adca00ebe8f3dab7d623e456ecace6a1151c44e1f799003bd6a20c1941cdf0@CryptoStake.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://63f738823baa3f9c6c85116201ced4a10cac01eea65b9b200cb360dbf74b0387@accumulator.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://65014e46fadb1879f933533c5471163bd6dc304dac628e6d9d3f440b93b82822@diopter-estrange-081.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://681321df7c4cb0a73d11967aac7f5e4ede4e21d8157f53d5624a34bf05081bfc@diopter-estrange-130.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6ca8b7b0562ab535406e6b4526817a1ae98d6c3830d3494ee2f79d5fded8f189@diopter-estrange-128.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6d67743ba5ab014d112400d80532e42aa4630b9acfa9ca51caf2a305deb19e52@diopter-estrange-120.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6e1b1028f55eddacad0921b814b20affb85a16bf0ab44ac7c0acd7c4c993da32@codeforj.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6e5cfeb9fbfbd89050daaf2442ce537d562406abd891d53665b0bfa3e704ea01@diopter-estrange-037.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6ea181136aaade43cfae2da8e2eee8464b14e3687b45bf0dd670d2e8fc200b39@CryptoFund.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://6fa05ea95a78eb90719dbcc79dbb30f4bc9f4eac9ce05e5d1a2eb891d38cbe86@saisne.acme/stake"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7016e4731c3d4cebf03c67e7cc987d59d83a8222acc2099aa34fe6f269a8bd86@diopter-estrange-071.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7055565c519dd0909256b1a4119609475cec54021ee42eefdb65133407248fdd@diopter-estrange-123.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://740d08947c2d8f9d95f24b09279aa2d2d0ea39d3c89ad828df34593c6fc6c363@ZekeInvestments.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://74a584cdb062f812751e93085c6dd77287d8dda4ae877cf85a989740bae960ce@diopter-estrange-049.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7583847b33dd39f6c5bc68bff8a68c32375334f673a7ad5818f933babb736712@eembach.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://75db88599dbca2978c3a281dc1db17b9607a1d3aabf175b5415dc9a4ecfcf966@diopter-estrange-127.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7613b6eaf7ebd8b4b5a68974f1a32ff33729a6894cc119328076142ec8e35135@tfalabs.acme/staking-yield"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://783a25141882b8797201822d341cd19f1743c50c0dee8797e5626e3e70e1eadf@647d6a56cd5a193559970e5132080f0a886f1cf8330fef5c/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://78427754d265e19409d9f21b8c86b0f667a829a63e769f6acccd4311ce568d10@p16redstone.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7bb6b0dac620c564b4a2184826d07dd84c41dce2b631c907134f48c54422ebd0@reesor.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7be3e5bcddca7377fe5af774970e8f97b223d19884b34672f6786deb644d8b28@diopter-estrange-012.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://7bf5053cd2497883e4abfca4eb7dc7e4e01fe2ba97d6edf58d71ef24f8e24d38@dbgrow.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://803be65d245e88bbe3a1e9d49ca7aa5a59d326f7ab22cedf430028f3d5c988e0@nutshelltechnologies.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://80e14d7c8e87293017cf44a1c693a6ea820480a9a8ad13a19a24fa63671c7402@kompendium.acme/staking1"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://84c1016f86dca7d266da0a071971331495563a4ec42b762e8dc0f1b6271598c2@diopter-estrange-131.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://853c82b6b8e310b98564cdcecc75be771c8fc8e9eab22d77fb133b4e713fd274@diopter-estrange-046.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://89615d9e0b083aa4aefe0df2e0fd64a92940e7fa9dedf156f01b507caf35105b@CryptoPoint.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://8a4b05f34a3accf182a75b53f6cbbf205fd8b2c010ca2d6973b6da06650f5ce3@diopter-estrange-099.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://8b88230435083634bb1e18e5febf95798344acfa4a625901ccabc4d8f200dade@diopter-estrange-107.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://8c12e094ccbad9c7f159fa5620125cd278a1005457fd965e40b5fa19f022d6e3@ACMEMining.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://8ec7c42a821dbc607108c9662fde8533739c34a7a89a0058f91b4fc0f0410c5a@sigrlami.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://905feb59bb4d3fbc5c8bf2ccad8a0f6361b776ccb13321a9728a7749ecf9b1a3@OrchardHouse.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://923863929779fe27c7cf91cbf76699f8ce3bd110cfa030735405ad412d7134a8@fahad.acme/Fahad"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://9250299121594f467da6ab0b2b7f6293a48db0b6954b3126adcaa050501145fb@diopter-estrange-023.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://9482a901955ea589d0bf4ba8ff1686fd370ac92f9eed6338b4110e1aee5bda2a@diopter-estrange-073.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://95538032ce299cc4d9f3a2b91c6123a9917249ff13eb650a0667eb3c03635574@DetroitLedgerTech.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://957b6828f68fde3b284879b73627bf6f129731f85875a5b9d62677661e446007@diopter-estrange-108.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://958cbe17511f4a88f481ddee2136a090ee5e57bf18fc42d7b7f17bfb4423d6ba@diopter-estrange-133.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://95c4d7c9c5b1d55be09153498ef997747bccfb641ea4243a6ea6c7fdce48e3a3@diopter-estrange-039.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://95f5c2a9bf2f9e50d523f7107b2ba9c539dfdee1a1aa49d1fe06d1afb76062d7@inveniam.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://968fea0aa4968b12d45acf632cabb16898ead4d06891dceb9b2355d320a3db5c@DRobertB.acme/Tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://97523d7b7f56a9318acab8b63db16efb3944bb7fde1e17cdd99e06aa794541d8@diopter-estrange-068.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://99d8ed1cfc6522efc018d842bed0d838c9f72fce870fbc4bd9fabbc396e191ce@Dolphins1972.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://9e3ae2b4292166985fd413adc644bf14bb257b4a5f37c6a82e7f8cc1ea813cd9@07025b1118eaaac1ab924b7c2ec781842f48bb4f7ea8f4b5/ACME"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a0f14368ae90b3e5a665afc686215d7ebd7f38f750be377f466b533e532d97f4@diopter-estrange-052.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a10ff57f12ef6b38fb98040f041efc147b4d47a1a3bbae9146745f1a9929665d@diopter-estrange-115.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a1b3cf9296b64e0683560ff56217f870260df662738aeb4768b5d4bbb8cd61a9@saltlife.acme/BlueSeas"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a2c19916fc7aaefd144ba9e1cabd847e69446362008539aee0f71f92a23efec0@diopter-estrange-088.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a91bf07c0691a058a9d53cc2ae74e0c84811dedb4257a709a2c43edcab87f5a4@diopter-estrange-077.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a92a9ee897a941f63c6d656ef002be20d03800035d8b6fcec56fbb5ea5d2e440@diopter-estrange-011.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://ad35753d40663c9bea69c0368c712b6b221e63cbaef6720266b90d5f262ce949@ben.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://ae0a59047a3421ef38d51cb8b11c1f5550102def8741402702d74ad7418e8a47@diopter-estrange-045.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://af1ce79e104d9deee57f80dfb9c8a0fd664d7e4c5a5d1450983f256423a981c9@diopter-estrange-132.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://afa419af6ed26cf8a7d22019d5b2849e93e36fdc8fa2758350c4fa9abc0ec875@diopter-estrange-082.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://b02c05a073b40efc75d144a4ed1d3db716c178e132d9935b8dd90b904124936e@henspop.acme/token"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://b1057b94a55d68fd07fb3704ae6aab59e9a032455f74a0ce553fe2a84984236f@MetisMining.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://b20297aa4733b5dc75d8103e3356b18a3ffbfc343c2d39679356749d7edeb59e@diopter-estrange-064.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://b5f3d67a914cd74c36da74e546723e776e4d99abe6146d86a5ba314b34c1bf0e@tfa.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://b8f84c4d1c80490bae31e5f207abe7514bdfa3b7852497b6d52744668f015d5f@diopter-estrange-051.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://bae30e375eafae6bcac3b993bc92e05c521facb717db65c36623f2fbdfe41dd8@dennis.acme/staking-yield"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://bba29e34cff2b847e5a259d121d77ee52a401c84d57c4884b8468e20a6644778@diopter-estrange-016.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://bc69f794ea649fb20b3be555ab0911d778b5b9c94ec2cc447eff2c14f973593f@diopter-estrange-005.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://bd0ac5370d803a22800d6d425b1f941812439cc529b088cd5095babf1c933a71@diopter-estrange-053.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c083af43098b88e74c2ceffbb8a65c004ef39d58174d9489cccf7f498d297bea@diopter-estrange-114.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c143d403f0752927f91d86720a9d869fc5791946066ef1875eb44445602c8a7a@Vidal.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c19c930ac829e744a9a0178b6fc6286ac57c88d8ade1840c2d501bb9b04376fa@diopter-estrange-063.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c1ab5b2ebf27d0d0d31dfcc291df7930e4efc3c280acf7bf21c664cc01d9fa07@cybitron.acme/yield"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c209d5a148800bea0674d96da55a66717f0cdb1e883e1250d63f7602c4c4e0e1@wipeoutxxx.acme/wipeoutxxx"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c5b607efd9f2c90e506bb520117c55b22efef92cfc164026d4bd350055ac5069@diopter-estrange-043.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c5b60f6f08b2733b3fe9fd5e99e81ed998b7febce8fd02f018ce0f7b127abe48@sphereon.acme/stake"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://c8cc2ae2e46d066c23661e35256b2d368cc82dc0ce9cd447c4d0a082026bec5e@highstakes.acme/cashcow"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://cc34691e1f661ab3736204ed353bf3fa1be9a6543259d604c9e8e089bebb675d@DrKyle.acme/Rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://cdb887cedb54c6be7e5cac3af98bef8abc94eef46e6336bb177d10538ac08511@tfa.acme/staking-yield"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://cec286d71f882f44795559348c9414e4c32e3e1d92ddc458cb1c9a6530d9a0e7@diopter-estrange-112.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d07e21e284d4e02597642c64de9a870e99dc351f23ff2552f6ca9165567e7824@diopter-estrange-056.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d1f4015e132daa6fb5f0fd31a11421cbc5309db4953165b2d24d1a5569723969@diopter-estrange-102.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d571476afcd2d234aeb87dc8cdcd5c8081255e6849ca99062c9e0822629bfb4b@85ffb080adf58b0286bcf6a9944af72ed7396113c5d66726/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d61e2a645f4b4fa693928ead68b4e17a5d481851ba51cbb6cfac005acf0d95c8@diopter-estrange-033.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d634685326ae09c16faa007e83c2e456c01f10836fd2e5044b1576c24d48ec2e@pennyrocket.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://d90812bb90107321c9441ea57f80ce018f662a7ae1ac57fbaa29bafb51e02fc1@diopter-estrange-025.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://da1a3d87e886fa0a2b6635c6ac9380070b5311ae50c39abda5f003eb259a244d@diopter-estrange-097.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dc02f0cfa24f6215e37b8284cd9c0167c2da0af40e921eb58021400253c9e21d@diopter-estrange-124.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dcc80cb0363c618601f759bddeefa9c72e3794613c027b0d0c763ea501200735@diopter-estrange-067.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dd1092eeb39898b8862f939fa56344679e2bcd1a065cb3270e45a05fd948fcc5@diopter-estrange-086.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dd1b0eb1d19739173257f2173ecac3d0454b541ddc347d425b7e14ae59860665@JathinJagannath.acme/JJTOKENS"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dd1cf80f60a79696c8e2904ed59e6dbbaa448ced5734965a77cafa68cf7dbac1@diopter-estrange-100.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dee3c64504a7cb2a6d0079b5d303fb1a173009d1ac0e311e290e6c24e75ff677@a3df05743b6c4f92287527920ad12bc5eaff2ca51cd1545a/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://dfa328ea7cd983406815d9640ce91346eddfecb29acdfa9f46c6ba5fa346cb12@GOI.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e14dec0543fa0a8ee5e0539f3a7f80854a25e9bddac58de443dcc96f4e4f0515@c71642ff4c9331653a2ed23b549d5f6698727c000e692ab5/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e1ab6bfac69dd1e1b9c7f9be78fb665b50732cdfb25ad223711000da5e9b8b71@TurtleBoat.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e2e1eadf1fb111bb9c19c926e75127a6263cb23a2011fed5bfa587555df6a189@diopter-estrange-009.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e3a461fb33ec7814cb5540359f8eb428fbbb0cbe956208733c720e84ffc5062f@diopter-estrange-042.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e4b74adce4919b9fdd78307ead4675523b34c2990991884105ec5af6f4204c53@diopter-estrange-111.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e4eb17177bb1b3538ab710b183fdfddd4d53bc3ffb71f07704eaff8fd2aa0955@diopter-estrange-070.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e5460d466992acb2ea24557090e2ea63310f4b7966865f86d8acfc6abba53151@diopter-estrange-021.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e5534509692d129b7a338152e2c7166b62a070a1f7a68daaafdd42a680ec2fef@280a527c7077934624fd70648bd28acbffe87770c871e527/acme"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e583f1c14f007f0779f7ee39f3929245a2d3a8a160c3f4595b2bb3a1fd651bbf@diopter-estrange-072.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e6b027bc47f0a39bd8282d31a0e37cf0acf58c7e9c2ff15bdc1dab569d110386@diopter-estrange-028.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e6c4101e8836a4da94df08a6f57aaf8407dbafb47f71c9a097fcb5196bd62390@diopter-estrange-098.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e9c149e82ad3c64c2d4cebf01c28de299fcabc0dd7bc1d9ca0d86df6b7fc1d94@NutshellTechnologies.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://e9e4dcdc21b6eccc0335e3152b991273827456138bd349a46cd2c7a7397569c6@ConsensusNetworks.acme/staking"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://ea026122e83fbf3647080dd4da215d5b46b4c1042ff1c20b0e8c91d099abaead@diopter-estrange-084.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://eb84824d0d10510569db045bf6e13e882af412533f4b4cefbd06bad6d6ee74ec@diopter-estrange-020.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://ef531856e265918e0ec997ec203416f0ec6fc81bdb22754888aba333d7263a61@Pavilion.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f01f7f37de6a590481a30a1a89e6dfdd82c750ebf5a72063bbf2577a813298b0@abirdinhand.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f105eca5886b22b704aca81d7f63b5aae87b65d7b91d25b030c4859ee5a6b2a7@diopter-estrange-117.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f20d3525e9cfba57c5afa6bf08ec04e647f49225fd8997c658e7cac937a1cfc6@diopter-estrange-058.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f550940a465e94bed2a9151c84a9eddd3c6b575049142b29ff86792fe0f87f44@diopter-estrange-041.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f59c7481622c9ff7dd2f3644612b217d690e4a7718c371b0bdeab45f34b38310@diopter-estrange-061.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f702dc219bf7d6878d3d102df1ca3fe2a9810c1ff4fce0136444fa0eb17e5cce@diopter-estrange-116.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://f8b017fa2f5b28ef889f89ec62ed5b76f11aa0e530e69b24fe91ad6eb6d86025@diopter-estrange-119.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://fb22fcc23c0238e9739f3f8fcd2e9023da08086d65254a738703b29dff55f6da@Everest.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://fb613eca42d442226c7dc9577da2629594f6e9b32080f516d20e6e63c93f3d45@anticonstitutionnellement.acme/Tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://fbe68c0db71eaa5ca074c6665e5a7735bf0f992157b0c898ef34743ab7fdaa3e@diopter-estrange-010.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://fc3c09a61bbc6271f0e19cb8adc88a96f0d7d1de1f5fcbc1f3dfbe09d7454199@CryptoStash.acme/rewards"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://fdaaa0060c1653b0332fe2b83d6719f23c52b828efaad323fa0bf4d8388fc04e@diopter-estrange-048.acme/tokens"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://febdb4019759d5ed0b937382889929f1986181179d35ff6f9080c90e79dd3ad2@GNACMEADI.acme/GNACME%20STAKE"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://feeb71b853aee8b1414d632307abd3897b331d8f7e0d905047cea9924c6b7efd@ConquistadorMining.acme/rewards"
-   }
-  ],
-  "start": 0,
-  "total": 380
- },
- "cause": {
-  "recordType": "range",
-  "records": [
-   {
-    "recordType": "txID",
-    "value": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://256f57f110f2a513addb65ae068a57fb8067e30f5cc57b4ee5dd6612f1cb8449@dn.acme/operators"
-   },
-   {
-    "recordType": "txID",
-    "value": "acc://a0cfb2dcf90c0458f814278965b3fe271b56eda2e2b09060d945f5150c1f5cfc@staking.acme/book"
-   }
-  ],
-  "start": 0,
-  "total": 3
- },
- "signatures": {
-  "recordType": "range",
-  "records": [
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://beastmode.acme/book",
-     "url": "acc://beastmode.acme/book/1",
-     "creditBalance": 99668,
-     "acceptThreshold": 1,
-     "threshold": 1,
-     "version": 8,
-     "keys": [
-      {
-       "publicKeyHash": "4a98ba83d99fa0e2a119d0522689033403494227d0e8889f082dbd7a902fc71d",
-       "publicKey": "4a98ba83d99fa0e2a119d0522689033403494227d0e8889f082dbd7a902fc71d",
-       "lastUsedOn": 1788201926808854
-      }
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://080c768442154a6b96ada485e34d317e620545d22be04356ca842517a5bfdac6@beastmode.acme/book/1",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "delegated",
-         "signature": {
-          "type": "delegated",
-          "signature": {
-           "type": "ed25519",
-           "publicKey": "579b5c838d5a7660c9d7b4a9c096e92aa7b1260b293879abcb57725cb86363e9",
-           "signature": "e1ba18a6ec584fce12ce879805538dfdbc621222df2f39d25399348ff327b8003801a6f6566ecce751816f7f8cfac8846a0925f0f4bcfc9ab625b210d227be0a",
-           "signer": "acc://beastmode.acme/book/1",
-           "signerVersion": 8,
-           "timestamp": 1786358478428417,
-           "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+  "recordType": "message",
+  "id": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+  "message": {
+    "type": "transaction",
+    "transaction": {
+      "header": {
+        "principal": "acc://ACME",
+        "initiator": "f4628f502e9d09e9de38f0d9f907d5ba7c599a97d1c048584bcc7e7d35ef83a5",
+        "memo": "Staking rewards for pay period 193"
+      },
+      "body": {
+        "type": "issueTokens",
+        "to": [
+          {
+            "url": "acc://07025b1118eaaac1ab924b7c2ec781842f48bb4f7ea8f4b5/ACME",
+            "amount": "2201866294761"
           },
-          "delegator": "acc://kompendium.acme/book/1"
-         },
-         "delegator": "acc://staking.acme/book/2"
-        },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://CodeForj.acme/book",
-     "url": "acc://CodeForj.acme/book/2",
-     "creditBalance": 99998,
-     "acceptThreshold": 2,
-     "threshold": 2,
-     "version": 2,
-     "keys": [
-      {
-       "publicKeyHash": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
-       "publicKey": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
-       "lastUsedOn": 1786546856899
-      },
-      {
-       "publicKeyHash": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147",
-       "publicKey": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147"
-      }
-     ],
-     "transactionBlacklist": [
-      "updateKeyPage",
-      "updateAccountAuth"
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://eca6179596e48e72dd317a543676d7b0b1d06989091f8375a587d06a66786604@CodeForj.acme/book/2",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "delegated",
-         "signature": {
-          "type": "ed25519",
-          "publicKey": "b01a7d42d8299516e2992b7f6c3af0b42092307ff7c7be1d6f754424ecca5df7",
-          "signature": "0961e5e60dfe6d1a2b326538940b3b15a22a2d411eb6d93cd00f1bb5d7cf67df767078341eac998e26d6536b1c071da4a12fa9cd9e0ab2ffeee32c8cd8c8ad01",
-          "signer": "acc://CodeForj.acme/book/2",
-          "signerVersion": 2,
-          "timestamp": 1786546856899,
-          "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
-         },
-         "delegator": "acc://staking.acme/book/2"
-        },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://dennis.acme/book",
-     "url": "acc://dennis.acme/book/1",
-     "creditBalance": 83920,
-     "version": 3,
-     "keys": [
-      {
-       "publicKeyHash": "494f329e751f440adafda061fdbeeb86ce37f98549bad85587b405e48797b23f",
-       "publicKey": "494f329e751f440adafda061fdbeeb86ce37f98549bad85587b405e48797b23f",
-       "lastUsedOn": 1787417157827
-      }
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://d069b1cb741d821787c8be168b63380dc43404642295c3064517f81faa6ab749@dennis.acme/book/1",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "delegated",
-         "signature": {
-          "type": "delegated",
-          "signature": {
-           "type": "ed25519",
-           "publicKey": "26091c9bb45fc2ff83c02406ccbbacff50c2a8e7aab0da3dbeaa578152b7bf31",
-           "signature": "867bd6e2722a10d734fa81eb46ef0ff4ee2f0bbcdb34da6cd41e61fbce339b87eecf2a937c7d50a5747c0f68a045787063f49bd13fec5a631928df4cc8ce6106",
-           "signer": "acc://dennis.acme/book/1",
-           "signerVersion": 3,
-           "timestamp": 1786643337137,
-           "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+          {
+            "url": "acc://202301026xcom.acme/QQ2023",
+            "amount": "4575871060"
           },
-          "delegator": "acc://tfa.acme/book/1"
-         },
-         "delegator": "acc://staking.acme/book/2"
-        },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
+          {
+            "url": "acc://2025defipool.acme/rewards",
+            "amount": "396333695"
+          },
+          {
+            "url": "acc://280a527c7077934624fd70648bd28acbffe87770c871e527/acme",
+            "amount": "48880799854"
+          },
+          {
+            "url": "acc://647d6a56cd5a193559970e5132080f0a886f1cf8330fef5c/acme",
+            "amount": "116568733"
+          },
+          {
+            "url": "acc://85ffb080adf58b0286bcf6a9944af72ed7396113c5d66726/acme",
+            "amount": "23414189516"
+          },
+          {
+            "url": "acc://9e4bea3c0238b3d9568979a5bbf83149f2af95a541ff717f/acme",
+            "amount": "3042443952"
+          },
+          {
+            "url": "acc://a3df05743b6c4f92287527920ad12bc5eaff2ca51cd1545a/acme",
+            "amount": "11074029711"
+          },
+          {
+            "url": "acc://abirdinhand.acme/tokens",
+            "amount": "5165079549"
+          },
+          {
+            "url": "acc://accumulate.acme/grant-block",
+            "amount": "1036625835939"
+          },
+          {
+            "url": "acc://accumulate.acme/stake",
+            "amount": "353528050238"
+          },
+          {
+            "url": "acc://accumulated.acme/staking",
+            "amount": "2176613578392"
+          },
+          {
+            "url": "acc://accumulated.acme/wacme-lp-incentives",
+            "amount": "3497062014153"
+          },
+          {
+            "url": "acc://accumulator.acme/tokens",
+            "amount": "227213942"
+          },
+          {
+            "url": "acc://ACMEMining.acme/rewards",
+            "amount": "42202706288"
+          },
+          {
+            "url": "acc://anaf.acme/tokens",
+            "amount": "22416265728078"
+          },
+          {
+            "url": "acc://anticonstitutionnellement.acme/Tokens",
+            "amount": "173071890083"
+          },
+          {
+            "url": "acc://arsr.acme/staking",
+            "amount": "10960706290"
+          },
+          {
+            "url": "acc://AthensNode.acme/rewards",
+            "amount": "28342081429"
+          },
+          {
+            "url": "acc://AtlantaNode.acme/rewards",
+            "amount": "28345516135"
+          },
+          {
+            "url": "acc://azn1nvas1on.acme/staking",
+            "amount": "376949811"
+          },
+          {
+            "url": "acc://BartowStreetCapital.acme/rewards",
+            "amount": "8925224860"
+          },
+          {
+            "url": "acc://ben.acme/staking",
+            "amount": "27898126163"
+          },
+          {
+            "url": "acc://BetaNode.acme/rewards",
+            "amount": "102982667301"
+          },
+          {
+            "url": "acc://c71642ff4c9331653a2ed23b549d5f6698727c000e692ab5/acme",
+            "amount": "16240346668"
+          },
+          {
+            "url": "acc://codeforj.acme/rewards",
+            "amount": "148593486714"
+          },
+          {
+            "url": "acc://codeforj.acme/staking",
+            "amount": "51208750946"
+          },
+          {
+            "url": "acc://ConquistadorMining.acme/rewards",
+            "amount": "11483336369"
+          },
+          {
+            "url": "acc://ConsensusNetworks.acme/staking",
+            "amount": "79034283111"
+          },
+          {
+            "url": "acc://CryptoFund.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://CryptoPoint.acme/rewards",
+            "amount": "220986504699"
+          },
+          {
+            "url": "acc://CryptoPool.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://CryptoStake.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://CryptoStash.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://cybitron.acme/yield",
+            "amount": "75808192041"
+          },
+          {
+            "url": "acc://dataiq.acme/stakeit1",
+            "amount": "10003892223"
+          },
+          {
+            "url": "acc://dbgrow.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://defacto.acme/staking",
+            "amount": "262652102806"
+          },
+          {
+            "url": "acc://defacto.acme/tokens",
+            "amount": "6817140889"
+          },
+          {
+            "url": "acc://defidevs.acme/stake",
+            "amount": "2791226929132"
+          },
+          {
+            "url": "acc://dennis.acme/staking-yield",
+            "amount": "128290488154"
+          },
+          {
+            "url": "acc://DetroitLedgerTech.acme/rewards",
+            "amount": "11018167362"
+          },
+          {
+            "url": "acc://diopter-estrange-005.acme/tokens",
+            "amount": "278716255148"
+          },
+          {
+            "url": "acc://diopter-estrange-009.acme/tokens",
+            "amount": "60330913542"
+          },
+          {
+            "url": "acc://diopter-estrange-010.acme/tokens",
+            "amount": "460878758517"
+          },
+          {
+            "url": "acc://diopter-estrange-011.acme/tokens",
+            "amount": "204501124365"
+          },
+          {
+            "url": "acc://diopter-estrange-012.acme/tokens",
+            "amount": "168351039663"
+          },
+          {
+            "url": "acc://diopter-estrange-015.acme/tokens",
+            "amount": "182882255753"
+          },
+          {
+            "url": "acc://diopter-estrange-016.acme/tokens",
+            "amount": "110074806064"
+          },
+          {
+            "url": "acc://diopter-estrange-017.acme/tokens",
+            "amount": "101169973147"
+          },
+          {
+            "url": "acc://diopter-estrange-019.acme/tokens",
+            "amount": "162896195827"
+          },
+          {
+            "url": "acc://diopter-estrange-020.acme/tokens",
+            "amount": "353483763621"
+          },
+          {
+            "url": "acc://diopter-estrange-021.acme/tokens",
+            "amount": "77170757372"
+          },
+          {
+            "url": "acc://diopter-estrange-023.acme/tokens",
+            "amount": "30485813450"
+          },
+          {
+            "url": "acc://diopter-estrange-025.acme/tokens",
+            "amount": "257652404172"
+          },
+          {
+            "url": "acc://diopter-estrange-027.acme/tokens",
+            "amount": "97149819217"
+          },
+          {
+            "url": "acc://diopter-estrange-028.acme/tokens",
+            "amount": "50584986463"
+          },
+          {
+            "url": "acc://diopter-estrange-029.acme/tokens",
+            "amount": "50584986463"
+          },
+          {
+            "url": "acc://diopter-estrange-031.acme/tokens",
+            "amount": "38443330367"
+          },
+          {
+            "url": "acc://diopter-estrange-033.acme/tokens",
+            "amount": "38443330367"
+          },
+          {
+            "url": "acc://diopter-estrange-036.acme/tokens",
+            "amount": "37923336025"
+          },
+          {
+            "url": "acc://diopter-estrange-037.acme/tokens",
+            "amount": "30350991793"
+          },
+          {
+            "url": "acc://diopter-estrange-038.acme/tokens",
+            "amount": "48571244296"
+          },
+          {
+            "url": "acc://diopter-estrange-039.acme/tokens",
+            "amount": "48571344871"
+          },
+          {
+            "url": "acc://diopter-estrange-041.acme/tokens",
+            "amount": "48571244296"
+          },
+          {
+            "url": "acc://diopter-estrange-042.acme/tokens",
+            "amount": "48571244296"
+          },
+          {
+            "url": "acc://diopter-estrange-043.acme/tokens",
+            "amount": "48571244296"
+          },
+          {
+            "url": "acc://diopter-estrange-045.acme/tokens",
+            "amount": "48571244296"
+          },
+          {
+            "url": "acc://diopter-estrange-046.acme/tokens",
+            "amount": "49176761968"
+          },
+          {
+            "url": "acc://diopter-estrange-048.acme/tokens",
+            "amount": "223524975001"
+          },
+          {
+            "url": "acc://diopter-estrange-049.acme/tokens",
+            "amount": "18939260858"
+          },
+          {
+            "url": "acc://diopter-estrange-051.acme/tokens",
+            "amount": "24432230023"
+          },
+          {
+            "url": "acc://diopter-estrange-052.acme/tokens",
+            "amount": "14031370724"
+          },
+          {
+            "url": "acc://diopter-estrange-053.acme/tokens",
+            "amount": "24285622029"
+          },
+          {
+            "url": "acc://diopter-estrange-054.acme/tokens",
+            "amount": "24285622029"
+          },
+          {
+            "url": "acc://diopter-estrange-055.acme/tokens",
+            "amount": "24285622029"
+          },
+          {
+            "url": "acc://diopter-estrange-056.acme/tokens",
+            "amount": "24285622029"
+          },
+          {
+            "url": "acc://diopter-estrange-057.acme/tokens",
+            "amount": "24285622029"
+          },
+          {
+            "url": "acc://diopter-estrange-058.acme/tokens",
+            "amount": "27320672921"
+          },
+          {
+            "url": "acc://diopter-estrange-061.acme/tokens",
+            "amount": "10061300324"
+          },
+          {
+            "url": "acc://diopter-estrange-063.acme/tokens",
+            "amount": "9539164451"
+          },
+          {
+            "url": "acc://diopter-estrange-064.acme/tokens",
+            "amount": "280099564842"
+          },
+          {
+            "url": "acc://diopter-estrange-065.acme/tokens",
+            "amount": "16491210968"
+          },
+          {
+            "url": "acc://diopter-estrange-066.acme/tokens",
+            "amount": "16031589208"
+          },
+          {
+            "url": "acc://diopter-estrange-067.acme/tokens",
+            "amount": "8470492359"
+          },
+          {
+            "url": "acc://diopter-estrange-068.acme/tokens",
+            "amount": "14754512813"
+          },
+          {
+            "url": "acc://diopter-estrange-069.acme/tokens",
+            "amount": "14572839236"
+          },
+          {
+            "url": "acc://diopter-estrange-070.acme/tokens",
+            "amount": "9589598966"
+          },
+          {
+            "url": "acc://diopter-estrange-071.acme/tokens",
+            "amount": "27907219447"
+          },
+          {
+            "url": "acc://diopter-estrange-072.acme/tokens",
+            "amount": "22393397000"
+          },
+          {
+            "url": "acc://diopter-estrange-073.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-074.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-075.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-076.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-077.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-079.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-081.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-082.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-083.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-084.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-085.acme/tokens",
+            "amount": "73549853653"
+          },
+          {
+            "url": "acc://diopter-estrange-086.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-087.acme/tokens",
+            "amount": "12290479430"
+          },
+          {
+            "url": "acc://diopter-estrange-088.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-089.acme/tokens",
+            "amount": "12290645376"
+          },
+          {
+            "url": "acc://diopter-estrange-090.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-091.acme/tokens",
+            "amount": "12290645376"
+          },
+          {
+            "url": "acc://diopter-estrange-092.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-093.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-094.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-095.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-097.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-098.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-099.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-100.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-101.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-102.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-104.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-105.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-106.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-107.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-108.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-109.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-110.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-111.acme/tokens",
+            "amount": "12139145707"
+          },
+          {
+            "url": "acc://diopter-estrange-112.acme/tokens",
+            "amount": "5901837713"
+          },
+          {
+            "url": "acc://diopter-estrange-113.acme/tokens",
+            "amount": "4876745727"
+          },
+          {
+            "url": "acc://diopter-estrange-114.acme/tokens",
+            "amount": "5003400093"
+          },
+          {
+            "url": "acc://diopter-estrange-115.acme/tokens",
+            "amount": "8144076539"
+          },
+          {
+            "url": "acc://diopter-estrange-116.acme/tokens",
+            "amount": "8144076539"
+          },
+          {
+            "url": "acc://diopter-estrange-117.acme/tokens",
+            "amount": "8144076539"
+          },
+          {
+            "url": "acc://diopter-estrange-118.acme/tokens",
+            "amount": "8144076539"
+          },
+          {
+            "url": "acc://diopter-estrange-119.acme/tokens",
+            "amount": "444844997737"
+          },
+          {
+            "url": "acc://diopter-estrange-120.acme/tokens",
+            "amount": "24267515129"
+          },
+          {
+            "url": "acc://diopter-estrange-122.acme/tokens",
+            "amount": "3035098977"
+          },
+          {
+            "url": "acc://diopter-estrange-123.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-124.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-125.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-126.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-127.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-128.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-129.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-130.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-131.acme/tokens",
+            "amount": "4068372961"
+          },
+          {
+            "url": "acc://diopter-estrange-132.acme/tokens",
+            "amount": "2012259895"
+          },
+          {
+            "url": "acc://diopter-estrange-133.acme/tokens",
+            "amount": "2441023683"
+          },
+          {
+            "url": "acc://diopter-estrange-134.acme/tokens",
+            "amount": "2030521200"
+          },
+          {
+            "url": "acc://Dolphins1972.acme/rewards",
+            "amount": "6476040767"
+          },
+          {
+            "url": "acc://DrKyle.acme/Rewards",
+            "amount": "27393652444"
+          },
+          {
+            "url": "acc://DRobertB.acme/Tokens",
+            "amount": "39607614836"
+          },
+          {
+            "url": "acc://e2e6388666cebb838e7d33fa6bddaf9388f6fda3f6cf1fe9/acme",
+            "amount": "2109894082"
+          },
+          {
+            "url": "acc://eembach.acme/tokens",
+            "amount": "21704884117"
+          },
+          {
+            "url": "acc://Everest.acme/rewards",
+            "amount": "24363614493"
+          },
+          {
+            "url": "acc://fahad.acme/Fahad",
+            "amount": "284835511"
+          },
+          {
+            "url": "acc://federatethis.acme/rewards",
+            "amount": "41854521956"
+          },
+          {
+            "url": "acc://FuturaCrypto.acme/MattADIAcc",
+            "amount": "1290336737"
+          },
+          {
+            "url": "acc://GNACMEADI.acme/GNACME%20STAKE",
+            "amount": "349576215"
+          },
+          {
+            "url": "acc://GOI.acme/rewards",
+            "amount": "12037240502"
+          },
+          {
+            "url": "acc://greenfuture.acme/staked",
+            "amount": "2016065114087"
+          },
+          {
+            "url": "acc://henspop.acme/token",
+            "amount": "64836716637"
+          },
+          {
+            "url": "acc://highstakes.acme/cashcow",
+            "amount": "88537293719"
+          },
+          {
+            "url": "acc://highstakes.acme/tokens",
+            "amount": "9891379676"
+          },
+          {
+            "url": "acc://inveniam.acme/holding",
+            "amount": "1657600306668"
+          },
+          {
+            "url": "acc://inveniam.acme/staking",
+            "amount": "1223404075"
+          },
+          {
+            "url": "acc://JathinJagannath.acme/JJTOKENS",
+            "amount": "3502890451"
+          },
+          {
+            "url": "acc://kompendium.acme/staking1",
+            "amount": "2210115354743"
+          },
+          {
+            "url": "acc://lunanova.acme/staking",
+            "amount": "110840311494"
+          },
+          {
+            "url": "acc://MetisMining.acme/rewards",
+            "amount": "902787476565"
+          },
+          {
+            "url": "acc://MusicCityNode.acme/rewards",
+            "amount": "8859820817"
+          },
+          {
+            "url": "acc://NTC.acme/rewards",
+            "amount": "12203070492"
+          },
+          {
+            "url": "acc://NutshellTechnologies.acme/rewards",
+            "amount": "61720490080"
+          },
+          {
+            "url": "acc://nutshelltechnologies.acme/staking",
+            "amount": "5464084663"
+          },
+          {
+            "url": "acc://OrchardHouse.acme/rewards",
+            "amount": "39469697046"
+          },
+          {
+            "url": "acc://p16redstone.acme/staking",
+            "amount": "98651694239"
+          },
+          {
+            "url": "acc://Pavilion.acme/rewards",
+            "amount": "17720159769"
+          },
+          {
+            "url": "acc://pennyrocket.acme/staking",
+            "amount": "308818057065"
+          },
+          {
+            "url": "acc://prestigeit.acme/tokens",
+            "amount": "25904163068"
+          },
+          {
+            "url": "acc://Quentin.acme/rewards",
+            "amount": "11656873381"
+          },
+          {
+            "url": "acc://reesor.acme/rewards",
+            "amount": "582843669025"
+          },
+          {
+            "url": "acc://saisne.acme/stake",
+            "amount": "34653979894"
+          },
+          {
+            "url": "acc://saltlife.acme/BlueSeas",
+            "amount": "3950753449"
+          },
+          {
+            "url": "acc://sigrlami.acme/staking",
+            "amount": "74230596893"
+          },
+          {
+            "url": "acc://sphereon.acme/stake",
+            "amount": "76373443020"
+          },
+          {
+            "url": "acc://tfa.acme/staking",
+            "amount": "22677631133"
+          },
+          {
+            "url": "acc://tfa.acme/staking-yield",
+            "amount": "41883748144"
+          },
+          {
+            "url": "acc://tfalabs.acme/staking-yield",
+            "amount": "10909519418"
+          },
+          {
+            "url": "acc://TurtleBoat.acme/rewards",
+            "amount": "10877158072"
+          },
+          {
+            "url": "acc://Vidal.acme/tokens",
+            "amount": "11656873381"
+          },
+          {
+            "url": "acc://wipeoutxxx.acme/wipeoutxxx",
+            "amount": "3183389639"
+          },
+          {
+            "url": "acc://ZekeInvestments.acme/rewards",
+            "amount": "17031900171"
+          }
+        ]
       }
-     ],
-     "start": 0,
-     "total": 1
     }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://kompendium.acme/book",
-     "url": "acc://kompendium.acme/book/1",
-     "creditBalance": 195996,
-     "version": 4,
-     "keys": [
+  },
+  "status": "delivered",
+  "statusNo": 201,
+  "result": {
+    "type": "unknown"
+  },
+  "produced": {
+    "recordType": "range",
+    "records": [
       {
-       "delegate": "acc://beastmode.acme/book"
+        "recordType": "txID",
+        "value": "acc://03a29925fbf5297b826630ace1432dce219bf08b712db93c071d5b498bb17105@diopter-estrange-074.acme/tokens"
       },
       {
-       "publicKeyHash": "40040107dadcf217634c1e6f34ece2409bd91be3f98b20c0b736a5c56ee908b5",
-       "publicKey": "40040107dadcf217634c1e6f34ece2409bd91be3f98b20c0b736a5c56ee908b5",
-       "lastUsedOn": 1769593708209
-      }
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
+        "recordType": "txID",
+        "value": "acc://0553fe503098462678c0c709c793a1babd0b8053f37dd306c04b6f5270fb8988@diopter-estrange-093.acme/tokens"
+      },
       {
-       "recordType": "message",
-       "id": "acc://e56e7247279d90f1e9ceddaeb7edd474329a60f1aff5a8de046b1ecd623864ae@kompendium.acme/book/1",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "authority",
-         "origin": "acc://beastmode.acme/book/1",
-         "authority": "acc://beastmode.acme/book",
-         "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-         "cause": "acc://080c768442154a6b96ada485e34d317e620545d22be04356ca842517a5bfdac6@beastmode.acme/book/1",
-         "delegator": [
-          "acc://kompendium.acme/book/1",
-          "acc://staking.acme/book/2"
-         ]
+        "recordType": "txID",
+        "value": "acc://071790f11862f85fbe6629d081cd9f8507427b403b28c9fcf975bead3e894d72@dataiq.acme/stakeit1"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0791f88198d2f5c23f88833fa28ca4901e92fe26ef5c2cc04d374e4d7c735020@diopter-estrange-126.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://07f73f4414d1284528bacda7c05f0a04c6937853d0c322cb1cc24d76671a27d8@diopter-estrange-113.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://08738fff510b071df6ff10d651691a2da3535ea33bcf19a1587b925a996a652c@diopter-estrange-066.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://087d6111207697d4f2117fa25a52e0c927dedd70c3eeac488a9faef3c42ca53e@azn1nvas1on.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0a8d96e5c9a1b9ef6617e58d28510c80468612736e64c7eb8176338c00cd6924@AthensNode.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0b4ce80f1d256ef1275365808e2b56a875aab7c5cd153a57f7efceca6a78d8a4@diopter-estrange-091.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0ceb0fc7fbdf74c53e4efb10bd484a54f2383b82e7219eb88d422228eaf48fe8@codeforj.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0e140927d520b386018f3228ae1b83f6c15312450201d958d560e91897452f0f@diopter-estrange-106.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://0ecec4aba468357e83d727bb2c46c98be148794739722279f65fd585763f50a4@diopter-estrange-076.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://10661e2442f3e60fe14652cf9338bebb411c0cfe66b708030fe50d6235283233@diopter-estrange-038.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://10954250f13700afe3064eef9b97f27bc5f5bbafa7c66e8e9a80fbf8986b7136@BetaNode.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://10b8b552fc8ef0fa3eb38f91c4615e962aaf3ee3934343cca7e4ed2d7e8ca8ea@Quentin.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://11041dfc82572a4ccf428e78b1379506b79b99c316b5a452f3e4214767a227be@BartowStreetCapital.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://114a6e48f31dff1d1fb96b5390fb3966b93c486773f9b68785416349537f4b81@defacto.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://12c23d42f887498c3f3646042fc0667d0fe1fbb8f7fbfcae236c2f0aa32859f6@diopter-estrange-069.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://146a13ea9308e8b29cb7b5d9a4a92b93d355d56771aeb783b179bc349593b5d6@diopter-estrange-085.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://15d013490b198f70b958fd23336264eeac352de6eb7c3dd74add58d608eaf571@diopter-estrange-110.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1655218cb3130c087a7b54dc713fcd6ece49f13a3d5e0892de9b81ca1af25f95@diopter-estrange-055.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://198e63cf870ed55d5523ddc1525ee61fe05adee718a53a254b5e73dfe0eb2b36@diopter-estrange-075.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1a90cfe4e5aaff84cc66b97e12d57767bbe0180c4ff4544bae93fb30f7049fb0@diopter-estrange-019.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1c4e99c6717c07430399d17f1d4785afcfded4cbdb1bd3f91eb22f28b854408a@2025defipool.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1d50340d75f07667f0776ac3bd09263a92112c8d0b656ef694d26e3e7f1d4c0c@MusicCityNode.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1e3e0d05ae4e2734bb6d89faf18eb1e148e79799b076060c40d150e35021e6d1@diopter-estrange-122.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1ef59c9aa1c9c98ba4cc8a2a7e4b386e61a8972c49bcfba72af70e20b4a56a40@accumulate.acme/grant-block"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://1f37f288a2680249b042973ec927576bf59a160e299db520adfe6a653a3f90a7@highstakes.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://21114655f9b0f4a1a94029ac0af714843210ea30a4836ccd768c8ae1051bc7d5@diopter-estrange-017.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://214416b3585113f475a7fa10aaa17794c6691dd0f94a939d47f7cb03975e8eb5@diopter-estrange-083.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://229d3144d43d2e7952e49953e3bd212fee787f750dadaea9cc7afe0aef0a9236@AtlantaNode.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://267a16417a7db43c2ff7f285070910f95dddd05f71b3546db673ae3a95977ea0@diopter-estrange-065.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://26800b0f7ea204d53867b9c73010188687d204864fb3ae1bf056dfedd2697930@diopter-estrange-090.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://280f92eed1b231ea8c93ed04c6725ccd190790e06850b2d1800f0c3c9a0da8ff@diopter-estrange-109.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://284fe18ab3e459dbb48a578a1d565a5f4a94f795bc3444f37a96cbd9f71be2a9@diopter-estrange-027.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://2c9fb1316359f4eef894e73841f33459fe4f3e7dae87473f970832ffa9f6ab0c@FuturaCrypto.acme/MattADIAcc"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://2e3baf64896940b289293d83e0efeed57c44d79ae0cba4a6b8ebf5a3767fdddc@diopter-estrange-104.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://2f7f50155b244ff4e45c0fa656136d33bb4ea14632eea95dca580f471f6b8e6f@diopter-estrange-092.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://2fe802fef9e204c24dc75f8251376fa74b478d29ceeae82849c5080253adb991@greenfuture.acme/staked"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://30655f1e269dda089b6ce2233082776549c9451325a5ba3e3b0935aa7f4c2570@diopter-estrange-101.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://31641d249ce54b3da12f7e3634a6317506bf098dedd6fc9dea39041fdd28ebf2@diopter-estrange-057.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://31a234c7cec9b298b028f25886db582a6a98313f74882396df73736602ba6634@diopter-estrange-134.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://3283d6db59bee20db9e6fba0433002cb2d0e944e7fcf3ffafbe3f9a0b2a80f9e@diopter-estrange-105.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://3872ce3080ee0dc2d9d34d5d6ce8cffbcebf7e5ddc2be6aee74aa7ed7d886315@inveniam.acme/holding"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://3b9132314a1ae9b24894ecdc8df2bc9beb544be7fc4ae6af2f4bbd84ef110a4d@diopter-estrange-089.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://3d0f0ead1104ab363857076c520c3320e31cdd53d4ea80cdf537ed5057f53517@diopter-estrange-036.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://3da98f5907accd76256ef14e40b55448c0346935bf1e04fbdd042a221c2f101d@defacto.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://416ec9c76e23af58b4abf679a9b9261b971c99fde3fbe8a458484f24106d8f36@diopter-estrange-015.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://42126b1cb009737e0fbf65f9c4d0842cd47015d9bc859aeacf8513e94393b412@9e4bea3c0238b3d9568979a5bbf83149f2af95a541ff717f/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://44d30f9c04481a70fba91fc617ab0a0aa574c045a3e3d4d7b28a8acdd8265f13@diopter-estrange-054.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://4591c361ed29d503e4543919a10ffbacbfb9b48eb76383ea7a9b344db32942f5@lunanova.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://45ba86d5c2e2b860bc47af3390e78784d67b9fd35c5f16c83a54ec6841d21742@202301026xcom.acme/QQ2023"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://45de85fbe64534ce3c30ae1e5ef7f74b495f2c80eb11b9e0187b337496658d21@NTC.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://460ce022c78b8b75554adbb7bae25b09062dc5ed3eab125553a2ce366a96a8a1@accumulate.acme/stake"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://464ad35a5fe1a945aa9dbcbe4a553359927d86852881fbc157af2f83a2e03929@anaf.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://465d98286b4e60ad359b1dda2607a1bfa8926180e0ba88e18eb1fc85598871d0@diopter-estrange-118.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://4746f2f4f12cdef409a1ba0cd54250e5effbd2f5b893009f2d0a40af6a96b92f@defidevs.acme/stake"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://47b6a61fd6c739fbb9dcbe5e0beb9dc533e764e21ca4d09a2595efbd2b77c210@diopter-estrange-094.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://482a24761270b49b2438c308cfb12062a58fbbe827ca0bcc369af3c572ea31e5@CryptoPool.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://492d0546311ef37122e234872cd344f2695a03709b5f47b5fd8b5ec2980beaf9@diopter-estrange-079.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://4a35e6b337dfda98cff1e7fa9bf78f1fbe402b48db37cd91d98bbe12c4335566@diopter-estrange-129.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://4d3fe514b3edf4d12bf4b959af2c40821f0f878a123e22d2e6f85d61424ea95a@diopter-estrange-125.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://50090b9d2eb7e093c73eac84293537ddee4e482ca1b61f4159a419efb44ad47a@prestigeit.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://5015e91b206756b31ddee596905f50c5b2cdf9dab586a4ad3a27b333362d5120@arsr.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://50d112507d90e4d1c5a6d73474e3d939641c3c9c925593cd92d6525a81fc0c57@e2e6388666cebb838e7d33fa6bddaf9388f6fda3f6cf1fe9/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://52e3db9f8b5ebcbe1a7fd51a3a825d2e42523c1be83c9031d87a16fc228cbb93@accumulated.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://541e4a9becca46bf8c510effb8905a538210d26bca82e0c447934664d695d1c9@diopter-estrange-031.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://58f66d5be4f82b5ee1dfcc2ede0f18c1bed1e1c186291195ade8f6d96fbea4d1@diopter-estrange-095.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://5b11423aaa82a1218659732260f03a3cffb145cdc6dd01f71d53899c54a717ff@federatethis.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://5f74f7517f295761c638849dadde8212107462e0af89743d3aa5eaa27b943bc2@diopter-estrange-029.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://60314af7809903849ed4b1525cfafe6672825ad30e8916b7808da509595a65a3@accumulated.acme/wacme-lp-incentives"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://619db47865f1666df697006933a9355ba909d5108f1dbd7f68c97dbeb2f4c737@diopter-estrange-087.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://62adca00ebe8f3dab7d623e456ecace6a1151c44e1f799003bd6a20c1941cdf0@CryptoStake.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://63f738823baa3f9c6c85116201ced4a10cac01eea65b9b200cb360dbf74b0387@accumulator.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://65014e46fadb1879f933533c5471163bd6dc304dac628e6d9d3f440b93b82822@diopter-estrange-081.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://681321df7c4cb0a73d11967aac7f5e4ede4e21d8157f53d5624a34bf05081bfc@diopter-estrange-130.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6ca8b7b0562ab535406e6b4526817a1ae98d6c3830d3494ee2f79d5fded8f189@diopter-estrange-128.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6d67743ba5ab014d112400d80532e42aa4630b9acfa9ca51caf2a305deb19e52@diopter-estrange-120.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6e1b1028f55eddacad0921b814b20affb85a16bf0ab44ac7c0acd7c4c993da32@codeforj.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6e5cfeb9fbfbd89050daaf2442ce537d562406abd891d53665b0bfa3e704ea01@diopter-estrange-037.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6ea181136aaade43cfae2da8e2eee8464b14e3687b45bf0dd670d2e8fc200b39@CryptoFund.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://6fa05ea95a78eb90719dbcc79dbb30f4bc9f4eac9ce05e5d1a2eb891d38cbe86@saisne.acme/stake"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7016e4731c3d4cebf03c67e7cc987d59d83a8222acc2099aa34fe6f269a8bd86@diopter-estrange-071.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7055565c519dd0909256b1a4119609475cec54021ee42eefdb65133407248fdd@diopter-estrange-123.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://740d08947c2d8f9d95f24b09279aa2d2d0ea39d3c89ad828df34593c6fc6c363@ZekeInvestments.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://74a584cdb062f812751e93085c6dd77287d8dda4ae877cf85a989740bae960ce@diopter-estrange-049.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7583847b33dd39f6c5bc68bff8a68c32375334f673a7ad5818f933babb736712@eembach.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://75db88599dbca2978c3a281dc1db17b9607a1d3aabf175b5415dc9a4ecfcf966@diopter-estrange-127.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7613b6eaf7ebd8b4b5a68974f1a32ff33729a6894cc119328076142ec8e35135@tfalabs.acme/staking-yield"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://783a25141882b8797201822d341cd19f1743c50c0dee8797e5626e3e70e1eadf@647d6a56cd5a193559970e5132080f0a886f1cf8330fef5c/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://78427754d265e19409d9f21b8c86b0f667a829a63e769f6acccd4311ce568d10@p16redstone.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7bb6b0dac620c564b4a2184826d07dd84c41dce2b631c907134f48c54422ebd0@reesor.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7be3e5bcddca7377fe5af774970e8f97b223d19884b34672f6786deb644d8b28@diopter-estrange-012.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://7bf5053cd2497883e4abfca4eb7dc7e4e01fe2ba97d6edf58d71ef24f8e24d38@dbgrow.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://803be65d245e88bbe3a1e9d49ca7aa5a59d326f7ab22cedf430028f3d5c988e0@nutshelltechnologies.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://80e14d7c8e87293017cf44a1c693a6ea820480a9a8ad13a19a24fa63671c7402@kompendium.acme/staking1"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://84c1016f86dca7d266da0a071971331495563a4ec42b762e8dc0f1b6271598c2@diopter-estrange-131.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://853c82b6b8e310b98564cdcecc75be771c8fc8e9eab22d77fb133b4e713fd274@diopter-estrange-046.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://89615d9e0b083aa4aefe0df2e0fd64a92940e7fa9dedf156f01b507caf35105b@CryptoPoint.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://8a4b05f34a3accf182a75b53f6cbbf205fd8b2c010ca2d6973b6da06650f5ce3@diopter-estrange-099.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://8b88230435083634bb1e18e5febf95798344acfa4a625901ccabc4d8f200dade@diopter-estrange-107.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://8c12e094ccbad9c7f159fa5620125cd278a1005457fd965e40b5fa19f022d6e3@ACMEMining.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://8ec7c42a821dbc607108c9662fde8533739c34a7a89a0058f91b4fc0f0410c5a@sigrlami.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://905feb59bb4d3fbc5c8bf2ccad8a0f6361b776ccb13321a9728a7749ecf9b1a3@OrchardHouse.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://923863929779fe27c7cf91cbf76699f8ce3bd110cfa030735405ad412d7134a8@fahad.acme/Fahad"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://9250299121594f467da6ab0b2b7f6293a48db0b6954b3126adcaa050501145fb@diopter-estrange-023.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://9482a901955ea589d0bf4ba8ff1686fd370ac92f9eed6338b4110e1aee5bda2a@diopter-estrange-073.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://95538032ce299cc4d9f3a2b91c6123a9917249ff13eb650a0667eb3c03635574@DetroitLedgerTech.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://957b6828f68fde3b284879b73627bf6f129731f85875a5b9d62677661e446007@diopter-estrange-108.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://958cbe17511f4a88f481ddee2136a090ee5e57bf18fc42d7b7f17bfb4423d6ba@diopter-estrange-133.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://95c4d7c9c5b1d55be09153498ef997747bccfb641ea4243a6ea6c7fdce48e3a3@diopter-estrange-039.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://95f5c2a9bf2f9e50d523f7107b2ba9c539dfdee1a1aa49d1fe06d1afb76062d7@inveniam.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://968fea0aa4968b12d45acf632cabb16898ead4d06891dceb9b2355d320a3db5c@DRobertB.acme/Tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://97523d7b7f56a9318acab8b63db16efb3944bb7fde1e17cdd99e06aa794541d8@diopter-estrange-068.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://99d8ed1cfc6522efc018d842bed0d838c9f72fce870fbc4bd9fabbc396e191ce@Dolphins1972.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://9e3ae2b4292166985fd413adc644bf14bb257b4a5f37c6a82e7f8cc1ea813cd9@07025b1118eaaac1ab924b7c2ec781842f48bb4f7ea8f4b5/ACME"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a0f14368ae90b3e5a665afc686215d7ebd7f38f750be377f466b533e532d97f4@diopter-estrange-052.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a10ff57f12ef6b38fb98040f041efc147b4d47a1a3bbae9146745f1a9929665d@diopter-estrange-115.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a1b3cf9296b64e0683560ff56217f870260df662738aeb4768b5d4bbb8cd61a9@saltlife.acme/BlueSeas"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a2c19916fc7aaefd144ba9e1cabd847e69446362008539aee0f71f92a23efec0@diopter-estrange-088.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a91bf07c0691a058a9d53cc2ae74e0c84811dedb4257a709a2c43edcab87f5a4@diopter-estrange-077.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a92a9ee897a941f63c6d656ef002be20d03800035d8b6fcec56fbb5ea5d2e440@diopter-estrange-011.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://ad35753d40663c9bea69c0368c712b6b221e63cbaef6720266b90d5f262ce949@ben.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://ae0a59047a3421ef38d51cb8b11c1f5550102def8741402702d74ad7418e8a47@diopter-estrange-045.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://af1ce79e104d9deee57f80dfb9c8a0fd664d7e4c5a5d1450983f256423a981c9@diopter-estrange-132.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://afa419af6ed26cf8a7d22019d5b2849e93e36fdc8fa2758350c4fa9abc0ec875@diopter-estrange-082.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://b02c05a073b40efc75d144a4ed1d3db716c178e132d9935b8dd90b904124936e@henspop.acme/token"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://b1057b94a55d68fd07fb3704ae6aab59e9a032455f74a0ce553fe2a84984236f@MetisMining.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://b20297aa4733b5dc75d8103e3356b18a3ffbfc343c2d39679356749d7edeb59e@diopter-estrange-064.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://b5f3d67a914cd74c36da74e546723e776e4d99abe6146d86a5ba314b34c1bf0e@tfa.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://b8f84c4d1c80490bae31e5f207abe7514bdfa3b7852497b6d52744668f015d5f@diopter-estrange-051.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://bae30e375eafae6bcac3b993bc92e05c521facb717db65c36623f2fbdfe41dd8@dennis.acme/staking-yield"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://bba29e34cff2b847e5a259d121d77ee52a401c84d57c4884b8468e20a6644778@diopter-estrange-016.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://bc69f794ea649fb20b3be555ab0911d778b5b9c94ec2cc447eff2c14f973593f@diopter-estrange-005.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://bd0ac5370d803a22800d6d425b1f941812439cc529b088cd5095babf1c933a71@diopter-estrange-053.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c083af43098b88e74c2ceffbb8a65c004ef39d58174d9489cccf7f498d297bea@diopter-estrange-114.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c143d403f0752927f91d86720a9d869fc5791946066ef1875eb44445602c8a7a@Vidal.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c19c930ac829e744a9a0178b6fc6286ac57c88d8ade1840c2d501bb9b04376fa@diopter-estrange-063.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c1ab5b2ebf27d0d0d31dfcc291df7930e4efc3c280acf7bf21c664cc01d9fa07@cybitron.acme/yield"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c209d5a148800bea0674d96da55a66717f0cdb1e883e1250d63f7602c4c4e0e1@wipeoutxxx.acme/wipeoutxxx"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c5b607efd9f2c90e506bb520117c55b22efef92cfc164026d4bd350055ac5069@diopter-estrange-043.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c5b60f6f08b2733b3fe9fd5e99e81ed998b7febce8fd02f018ce0f7b127abe48@sphereon.acme/stake"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://c8cc2ae2e46d066c23661e35256b2d368cc82dc0ce9cd447c4d0a082026bec5e@highstakes.acme/cashcow"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://cc34691e1f661ab3736204ed353bf3fa1be9a6543259d604c9e8e089bebb675d@DrKyle.acme/Rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://cdb887cedb54c6be7e5cac3af98bef8abc94eef46e6336bb177d10538ac08511@tfa.acme/staking-yield"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://cec286d71f882f44795559348c9414e4c32e3e1d92ddc458cb1c9a6530d9a0e7@diopter-estrange-112.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d07e21e284d4e02597642c64de9a870e99dc351f23ff2552f6ca9165567e7824@diopter-estrange-056.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d1f4015e132daa6fb5f0fd31a11421cbc5309db4953165b2d24d1a5569723969@diopter-estrange-102.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d571476afcd2d234aeb87dc8cdcd5c8081255e6849ca99062c9e0822629bfb4b@85ffb080adf58b0286bcf6a9944af72ed7396113c5d66726/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d61e2a645f4b4fa693928ead68b4e17a5d481851ba51cbb6cfac005acf0d95c8@diopter-estrange-033.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d634685326ae09c16faa007e83c2e456c01f10836fd2e5044b1576c24d48ec2e@pennyrocket.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://d90812bb90107321c9441ea57f80ce018f662a7ae1ac57fbaa29bafb51e02fc1@diopter-estrange-025.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://da1a3d87e886fa0a2b6635c6ac9380070b5311ae50c39abda5f003eb259a244d@diopter-estrange-097.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dc02f0cfa24f6215e37b8284cd9c0167c2da0af40e921eb58021400253c9e21d@diopter-estrange-124.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dcc80cb0363c618601f759bddeefa9c72e3794613c027b0d0c763ea501200735@diopter-estrange-067.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dd1092eeb39898b8862f939fa56344679e2bcd1a065cb3270e45a05fd948fcc5@diopter-estrange-086.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dd1b0eb1d19739173257f2173ecac3d0454b541ddc347d425b7e14ae59860665@JathinJagannath.acme/JJTOKENS"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dd1cf80f60a79696c8e2904ed59e6dbbaa448ced5734965a77cafa68cf7dbac1@diopter-estrange-100.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dee3c64504a7cb2a6d0079b5d303fb1a173009d1ac0e311e290e6c24e75ff677@a3df05743b6c4f92287527920ad12bc5eaff2ca51cd1545a/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://dfa328ea7cd983406815d9640ce91346eddfecb29acdfa9f46c6ba5fa346cb12@GOI.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e14dec0543fa0a8ee5e0539f3a7f80854a25e9bddac58de443dcc96f4e4f0515@c71642ff4c9331653a2ed23b549d5f6698727c000e692ab5/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e1ab6bfac69dd1e1b9c7f9be78fb665b50732cdfb25ad223711000da5e9b8b71@TurtleBoat.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e2e1eadf1fb111bb9c19c926e75127a6263cb23a2011fed5bfa587555df6a189@diopter-estrange-009.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e3a461fb33ec7814cb5540359f8eb428fbbb0cbe956208733c720e84ffc5062f@diopter-estrange-042.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e4b74adce4919b9fdd78307ead4675523b34c2990991884105ec5af6f4204c53@diopter-estrange-111.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e4eb17177bb1b3538ab710b183fdfddd4d53bc3ffb71f07704eaff8fd2aa0955@diopter-estrange-070.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e5460d466992acb2ea24557090e2ea63310f4b7966865f86d8acfc6abba53151@diopter-estrange-021.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e5534509692d129b7a338152e2c7166b62a070a1f7a68daaafdd42a680ec2fef@280a527c7077934624fd70648bd28acbffe87770c871e527/acme"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e583f1c14f007f0779f7ee39f3929245a2d3a8a160c3f4595b2bb3a1fd651bbf@diopter-estrange-072.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e6b027bc47f0a39bd8282d31a0e37cf0acf58c7e9c2ff15bdc1dab569d110386@diopter-estrange-028.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e6c4101e8836a4da94df08a6f57aaf8407dbafb47f71c9a097fcb5196bd62390@diopter-estrange-098.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e9c149e82ad3c64c2d4cebf01c28de299fcabc0dd7bc1d9ca0d86df6b7fc1d94@NutshellTechnologies.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://e9e4dcdc21b6eccc0335e3152b991273827456138bd349a46cd2c7a7397569c6@ConsensusNetworks.acme/staking"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://ea026122e83fbf3647080dd4da215d5b46b4c1042ff1c20b0e8c91d099abaead@diopter-estrange-084.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://eb84824d0d10510569db045bf6e13e882af412533f4b4cefbd06bad6d6ee74ec@diopter-estrange-020.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://ef531856e265918e0ec997ec203416f0ec6fc81bdb22754888aba333d7263a61@Pavilion.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f01f7f37de6a590481a30a1a89e6dfdd82c750ebf5a72063bbf2577a813298b0@abirdinhand.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f105eca5886b22b704aca81d7f63b5aae87b65d7b91d25b030c4859ee5a6b2a7@diopter-estrange-117.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f20d3525e9cfba57c5afa6bf08ec04e647f49225fd8997c658e7cac937a1cfc6@diopter-estrange-058.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f550940a465e94bed2a9151c84a9eddd3c6b575049142b29ff86792fe0f87f44@diopter-estrange-041.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f59c7481622c9ff7dd2f3644612b217d690e4a7718c371b0bdeab45f34b38310@diopter-estrange-061.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f702dc219bf7d6878d3d102df1ca3fe2a9810c1ff4fce0136444fa0eb17e5cce@diopter-estrange-116.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://f8b017fa2f5b28ef889f89ec62ed5b76f11aa0e530e69b24fe91ad6eb6d86025@diopter-estrange-119.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://fb22fcc23c0238e9739f3f8fcd2e9023da08086d65254a738703b29dff55f6da@Everest.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://fb613eca42d442226c7dc9577da2629594f6e9b32080f516d20e6e63c93f3d45@anticonstitutionnellement.acme/Tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://fbe68c0db71eaa5ca074c6665e5a7735bf0f992157b0c898ef34743ab7fdaa3e@diopter-estrange-010.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://fc3c09a61bbc6271f0e19cb8adc88a96f0d7d1de1f5fcbc1f3dfbe09d7454199@CryptoStash.acme/rewards"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://fdaaa0060c1653b0332fe2b83d6719f23c52b828efaad323fa0bf4d8388fc04e@diopter-estrange-048.acme/tokens"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://febdb4019759d5ed0b937382889929f1986181179d35ff6f9080c90e79dd3ad2@GNACMEADI.acme/GNACME%20STAKE"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://feeb71b853aee8b1414d632307abd3897b331d8f7e0d905047cea9924c6b7efd@ConquistadorMining.acme/rewards"
+      }
+    ],
+    "start": 0,
+    "total": 380
+  },
+  "cause": {
+    "recordType": "range",
+    "records": [
+      {
+        "recordType": "txID",
+        "value": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://256f57f110f2a513addb65ae068a57fb8067e30f5cc57b4ee5dd6612f1cb8449@dn.acme/operators"
+      },
+      {
+        "recordType": "txID",
+        "value": "acc://a0cfb2dcf90c0458f814278965b3fe271b56eda2e2b09060d945f5150c1f5cfc@staking.acme/book"
+      }
+    ],
+    "start": 0,
+    "total": 3
+  },
+  "signatures": {
+    "recordType": "range",
+    "records": [
+      {
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://beastmode.acme/book",
+          "url": "acc://beastmode.acme/book/1",
+          "creditBalance": 99668,
+          "acceptThreshold": 1,
+          "threshold": 1,
+          "version": 8,
+          "keys": [
+            {
+              "publicKeyHash": "4a98ba83d99fa0e2a119d0522689033403494227d0e8889f082dbd7a902fc71d",
+              "publicKey": "4a98ba83d99fa0e2a119d0522689033403494227d0e8889f082dbd7a902fc71d",
+              "lastUsedOn": 1788201926808854
+            }
+          ]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://PennyRocket.acme/book",
-     "url": "acc://PennyRocket.acme/book/3",
-     "creditBalance": 121833,
-     "acceptThreshold": 2,
-     "threshold": 2,
-     "version": 2,
-     "keys": [
-      {
-       "publicKeyHash": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
-       "publicKey": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
-       "lastUsedOn": 1787875471036
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://080c768442154a6b96ada485e34d317e620545d22be04356ca842517a5bfdac6@beastmode.acme/book/1",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "delegated",
+                  "signature": {
+                    "type": "delegated",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "579b5c838d5a7660c9d7b4a9c096e92aa7b1260b293879abcb57725cb86363e9",
+                      "signature": "e1ba18a6ec584fce12ce879805538dfdbc621222df2f39d25399348ff327b8003801a6f6566ecce751816f7f8cfac8846a0925f0f4bcfc9ab625b210d227be0a",
+                      "signer": "acc://beastmode.acme/book/1",
+                      "signerVersion": 8,
+                      "timestamp": 1786358478428417,
+                      "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                    },
+                    "delegator": "acc://kompendium.acme/book/1"
+                  },
+                  "delegator": "acc://staking.acme/book/2"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "publicKeyHash": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147",
-       "publicKey": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147"
-      }
-     ],
-     "transactionBlacklist": [
-      "updateKeyPage",
-      "updateAccountAuth"
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "delegated",
-         "signature": {
-          "type": "ed25519",
-          "publicKey": "720a6ec10a63b813a2934ab0bcc2765b25e29a1d65828dbd2479fcc472df5955",
-          "signature": "78a28f2beed48503de0c9245be150836d9bae805c8c14d033712eaa9471e9628a61de61e93ba32df36212fe2041fb8143dda4fa6208d3ee86b69c52697ab280b",
-          "signer": "acc://PennyRocket.acme/book/3",
-          "signerVersion": 2,
-          "timestamp": 1786337646056,
-          "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
-         },
-         "delegator": "acc://staking.acme/book/2"
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://CodeForj.acme/book",
+          "url": "acc://CodeForj.acme/book/2",
+          "creditBalance": 99998,
+          "acceptThreshold": 2,
+          "threshold": 2,
+          "version": 2,
+          "keys": [
+            {
+              "publicKeyHash": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
+              "publicKey": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
+              "lastUsedOn": 1786546856899
+            },
+            {
+              "publicKeyHash": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147",
+              "publicKey": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147"
+            }
+          ],
+          "transactionBlacklist": ["updateKeyPage", "updateAccountAuth"]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://tfa.acme/book",
-     "url": "acc://tfa.acme/book/1",
-     "creditBalance": 195692,
-     "version": 10,
-     "keys": [
-      {
-       "delegate": "acc://dennis.acme/book"
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://eca6179596e48e72dd317a543676d7b0b1d06989091f8375a587d06a66786604@CodeForj.acme/book/2",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "delegated",
+                  "signature": {
+                    "type": "ed25519",
+                    "publicKey": "b01a7d42d8299516e2992b7f6c3af0b42092307ff7c7be1d6f754424ecca5df7",
+                    "signature": "0961e5e60dfe6d1a2b326538940b3b15a22a2d411eb6d93cd00f1bb5d7cf67df767078341eac998e26d6536b1c071da4a12fa9cd9e0ab2ffeee32c8cd8c8ad01",
+                    "signer": "acc://CodeForj.acme/book/2",
+                    "signerVersion": 2,
+                    "timestamp": 1786546856899,
+                    "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                  },
+                  "delegator": "acc://staking.acme/book/2"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "delegate": "acc://stuart.acme/book"
-      }
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://c70cb360e42dd0ff17a67b374fa04a5f16b34dcfa8f041596d4595c577765488@tfa.acme/book/1",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "authority",
-         "origin": "acc://dennis.acme/book/1",
-         "authority": "acc://dennis.acme/book",
-         "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-         "cause": "acc://d069b1cb741d821787c8be168b63380dc43404642295c3064517f81faa6ab749@dennis.acme/book/1",
-         "delegator": [
-          "acc://tfa.acme/book/1",
-          "acc://staking.acme/book/2"
-         ]
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://dennis.acme/book",
+          "url": "acc://dennis.acme/book/1",
+          "creditBalance": 83920,
+          "version": 3,
+          "keys": [
+            {
+              "publicKeyHash": "494f329e751f440adafda061fdbeeb86ce37f98549bad85587b405e48797b23f",
+              "publicKey": "494f329e751f440adafda061fdbeeb86ce37f98549bad85587b405e48797b23f",
+              "lastUsedOn": 1787417157827
+            }
+          ]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "tokenIssuer",
-     "url": "acc://ACME",
-     "authorities": [
-      {
-       "url": "acc://dn.acme/operators",
-       "disabled": true
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://d069b1cb741d821787c8be168b63380dc43404642295c3064517f81faa6ab749@dennis.acme/book/1",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "delegated",
+                  "signature": {
+                    "type": "delegated",
+                    "signature": {
+                      "type": "ed25519",
+                      "publicKey": "26091c9bb45fc2ff83c02406ccbbacff50c2a8e7aab0da3dbeaa578152b7bf31",
+                      "signature": "867bd6e2722a10d734fa81eb46ef0ff4ee2f0bbcdb34da6cd41e61fbce339b87eecf2a937c7d50a5747c0f68a045787063f49bd13fec5a631928df4cc8ce6106",
+                      "signer": "acc://dennis.acme/book/1",
+                      "signerVersion": 3,
+                      "timestamp": 1786643337137,
+                      "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                    },
+                    "delegator": "acc://tfa.acme/book/1"
+                  },
+                  "delegator": "acc://staking.acme/book/2"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "url": "acc://staking.acme/book"
-      }
-     ],
-     "symbol": "ACME",
-     "precision": 8,
-     "issued": "33904011154679404",
-     "supplyLimit": "50000000000000000"
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME",
-       "message": {
-        "type": "signatureRequest",
-        "authority": "acc://ACME",
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-        "cause": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3"
-       },
-       "historical": true
-      },
-      {
-       "recordType": "message",
-       "id": "acc://500e05e947672af9e068fd3940562b01a7e2406eff30b6a2378cc4b9d9134113@ACME",
-       "message": {
-        "type": "creditPayment",
-        "paid": 19541,
-        "payer": "acc://PennyRocket.acme/book/3",
-        "initiator": true,
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-        "cause": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3"
-       },
-       "historical": true
-      },
-      {
-       "recordType": "message",
-       "id": "acc://6b8bc00abe4a054710a699d7221c7f5cfda8171c510847ffe84c9d6d3c988aeb@ACME",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "authority",
-         "origin": "acc://staking.acme/book/2",
-         "authority": "acc://staking.acme/book",
-         "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-         "cause": "acc://2fcd7ec6fd06420162f6cd53b91ac7bd51d735164e46865beb19c18670de9cf8@staking.acme/book/2"
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://kompendium.acme/book",
+          "url": "acc://kompendium.acme/book/1",
+          "creditBalance": 195996,
+          "version": 4,
+          "keys": [
+            {
+              "delegate": "acc://beastmode.acme/book"
+            },
+            {
+              "publicKeyHash": "40040107dadcf217634c1e6f34ece2409bd91be3f98b20c0b736a5c56ee908b5",
+              "publicKey": "40040107dadcf217634c1e6f34ece2409bd91be3f98b20c0b736a5c56ee908b5",
+              "lastUsedOn": 1769593708209
+            }
+          ]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 3
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyBook",
-     "url": "acc://dn.acme/operators",
-     "authorities": [
-      {
-       "url": "acc://dn.acme/operators"
-      }
-     ],
-     "pageCount": 1
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://256f57f110f2a513addb65ae068a57fb8067e30f5cc57b4ee5dd6612f1cb8449@dn.acme/operators",
-       "message": {
-        "type": "signatureRequest",
-        "authority": "acc://dn.acme/operators",
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-        "cause": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyBook",
-     "url": "acc://staking.acme/book",
-     "authorities": [
-      {
-       "url": "acc://staking.acme/book"
-      }
-     ],
-     "pageCount": 2
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://a0cfb2dcf90c0458f814278965b3fe271b56eda2e2b09060d945f5150c1f5cfc@staking.acme/book",
-       "message": {
-        "type": "signatureRequest",
-        "authority": "acc://staking.acme/book",
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-        "cause": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
-       },
-       "historical": true
-      }
-     ],
-     "start": 0,
-     "total": 1
-    }
-   },
-   {
-    "recordType": "signatureSet",
-    "account": {
-     "type": "keyPage",
-     "keyBook": "acc://staking.acme/book",
-     "url": "acc://staking.acme/book/2",
-     "creditBalance": 217205,
-     "acceptThreshold": 4,
-     "threshold": 4,
-     "version": 12,
-     "keys": [
-      {
-       "delegate": "acc://defacto.acme/book"
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://e56e7247279d90f1e9ceddaeb7edd474329a60f1aff5a8de046b1ecd623864ae@kompendium.acme/book/1",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "authority",
+                  "origin": "acc://beastmode.acme/book/1",
+                  "authority": "acc://beastmode.acme/book",
+                  "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                  "cause": "acc://080c768442154a6b96ada485e34d317e620545d22be04356ca842517a5bfdac6@beastmode.acme/book/1",
+                  "delegator": [
+                    "acc://kompendium.acme/book/1",
+                    "acc://staking.acme/book/2"
+                  ]
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "delegate": "acc://kompendium.acme/book"
-      },
-      {
-       "delegate": "acc://staking.acme/governance"
-      },
-      {
-       "publicKeyHash": "247f9be7a4da14464ad506060cccabc6b4644a85f1768c1b9cfc5f71db63a963",
-       "publicKey": "247f9be7a4da14464ad506060cccabc6b4644a85f1768c1b9cfc5f71db63a963",
-       "delegate": "acc://TFA.acme/book"
-      },
-      {
-       "publicKeyHash": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
-       "publicKey": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
-       "delegate": "acc://CodeForj.acme/book"
-      },
-      {
-       "publicKeyHash": "af3a626c0fa3cb56d1d1f4bb8a3f89ce30ac46ed3983c83b3678c696465eb252",
-       "publicKey": "af3a626c0fa3cb56d1d1f4bb8a3f89ce30ac46ed3983c83b3678c696465eb252",
-       "lastUsedOn": 1788276451859,
-       "delegate": "acc://saisne.acme/book"
-      },
-      {
-       "publicKeyHash": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
-       "publicKey": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
-       "delegate": "acc://PennyRocket.acme/book"
-      },
-      {
-       "publicKeyHash": "ddaefeabf5223821af70468efd596b170d2cf45e4d2e951d16caa71b486d1d54",
-       "publicKey": "ddaefeabf5223821af70468efd596b170d2cf45e4d2e951d16caa71b486d1d54",
-       "delegate": "acc://HighStakes.acme/book"
-      }
-     ]
-    },
-    "signatures": {
-     "recordType": "range",
-     "records": [
-      {
-       "recordType": "message",
-       "id": "acc://f6644e8f9bd47f156ec9fd3614aef328e41ad82ce675163e1ed0f3c9bbdea840@staking.acme/book/2",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "authority",
-         "origin": "acc://kompendium.acme/book/1",
-         "authority": "acc://kompendium.acme/book",
-         "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-         "cause": "acc://e56e7247279d90f1e9ceddaeb7edd474329a60f1aff5a8de046b1ecd623864ae@kompendium.acme/book/1",
-         "delegator": [
-          "acc://staking.acme/book/2"
-         ]
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://PennyRocket.acme/book",
+          "url": "acc://PennyRocket.acme/book/3",
+          "creditBalance": 121833,
+          "acceptThreshold": 2,
+          "threshold": 2,
+          "version": 2,
+          "keys": [
+            {
+              "publicKeyHash": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
+              "publicKey": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
+              "lastUsedOn": 1787875471036
+            },
+            {
+              "publicKeyHash": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147",
+              "publicKey": "e7edbdaf5d5cfeeb2765a536119058e93962628a123ca2928359ddd468281147"
+            }
+          ],
+          "transactionBlacklist": ["updateKeyPage", "updateAccountAuth"]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "delegated",
+                  "signature": {
+                    "type": "ed25519",
+                    "publicKey": "720a6ec10a63b813a2934ab0bcc2765b25e29a1d65828dbd2479fcc472df5955",
+                    "signature": "78a28f2beed48503de0c9245be150836d9bae805c8c14d033712eaa9471e9628a61de61e93ba32df36212fe2041fb8143dda4fa6208d3ee86b69c52697ab280b",
+                    "signer": "acc://PennyRocket.acme/book/3",
+                    "signerVersion": 2,
+                    "timestamp": 1786337646056,
+                    "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                  },
+                  "delegator": "acc://staking.acme/book/2"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "recordType": "message",
-       "id": "acc://80b2fa580f35f6f73e7550efb6a4dcffdff8961c01754bf32a2fab1cea18b30d@staking.acme/book/2",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "authority",
-         "origin": "acc://tfa.acme/book/1",
-         "authority": "acc://tfa.acme/book",
-         "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
-         "cause": "acc://c70cb360e42dd0ff17a67b374fa04a5f16b34dcfa8f041596d4595c577765488@tfa.acme/book/1",
-         "delegator": [
-          "acc://staking.acme/book/2"
-         ]
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://tfa.acme/book",
+          "url": "acc://tfa.acme/book/1",
+          "creditBalance": 195692,
+          "version": 10,
+          "keys": [
+            {
+              "delegate": "acc://dennis.acme/book"
+            },
+            {
+              "delegate": "acc://stuart.acme/book"
+            }
+          ]
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://c70cb360e42dd0ff17a67b374fa04a5f16b34dcfa8f041596d4595c577765488@tfa.acme/book/1",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "authority",
+                  "origin": "acc://dennis.acme/book/1",
+                  "authority": "acc://dennis.acme/book",
+                  "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                  "cause": "acc://d069b1cb741d821787c8be168b63380dc43404642295c3064517f81faa6ab749@dennis.acme/book/1",
+                  "delegator": [
+                    "acc://tfa.acme/book/1",
+                    "acc://staking.acme/book/2"
+                  ]
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
       },
       {
-       "recordType": "message",
-       "id": "acc://ad63a57510bd053defa7204bb3d336b8cacffdffd6cce7d200677bc59b5b90f1@staking.acme/book/2",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "ed25519",
-         "publicKey": "720a6ec10a63b813a2934ab0bcc2765b25e29a1d65828dbd2479fcc472df5955",
-         "signature": "df3380b8ec2677d56f3ca3895626d7c81ce21ab64a79ed77dec5f361790c88499e2b849b6296f60d9728c1d3db6d1fb487624cb0ac7bf40dda6845d0e3850b06",
-         "signer": "acc://staking.acme/book/2",
-         "signerVersion": 11,
-         "timestamp": 1786662415862,
-         "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+        "recordType": "signatureSet",
+        "account": {
+          "type": "tokenIssuer",
+          "url": "acc://ACME",
+          "authorities": [
+            {
+              "url": "acc://dn.acme/operators",
+              "disabled": true
+            },
+            {
+              "url": "acc://staking.acme/book"
+            }
+          ],
+          "symbol": "ACME",
+          "precision": 8,
+          "issued": "33904011154679404",
+          "supplyLimit": "50000000000000000"
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME",
+              "message": {
+                "type": "signatureRequest",
+                "authority": "acc://ACME",
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                "cause": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3"
+              },
+              "historical": true
+            },
+            {
+              "recordType": "message",
+              "id": "acc://500e05e947672af9e068fd3940562b01a7e2406eff30b6a2378cc4b9d9134113@ACME",
+              "message": {
+                "type": "creditPayment",
+                "paid": 19541,
+                "payer": "acc://PennyRocket.acme/book/3",
+                "initiator": true,
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                "cause": "acc://4394b3f46b978541359ad73b833c57459468134e2af607642a7f6977a7d29444@PennyRocket.acme/book/3"
+              },
+              "historical": true
+            },
+            {
+              "recordType": "message",
+              "id": "acc://6b8bc00abe4a054710a699d7221c7f5cfda8171c510847ffe84c9d6d3c988aeb@ACME",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "authority",
+                  "origin": "acc://staking.acme/book/2",
+                  "authority": "acc://staking.acme/book",
+                  "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                  "cause": "acc://2fcd7ec6fd06420162f6cd53b91ac7bd51d735164e46865beb19c18670de9cf8@staking.acme/book/2"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 3
+        }
       },
       {
-       "recordType": "message",
-       "id": "acc://2fcd7ec6fd06420162f6cd53b91ac7bd51d735164e46865beb19c18670de9cf8@staking.acme/book/2",
-       "message": {
-        "type": "signature",
-        "signature": {
-         "type": "ed25519",
-         "publicKey": "b01a7d42d8299516e2992b7f6c3af0b42092307ff7c7be1d6f754424ecca5df7",
-         "signature": "11404721303ab4dff8e80c14dbb64343b9bbcdb6225ed7d03cba6a4510e1db4d510eadb1a8c1078f67667c16b4b1e5780b37c47cb53e659d1487d62b041e0602",
-         "signer": "acc://staking.acme/book/2",
-         "signerVersion": 11,
-         "timestamp": 1786668610498,
-         "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyBook",
+          "url": "acc://dn.acme/operators",
+          "authorities": [
+            {
+              "url": "acc://dn.acme/operators"
+            }
+          ],
+          "pageCount": 1
         },
-        "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
-       },
-       "historical": true
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://256f57f110f2a513addb65ae068a57fb8067e30f5cc57b4ee5dd6612f1cb8449@dn.acme/operators",
+              "message": {
+                "type": "signatureRequest",
+                "authority": "acc://dn.acme/operators",
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                "cause": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
+      },
+      {
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyBook",
+          "url": "acc://staking.acme/book",
+          "authorities": [
+            {
+              "url": "acc://staking.acme/book"
+            }
+          ],
+          "pageCount": 2
+        },
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://a0cfb2dcf90c0458f814278965b3fe271b56eda2e2b09060d945f5150c1f5cfc@staking.acme/book",
+              "message": {
+                "type": "signatureRequest",
+                "authority": "acc://staking.acme/book",
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                "cause": "acc://01d4f57c3024dc89e36d671c9ce0737332d5584fbcb7b726c4d805b1e0e4f457@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 1
+        }
+      },
+      {
+        "recordType": "signatureSet",
+        "account": {
+          "type": "keyPage",
+          "keyBook": "acc://staking.acme/book",
+          "url": "acc://staking.acme/book/2",
+          "creditBalance": 217205,
+          "acceptThreshold": 4,
+          "threshold": 4,
+          "version": 12,
+          "keys": [
+            {
+              "delegate": "acc://defacto.acme/book"
+            },
+            {
+              "delegate": "acc://kompendium.acme/book"
+            },
+            {
+              "delegate": "acc://staking.acme/governance"
+            },
+            {
+              "publicKeyHash": "247f9be7a4da14464ad506060cccabc6b4644a85f1768c1b9cfc5f71db63a963",
+              "publicKey": "247f9be7a4da14464ad506060cccabc6b4644a85f1768c1b9cfc5f71db63a963",
+              "delegate": "acc://TFA.acme/book"
+            },
+            {
+              "publicKeyHash": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
+              "publicKey": "a17e4b77c95676dfb338abcabc1a715e0a2a53b38d65f47fa8c04130415e1229",
+              "delegate": "acc://CodeForj.acme/book"
+            },
+            {
+              "publicKeyHash": "af3a626c0fa3cb56d1d1f4bb8a3f89ce30ac46ed3983c83b3678c696465eb252",
+              "publicKey": "af3a626c0fa3cb56d1d1f4bb8a3f89ce30ac46ed3983c83b3678c696465eb252",
+              "lastUsedOn": 1788276451859,
+              "delegate": "acc://saisne.acme/book"
+            },
+            {
+              "publicKeyHash": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
+              "publicKey": "dabef676d773fb398dc0b1c98c3059408f2406f4d3641e2692f8ae8c9c17f7ca",
+              "delegate": "acc://PennyRocket.acme/book"
+            },
+            {
+              "publicKeyHash": "ddaefeabf5223821af70468efd596b170d2cf45e4d2e951d16caa71b486d1d54",
+              "publicKey": "ddaefeabf5223821af70468efd596b170d2cf45e4d2e951d16caa71b486d1d54",
+              "delegate": "acc://HighStakes.acme/book"
+            }
+          ]
+        },
+        "signatures": {
+          "recordType": "range",
+          "records": [
+            {
+              "recordType": "message",
+              "id": "acc://f6644e8f9bd47f156ec9fd3614aef328e41ad82ce675163e1ed0f3c9bbdea840@staking.acme/book/2",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "authority",
+                  "origin": "acc://kompendium.acme/book/1",
+                  "authority": "acc://kompendium.acme/book",
+                  "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                  "cause": "acc://e56e7247279d90f1e9ceddaeb7edd474329a60f1aff5a8de046b1ecd623864ae@kompendium.acme/book/1",
+                  "delegator": ["acc://staking.acme/book/2"]
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            },
+            {
+              "recordType": "message",
+              "id": "acc://80b2fa580f35f6f73e7550efb6a4dcffdff8961c01754bf32a2fab1cea18b30d@staking.acme/book/2",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "authority",
+                  "origin": "acc://tfa.acme/book/1",
+                  "authority": "acc://tfa.acme/book",
+                  "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME",
+                  "cause": "acc://c70cb360e42dd0ff17a67b374fa04a5f16b34dcfa8f041596d4595c577765488@tfa.acme/book/1",
+                  "delegator": ["acc://staking.acme/book/2"]
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            },
+            {
+              "recordType": "message",
+              "id": "acc://ad63a57510bd053defa7204bb3d336b8cacffdffd6cce7d200677bc59b5b90f1@staking.acme/book/2",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "ed25519",
+                  "publicKey": "720a6ec10a63b813a2934ab0bcc2765b25e29a1d65828dbd2479fcc472df5955",
+                  "signature": "df3380b8ec2677d56f3ca3895626d7c81ce21ab64a79ed77dec5f361790c88499e2b849b6296f60d9728c1d3db6d1fb487624cb0ac7bf40dda6845d0e3850b06",
+                  "signer": "acc://staking.acme/book/2",
+                  "signerVersion": 11,
+                  "timestamp": 1786662415862,
+                  "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            },
+            {
+              "recordType": "message",
+              "id": "acc://2fcd7ec6fd06420162f6cd53b91ac7bd51d735164e46865beb19c18670de9cf8@staking.acme/book/2",
+              "message": {
+                "type": "signature",
+                "signature": {
+                  "type": "ed25519",
+                  "publicKey": "b01a7d42d8299516e2992b7f6c3af0b42092307ff7c7be1d6f754424ecca5df7",
+                  "signature": "11404721303ab4dff8e80c14dbb64343b9bbcdb6225ed7d03cba6a4510e1db4d510eadb1a8c1078f67667c16b4b1e5780b37c47cb53e659d1487d62b041e0602",
+                  "signer": "acc://staking.acme/book/2",
+                  "signerVersion": 11,
+                  "timestamp": 1786668610498,
+                  "transactionHash": "a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a"
+                },
+                "txID": "acc://a48119b78dcdb600c73282fb8a4595722780cea177f332f5b004da2436a1ff6a@ACME"
+              },
+              "historical": true
+            }
+          ],
+          "start": 0,
+          "total": 4
+        }
       }
-     ],
-     "start": 0,
-     "total": 4
-    }
-   }
-  ],
-  "start": 0,
-  "total": 10
- },
- "sequence": {
-  "type": "sequenced"
- },
- "lastBlockTime": "2026-09-01T18:53:20Z"
+    ],
+    "start": 0,
+    "total": 10
+  },
+  "sequence": {
+    "type": "sequenced"
+  },
+  "lastBlockTime": "2026-09-01T18:53:20Z"
 }
