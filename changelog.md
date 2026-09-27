@@ -3,6 +3,23 @@
 All notable changes to the Accumulate Explorer are documented here.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.12] - 2026-09-27
+
+Kermit reads as live again, and the linter found real bugs on the way to zero warnings.
+
+### Fixed
+- **Kermit's network badge is green again, and its dashboard, version and signature pages load.** Kermit runs Kourou and reports executor version `v2-kourou`, which the bundled SDK did not know, so every `network-status` call threw. `sdk-patches.ts` existed for exactly this but replaced a function the decoder never calls; it now patches the one it does, and an unknown version reads as "unknown" instead of breaking the page. ([#87](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/87))
+- **The block list's "show anchors" toggle works.** Its columns were memoized once, so switching anchors off changed neither the rows nor the count; each row was also remounted on every render. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+- **Form validation debounces, and validates what is on screen.** The debounce called the callback from the first render — creating a sub-identity validated against the parent seen at mount — and lost its timer on every re-render, so it did not debounce at all. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+- **Switching network refetches** on the Validators, token issuer (ACME supply), Staking and network dashboard pages and the network badge, instead of showing the previous network's data. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+- **Send Tokens no longer checks the recipient's token against the previous sender's issuer**, or throws before the issuer has loaded. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+- **Errors are no longer swallowed** after a transaction form closes, and a WalletConnect modal that fails to open now fails the connect instead of hanging it. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+
+### Changed
+- **ESLint is at zero warnings and CI fails on a new one.** Each of the 204 was fixed or kept as a line disable stating why. ([#65](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/65))
+- **CI is green.** The Netlify deploy jobs — failing every pipeline since beta was decommissioned — and the Pages job are removed, with `netlify.toml`. Production still deploys only by hand (DEPLOYMENT.md). ([#94](https://gitlab.com/accumulatenetwork/ecosystem/explorer/-/issues/94))
+- `package-lock.json` carries the release version again; it had stayed at 0.4.8 since 0.4.9.
+
 ## [0.4.11] - 2026-09-11
 
 The signature table answers per authority, and keeps answering after a transaction finishes.
