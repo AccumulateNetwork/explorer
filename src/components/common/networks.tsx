@@ -44,7 +44,10 @@ export const Fozzie: NetworkConfig = {
   // stale DNS record remains. Drop this line when it is deployed again.
   reserved: true,
   label: 'Fozzie Testnet',
-  explorer: 'https://fozzie.explorer.accumulatenetwork.io',
+  // No `explorer`: fozzie.explorer.accumulatenetwork.io is a dangling CNAME
+  // to an unclaimed Netlify site (#92), so linking it would send a wallet
+  // user to a takeover-able origin. A caller falls back to mainnet's
+  // explorer instead.
   api: ['https://fozzie.accumulatenetwork.io'],
 };
 

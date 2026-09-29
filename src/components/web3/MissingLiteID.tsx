@@ -1,6 +1,6 @@
 import { Alert, Button, Descriptions, Skeleton, Typography } from 'antd';
 import React, { MouseEventHandler, useContext, useState } from 'react';
-import { RiExternalLinkLine, RiQuestionLine } from 'react-icons/ri';
+import { RiQuestionLine } from 'react-icons/ri';
 
 import { URL } from 'accumulate.js';
 import { Submission } from 'accumulate.js/lib/api_v3';
@@ -114,12 +114,7 @@ MissingLiteID.Create = function Create({
         copyable={{ text: `${lite}/ACME` }}
       >{`${lite}/ACME`}</Text>
       <span>. </span>
-      {network.mainnet ? (
-        <span>
-          You can also <BridgeLink text="bridge WACME" /> from Ethereum or
-          Arbitrum, using the above address as the destination.
-        </span>
-      ) : (
+      {!network.mainnet && (
         <span>
           You can also use the{' '}
           <Button
@@ -134,19 +129,3 @@ MissingLiteID.Create = function Create({
     </>
   );
 };
-
-function BridgeLink({ text }: { text: string }) {
-  return (
-    <a
-      href="https://bridge.accumulatenetwork.io/release"
-      target="_blank"
-      rel="noreferrer"
-    >
-      <strong>
-        <WithIcon after icon={RiExternalLinkLine}>
-          {text}
-        </WithIcon>
-      </strong>
-    </a>
-  );
-}
