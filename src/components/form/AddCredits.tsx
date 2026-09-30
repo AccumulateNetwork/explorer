@@ -12,7 +12,7 @@ import {
 
 import { omit } from '../../utils/typemagic';
 import { ACME } from '../../utils/url';
-import { TokenAmount } from '../common/Amount';
+import { TokenAmount, acmeUnitsForCredits } from '../common/Amount';
 import { Network } from '../common/Network';
 import { useAsyncEffect } from '../common/useAsync';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
@@ -26,7 +26,7 @@ interface Fields {
   to: LiteIdentity | KeyPage;
   credits: number;
   oracle: number;
-  tokens: number;
+  tokens: bigint;
 }
 
 export function AddCredits(
@@ -70,14 +70,10 @@ export function AddCredits(
 
   // Calculate the ACME amount
   const changed = ({ oracle, credits }: Fields) => {
-    if (!oracle || isNaN(oracle)) {
-      return;
+    const tokens = acmeUnitsForCredits(credits, oracle);
+    if (tokens !== undefined) {
+      form.setFieldsValue({ tokens });
     }
-    if (!credits || isNaN(credits)) {
-      return;
-    }
-    const tokens = ((credits * 100) / oracle) * 10 ** 8;
-    form.setFieldsValue({ tokens });
   };
 
   // Submit the transaction

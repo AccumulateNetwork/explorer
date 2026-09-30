@@ -14,6 +14,44 @@ import { ACME } from '../../utils/url';
 
 const { Text } = Typography;
 
+/**
+ * Parses a decimal string into base units, exactly — the inverse of
+ * {@link formatUnits}. Returns `undefined` for anything that is not a plain
+ * non-negative decimal number, or that names more fractional digits than
+ * `precision` allows, rather than silently rounding
+ * (`Math.round(x * 10 ** precision)` turns 0.29 ACME into
+ * 28999999.999999996 base units — see #91).
+ */
+export function parseUnits(
+  input: string,
+  precision: number,
+): bigint | undefined {
+  const m = /^(\d+)?(?:\.(\d+))?$/.exec(input?.trim());
+  if (!m || (!m[1] && !m[2])) return undefined;
+  const [, whole = '0', frac = ''] = m;
+  if (frac.length > precision) return undefined;
+  return BigInt(whole + frac.padEnd(precision, '0'));
+}
+
+/**
+ * Formats base units as an exact decimal string — the inverse of
+ * {@link parseUnits}. Never routes through `Number`, so it stays exact past
+ * `Number.MAX_SAFE_INTEGER` (for ACME, base units above ~90M ACME) where
+ * `Number(amount) / 10 ** precision` silently loses digits (#91).
+ */
+export function formatUnits(
+  amount: bigint | number,
+  precision: number,
+): string {
+  let n = typeof amount === 'bigint' ? amount : BigInt(Math.trunc(amount));
+  const sign = n < 0n ? '-' : '';
+  if (n < 0n) n = -n;
+  const s = n.toString().padStart(precision + 1, '0');
+  const whole = precision > 0 ? s.slice(0, -precision) : s;
+  const frac = precision > 0 ? s.slice(-precision).replace(/0+$/, '') : '';
+  return sign + whole + (frac ? '.' + frac : '');
+}
+
 export function TokenAmount({
   amount,
   issuer,
@@ -34,8 +72,8 @@ export function TokenAmount({
   if (!('digits' in rest)) rest.digits = {};
   if (!('max' in rest.digits)) rest.digits.max = issuer.precision;
 
-  const v = Number(amount) / 10 ** issuer.precision;
-  return <Amount amount={v} {...rest} label={issuer.symbol} />;
+  const s = formatUnits(amount, issuer.precision);
+  return <Amount amount={s} {...rest} label={issuer.symbol} />;
 }
 
 export function CreditAmount({
@@ -73,6 +111,29 @@ export function creditsFromAcme(amount: number | bigint, oracle: number) {
   return (BigInt(amount) * BigInt(oracle)) / 10n ** 8n;
 }
 
+/**
+ * The inverse of {@link creditsFromAcme}: ACME base units needed to buy
+ * `credits` whole credits at the given oracle price. Rounds up (ceiling),
+ * so the requested credit count is still met after the executor's own
+ * truncating division — never one credit short.
+ *
+ * Returns `undefined` for a `credits` or `oracle` that can't yield a
+ * sensible answer, rather than the `NaN`/non-integer values that
+ * `((credits * 100) / oracle) * 10 ** 8` (float throughout) used to produce
+ * for almost any oracle price that didn't divide evenly — which the SDK's
+ * `BigInt(amount)` then rejected (#91).
+ */
+export function acmeUnitsForCredits(
+  credits: number,
+  oracle: number,
+): bigint | undefined {
+  if (!oracle || !Number.isFinite(oracle) || oracle <= 0) return undefined;
+  const rawCredits = parseUnits(String(credits ?? ''), 2);
+  if (rawCredits === undefined || rawCredits <= 0n) return undefined;
+  const oracleUnits = BigInt(oracle);
+  return (rawCredits * 10n ** 8n + oracleUnits - 1n) / oracleUnits;
+}
+
 export function CreditAmountFromACME({
   amount,
   oracle,
@@ -92,6 +153,32 @@ export function OracleValue({
   return <Amount amount={value} label="credits/ACME" {...rest} />;
 }
 
+// Inserts thousands separators into the whole-number part of an exact
+// decimal string, without going through Number (see `formatExact`, #91).
+function groupThousands(whole: string): string {
+  return whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// The string-`amount` counterpart of `amount.toLocaleString(...)` below,
+// for a value that is already an exact decimal string (from `formatUnits`)
+// and must stay exact — routing it through Number would reintroduce the
+// precision loss `formatUnits` exists to avoid (#91).
+function formatExact(
+  amount: string,
+  { group, min, max }: { group: boolean; min: number; max?: number },
+) {
+  const neg = amount.startsWith('-');
+  let [whole, frac = ''] = (neg ? amount.slice(1) : amount).split('.');
+  if (max !== undefined && frac.length > max) {
+    frac = frac.slice(0, max);
+  }
+  frac = frac.padEnd(min, '0');
+  if (group) {
+    whole = groupThousands(whole);
+  }
+  return (neg ? '-' : '') + whole + (frac ? '.' + frac : '');
+}
+
 export function Amount({
   amount,
   label,
@@ -102,7 +189,7 @@ export function Amount({
   style,
   digits = {},
 }: {
-  amount: number;
+  amount: number | string;
   label?: string | { singular: string; plural: string };
   className?: string;
   debit?: boolean;
@@ -119,11 +206,14 @@ export function Amount({
     amount = 0;
   }
   const { group = false, min = 0, max } = digits;
-  let s = amount.toLocaleString('en-US', {
-    useGrouping: group,
-    minimumFractionDigits: min,
-    maximumFractionDigits: max,
-  });
+  let s =
+    typeof amount === 'string'
+      ? formatExact(amount, { group, min, max })
+      : amount.toLocaleString('en-US', {
+          useGrouping: group,
+          minimumFractionDigits: min,
+          maximumFractionDigits: max,
+        });
   if (label) {
     if (typeof label === 'string') {
       s += ' ' + label;

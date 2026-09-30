@@ -14,7 +14,7 @@ import { Status } from 'accumulate.js/lib/errors';
 
 import { omit } from '../../utils/typemagic';
 import { isRecordOf } from '../../utils/types';
-import { TokenAmount } from '../common/Amount';
+import { TokenAmount, formatUnits, parseUnits } from '../common/Amount';
 import { useQuery } from '../common/useQuery';
 import { BaseTxnForm, TxnFormProps } from './BaseTxnForm';
 import { InputTokenAccount } from './InputAccount';
@@ -25,7 +25,11 @@ const { Text, Paragraph } = Typography;
 interface Fields {
   from: TokenAccount | LiteTokenAccount;
   to: TokenAccount | LiteTokenAccount;
-  amount: number;
+  // An exact decimal string (antd InputNumber `stringMode`), not a `number`:
+  // `amount *= 10 ** issuer.precision` turned 0.29 ACME into
+  // 28999999.999999996 base units, which the SDK's `BigInt(amount)` rejects
+  // (#91).
+  amount: string;
 }
 
 export function SendTokens(
@@ -38,16 +42,15 @@ export function SendTokens(
   const { setError, clearError } = useFormUtils(form);
 
   const submit = ({ from, to, amount }: Fields): TransactionArgs => {
-    if (amount && issuer) {
-      amount *= 10 ** issuer.precision;
-    }
+    const units =
+      issuer && amount ? parseUnits(amount, issuer.precision) : undefined;
     return {
       header: {
         principal: from?.url,
       },
       body: {
         type: 'sendTokens',
-        to: [{ url: to?.url, amount }],
+        to: [{ url: to?.url, amount: units }],
       },
     };
   };
@@ -139,11 +142,35 @@ export function SendTokens(
         initialValue={props.to}
         rules={[{ required: true }]}
       />
-      <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>
-        <InputNumber
+      <Form.Item
+        label="Amount"
+        name="amount"
+        rules={[
+          { required: true },
+          {
+            validator: async (_, value: string) => {
+              if (!issuer) {
+                throw new Error('Waiting for the token type to load');
+              }
+              const units = parseUnits(value, issuer.precision);
+              if (units === undefined) {
+                throw new Error(
+                  `Enter a number with up to ${issuer.precision} decimal place${issuer.precision === 1 ? '' : 's'}`,
+                );
+              }
+              if (from?.balance !== undefined && units > from.balance) {
+                throw new Error(
+                  `Exceeds the available balance of ${formatUnits(from.balance, issuer.precision)} ${issuer.symbol}`,
+                );
+              }
+            },
+          },
+        ]}
+      >
+        <InputNumber<string>
+          stringMode
           style={{ width: '100%' }}
-          min={0}
-          max={issuer && from && Number(from.balance) / 10 ** issuer.precision}
+          min="0"
           addonAfter={issuer?.symbol || issuer?.url?.toString()}
         />
       </Form.Item>
