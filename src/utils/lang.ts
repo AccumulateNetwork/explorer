@@ -55,7 +55,7 @@ export const tooltip = {
     'The maximum amount of tokens coded to exist in the lifetime of the cryptocurrency.',
   totalSupply: 'The amount of tokens that have already been created.',
   circAcmeSupply:
-    'The amount of ACME that are circulating in the market, calculated as total supply minus ACME owned by the Accumulate Foundation.',
+    'The amount of ACME that are circulating in the market, calculated as total supply minus staked ACME.',
   stakingType: 'Type of the staking',
   stakingRewards: 'Token account where staking rewards are deposited',
   cause: 'The cause of the transaction or signature',
