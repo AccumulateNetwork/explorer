@@ -349,7 +349,9 @@ func main() {
 	router.HandleFunc("/health", healthHandler).Methods("GET")
 
 	// Start server
-	port := ":8080"
+	// 127.0.0.1: nginx proxies to this port; it must never be reachable
+	// directly (#93 found it open on 0.0.0.0).
+	port := "127.0.0.1:8080"
 	log.Printf("Starting Accumulate Metrics API on %s", port)
 	log.Fatal(http.ListenAndServe(port, router))
 }
