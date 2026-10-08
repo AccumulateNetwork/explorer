@@ -19,11 +19,11 @@ Returns ACME token supply metrics queried from the Accumulate mainnet.
 **Response:**
 ```json
 {
-  "max": 50000000000000000,
-  "total": 32567998467211002,
-  "circulating": 26054398773768802,
-  "circulatingTokens": 26054398773768802,
-  "staked": 6513599693442200
+  "max": 500000000,
+  "total": 320000000,
+  "circulating": 107200000,
+  "circulatingTokens": 107200000,
+  "staked": 212800000
 }
 ```
 
@@ -32,11 +32,19 @@ Returns ACME token supply metrics queried from the Accumulate mainnet.
 - `total`: Total issued tokens
 - `circulating`: Circulating supply (total - staked)
 - `circulatingTokens`: Alias for `circulating` (Explorer compatibility)
-- `staked`: Estimated staked tokens (~20% of total)
+- `staked`: Staked tokens, computed by walking the staking registry
+  (`acc://staking.acme/registered`) to find every registered account, then
+  querying and summing their live balances — not an estimate. If that
+  computation fails for any account, the whole refresh fails and the
+  previous cached response is served instead, marked `X-Cache: STALE`, so
+  a partial failure never silently understates this number.
 
-All values are in atomic units (ACME × 10⁸).
+All values are whole ACME (the API's atomic units, ACME × 10⁸, divided
+down before being returned).
 
-**Cache:** 5 minutes
+**Cache:** 5 minutes. `X-Cache` response header: `HIT` (fresh cache),
+`MISS` (just refreshed), or `STALE` (refresh failed; serving the last
+good snapshot).
 
 ### GET /v1/timestamp/{txid}
 
@@ -90,6 +98,33 @@ Returns timestamp and block information for a transaction.
 **Caching Strategy:**
 - **Delivered transactions**: Cached permanently in LevelDB (block data won't change)
 - **Pending transactions**: Cached with signature timestamp, re-queried to check for delivery
+
+### GET /staking/stakers/{url}
+
+Looks up an account's staking registration.
+
+**Parameters:**
+- `url`: The account URL to look up (`acc://` prefix optional; both
+  `acc://` and the single-slash `acc:/` some HTTP clients rewrite it to
+  are accepted)
+
+**Response:**
+```json
+{
+  "url": "acc://alice.acme/stake",
+  "type": "pure",
+  "delegate": "acc://validator.acme/stake",
+  "rewards": "acc://alice.acme/tokens",
+  "identity": "acc://alice.acme"
+}
+```
+
+**Errors:** `404` if the account is not a registered staking account.
+
+This only ever reads the identity map already stored in LevelDB — it never
+queries the blockchain itself. That map is kept current by a background
+job that polls the staking registry chain (`acc://staking.acme/registered`)
+every 30 seconds; a request never blocks on, or triggers, that walk.
 
 ### GET /health
 
@@ -345,6 +380,33 @@ The Explorer uses:
 ```
 
 ## Changelog
+
+### 2026-09-30 - Reliability (#102)
+- Shared `http.Client` with a 15s timeout on every outbound request; a hung
+  upstream call used to be able to block a request, or the background
+  updater, forever.
+- The identity database's `lastQueriedIndex` now only advances past chain
+  entries actually applied. A failed fetch, decode, or DB write is logged
+  and retried on the next run instead of being silently skipped past —
+  previously a single such failure permanently dropped that registration
+  or deletion.
+- `/staking/stakers/{url}` no longer triggers a blockchain walk on every
+  request; only the background updater does that now, serialized so an
+  overrun refresh can't overlap itself.
+- `/v1/supply` is now guarded by a mutex held across a refresh, so
+  concurrent requests during a cache miss share one refresh instead of
+  each independently querying every staking account's balance.
+- A failed staked-amount computation (including a single account's balance
+  query returning a non-2xx status, which went unchecked before) now fails
+  the whole refresh, which falls back to the last good cached snapshot
+  (`X-Cache: STALE`) rather than publishing `issued / 5` as if it were a
+  real number.
+- Fixed a response-body leak in the per-account balance loop (`defer`
+  inside a loop kept every account's connection open until the whole loop
+  finished).
+- Documented `/staking/stakers/{url}` here for the first time, and
+  corrected `/v1/supply`'s units (whole ACME, not atomic units) and the
+  description of `staked` (computed, not a ~20% estimate).
 
 ### 2026-02-23 - Block Information Update
 - Added `/v1/timestamp/{txid}` endpoint

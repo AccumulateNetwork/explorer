@@ -8,16 +8,25 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+// httpClient is shared by every outbound request. The zero-value
+// http.Client used directly (http.Post/http.Get) has no timeout, so one
+// hung upstream call could block a request, or the background updater,
+// forever (#102).
+var httpClient = &http.Client{
+	Timeout: 15 * time.Second,
+}
+
 var (
 	// Genesis reset on July 14, 2025 - post-genesis block 1 started at this time
 	// Major blocks occur every 12 hours (cron: "0 */12 * * *")
-	genesisResetTime = time.Date(2025, 7, 14, 0, 0, 0, 0, time.UTC)
+	genesisResetTime   = time.Date(2025, 7, 14, 0, 0, 0, 0, time.UTC)
 	majorBlockInterval = 12 * time.Hour
 	// Pre-genesis offset: the old chain had 1,864 major blocks before the reset
 	// Absolute block number = post-genesis block + 1864
@@ -26,22 +35,22 @@ var (
 
 // SupplyMetrics represents the supply data for ACME token
 type SupplyMetrics struct {
-	Max              int64 `json:"max"`
-	Total            int64 `json:"total"`
-	Circulating      int64 `json:"circulating"`
+	Max               int64 `json:"max"`
+	Total             int64 `json:"total"`
+	Circulating       int64 `json:"circulating"`
 	CirculatingTokens int64 `json:"circulatingTokens"` // Alias for compatibility with Explorer
-	Staked           int64 `json:"staked"`
+	Staked            int64 `json:"staked"`
 }
 
 // TimestampData represents cached timestamp information
 type TimestampData struct {
-	Chains          []ChainEntry `json:"chains"`
-	Status          string       `json:"status,omitempty"`   // Transaction status: pending, delivered, etc.
-	MinorBlock      int64        `json:"minorBlock,omitempty"` // Minor block index (0 if pending)
-	MajorBlock      int64        `json:"majorBlock,omitempty"` // Major block index (0 if pending)
+	Chains     []ChainEntry `json:"chains"`
+	Status     string       `json:"status,omitempty"`     // Transaction status: pending, delivered, etc.
+	MinorBlock int64        `json:"minorBlock,omitempty"` // Minor block index (0 if pending)
+	MajorBlock int64        `json:"majorBlock,omitempty"` // Major block index (0 if pending)
 	// Internal cache fields (prefixed with underscore to hide from API consumers)
-	HasBlockTime    bool         `json:"_hasBlockTime,omitempty"` // If true, from block (never re-query). If false, from signature (keep checking for block)
-	SignatureTime   int64        `json:"_signatureTime,omitempty"` // Oldest signature timestamp (cached permanently)
+	HasBlockTime  bool  `json:"_hasBlockTime,omitempty"`  // If true, from block (never re-query). If false, from signature (keep checking for block)
+	SignatureTime int64 `json:"_signatureTime,omitempty"` // Oldest signature timestamp (cached permanently)
 }
 
 type ChainEntry struct {
@@ -83,10 +92,20 @@ type V3Signature struct {
 }
 
 var (
-	// Cache for supply metrics (in-memory, short-lived)
-	cachedMetrics        *SupplyMetrics
-	lastUpdate           time.Time
-	cacheDuration        = 5 * time.Minute
+	// Cache for supply metrics (in-memory, short-lived). metricsMu guards
+	// all three fields and is held across a refresh, not just the read: that
+	// makes a refresh-in-progress block, rather than duplicate, a concurrent
+	// cache-miss request (previously unguarded — a data race, and on a
+	// cache miss every concurrent caller independently queried every
+	// staking account's balance — #102).
+	metricsMu     sync.Mutex
+	cachedMetrics *SupplyMetrics
+	lastUpdate    time.Time
+	cacheDuration = 5 * time.Minute
+
+	// Guards the identity database refresh so an overrun refresh (the
+	// background ticker fires every 30s) can't overlap itself.
+	identityUpdateMu sync.Mutex
 
 	// Persistent database for timestamps and identity map
 	timestampDB *leveldb.DB
@@ -136,10 +155,9 @@ type Account struct {
 
 // Database key prefixes
 const (
-	identityPrefix        = "identity:"
-	metadataPrefix        = "metadata:"
-	lastQueriedIndexKey   = "metadata:lastQueriedIndex"
-	totalEntriesKey       = "metadata:totalEntries"
+	identityPrefix      = "identity:"
+	metadataPrefix      = "metadata:"
+	lastQueriedIndexKey = "metadata:lastQueriedIndex"
 )
 
 // Database helper functions for identity map storage
@@ -227,31 +245,6 @@ func setLastQueriedIndex(index int64) error {
 	return timestampDB.Put([]byte(lastQueriedIndexKey), data, nil)
 }
 
-// getTotalEntries retrieves the cached total entry count
-func getTotalEntries() int64 {
-	data, err := timestampDB.Get([]byte(totalEntriesKey), nil)
-	if err != nil {
-		return 0
-	}
-
-	var total int64
-	if err := json.Unmarshal(data, &total); err != nil {
-		return 0
-	}
-
-	return total
-}
-
-// setTotalEntries updates the cached total entry count
-func setTotalEntries(total int64) error {
-	data, err := json.Marshal(total)
-	if err != nil {
-		return err
-	}
-
-	return timestampDB.Put([]byte(totalEntriesKey), data, nil)
-}
-
 // normalizeIdentity converts legacy format to modern format
 // Matches staking/pkg/types/account.go Normalize() behavior
 func normalizeIdentity(id *RegistrationIdentity) {
@@ -334,7 +327,7 @@ func main() {
 		defer ticker.Stop()
 
 		for range ticker.C {
-			if err := updateIdentityDatabaseFromBlockchain(); err != nil {
+			if err := refreshIdentityDatabase(); err != nil {
 				log.Printf("Background update error: %v", err)
 			}
 		}
@@ -401,23 +394,26 @@ func getStakingAccountHandler(w http.ResponseWriter, r *http.Request) {
 
 // Get supply metrics handler
 func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
-	// Check cache
+	// metricsMu is held across the whole check-and-maybe-refresh, not just
+	// the read: a refresh already in progress makes a concurrent request
+	// wait for and share that result, rather than starting its own —
+	// previously every concurrent cache-miss request queried every staking
+	// account's balance independently (#102).
+	metricsMu.Lock()
+	defer metricsMu.Unlock()
+
 	if cachedMetrics != nil && time.Since(lastUpdate) < cacheDuration {
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("X-Cache", "HIT")
-		json.NewEncoder(w).Encode(cachedMetrics)
+		writeSupplyResponse(w, cachedMetrics, "HIT")
 		return
 	}
 
-	// Fetch fresh metrics
 	metrics, err := fetchSupplyMetrics()
 	if err != nil {
-		// If fetch fails but we have cached data, return cached
+		// Serve the last good snapshot rather than nothing, but say so —
+		// never synthesize a number in its place (#102).
 		if cachedMetrics != nil {
-			log.Printf("Error fetching metrics, using cached data: %v", err)
-			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("X-Cache", "STALE")
-			json.NewEncoder(w).Encode(cachedMetrics)
+			log.Printf("Error fetching metrics, serving stale cache: %v", err)
+			writeSupplyResponse(w, cachedMetrics, "STALE")
 			return
 		}
 
@@ -426,23 +422,35 @@ func getSupplyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update cache
 	cachedMetrics = metrics
 	lastUpdate = time.Now()
+	writeSupplyResponse(w, metrics, "MISS")
+}
 
+func writeSupplyResponse(w http.ResponseWriter, metrics *SupplyMetrics, cacheState string) {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Cache", "MISS")
+	w.Header().Set("X-Cache", cacheState)
 	json.NewEncoder(w).Encode(metrics)
 }
 
-// getOrRefreshIdentityMap returns the cached identity map or refreshes it if stale
-func getOrRefreshIdentityMap() (map[string]*RegistrationIdentity, error) {
-	// Check for new entries and update database incrementally
-	if err := updateIdentityDatabaseFromBlockchain(); err != nil {
-		log.Printf("Warning: Failed to update identity database: %v", err)
+// refreshIdentityDatabase runs updateIdentityDatabaseFromBlockchain, but
+// never two calls at once: an overrun refresh (the background ticker fires
+// every 30s) skips rather than overlaps.
+func refreshIdentityDatabase() error {
+	if !identityUpdateMu.TryLock() {
+		log.Printf("Identity database refresh already in progress, skipping this tick")
+		return nil
 	}
+	defer identityUpdateMu.Unlock()
+	return updateIdentityDatabaseFromBlockchain()
+}
 
-	// Return all identities from database
+// getIdentityMap returns the identity map as it currently stands in the
+// database. It never reaches out to the blockchain: only the background
+// ticker (refreshIdentityDatabase) does that. A request handler that
+// triggered a full chain walk on every call used to let concurrent
+// /staking/stakers/* requests each kick off their own (#102).
+func getIdentityMap() (map[string]*RegistrationIdentity, error) {
 	return getAllIdentitiesFromDB()
 }
 
@@ -466,7 +474,7 @@ func updateIdentityDatabaseFromBlockchain() error {
 		return fmt.Errorf("failed to marshal chain request: %w", err)
 	}
 
-	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return fmt.Errorf("failed to query chain: %w", err)
 	}
@@ -499,11 +507,11 @@ func updateIdentityDatabaseFromBlockchain() error {
 
 	// Get last queried index
 	lastIndex := getLastQueriedIndex()
-	cachedTotal := getTotalEntries()
 
-	// Check if there are new entries
-	if lastIndex >= 0 && totalEntries == cachedTotal {
-		// No new entries, database is up to date
+	// Caught up: lastIndex only advances past entries actually applied (see
+	// below), so this also correctly re-enters a run that left a gap last
+	// time, rather than mistaking it for done.
+	if lastIndex >= totalEntries-1 {
 		return nil
 	}
 
@@ -519,10 +527,27 @@ func updateIdentityDatabaseFromBlockchain() error {
 
 	log.Printf("Updating identity database: processing entries %d to %d (total: %d)", startIndex, totalEntries-1, totalEntries-startIndex)
 
-	// Process new entries in batches
+	// Process new entries in batches. firstGap tracks the lowest chain index
+	// that could not be applied (a failed fetch, decode, or DB write) so
+	// far — everything before it is durably recorded, but it and anything
+	// after must not be marked done. Entries after a gap are still
+	// attempted (a later entry failing shouldn't block earlier successes,
+	// and re-applying an already-saved identity next run is harmless), but
+	// the stored index only ever advances up to the gap, so the failed
+	// entry — and anything after it, whether or not it happened to succeed
+	// this run — is retried next time. Previously the index advanced past
+	// every entry in the batch unconditionally, so a single failed fetch or
+	// decode silently and permanently dropped that registration or
+	// deletion (#102).
 	batchSize := int64(100)
 	newIdentities := 0
 	updatedIdentities := 0
+	firstGap := int64(-1)
+	markGap := func(idx int64) {
+		if firstGap < 0 || idx < firstGap {
+			firstGap = idx
+		}
+	}
 
 	for start := startIndex; start < totalEntries; start += batchSize {
 		count := batchSize
@@ -545,10 +570,17 @@ func updateIdentityDatabaseFromBlockchain() error {
 			},
 		}
 
-		jsonData, _ := json.Marshal(rangeReq)
-		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+		jsonData, err := json.Marshal(rangeReq)
 		if err != nil {
-			log.Printf("Warning: Failed to fetch entries %d-%d: %v", start, start+count-1, err)
+			log.Printf("Warning: failed to marshal request for entries %d-%d: %v (will retry next run)", start, start+count-1, err)
+			markGap(start)
+			continue
+		}
+
+		resp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+		if err != nil {
+			log.Printf("Warning: failed to fetch entries %d-%d: %v (will retry next run)", start, start+count-1, err)
+			markGap(start)
 			continue
 		}
 
@@ -559,91 +591,150 @@ func updateIdentityDatabaseFromBlockchain() error {
 				} `json:"records"`
 			} `json:"result"`
 		}
-
-		json.NewDecoder(resp.Body).Decode(&rangeResp)
+		decodeErr := json.NewDecoder(resp.Body).Decode(&rangeResp)
 		resp.Body.Close()
+		if decodeErr != nil {
+			log.Printf("Warning: failed to decode entries %d-%d: %v (will retry next run)", start, start+count-1, decodeErr)
+			markGap(start)
+			continue
+		}
 
-		for _, record := range rangeResp.Result.Records {
-			txReq := map[string]interface{}{
-				"jsonrpc": "2.0",
-				"id":      0,
-				"method":  "query",
-				"params": map[string]interface{}{
-					"scope": fmt.Sprintf("acc://%s@staking.acme/registered", record.Entry),
-					"query": map[string]interface{}{},
-				},
-			}
+		if int64(len(rangeResp.Result.Records)) < count {
+			log.Printf("Warning: requested %d entries from %d but got %d (will retry from %d next run)",
+				count, start, len(rangeResp.Result.Records), start+int64(len(rangeResp.Result.Records)))
+			markGap(start + int64(len(rangeResp.Result.Records)))
+		}
 
-			txData, _ := json.Marshal(txReq)
-			txResp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(txData))
+		for i, record := range rangeResp.Result.Records {
+			idx := start + int64(i)
+			identity, entryData, err := fetchRegistrationEntry(record.Entry)
 			if err != nil {
+				log.Printf("Warning: failed to process entry %d (%s): %v (will retry next run)", idx, record.Entry, err)
+				markGap(idx)
+				continue
+			}
+			if identity == "" {
+				// Not a registration write, or one with no identity — there
+				// is nothing to apply, so this entry is fully processed.
 				continue
 			}
 
-			var txResult struct {
-				Result struct {
-					Message struct {
-						Transaction struct {
-							Body struct {
-								Type  string `json:"type"`
-								Entry struct {
-									Data []string `json:"data"`
-								} `json:"entry"`
-							} `json:"body"`
-						} `json:"transaction"`
-					} `json:"message"`
-				} `json:"result"`
+			if entryData.Status == "deleted" {
+				if err := deleteIdentityFromDB(identity); err != nil {
+					log.Printf("Warning: failed to delete identity %s (entry %d): %v (will retry next run)", identity, idx, err)
+					markGap(idx)
+				}
+				continue
 			}
 
-			json.NewDecoder(txResp.Body).Decode(&txResult)
-			txResp.Body.Close()
-
-			if txResult.Result.Message.Transaction.Body.Type == "writeData" {
-				dataArray := txResult.Result.Message.Transaction.Body.Entry.Data
-				if len(dataArray) > 0 {
-					dataBytes, _ := hex.DecodeString(dataArray[0])
-					var entryData RegistrationIdentity
-					if json.Unmarshal(dataBytes, &entryData) == nil {
-						normalizeIdentity(&entryData)
-
-						identity := entryData.Identity
-						if identity == "" && entryData.Stake != "" {
-							parts := strings.Split(entryData.Stake, "/")
-							if len(parts) >= 3 {
-								identity = strings.Join(parts[:3], "/")
-							}
-						}
-
-						if identity != "" {
-							// Check if this is a deletion
-							if entryData.Status == "deleted" {
-								deleteIdentityFromDB(identity)
-							} else {
-								// Check if identity already exists
-								_, err := getIdentityFromDB(identity)
-								if err != nil {
-									newIdentities++
-								} else {
-									updatedIdentities++
-								}
-								saveIdentityToDB(identity, &entryData)
-							}
-						}
-					}
-				}
+			if _, err := getIdentityFromDB(identity); err != nil {
+				newIdentities++
+			} else {
+				updatedIdentities++
+			}
+			if err := saveIdentityToDB(identity, entryData); err != nil {
+				log.Printf("Warning: failed to save identity %s (entry %d): %v (will retry next run)", identity, idx, err)
+				markGap(idx)
 			}
 		}
 	}
 
-	// Update metadata
-	setLastQueriedIndex(totalEntries - 1)
-	setTotalEntries(totalEntries)
+	// Only advance the stored index up to the first gap: entries at or
+	// after it must be retried next run.
+	processedThrough := totalEntries - 1
+	if firstGap >= 0 {
+		processedThrough = firstGap - 1
+	}
+	if processedThrough >= lastIndex {
+		setLastQueriedIndex(processedThrough)
+	}
 
 	if newIdentities > 0 || updatedIdentities > 0 {
 		log.Printf("Identity database updated: %d new, %d updated", newIdentities, updatedIdentities)
 	}
+	if firstGap >= 0 {
+		log.Printf("Identity database update incomplete: stopped recording progress at entry %d of %d (will resume there next run)", firstGap, totalEntries)
+	}
 
 	return nil
+}
+
+// fetchRegistrationEntry fetches and parses a single registration chain
+// entry. A non-nil error means the entry's content could not be
+// determined (a network or decode failure) and must be retried. A nil
+// error with an empty identity means the entry was read successfully and
+// simply isn't a registration write (or names no identity) — nothing to
+// retry.
+func fetchRegistrationEntry(entry string) (identity string, data *RegistrationIdentity, err error) {
+	txReq := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      0,
+		"method":  "query",
+		"params": map[string]interface{}{
+			"scope": fmt.Sprintf("acc://%s@staking.acme/registered", entry),
+			"query": map[string]interface{}{},
+		},
+	}
+
+	txData, err := json.Marshal(txReq)
+	if err != nil {
+		return "", nil, fmt.Errorf("marshal request: %w", err)
+	}
+
+	txResp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(txData))
+	if err != nil {
+		return "", nil, fmt.Errorf("query entry: %w", err)
+	}
+	defer txResp.Body.Close()
+
+	var txResult struct {
+		Result struct {
+			Message struct {
+				Transaction struct {
+					Body struct {
+						Type  string `json:"type"`
+						Entry struct {
+							Data []string `json:"data"`
+						} `json:"entry"`
+					} `json:"body"`
+				} `json:"transaction"`
+			} `json:"message"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(txResp.Body).Decode(&txResult); err != nil {
+		return "", nil, fmt.Errorf("decode entry: %w", err)
+	}
+
+	if txResult.Result.Message.Transaction.Body.Type != "writeData" {
+		return "", nil, nil
+	}
+	dataArray := txResult.Result.Message.Transaction.Body.Entry.Data
+	if len(dataArray) == 0 {
+		return "", nil, nil
+	}
+
+	dataBytes, err := hex.DecodeString(dataArray[0])
+	if err != nil {
+		return "", nil, fmt.Errorf("decode entry data: %w", err)
+	}
+	var entryData RegistrationIdentity
+	if err := json.Unmarshal(dataBytes, &entryData); err != nil {
+		return "", nil, fmt.Errorf("unmarshal entry data: %w", err)
+	}
+	normalizeIdentity(&entryData)
+
+	identity = entryData.Identity
+	if identity == "" && entryData.Stake != "" {
+		parts := strings.Split(entryData.Stake, "/")
+		if len(parts) >= 3 {
+			identity = strings.Join(parts[:3], "/")
+		}
+	}
+	if identity == "" {
+		return "", nil, nil
+	}
+
+	return identity, &entryData, nil
 }
 
 // queryStakedAmount queries the actual staked ACME from registered staking accounts
@@ -654,7 +745,7 @@ func updateIdentityDatabaseFromBlockchain() error {
 // 4. Query balances and sum
 func queryStakedAmount() (int64, error) {
 	// Get cached identity map
-	identityMap, err := getOrRefreshIdentityMap()
+	identityMap, err := getIdentityMap()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get identity map: %w", err)
 	}
@@ -707,50 +798,20 @@ func queryStakedAmount() (int64, error) {
 
 	log.Printf("Unique staking accounts after deduplication: %d", len(uniqueAccounts))
 
-	// Step 4: Query balance of each unique staking account and sum them up
+	// Step 4: Query balance of each unique staking account and sum them up.
+	// A failure here previously left that account's balance silently
+	// excluded from the total, undercounting `staked` with no way to tell
+	// from the response that anything was wrong — the same class of
+	// problem as the issued/5 estimate below. So it fails the whole
+	// computation instead: the caller falls back to the last good cached
+	// total (serve-stale, flagged) rather than publish a wrong one (#102).
 	var totalStakedRaw int64
 	for accountURL := range uniqueAccounts {
-		requestBody := map[string]interface{}{
-			"jsonrpc": "2.0",
-			"id":      0,
-			"method":  "query",
-			"params": map[string]interface{}{
-				"scope": accountURL,
-				"query": map[string]interface{}{},
-			},
-		}
-
-		jsonData, err := json.Marshal(requestBody)
+		balance, err := queryAccountBalance(accountURL)
 		if err != nil {
-			continue
+			return 0, fmt.Errorf("query balance of %s: %w", accountURL, err)
 		}
-
-		resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
-		if err != nil {
-			continue
-		}
-		defer resp.Body.Close()
-
-		var accResp struct {
-			Result struct {
-				Account struct {
-					Type    string `json:"type"`
-					Balance string `json:"balance"`
-				} `json:"account"`
-			} `json:"result"`
-		}
-
-		if err := json.NewDecoder(resp.Body).Decode(&accResp); err != nil {
-			continue
-		}
-
-		// Parse balance
-		if accResp.Result.Account.Balance != "" {
-			var balance int64
-			if _, err := fmt.Sscanf(accResp.Result.Account.Balance, "%d", &balance); err == nil {
-				totalStakedRaw += balance
-			}
-		}
+		totalStakedRaw += balance
 	}
 
 	// Convert from smallest units to ACME tokens
@@ -762,10 +823,67 @@ func queryStakedAmount() (int64, error) {
 	return totalStaked, nil
 }
 
+// queryAccountBalance fetches a single account's balance, in smallest
+// units. A non-2xx status previously went unchecked here — the body still
+// decoded (into zero-value fields), so a failed query silently contributed
+// nothing rather than being reported as a failure (#102).
+func queryAccountBalance(accountURL string) (int64, error) {
+	requestBody := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"id":      0,
+		"method":  "query",
+		"params": map[string]interface{}{
+			"scope": accountURL,
+			"query": map[string]interface{}{},
+		},
+	}
+
+	jsonData, err := json.Marshal(requestBody)
+	if err != nil {
+		return 0, fmt.Errorf("marshal request: %w", err)
+	}
+
+	resp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return 0, fmt.Errorf("request: %w", err)
+	}
+	// Deferred to this function, which runs once per account, so each
+	// response body closes as that account's call returns. Deferring it in
+	// the caller's per-account loop directly — as the previous code did —
+	// would have kept every account's response body open until the whole
+	// loop finished, all ~196 of them at once (#102).
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, fmt.Errorf("unexpected status %d", resp.StatusCode)
+	}
+
+	var accResp struct {
+		Result struct {
+			Account struct {
+				Type    string `json:"type"`
+				Balance string `json:"balance"`
+			} `json:"account"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&accResp); err != nil {
+		return 0, fmt.Errorf("decode response: %w", err)
+	}
+
+	if accResp.Result.Account.Balance == "" {
+		return 0, nil
+	}
+	var balance int64
+	if _, err := fmt.Sscanf(accResp.Result.Account.Balance, "%d", &balance); err != nil {
+		return 0, fmt.Errorf("parse balance %q: %w", accResp.Result.Account.Balance, err)
+	}
+	return balance, nil
+}
+
 // queryStakingAccount finds staking information for a specific account URL
 func queryStakingAccount(accountURL string) (*StakingAccountInfo, error) {
 	// Get cached identity map
-	identityMap, err := getOrRefreshIdentityMap()
+	identityMap, err := getIdentityMap()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get identity map: %w", err)
 	}
@@ -813,7 +931,7 @@ func fetchSupplyMetrics() (*SupplyMetrics, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to query Accumulate API: %w", err)
 	}
@@ -846,23 +964,24 @@ func fetchSupplyMetrics() (*SupplyMetrics, error) {
 	issued := issuedRaw / acmePrecision
 	supplyLimit := supplyLimitRaw / acmePrecision
 
-	// Query actual staked amount from registered staking accounts
+	// Query actual staked amount from registered staking accounts. A
+	// failure here fails the whole refresh — the caller (getSupplyHandler)
+	// falls back to the last good cached snapshot, flagged stale, rather
+	// than publish the `issued / 5` guess this used to fall back to (#102).
 	staked, err := queryStakedAmount()
 	if err != nil {
-		log.Printf("Error querying staked amount, using estimate: %v", err)
-		// Fall back to estimate if query fails
-		staked = issued / 5 // ~20% estimate
+		return nil, fmt.Errorf("failed to query staked amount: %w", err)
 	}
 
 	// Circulating = issued - staked
 	circulating := issued - staked
 
 	metrics := &SupplyMetrics{
-		Max:              supplyLimit,
-		Total:            issued,
-		Circulating:      circulating,
+		Max:               supplyLimit,
+		Total:             issued,
+		Circulating:       circulating,
 		CirculatingTokens: circulating, // Same as Circulating for compatibility
-		Staked:           staked,
+		Staked:            staked,
 	}
 
 	log.Printf("Fetched metrics: Max=%d, Total=%d, Circulating=%d, Staked=%d",
@@ -982,7 +1101,7 @@ func getTimestampHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := http.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := httpClient.Post(accumulateAPI, "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Printf("Error querying v3 API for %s: %v", txid, err)
 		// If we have cached signature timestamp, return it
@@ -1040,7 +1159,7 @@ func getTimestampHandler(w http.ResponseWriter, r *http.Request) {
 	// This endpoint returns chain entries with minor block numbers if the transaction has been executed
 	// Note: Major block information is not currently available from this endpoint
 	v2Url := fmt.Sprintf("%s/timestamp/%s@unknown", accumulateAPIv2, txid)
-	v2Resp, err := http.Get(v2Url)
+	v2Resp, err := httpClient.Get(v2Url)
 	hasBlockData := false
 	tsData := &TimestampData{
 		Status: txStatus,
