@@ -6,7 +6,109 @@ import {
   Transaction,
 } from 'accumulate.js/lib/core';
 
-import { creditsFromAcme, recipientsOfTx, totalAmount } from './Amount';
+import {
+  acmeUnitsForCredits,
+  creditsFromAcme,
+  formatUnits,
+  parseUnits,
+  recipientsOfTx,
+  totalAmount,
+} from './Amount';
+
+// #91: `amount *= 10 ** issuer.precision` turned 0.29 ACME into
+// 28999999.999999996 base units, which the SDK's `BigInt(amount)` rejects.
+// parseUnits/formatUnits replace that arithmetic with exact string <-> bigint
+// conversions that never route through Number.
+describe('parseUnits', () => {
+  it('scales a plain decimal exactly', () => {
+    expect(parseUnits('0.29', 8)).toBe(29_000_000n);
+  });
+
+  it('scales the smallest unit exactly', () => {
+    expect(parseUnits('0.00000001', 8)).toBe(1n);
+  });
+
+  it('accepts a bare integer', () => {
+    expect(parseUnits('5', 8)).toBe(500_000_000n);
+  });
+
+  it('accepts a leading-dot fraction', () => {
+    expect(parseUnits('.5', 8)).toBe(50_000_000n);
+  });
+
+  it('is exact at precision 0', () => {
+    expect(parseUnits('5', 0)).toBe(5n);
+  });
+
+  it('is exact at precision 18, past Number.MAX_SAFE_INTEGER', () => {
+    expect(parseUnits('1.000000000000000001', 18)).toBe(10n ** 18n + 1n);
+  });
+
+  it('round-trips a value past Number.MAX_SAFE_INTEGER', () => {
+    const exact = 9_007_199_254_740_993n; // 2^53 + 1
+    expect(parseUnits(formatUnits(exact, 8), 8)).toBe(exact);
+  });
+
+  it('rejects more fractional digits than precision allows', () => {
+    expect(parseUnits('0.123', 2)).toBeUndefined();
+  });
+
+  it('rejects any fraction at precision 0', () => {
+    expect(parseUnits('5.1', 0)).toBeUndefined();
+  });
+
+  it('rejects a negative amount', () => {
+    expect(parseUnits('-1', 8)).toBeUndefined();
+  });
+
+  it('rejects non-numeric input', () => {
+    expect(parseUnits('abc', 8)).toBeUndefined();
+  });
+
+  it('rejects an empty string', () => {
+    expect(parseUnits('', 8)).toBeUndefined();
+  });
+
+  it('rejects a bare dot', () => {
+    expect(parseUnits('.', 8)).toBeUndefined();
+  });
+});
+
+describe('formatUnits', () => {
+  it('formats a fractional amount', () => {
+    expect(formatUnits(29_000_000n, 8)).toBe('0.29');
+  });
+
+  it('formats the smallest unit', () => {
+    expect(formatUnits(1n, 8)).toBe('0.00000001');
+  });
+
+  it('drops a trailing zero fraction', () => {
+    expect(formatUnits(100_000_000n, 8)).toBe('1');
+  });
+
+  it('formats zero', () => {
+    expect(formatUnits(0n, 8)).toBe('0');
+  });
+
+  it('is exact at precision 0', () => {
+    expect(formatUnits(5n, 0)).toBe('5');
+  });
+
+  it('is exact past Number.MAX_SAFE_INTEGER', () => {
+    // Number(9_007_199_254_740_993n) / 1e8 rounds to "90071992.54740992",
+    // one unit short of the true value.
+    expect(formatUnits(9_007_199_254_740_993n, 8)).toBe('90071992.54740993');
+  });
+
+  it('is exact at precision 18', () => {
+    expect(formatUnits(10n ** 18n + 1n, 18)).toBe('1.000000000000000001');
+  });
+
+  it('accepts a plain number for small amounts', () => {
+    expect(formatUnits(100_000_000, 8)).toBe('1');
+  });
+});
 
 // This is the code area that produced HOTFIX-BIGINT-2026-02-22: pure BigInt
 // arithmetic across nine transaction types, previously untested (#66).
@@ -43,6 +145,49 @@ describe('creditsFromAcme', () => {
 
   it('accepts number amounts', () => {
     expect(creditsFromAcme(100_000_000, 5000)).toBe(5000n);
+  });
+});
+
+describe('acmeUnitsForCredits', () => {
+  // The inverse of creditsFromAcme's ground truth: 50 credits at oracle
+  // 5000 divides evenly, so ceiling and truncation agree on exactly 1 ACME.
+  it('matches the executor inverse when it divides evenly', () => {
+    expect(acmeUnitsForCredits(50, 5000)).toBe(100_000_000n);
+  });
+
+  it('is exact beyond Number precision', () => {
+    // 10 billion credits, mirroring creditsFromAcme's own beyond-2^53 case.
+    expect(acmeUnitsForCredits(10_000_000_000, 5000)).toBe(
+      20_000_000_000_000_000n,
+    );
+  });
+
+  it('rounds up rather than producing a non-integer amount', () => {
+    // The old `((credits * 100) / oracle) * 10 ** 8` float formula landed on
+    // 3003003003.0030003 base units here — not an integer, and the SDK's
+    // BigInt(amount) rejected it outright (#91).
+    const tokens = acmeUnitsForCredits(100, 333);
+    expect(typeof tokens).toBe('bigint');
+    // Buying `tokens` ACME worth of credits must clear the requested raw
+    // credit units even after the executor's own truncating division...
+    expect((tokens * 333n) / 10n ** 8n).toBeGreaterThanOrEqual(10_000n);
+    // ...and by no more than one oracle unit's worth of overpayment.
+    expect(tokens * 333n - 10_000n * 10n ** 8n).toBeLessThan(333n);
+  });
+
+  it('rejects a zero or missing oracle', () => {
+    expect(acmeUnitsForCredits(100, 0)).toBeUndefined();
+    expect(acmeUnitsForCredits(100, undefined)).toBeUndefined();
+  });
+
+  it('rejects a zero, missing, or non-numeric credits amount', () => {
+    expect(acmeUnitsForCredits(0, 5000)).toBeUndefined();
+    expect(acmeUnitsForCredits(undefined, 5000)).toBeUndefined();
+    expect(acmeUnitsForCredits(NaN, 5000)).toBeUndefined();
+  });
+
+  it('rejects more precision than a credit balance unit (0.01) allows', () => {
+    expect(acmeUnitsForCredits(1.001, 5000)).toBeUndefined();
   });
 });
 
