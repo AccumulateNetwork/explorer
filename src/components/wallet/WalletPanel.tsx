@@ -22,7 +22,7 @@ import {
   Typography,
   message,
 } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import {
   RiKey2Line,
@@ -42,11 +42,26 @@ import {
   RiQuestionLine,
   RiTimeLine,
 } from 'react-icons/ri';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
+
+import { LiteTokenAccount, TokenAccount } from 'accumulate.js/lib/core';
 
 import { useWallet } from './Context';
 import { useCurrentAccount, CurrentTransaction } from './CurrentAccountContext';
 import type { KeyInfo } from './WalletClient';
+import { Network } from '../common/Network';
+import { fetchAccount } from '../common/query';
+
+// Account info with balance data fetched from the network
+interface AccountInfo {
+  url: string;
+  label: string;
+  type: string;
+  balance: bigint | null;
+  tokenUrl: string | null;
+  loading: boolean;
+  error: string | null;
+}
 
 const { Panel } = Collapse;
 const { Text, Title, Paragraph } = Typography;
@@ -69,13 +84,141 @@ export function WalletPanel({ visible, onClose }: WalletPanelProps) {
   const wallet = useWallet();
   const { currentAccount, currentTransaction } = useCurrentAccount();
   const location = useLocation();
+  const networkCtx = useContext(Network);
   const [unlockModalVisible, setUnlockModalVisible] = useState(false);
   const [passphrase, setPassphrase] = useState('');
   const [unlocking, setUnlocking] = useState(false);
+  const [accounts, setAccounts] = useState<AccountInfo[]>([]);
+  const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(10);
 
   // Extract account URL from the current route or context
   const accountUrl = currentAccount?.url || extractAccountUrl(location.pathname);
   const accountType = currentAccount?.type || 'unknown';
+
+  // Reset display limit when vault changes
+  useEffect(() => {
+    setDisplayLimit(10);
+    setAccounts([]);
+  }, [wallet?.activeVault?.name]);
+
+  // Build account list when keys change
+  useEffect(() => {
+    if (!wallet?.keys?.length) {
+      setAccounts([]);
+      return;
+    }
+
+    const accountInfos: AccountInfo[] = [];
+    for (const key of wallet.keys) {
+      if (!key.liteAccount) continue;
+
+      // Construct the full lite token account URL from the hex key hash
+      const liteUrl = `acc://${key.liteAccount}/ACME`;
+
+      accountInfos.push({
+        url: liteUrl,
+        label: key.label || 'Unnamed',
+        type: 'unknown',
+        balance: null,
+        tokenUrl: null,
+        loading: true,
+        error: null,
+      });
+    }
+
+    setAccounts(accountInfos);
+  }, [wallet?.keys]);
+
+  // Fetch account data for accounts that haven't been loaded yet
+  const fetchAccountData = useCallback(async (accountsToFetch: AccountInfo[]) => {
+    if (!networkCtx?.api || accountsToFetch.length === 0) return;
+
+    setLoadingAccounts(true);
+
+    await Promise.all(
+      accountsToFetch.map(async (info) => {
+        try {
+          const account = await fetchAccount(networkCtx.api, info.url);
+          if (account) {
+            const updates: Partial<AccountInfo> = {
+              type: String(account.type) || 'unknown',
+              loading: false,
+            };
+            if (account instanceof LiteTokenAccount || account instanceof TokenAccount) {
+              updates.balance = account.balance;
+              updates.tokenUrl = account.tokenUrl?.toString() || null;
+            }
+            setAccounts((prev) =>
+              prev.map((a) => (a.url === info.url ? { ...a, ...updates } : a))
+            );
+          } else {
+            // Mark as not found (user can clear these)
+            setAccounts((prev) =>
+              prev.map((a) =>
+                a.url === info.url ? { ...a, loading: false, error: 'Not found' } : a
+              )
+            );
+          }
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          const isNotFound = errMsg.toLowerCase().includes('not found');
+          setAccounts((prev) =>
+            prev.map((a) =>
+              a.url === info.url
+                ? { ...a, loading: false, error: isNotFound ? 'Not found' : errMsg }
+                : a
+            )
+          );
+        }
+      })
+    );
+
+    setLoadingAccounts(false);
+  }, [networkCtx?.api]);
+
+  // Fetch initial batch and when display limit increases
+  useEffect(() => {
+    if (!accounts.length || !networkCtx?.api) return;
+
+    // Find accounts that need to be fetched (still loading, within display limit)
+    const toFetch = accounts
+      .slice(0, displayLimit)
+      .filter((a) => a.loading);
+
+    if (toFetch.length > 0) {
+      fetchAccountData(toFetch);
+    }
+  }, [accounts.length, displayLimit, networkCtx?.api, fetchAccountData]);
+
+  // Check if an account is stale (not found on network)
+  const isStaleAccount = (a: AccountInfo) =>
+    a.error && a.error.toLowerCase().includes('not found');
+
+  // Clear stale accounts (those not found on network)
+  const clearStaleAccounts = () => {
+    console.log('Clearing stale accounts, current count:', accounts.length);
+    const stale = accounts.filter(isStaleAccount);
+    console.log('Stale accounts:', stale.map((a) => ({ url: a.url, error: a.error })));
+    const filtered = accounts.filter((a) => !isStaleAccount(a));
+    console.log('After filter count:', filtered.length);
+    setAccounts(filtered);
+  };
+
+  const staleCount = accounts.filter(isStaleAccount).length;
+
+  // Debug: log account states
+  useEffect(() => {
+    if (accounts.length > 0) {
+      const loaded = accounts.filter((a) => !a.loading);
+      const withErrors = accounts.filter((a) => a.error);
+      const withBalance = accounts.filter((a) => a.balance !== null);
+      console.log(`Accounts: ${accounts.length} total, ${loaded.length} loaded, ${withErrors.length} errors, ${withBalance.length} with balance, ${staleCount} stale`);
+      if (withErrors.length > 0) {
+        console.log('Error samples:', withErrors.slice(0, 3).map((a) => `"${a.error}"`));
+      }
+    }
+  }, [accounts, displayLimit, staleCount]);
 
   const handleConnect = useCallback(async () => {
     if (wallet) {
@@ -362,44 +505,86 @@ export function WalletPanel({ visible, onClose }: WalletPanelProps) {
         </Card>
       )}
 
-      {/* Available Keys */}
-      <Collapse defaultActiveKey={wallet.activeVault?.unlocked ? ['keys'] : []}>
+      {/* Clear Stale button - outside collapse so it's always visible */}
+      {staleCount > 0 && (
+        <Button
+          danger
+          block
+          onClick={clearStaleAccounts}
+          style={{ marginBottom: 8 }}
+        >
+          Clear {staleCount} Stale Accounts (not found on network)
+        </Button>
+      )}
+
+      {/* Lite Accounts */}
+      <Collapse defaultActiveKey={wallet.activeVault?.unlocked ? ['accounts'] : []}>
         <Panel
           header={
             <Space>
               <IconContext.Provider value={{ className: 'react-icons' }}>
-                <RiKey2Line />
+                <RiCoinLine />
               </IconContext.Provider>
-              Keys
-              <Badge count={wallet.keys.length} style={{ backgroundColor: '#1890ff' }} />
+              Accounts
+              <Badge count={accounts.length} style={{ backgroundColor: '#1890ff' }} />
+              {loadingAccounts && <Spin size="small" />}
             </Space>
           }
-          key="keys"
+          key="accounts"
         >
           {!wallet.activeVault?.unlocked ? (
-            <Text type="secondary">Unlock vault to view keys</Text>
-          ) : wallet.keys.length === 0 ? (
-            <Text type="secondary">No keys in this vault</Text>
+            <Text type="secondary">Unlock vault to view accounts</Text>
+          ) : accounts.length === 0 ? (
+            <Text type="secondary">No accounts in this vault</Text>
           ) : (
-            <List
-              size="small"
-              dataSource={wallet.keys}
-              renderItem={(key) => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={key.label || 'Unnamed'}
-                    description={
-                      <Space direction="vertical" size={0}>
-                        <Tag>{key.type}</Tag>
-                        <Text type="secondary" copyable={{ text: key.publicKeyHash }} style={{ fontSize: '0.8em' }}>
-                          {truncateHash(key.publicKeyHash)}
-                        </Text>
-                      </Space>
-                    }
-                  />
-                </List.Item>
+            <>
+              <List
+                size="small"
+                dataSource={accounts.slice(0, displayLimit)}
+                renderItem={(account) => (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <Link to={`/acc/${account.url.replace('acc://', '')}`} onClick={onClose}>
+                          {account.label}
+                        </Link>
+                      }
+                      description={
+                        <Space direction="vertical" size={0} style={{ width: '100%' }}>
+                          <Text type="secondary" style={{ fontSize: '0.75em', wordBreak: 'break-all' }}>
+                            {account.url}
+                          </Text>
+                          {account.loading ? (
+                            <Spin size="small" />
+                          ) : account.error ? (
+                            <Text type="danger" style={{ fontSize: '0.8em' }}>{account.error}</Text>
+                          ) : (
+                            <Space>
+                              <Tag color="blue">{account.type}</Tag>
+                              {account.balance !== null && (
+                                <Text strong>
+                                  {formatBalance(account.balance, account.tokenUrl)}
+                                </Text>
+                              )}
+                            </Space>
+                          )}
+                        </Space>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+              {accounts.length > displayLimit && (
+                <Button
+                  type="link"
+                  block
+                  onClick={() => setDisplayLimit((prev) => prev + 10)}
+                  style={{ marginTop: 8 }}
+                >
+                  Load More ({accounts.length - displayLimit} remaining)
+                </Button>
               )}
-            />
+            </>
           )}
         </Panel>
       </Collapse>
@@ -448,6 +633,35 @@ function truncateHash(hash: string, length = 8): string {
   if (!hash) return '';
   if (hash.length <= length * 2) return hash;
   return `${hash.slice(0, length)}...${hash.slice(-length)}`;
+}
+
+/**
+ * Format balance for display
+ * ACME uses 8 decimal places (1e8 precision)
+ */
+function formatBalance(balance: bigint, tokenUrl: string | null): string {
+  // ACME and most tokens use 8 decimal places
+  const precision = 8;
+  const divisor = BigInt(10 ** precision);
+  const whole = balance / divisor;
+  const frac = balance % divisor;
+
+  // Get token symbol from URL
+  let symbol = 'ACME';
+  if (tokenUrl) {
+    const parts = tokenUrl.split('/');
+    symbol = parts[parts.length - 1] || 'ACME';
+  }
+
+  if (frac === BigInt(0)) {
+    return `${whole.toLocaleString()} ${symbol}`;
+  }
+
+  // Format fractional part, removing trailing zeros
+  let fracStr = frac.toString().padStart(precision, '0');
+  fracStr = fracStr.replace(/0+$/, '');
+
+  return `${whole.toLocaleString()}.${fracStr} ${symbol}`;
 }
 
 /**

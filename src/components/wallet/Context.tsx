@@ -64,6 +64,12 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [keys, setKeys] = useState<KeyInfo[]>([]);
   const [endpoint, setEndpointState] = useState<string>(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
+    // Migration: fix old port 8079 -> 8080
+    if (saved && saved.includes(':8079')) {
+      const fixed = saved.replace(':8079', ':8080');
+      localStorage.setItem(STORAGE_KEY, fixed);
+      return fixed;
+    }
     return saved || DEFAULT_ENDPOINT;
   });
 
