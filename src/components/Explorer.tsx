@@ -76,6 +76,12 @@ export default function Explorer() {
 
             <Content>
               <SearchForm searching={(x) => (searchDidLoad = x)} />
+              <div style={{
+                height: 4,
+                background: 'linear-gradient(90deg, #1890ff 0%, #40a9ff 100%)',
+                borderRadius: 2,
+                marginBottom: 16
+              }} />
               <Suspense fallback={<Loading />}>
                 <Switch>
                   <Route exact path="/" children={<Blocks />} />

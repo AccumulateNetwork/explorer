@@ -1,4 +1,5 @@
-import { Web3Modal, createWeb3Modal, defaultConfig } from '@web3modal/ethers';
+import { createWeb3Modal, defaultConfig } from '@web3modal/ethers';
+type Web3Modal = ReturnType<typeof createWeb3Modal>;
 import { Eip1193Provider } from 'ethers';
 import { useContext, useState } from 'react';
 
